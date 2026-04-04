@@ -23,14 +23,14 @@ export const translations = {
 
   // ── Hero ──────────────────────────────────────────────────────────
   heroTagline: {
-    zh: "Solana 首個鏈上可驗證 AI DeFi 顧問網絡",
-    en: "The First Onchain-Verifiable AI DeFi Advisor on Solana",
-    ja: "Solana初のオンチェーン検証可能なAI DeFiアドバイザー",
+    zh: "Solana 鏈上可驗證 AI DeFi 顧問",
+    en: "Onchain-Verifiable AI DeFi Advisor for Solana",
+    ja: "SolanaのオンチェーンAI DeFiアドバイザー — SHA-256検証済み",
   },
   heroSubtitle: {
-    zh: "4 個專屬 AI 智能體協同工作，覆蓋安全分析、持倉體檢、DeFi 執行、自主再平衡。每一個 AI 決策有 SHA-256 哈希，永久記錄在 Solana 鏈上，獨立可驗證。",
-    en: "4 specialized AI agents work in concert: security analysis, portfolio health, DeFi execution, autonomous rebalancing. Every AI decision is SHA-256 hashed and permanently recorded on Solana — transparent and independently verifiable.",
-    ja: "4つの専門AIエージェントが連携：セキュリティ分析、ポートフォリオ診断、DeFi実行、自律リバランス。すべてのAI判断はSHA-256ハッシュでSolanaチェーンに永久記録されます。",
+    zh: "4 個專屬 AI 智能體覆蓋安全分析、持倉體檢、DeFi 執行、自主再平衡。每一個 AI 決策有 SHA-256 哈希，永久記錄在 Solana 鏈上，獨立可驗證。",
+    en: "Four specialized AI agents cover security analysis, portfolio health, DeFi execution, and autonomous rebalancing. Every decision is SHA-256 hashed and recorded on Solana — independently verifiable.",
+    ja: "4つの専門AIエージェントがセキュリティ分析、ポートフォリオ診断、DeFi実行、自律リバランスをカバー。すべてのAI判断はSHA-256ハッシュでSolanaに永久記録され、独立して検証可能。",
   },
 
   // ── Agents ────────────────────────────────────────────────────────
@@ -65,7 +65,7 @@ export const translations = {
   },
 
   // ── Differentiator ────────────────────────────────────────────────
-  diffTitle: { zh: "業界唯一：鏈上可驗證 AI 推理", en: "Industry First: Onchain Verifiable AI Reasoning", ja: "業界初：オンチェーン検証可能なAI推論" },
+  diffTitle: { zh: "鏈上可驗證 AI 推理", en: "Onchain-Verifiable AI Reasoning", ja: "オンチェーン検証可能なAI推論" },
   diffDesc: {
     zh: "每次 AI 分析生成 SHA-256 哈希，透過 Solana Memo Program 永久上鏈。任何人可以獨立驗證 AI 的完整推理過程——不是黑箱，是透明的可信 AI。",
     en: "Every AI analysis generates a SHA-256 hash recorded via Solana Memo Program. Anyone can independently verify the complete AI reasoning process — not a black box, but transparent, trustworthy AI.",
@@ -73,7 +73,7 @@ export const translations = {
   },
 
   // ── Stats ────────────────────────────────────────────────────────
-  statLabel1: { zh: "GoPlus 安全評分", en: "GoPlus Security Dims", ja: "GoPlus セキュリティ次元" },
+  statLabel1: { zh: "GoPlus 安全維度", en: "GoPlus Security Dimensions", ja: "GoPlus セキュリティ次元" },
   statLabel2: { zh: "協作智能體", en: "Collaborative Agents", ja: "協調エージェント" },
   statLabel3: { zh: "最高穩定幣 APY", en: "Top Stablecoin APY", ja: "最高ステーブルコインAPY" },
   statLabel4: { zh: "AI 推理鏈上可驗證", en: "AI Reasoning Onchain", ja: "AI推論オンチェーン検証" },
@@ -96,9 +96,9 @@ export const translations = {
     ja: "Phantomを接続して、無料でセキュリティ分析3回＋AIアドバイザーを即時利用",
   },
   ctaFreeBtn: {
-    zh: "👻 免費連接 Phantom",
-    en: "👻 Connect Phantom Free",
-    ja: "👻 無料でPhantom接続",
+    zh: "👻 連接 Phantom — 免費",
+    en: "👻 Connect Phantom — Free",
+    ja: "👻 Phantom接続 — 無料",
   },
   ctaSubNote: {
     zh: "升級 Basic $8/月 · Pro $28/月 · 按次 $0.10 USDC",
@@ -167,7 +167,7 @@ export const translations = {
   tabHealth: { zh: "📊 持倉體檢", en: "📊 Portfolio", ja: "📊 診断" },
   tabToken: { zh: "🛡️ 安全分析", en: "🛡️ Security", ja: "🛡️ セキュリティ" },
   tabDefi: { zh: "💬 AI 顧問", en: "💬 AI Advisor", ja: "💬 AIアドバイザー" },
-  tabAgent: { zh: "🤖 自主 Agent", en: "🤖 Auto Agent", ja: "🤖 自律エージェント" },
+  tabAgent: { zh: "🤖 自主 Agent", en: "🤖 Rebalance Agent", ja: "🤖 自律エージェント" },
 
   // ── HealthReport ─────────────────────────────────────────────────
   walletHealthReport: { zh: "錢包體檢報告", en: "Wallet Health Report", ja: "ウォレット診断レポート" },
