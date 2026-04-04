@@ -10,6 +10,7 @@ import PriceTicker from "@/components/PriceTicker";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import SubscriptionBanner from "@/components/SubscriptionBanner";
 import { LanguageProvider, useLang } from "@/contexts/LanguageContext";
+import WaBijinSVG from "@/components/WaBijinSVG";
 import type { Lang } from "@/lib/i18n";
 
 type Tab = "health" | "token" | "defi" | "agent";
@@ -129,35 +130,14 @@ function AppContent() {
         backdropFilter: "blur(16px)",
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          {/* 印章 Hanko-style logo */}
+          {/* 和美人 Wa-bijin logo */}
           <div style={{
             width: 32, height: 32, borderRadius: 6,
             background: "var(--accent)",
             display: "flex", alignItems: "center", justifyContent: "center",
             flexShrink: 0,
           }}>
-            {/* Cute Japanese girl SVG avatar */}
-            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-              {/* Hair */}
-              <ellipse cx="11" cy="8" rx="7" ry="5.5" fill="#1a0a0a"/>
-              <rect x="4" y="7" width="2" height="7" rx="1" fill="#1a0a0a"/>
-              <rect x="16" y="7" width="2" height="7" rx="1" fill="#1a0a0a"/>
-              {/* Face */}
-              <ellipse cx="11" cy="11" rx="5" ry="5.5" fill="#FDDBB4"/>
-              {/* Eyes */}
-              <ellipse cx="8.8" cy="10.5" rx="1.1" ry="1.3" fill="#2d1a0e"/>
-              <ellipse cx="13.2" cy="10.5" rx="1.1" ry="1.3" fill="#2d1a0e"/>
-              {/* Eye shine */}
-              <circle cx="9.2" cy="10" r="0.35" fill="white"/>
-              <circle cx="13.6" cy="10" r="0.35" fill="white"/>
-              {/* Blush */}
-              <ellipse cx="7.5" cy="12" rx="1.2" ry="0.6" fill="#F4A0A0" opacity="0.6"/>
-              <ellipse cx="14.5" cy="12" rx="1.2" ry="0.6" fill="#F4A0A0" opacity="0.6"/>
-              {/* Smile */}
-              <path d="M9 13 Q11 14.5 13 13" stroke="#c07060" strokeWidth="0.8" strokeLinecap="round" fill="none"/>
-              {/* Hair highlight */}
-              <ellipse cx="9" cy="6.5" rx="2" ry="1" fill="#3d1a1a" opacity="0.4"/>
-            </svg>
+            <WaBijinSVG size={24} />
           </div>
           <span className="jp-heading" style={{ fontSize: 18, fontWeight: 500, color: "var(--text-primary)", letterSpacing: "0.08em" }}>Solis</span>
           <span style={{

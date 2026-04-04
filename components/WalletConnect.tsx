@@ -2,6 +2,7 @@
 
 import AnimatedNumber from "@/components/AnimatedNumber";
 import { useLang } from "@/contexts/LanguageContext";
+import WaBijinSVG from "@/components/WaBijinSVG";
 
 const AGENT_KEYS = [
   { tag: "Security Agent",  titleKey: "agent1Title" as const, descKey: "agent1Desc" as const, icon: "護", color: "var(--green)" },
@@ -43,45 +44,14 @@ export default function WalletConnect() {
           </span>
         </div>
 
-        {/* 印章 Logo — hanko seal style */}
+        {/* 和美人 Wa-bijin Logo — traditional Japanese beauty portrait */}
         <div className="hero-logo" style={{
-          width: 72, height: 72, borderRadius: 14, margin: "0 auto 24px",
+          width: 88, height: 88, borderRadius: 16, margin: "0 auto 24px",
           background: "var(--accent)",
           display: "flex", alignItems: "center", justifyContent: "center",
           flexShrink: 0,
         }}>
-          {/* Japanese girl SVG */}
-          <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-            {/* Hair back */}
-            <ellipse cx="24" cy="18" rx="15" ry="12" fill="#1a0808"/>
-            {/* Side hair */}
-            <rect x="9" y="15" width="4" height="16" rx="2" fill="#1a0808"/>
-            <rect x="35" y="15" width="4" height="16" rx="2" fill="#1a0808"/>
-            {/* Face */}
-            <ellipse cx="24" cy="24" rx="11" ry="12" fill="#FDDBB4"/>
-            {/* Eyes */}
-            <ellipse cx="19.5" cy="22.5" rx="2.4" ry="2.8" fill="#2d1208"/>
-            <ellipse cx="28.5" cy="22.5" rx="2.4" ry="2.8" fill="#2d1208"/>
-            {/* Eye shine */}
-            <circle cx="20.4" cy="21.4" r="0.8" fill="white"/>
-            <circle cx="29.4" cy="21.4" r="0.8" fill="white"/>
-            {/* Lashes */}
-            <path d="M17 20.5 L15.5 19" stroke="#1a0808" strokeWidth="0.8" strokeLinecap="round"/>
-            <path d="M19 19.8 L18 18" stroke="#1a0808" strokeWidth="0.8" strokeLinecap="round"/>
-            <path d="M31 20.5 L32.5 19" stroke="#1a0808" strokeWidth="0.8" strokeLinecap="round"/>
-            <path d="M29 19.8 L30 18" stroke="#1a0808" strokeWidth="0.8" strokeLinecap="round"/>
-            {/* Blush */}
-            <ellipse cx="16" cy="26" rx="2.5" ry="1.2" fill="#F4A0A0" opacity="0.55"/>
-            <ellipse cx="32" cy="26" rx="2.5" ry="1.2" fill="#F4A0A0" opacity="0.55"/>
-            {/* Mouth */}
-            <path d="M20 29 Q24 31.5 28 29" stroke="#c07060" strokeWidth="1.2" strokeLinecap="round" fill="none"/>
-            {/* Hair fringe */}
-            <ellipse cx="24" cy="12" rx="10" ry="5" fill="#1a0808"/>
-            <path d="M14 15 Q16 10 18 14" fill="#1a0808"/>
-            <path d="M34 15 Q32 10 30 14" fill="#1a0808"/>
-            {/* Kimono collar */}
-            <path d="M17 36 L24 32 L31 36" stroke="#C0392B" strokeWidth="2" strokeLinecap="round" fill="none"/>
-          </svg>
+          <WaBijinSVG size={68} />
         </div>
 
         {/* 題字 Title — Mincho heading */}
