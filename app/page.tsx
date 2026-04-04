@@ -23,8 +23,8 @@ interface WalletSnapshot {
 
 const LANG_OPTIONS: { code: Lang; flag: string; label: string }[] = [
   { code: "en", flag: "🇺🇸", label: "EN" },
-  { code: "zh", flag: "🇨🇳", label: "中文" },
   { code: "ja", flag: "🇯🇵", label: "日本語" },
+  { code: "zh", flag: "🇨🇳", label: "中文" },
 ];
 
 // ── 時の色 Toki-no-Iro — Color of Time ──────────────────────────
