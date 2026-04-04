@@ -129,7 +129,7 @@ function AllocationBar({
 
   return (
     <div>
-      <div style={{ fontSize: 11, color: "#475569", marginBottom: 6 }}>{label}</div>
+      <div style={{ fontSize: 11, color: "var(--text-secondary)", marginBottom: 6 }}>{label}</div>
       <div style={{ display: "flex", borderRadius: 6, overflow: "hidden", height: 16 }}>
         {items.map(item => {
           const pct = allocation[item.key];
@@ -146,7 +146,7 @@ function AllocationBar({
         {(() => {
           const total = allocation.sol + allocation.usdc + allocation.staked + allocation.lent;
           const rem = Math.max(0, 100 - total);
-          return rem > 0 ? <div style={{ flex: 1, background: "#1E1E2E" }} /> : null;
+          return rem > 0 ? <div style={{ flex: 1, background: "var(--border)" }} /> : null;
         })()}
       </div>
       <div style={{ display: "flex", gap: 10, marginTop: 5, flexWrap: "wrap" }}>
@@ -374,15 +374,15 @@ export default function AgentPanel({ walletAddress, walletSnapshot }: Props) {
       {/* ── Header ── */}
       <div style={{
         background: "linear-gradient(135deg, #13131A, #0D0D1A)",
-        border: "1px solid #1E1E2E",
+        border: "1px solid var(--border)",
         borderRadius: 16, padding: 24,
         display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16,
       }}>
         <div>
-          <div style={{ fontSize: 18, fontWeight: 800, color: "#E2E8F0", marginBottom: 4 }}>
+          <div style={{ fontSize: 18, fontWeight: 800, color: "var(--text-primary)", marginBottom: 4 }}>
             🤖 AI 再平衡 Agent
           </div>
-          <div style={{ fontSize: 13, color: "#475569", lineHeight: 1.5 }}>
+          <div style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.5 }}>
             自主分析你的持仓，生成最优 DeFi 收益方案。
             无需提问——点一个按钮，Agent 帮你规划。
           </div>
@@ -407,10 +407,10 @@ export default function AgentPanel({ walletAddress, walletSnapshot }: Props) {
           style={{
             padding: "12px 24px",
             background: isRunning
-              ? "#1E1E2E"
-              : "linear-gradient(135deg, #8B5CF6, #06B6D4)",
+              ? "var(--border)"
+              : "var(--accent)",
             border: "none", borderRadius: 12,
-            fontSize: 14, fontWeight: 700, color: isRunning ? "#475569" : "#fff",
+            fontSize: 14, fontWeight: 700, color: isRunning ? "var(--text-secondary)" : "#fff",
             cursor: isRunning ? "not-allowed" : "pointer",
             whiteSpace: "nowrap", minWidth: 120,
           }}
@@ -421,7 +421,7 @@ export default function AgentPanel({ walletAddress, walletSnapshot }: Props) {
 
       {/* ── On-Chain Mandate Panel ── */}
       <div style={{
-        background: "#0D0D14", border: `1px solid ${signedMandate ? "#8B5CF660" : "#1E1E2E"}`,
+        background: "var(--bg-card)", border: `1px solid ${signedMandate ? "#8B5CF660" : "var(--border)"}`,
         borderRadius: 14, padding: "14px 18px",
       }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -430,7 +430,7 @@ export default function AgentPanel({ walletAddress, walletSnapshot }: Props) {
               {signedMandate ? "🔐 投资规则已签名上链" : "⚙️ 设置投资规则（可选）"}
             </div>
             {signedMandate && (
-              <div style={{ fontSize: 10, color: "#475569", marginTop: 3 }}>
+              <div style={{ fontSize: 10, color: "var(--text-secondary)", marginTop: 3 }}>
                 最大质押 {signedMandate.mandate.maxStakePct}% · 单协议上限 {signedMandate.mandate.maxSingleProtocolPct}% · 已用 Phantom 签名
               </div>
             )}
@@ -438,8 +438,8 @@ export default function AgentPanel({ walletAddress, walletSnapshot }: Props) {
           <button
             onClick={() => setShowMandateEditor(v => !v)}
             style={{
-              background: "none", border: "1px solid #1E1E2E", borderRadius: 6,
-              color: "#475569", fontSize: 11, cursor: "pointer", padding: "4px 10px",
+              background: "none", border: "1px solid var(--border)", borderRadius: 6,
+              color: "var(--text-secondary)", fontSize: 11, cursor: "pointer", padding: "4px 10px",
             }}
           >
             {showMandateEditor ? "收起" : signedMandate ? "修改" : "设置"}
@@ -449,7 +449,7 @@ export default function AgentPanel({ walletAddress, walletSnapshot }: Props) {
         {showMandateEditor && (
           <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 14 }}>
             <div>
-              <div style={{ fontSize: 11, color: "#94A3B8", marginBottom: 6 }}>
+              <div style={{ fontSize: 11, color: "var(--text-secondary)", marginBottom: 6 }}>
                 最大质押比例: <b style={{ color: "#8B5CF6" }}>{mandateDraft.maxStakePct}%</b>
               </div>
               <input type="range" min={10} max={100} value={mandateDraft.maxStakePct}
@@ -458,7 +458,7 @@ export default function AgentPanel({ walletAddress, walletSnapshot }: Props) {
               />
             </div>
             <div>
-              <div style={{ fontSize: 11, color: "#94A3B8", marginBottom: 6 }}>
+              <div style={{ fontSize: 11, color: "var(--text-secondary)", marginBottom: 6 }}>
                 单协议上限: <b style={{ color: "#06B6D4" }}>{mandateDraft.maxSingleProtocolPct}%</b>
               </div>
               <input type="range" min={10} max={100} value={mandateDraft.maxSingleProtocolPct}
@@ -467,7 +467,7 @@ export default function AgentPanel({ walletAddress, walletSnapshot }: Props) {
               />
             </div>
             <div>
-              <div style={{ fontSize: 11, color: "#94A3B8", marginBottom: 8 }}>允许协议</div>
+              <div style={{ fontSize: 11, color: "var(--text-secondary)", marginBottom: 8 }}>允许协议</div>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 {(["marinade", "jito", "kamino", "solend"] as const).map(p => (
                   <label key={p} style={{ display: "flex", alignItems: "center", gap: 5, cursor: "pointer" }}>
@@ -481,7 +481,7 @@ export default function AgentPanel({ walletAddress, walletSnapshot }: Props) {
                       }))}
                       style={{ accentColor: "#8B5CF6" }}
                     />
-                    <span style={{ fontSize: 11, color: "#94A3B8", textTransform: "capitalize" }}>{p}</span>
+                    <span style={{ fontSize: 11, color: "var(--text-secondary)", textTransform: "capitalize" }}>{p}</span>
                   </label>
                 ))}
               </div>
@@ -491,14 +491,14 @@ export default function AgentPanel({ walletAddress, walletSnapshot }: Props) {
               disabled={mandateSigning}
               style={{
                 padding: "9px 18px", borderRadius: 8, border: "none",
-                background: mandateSigning ? "#1E1E2E" : "linear-gradient(135deg, #8B5CF6, #06B6D4)",
-                color: mandateSigning ? "#475569" : "#fff",
+                background: mandateSigning ? "var(--border)" : "var(--accent)",
+                color: mandateSigning ? "var(--text-secondary)" : "#fff",
                 fontSize: 12, fontWeight: 700, cursor: mandateSigning ? "not-allowed" : "pointer",
               }}
             >
               {mandateSigning ? "等待 Phantom 签名..." : "👻 用 Phantom 签名此规则"}
             </button>
-            <div style={{ fontSize: 10, color: "#334155" }}>
+            <div style={{ fontSize: 10, color: "var(--text-muted)" }}>
               规则将由你的钱包私钥签名，写入链上 Memo。AI 只能在此范围内操作。
             </div>
           </div>
@@ -529,7 +529,7 @@ export default function AgentPanel({ walletAddress, walletSnapshot }: Props) {
       {/* ── Thinking animation ── */}
       {isRunning && (
         <div style={{
-          background: "#13131A", border: "1px solid #8B5CF630",
+          background: "var(--bg-card)", border: "1px solid #8B5CF630",
           borderRadius: 12, padding: "16px 20px",
           display: "flex", alignItems: "center", gap: 12,
         }}>
@@ -569,20 +569,20 @@ export default function AgentPanel({ walletAddress, walletSnapshot }: Props) {
             </div>
             <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
               <div>
-                <div style={{ fontSize: 10, color: "#475569" }}>{t("currentAnnualYield")}</div>
+                <div style={{ fontSize: 10, color: "var(--text-secondary)" }}>{t("currentAnnualYield")}</div>
                 <div style={{ fontSize: 20, fontWeight: 800, color: "#EF4444" }}>
                   $0
                 </div>
               </div>
-              <div style={{ fontSize: 20, color: "#475569", alignSelf: "flex-end", marginBottom: 2 }}>→</div>
+              <div style={{ fontSize: 20, color: "var(--text-secondary)", alignSelf: "flex-end", marginBottom: 2 }}>→</div>
               <div>
-                <div style={{ fontSize: 10, color: "#475569" }}>{t("projectedYield")}</div>
+                <div style={{ fontSize: 10, color: "var(--text-secondary)" }}>{t("projectedYield")}</div>
                 <div style={{ fontSize: 20, fontWeight: 800, color: "#10B981" }}>
                   +${plan.projectedAnnualYield.toFixed(0)}
                 </div>
               </div>
               <div style={{ marginLeft: "auto", textAlign: "right" }}>
-                <div style={{ fontSize: 10, color: "#475569" }}>AI 置信度</div>
+                <div style={{ fontSize: 10, color: "var(--text-secondary)" }}>AI 置信度</div>
                 <div style={{ fontSize: 16, fontWeight: 700, color: "#8B5CF6" }}>
                   {plan.confidenceScore}%
                 </div>
@@ -592,14 +592,14 @@ export default function AgentPanel({ walletAddress, walletSnapshot }: Props) {
 
           {/* Before / After allocation */}
           <div style={{
-            background: "#13131A", border: "1px solid #1E1E2E",
+            background: "var(--bg-card)", border: "1px solid var(--border)",
             borderRadius: 14, padding: "16px 20px",
             display: "flex", flexDirection: "column", gap: 16,
           }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "#E2E8F0" }}>{t("currentAllocation")} vs {t("recommendedAllocation")}</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>{t("currentAllocation")} vs {t("recommendedAllocation")}</div>
             <AllocationBar label={t("currentAllocation")} allocation={plan.currentAllocation} />
             <AllocationBar label={t("recommendedAllocation")} allocation={plan.recommendedAllocation} />
-            <div style={{ display: "flex", gap: 12, fontSize: 10, color: "#334155", flexWrap: "wrap" }}>
+            <div style={{ display: "flex", gap: 12, fontSize: 10, color: "var(--text-muted)", flexWrap: "wrap" }}>
               <span style={{ color: "#8B5CF6" }}>■ {t("staking")}</span>
               <span style={{ color: "#10B981" }}>■ {t("deposit")}</span>
               <span style={{ color: "#06B6D4" }}>■ SOL</span>
@@ -609,12 +609,12 @@ export default function AgentPanel({ walletAddress, walletSnapshot }: Props) {
 
           {/* Actions */}
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "#E2E8F0" }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>
               {t("recommendedAllocation")} ({plan.actions.length})
             </div>
             {plan.actions.map((action, i) => (
               <div key={i} style={{
-                background: "#13131A",
+                background: "var(--bg-card)",
                 border: `1px solid ${action.color}30`,
                 borderRadius: 12, padding: "14px 16px",
                 display: "flex", alignItems: "flex-start", gap: 14,
@@ -645,10 +645,10 @@ export default function AgentPanel({ walletAddress, walletSnapshot }: Props) {
                       {action.riskLevel} {t("risk")}
                     </span>
                   </div>
-                  <div style={{ fontSize: 12, color: "#E2E8F0", marginBottom: 6 }}>
+                  <div style={{ fontSize: 12, color: "var(--text-primary)", marginBottom: 6 }}>
                     {action.amountDisplay}
                   </div>
-                  <div style={{ fontSize: 11, color: "#64748B", lineHeight: 1.5 }}>
+                  <div style={{ fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.5 }}>
                     {action.reasoning}
                   </div>
                 </div>
@@ -670,15 +670,15 @@ export default function AgentPanel({ walletAddress, walletSnapshot }: Props) {
 
           {/* On-chain proof */}
           <div style={{
-            background: "#080B14", border: "1px solid #1E3A5F",
+            background: "var(--bg-base)", border: "1px solid #1E3A5F",
             borderRadius: 12, padding: "14px 16px",
             display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
           }}>
             <div>
-              <div style={{ fontSize: 11, color: "#475569", marginBottom: 4 }}>
+              <div style={{ fontSize: 11, color: "var(--text-secondary)", marginBottom: 4 }}>
                 🔐 {t("aiReasoningHash")}
               </div>
-              <div style={{ fontSize: 10, color: "#334155", fontFamily: "monospace" }}>
+              <div style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: "monospace" }}>
                 {plan.memoPayload} · SHA-256: {plan.planHash.slice(0, 20)}...
               </div>
             </div>
@@ -708,7 +708,7 @@ export default function AgentPanel({ walletAddress, walletSnapshot }: Props) {
           </div>
 
           {!plan.aiAvailable && (
-            <div style={{ fontSize: 10, color: "#334155", textAlign: "center" }}>
+            <div style={{ fontSize: 10, color: "var(--text-muted)", textAlign: "center" }}>
               ℹ️ {t("deterministicNote")}
             </div>
           )}
@@ -718,15 +718,15 @@ export default function AgentPanel({ walletAddress, walletSnapshot }: Props) {
       {/* ── Idle state ── */}
       {agentState === "idle" && (
         <div style={{
-          background: "#13131A", border: "1px dashed #1E1E2E",
+          background: "var(--bg-card)", border: "1px dashed #1E1E2E",
           borderRadius: 14, padding: "40px 24px",
           display: "flex", flexDirection: "column", alignItems: "center", gap: 12,
         }}>
           <div style={{ fontSize: 48 }}>🤖</div>
-          <div style={{ fontSize: 14, color: "#E2E8F0", fontWeight: 600 }}>
+          <div style={{ fontSize: 14, color: "var(--text-primary)", fontWeight: 600 }}>
             {t("runAgent")}
           </div>
-          <div style={{ fontSize: 12, color: "#475569", textAlign: "center", maxWidth: 340 }}>
+          <div style={{ fontSize: 12, color: "var(--text-secondary)", textAlign: "center", maxWidth: 340 }}>
             {t("agentPanelSubtitle")}
           </div>
         </div>

@@ -40,11 +40,11 @@ export default function PriceTicker() {
   return (
     <div style={{
       display: "flex", alignItems: "center", gap: 6,
-      background: "#13131A", border: "1px solid #1E1E2E",
+      background: "var(--bg-card)", border: "1px solid var(--border)",
       borderRadius: 8, padding: "5px 12px",
     }}>
-      <span style={{ fontSize: 11, color: "#475569" }}>SOL</span>
-      <span style={{ fontSize: 13, fontWeight: 700, color: "#E2E8F0" }}>
+      <span style={{ fontSize: 11, color: "var(--text-secondary)" }}>SOL</span>
+      <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>
         ${data.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
       </span>
       <span style={{ fontSize: 10, color }}>{arrow}</span>

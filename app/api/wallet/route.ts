@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isValidSolanaAddress } from "@/lib/rate-limit";
 
 const HELIUS_API_KEY = process.env.HELIUS_API_KEY ?? "";
 const HELIUS_RPC = `https://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}`;
@@ -125,6 +126,7 @@ async function getHeliusTokenMeta(
 export async function GET(req: NextRequest) {
   const address = req.nextUrl.searchParams.get("address");
   if (!address) return NextResponse.json({ error: "Missing address" }, { status: 400 });
+  if (!isValidSolanaAddress(address)) return NextResponse.json({ error: "Invalid wallet address" }, { status: 400 });
 
   try {
     const [solBalance, tokenAccounts, solPrice] = await Promise.all([

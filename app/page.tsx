@@ -55,6 +55,18 @@ function AppContent() {
   const [timeBg, setTimeBg] = useState(getTimeColor());
   const [isDayMode, setIsDayMode] = useState(false);
 
+  // Restore persisted day/night preference
+  useEffect(() => {
+    const saved = localStorage.getItem("sakura_day_mode");
+    if (saved === "1") setIsDayMode(true);
+  }, []);
+
+  // Restore persisted wallet connection
+  useEffect(() => {
+    const saved = localStorage.getItem("sakura_wallet");
+    if (saved) setWalletAddress(saved);
+  }, []);
+
   // Update background every minute
   useEffect(() => {
     const tick = () => setTimeBg(getTimeColor());
@@ -92,7 +104,9 @@ function AppContent() {
     setPhantomLoading(true);
     try {
       const resp = await window.solana.connect();
-      setWalletAddress(resp.publicKey.toString());
+      const addr = resp.publicKey.toString();
+      setWalletAddress(addr);
+      localStorage.setItem("sakura_wallet", addr);
     } catch {
       // user rejected
     } finally {
@@ -103,6 +117,7 @@ function AppContent() {
   function disconnect() {
     setWalletAddress(null);
     setWalletSnapshot(undefined);
+    localStorage.removeItem("sakura_wallet");
     window.solana?.disconnect?.();
   }
 
@@ -153,7 +168,10 @@ function AppContent() {
           </span>
           {/* 昼夜切替 Day/Night toggle */}
           <button
-            onClick={() => setIsDayMode(v => !v)}
+            onClick={() => setIsDayMode(v => {
+            localStorage.setItem("sakura_day_mode", v ? "0" : "1");
+            return !v;
+          })}
             title={isDayMode ? t("switchToNight") : t("switchToDay")}
             style={{
               display: "flex", alignItems: "center", gap: 5,

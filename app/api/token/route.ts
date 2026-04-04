@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isValidSolanaAddress } from "@/lib/rate-limit";
 
 const HELIUS_API_KEY = process.env.HELIUS_API_KEY ?? "";
 const HELIUS_RPC = `https://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}`;
@@ -182,6 +183,8 @@ export async function GET(req: NextRequest) {
   const wallet = req.nextUrl.searchParams.get("wallet");
 
   if (!mint) return NextResponse.json({ error: "Missing mint address" }, { status: 400 });
+  if (!isValidSolanaAddress(mint)) return NextResponse.json({ error: "Invalid mint address" }, { status: 400 });
+  if (wallet && !isValidSolanaAddress(wallet)) return NextResponse.json({ error: "Invalid wallet address" }, { status: 400 });
 
   // Parallel fetch
   const [gp, jupPrice, jupToken, heliusMeta] = await Promise.all([

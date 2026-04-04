@@ -109,7 +109,7 @@ export default function SwapModal({ from, to, amount, onClose }: SwapModalProps)
     >
       <div
         style={{
-          background: "#13131A", border: "1px solid #1E1E2E",
+          background: "var(--bg-card)", border: "1px solid var(--border)",
           borderRadius: 20, padding: 28, width: "100%", maxWidth: 420,
           boxShadow: "0 24px 80px rgba(0,0,0,0.6)",
         }}
@@ -121,7 +121,7 @@ export default function SwapModal({ from, to, amount, onClose }: SwapModalProps)
             🪐 Jupiter Swap
           </div>
           <button onClick={onClose} style={{
-            background: "none", border: "none", color: "#475569",
+            background: "none", border: "none", color: "var(--text-secondary)",
             fontSize: 18, cursor: "pointer",
           }}>✕</button>
         </div>
@@ -130,7 +130,7 @@ export default function SwapModal({ from, to, amount, onClose }: SwapModalProps)
         {step === "quote" && (
           <div style={{ textAlign: "center", padding: "40px 0" }}>
             <div style={{ fontSize: 32, marginBottom: 12 }}>⏳</div>
-            <div style={{ fontSize: 14, color: "#64748B" }}>{t("gettingQuote")}</div>
+            <div style={{ fontSize: 14, color: "var(--text-secondary)" }}>{t("gettingQuote")}</div>
           </div>
         )}
 
@@ -139,24 +139,24 @@ export default function SwapModal({ from, to, amount, onClose }: SwapModalProps)
           <>
             {/* Swap summary */}
             <div style={{
-              background: "#0A0A0F", borderRadius: 14, padding: 20, marginBottom: 16,
+              background: "var(--bg-base)", borderRadius: 14, padding: 20, marginBottom: 16,
             }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
                 <div style={{ textAlign: "center" }}>
-                  <div style={{ fontSize: 11, color: "#475569", marginBottom: 4 }}>{t("pay")}</div>
-                  <div style={{ fontSize: 24, fontWeight: 900, color: "#E2E8F0" }}>{quote.inputAmount}</div>
+                  <div style={{ fontSize: 11, color: "var(--text-secondary)", marginBottom: 4 }}>{t("pay")}</div>
+                  <div style={{ fontSize: 24, fontWeight: 900, color: "var(--text-primary)" }}>{quote.inputAmount}</div>
                   <div style={{ fontSize: 13, color: "#8B5CF6", fontWeight: 700 }}>{quote.from}</div>
                 </div>
-                <div style={{ fontSize: 24, color: "#475569" }}>→</div>
+                <div style={{ fontSize: 24, color: "var(--text-secondary)" }}>→</div>
                 <div style={{ textAlign: "center" }}>
-                  <div style={{ fontSize: 11, color: "#475569", marginBottom: 4 }}>{t("receive")}</div>
+                  <div style={{ fontSize: 11, color: "var(--text-secondary)", marginBottom: 4 }}>{t("receive")}</div>
                   <div style={{ fontSize: 24, fontWeight: 900, color: "#10B981" }}>{quote.outputAmountFormatted}</div>
                   <div style={{ fontSize: 13, color: "#10B981", fontWeight: 700 }}>{quote.to}</div>
                 </div>
               </div>
 
               {/* Details */}
-              <div style={{ borderTop: "1px solid #1E1E2E", paddingTop: 12, display: "flex", flexDirection: "column", gap: 8 }}>
+              <div style={{ borderTop: "1px solid var(--border)", paddingTop: 12, display: "flex", flexDirection: "column", gap: 8 }}>
                 <FeeRow label={t("priceImpact")} value={`${quote.priceImpact}%`}
                   color={parseFloat(quote.priceImpact) > 1 ? "#F59E0B" : "#64748B"} />
                 <FeeRow label={t("slippageProtection")} value="0.5%" color="#64748B" />
@@ -180,7 +180,7 @@ export default function SwapModal({ from, to, amount, onClose }: SwapModalProps)
               onClick={executeSwap}
               style={{
                 width: "100%", padding: "14px",
-                background: "linear-gradient(135deg, #8B5CF6, #06B6D4)",
+                background: "var(--accent)",
                 border: "none", borderRadius: 12,
                 fontSize: 15, fontWeight: 800, color: "#fff", cursor: "pointer",
               }}
@@ -189,8 +189,8 @@ export default function SwapModal({ from, to, amount, onClose }: SwapModalProps)
             </button>
             <button onClick={onClose} style={{
               width: "100%", marginTop: 10, padding: "12px",
-              background: "none", border: "1px solid #1E1E2E",
-              borderRadius: 12, fontSize: 13, color: "#475569", cursor: "pointer",
+              background: "none", border: "1px solid var(--border)",
+              borderRadius: 12, fontSize: 13, color: "var(--text-secondary)", cursor: "pointer",
             }}>{t("cancel")}</button>
           </>
         )}
@@ -199,10 +199,10 @@ export default function SwapModal({ from, to, amount, onClose }: SwapModalProps)
         {step === "signing" && (
           <div style={{ textAlign: "center", padding: "40px 0" }}>
             <div style={{ fontSize: 40, marginBottom: 12 }}>👻</div>
-            <div style={{ fontSize: 15, fontWeight: 700, color: "#E2E8F0", marginBottom: 8 }}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 8 }}>
               {t("confirmInPhantom")}
             </div>
-            <div style={{ fontSize: 12, color: "#64748B" }}>
+            <div style={{ fontSize: 12, color: "var(--text-secondary)" }}>
               {t("checkAndConfirm")}
             </div>
           </div>
@@ -215,7 +215,7 @@ export default function SwapModal({ from, to, amount, onClose }: SwapModalProps)
             <div style={{ fontSize: 16, fontWeight: 800, color: "#10B981", marginBottom: 8 }}>
               {t("swapSuccess")}
             </div>
-            <div style={{ fontSize: 13, color: "#64748B", marginBottom: 20 }}>
+            <div style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 20 }}>
               {quote?.inputAmount} {quote?.from} → {quote?.outputAmountFormatted} {quote?.to}
             </div>
             <div style={{
@@ -232,7 +232,7 @@ export default function SwapModal({ from, to, amount, onClose }: SwapModalProps)
               rel="noopener noreferrer"
               style={{
                 display: "block", padding: "12px",
-                background: "#13131A", border: "1px solid #1E3A5F",
+                background: "var(--bg-card)", border: "1px solid #1E3A5F",
                 borderRadius: 10, fontSize: 13, color: "#60A5FA",
                 textDecoration: "none", marginBottom: 10,
               }}
@@ -241,7 +241,7 @@ export default function SwapModal({ from, to, amount, onClose }: SwapModalProps)
             </a>
             <button onClick={onClose} style={{
               width: "100%", padding: "12px",
-              background: "linear-gradient(135deg, #8B5CF6, #06B6D4)",
+              background: "var(--accent)",
               border: "none", borderRadius: 10,
               fontSize: 13, fontWeight: 700, color: "#fff", cursor: "pointer",
             }}>{t("done")}</button>
@@ -255,20 +255,20 @@ export default function SwapModal({ from, to, amount, onClose }: SwapModalProps)
             <div style={{ fontSize: 14, fontWeight: 700, color: "#EF4444", marginBottom: 8 }}>
               {t("swapFailed")}
             </div>
-            <div style={{ fontSize: 12, color: "#64748B", marginBottom: 20, lineHeight: 1.6 }}>
+            <div style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 20, lineHeight: 1.6 }}>
               {errorMsg}
             </div>
             <div style={{ display: "flex", gap: 10 }}>
               <button onClick={fetchQuote} style={{
                 flex: 1, padding: "12px",
-                background: "linear-gradient(135deg, #8B5CF6, #06B6D4)",
+                background: "var(--accent)",
                 border: "none", borderRadius: 10,
                 fontSize: 13, fontWeight: 700, color: "#fff", cursor: "pointer",
               }}>{t("requote")}</button>
               <button onClick={onClose} style={{
                 flex: 1, padding: "12px",
-                background: "none", border: "1px solid #1E1E2E",
-                borderRadius: 10, fontSize: 13, color: "#475569", cursor: "pointer",
+                background: "none", border: "1px solid var(--border)",
+                borderRadius: 10, fontSize: 13, color: "var(--text-secondary)", cursor: "pointer",
               }}>{t("cancel")}</button>
             </div>
           </div>

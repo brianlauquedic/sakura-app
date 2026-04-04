@@ -109,7 +109,7 @@ export default function StakeModal({ protocol, amount, onClose }: StakeModalProp
     >
       <div
         style={{
-          background: "#13131A", border: "1px solid #1E1E2E",
+          background: "var(--bg-card)", border: "1px solid var(--border)",
           borderRadius: 20, padding: 28, width: "100%", maxWidth: 420,
           boxShadow: "0 24px 80px rgba(0,0,0,0.6)",
         }}
@@ -121,7 +121,7 @@ export default function StakeModal({ protocol, amount, onClose }: StakeModalProp
             {meta.icon} {meta.name}
           </div>
           <button onClick={onClose} style={{
-            background: "none", border: "none", color: "#475569",
+            background: "none", border: "none", color: "var(--text-secondary)",
             fontSize: 18, cursor: "pointer",
           }}>✕</button>
         </div>
@@ -130,7 +130,7 @@ export default function StakeModal({ protocol, amount, onClose }: StakeModalProp
         {step === "quote" && (
           <div style={{ textAlign: "center", padding: "40px 0" }}>
             <div style={{ fontSize: 32, marginBottom: 12 }}>⏳</div>
-            <div style={{ fontSize: 14, color: "#64748B" }}>{t("gettingStakePreview")}</div>
+            <div style={{ fontSize: 14, color: "var(--text-secondary)" }}>{t("gettingStakePreview")}</div>
           </div>
         )}
 
@@ -138,7 +138,7 @@ export default function StakeModal({ protocol, amount, onClose }: StakeModalProp
         {step === "confirm" && preview && (
           <>
             <div style={{
-              background: "#0A0A0F", borderRadius: 14, padding: 20, marginBottom: 16,
+              background: "var(--bg-base)", borderRadius: 14, padding: 20, marginBottom: 16,
             }}>
               {/* Amount flow */}
               <div style={{
@@ -146,13 +146,13 @@ export default function StakeModal({ protocol, amount, onClose }: StakeModalProp
                 justifyContent: "space-between", marginBottom: 16,
               }}>
                 <div style={{ textAlign: "center" }}>
-                  <div style={{ fontSize: 11, color: "#475569", marginBottom: 4 }}>{t("stake")}</div>
-                  <div style={{ fontSize: 24, fontWeight: 900, color: "#E2E8F0" }}>{preview.inputAmount}</div>
+                  <div style={{ fontSize: 11, color: "var(--text-secondary)", marginBottom: 4 }}>{t("stake")}</div>
+                  <div style={{ fontSize: 24, fontWeight: 900, color: "var(--text-primary)" }}>{preview.inputAmount}</div>
                   <div style={{ fontSize: 13, color: "#8B5CF6", fontWeight: 700 }}>SOL</div>
                 </div>
-                <div style={{ fontSize: 24, color: "#475569" }}>→</div>
+                <div style={{ fontSize: 24, color: "var(--text-secondary)" }}>→</div>
                 <div style={{ textAlign: "center" }}>
-                  <div style={{ fontSize: 11, color: "#475569", marginBottom: 4 }}>{t("receive")}</div>
+                  <div style={{ fontSize: 11, color: "var(--text-secondary)", marginBottom: 4 }}>{t("receive")}</div>
                   <div style={{ fontSize: 24, fontWeight: 900, color: "#10B981" }}>
                     {preview.outputAmount.toFixed(4)}
                   </div>
@@ -161,7 +161,7 @@ export default function StakeModal({ protocol, amount, onClose }: StakeModalProp
               </div>
 
               {/* Details */}
-              <div style={{ borderTop: "1px solid #1E1E2E", paddingTop: 12, display: "flex", flexDirection: "column", gap: 8 }}>
+              <div style={{ borderTop: "1px solid var(--border)", paddingTop: 12, display: "flex", flexDirection: "column", gap: 8 }}>
                 <FeeRow label={t("annualYieldApy")} value={`${preview.apy}%`} color="#10B981" />
                 <FeeRow label={t("estimatedAnnualYield")} value={`+${preview.earnPerYear} SOL`} color="#10B981" />
                 <FeeRow label={t("exchangeRate")} value={`1 SOL = ${preview.exchangeRate} ${preview.outputToken}`} color="#64748B" />
@@ -182,7 +182,7 @@ export default function StakeModal({ protocol, amount, onClose }: StakeModalProp
               onClick={executeStake}
               style={{
                 width: "100%", padding: "14px",
-                background: `linear-gradient(135deg, ${meta.color}, #06B6D4)`,
+                background: `var(--accent)`,
                 border: "none", borderRadius: 12,
                 fontSize: 15, fontWeight: 800, color: "#fff", cursor: "pointer",
               }}
@@ -191,8 +191,8 @@ export default function StakeModal({ protocol, amount, onClose }: StakeModalProp
             </button>
             <button onClick={onClose} style={{
               width: "100%", marginTop: 10, padding: "12px",
-              background: "none", border: "1px solid #1E1E2E",
-              borderRadius: 12, fontSize: 13, color: "#475569", cursor: "pointer",
+              background: "none", border: "1px solid var(--border)",
+              borderRadius: 12, fontSize: 13, color: "var(--text-secondary)", cursor: "pointer",
             }}>{t("cancel")}</button>
           </>
         )}
@@ -201,10 +201,10 @@ export default function StakeModal({ protocol, amount, onClose }: StakeModalProp
         {step === "signing" && (
           <div style={{ textAlign: "center", padding: "40px 0" }}>
             <div style={{ fontSize: 40, marginBottom: 12 }}>👻</div>
-            <div style={{ fontSize: 15, fontWeight: 700, color: "#E2E8F0", marginBottom: 8 }}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 8 }}>
               {t("confirmInPhantom")}
             </div>
-            <div style={{ fontSize: 12, color: "#64748B" }}>
+            <div style={{ fontSize: 12, color: "var(--text-secondary)" }}>
               {amount} SOL → {preview?.outputToken}
             </div>
           </div>
@@ -217,10 +217,10 @@ export default function StakeModal({ protocol, amount, onClose }: StakeModalProp
             <div style={{ fontSize: 16, fontWeight: 800, color: "#10B981", marginBottom: 8 }}>
               {t("stakeSuccess")}
             </div>
-            <div style={{ fontSize: 13, color: "#64748B", marginBottom: 8 }}>
+            <div style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 8 }}>
               {amount} SOL → {preview?.outputAmount.toFixed(4)} {preview?.outputToken}
             </div>
-            <div style={{ fontSize: 12, color: "#475569", marginBottom: 20 }}>
+            <div style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 20 }}>
               {t("estimatedAnnualYield")} +{preview?.earnPerYear} SOL
             </div>
             <div style={{
@@ -237,7 +237,7 @@ export default function StakeModal({ protocol, amount, onClose }: StakeModalProp
               rel="noopener noreferrer"
               style={{
                 display: "block", padding: "12px",
-                background: "#13131A", border: "1px solid #1E3A5F",
+                background: "var(--bg-card)", border: "1px solid #1E3A5F",
                 borderRadius: 10, fontSize: 13, color: "#60A5FA",
                 textDecoration: "none", marginBottom: 10,
               }}
@@ -246,7 +246,7 @@ export default function StakeModal({ protocol, amount, onClose }: StakeModalProp
             </a>
             <button onClick={onClose} style={{
               width: "100%", padding: "12px",
-              background: `linear-gradient(135deg, ${meta.color}, #06B6D4)`,
+              background: `var(--accent)`,
               border: "none", borderRadius: 10,
               fontSize: 13, fontWeight: 700, color: "#fff", cursor: "pointer",
             }}>{t("done")}</button>
@@ -260,20 +260,20 @@ export default function StakeModal({ protocol, amount, onClose }: StakeModalProp
             <div style={{ fontSize: 14, fontWeight: 700, color: "#EF4444", marginBottom: 8 }}>
               {t("stakeFailed")}
             </div>
-            <div style={{ fontSize: 12, color: "#64748B", marginBottom: 20, lineHeight: 1.6 }}>
+            <div style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 20, lineHeight: 1.6 }}>
               {errorMsg}
             </div>
             <div style={{ display: "flex", gap: 10 }}>
               <button onClick={fetchPreview} style={{
                 flex: 1, padding: "12px",
-                background: `linear-gradient(135deg, ${meta.color}, #06B6D4)`,
+                background: `var(--accent)`,
                 border: "none", borderRadius: 10,
                 fontSize: 13, fontWeight: 700, color: "#fff", cursor: "pointer",
               }}>{t("retry")}</button>
               <button onClick={onClose} style={{
                 flex: 1, padding: "12px",
-                background: "none", border: "1px solid #1E1E2E",
-                borderRadius: 10, fontSize: 13, color: "#475569", cursor: "pointer",
+                background: "none", border: "1px solid var(--border)",
+                borderRadius: 10, fontSize: 13, color: "var(--text-secondary)", cursor: "pointer",
               }}>{t("cancel")}</button>
             </div>
           </div>
@@ -286,7 +286,7 @@ export default function StakeModal({ protocol, amount, onClose }: StakeModalProp
 function FeeRow({ label, value, color }: { label: string; value: string; color: string }) {
   return (
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-      <span style={{ fontSize: 11, color: "#64748B" }}>{label}</span>
+      <span style={{ fontSize: 11, color: "var(--text-secondary)" }}>{label}</span>
       <span style={{ fontSize: 11, color, fontWeight: 600 }}>{value}</span>
     </div>
   );

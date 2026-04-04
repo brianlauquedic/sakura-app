@@ -79,7 +79,7 @@ export function SubscriptionBadge({
 
   if (!status || status.tier === "free") {
     return (
-      <button onClick={onClick} style={{ ...base, background: "#13131A", border: "1px solid #1E1E2E", color: "#64748B" }}>
+      <button onClick={onClick} style={{ ...base, background: "var(--bg-card)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
         🆓 {status ? `${status.credits}点` : "免费版"} · 升级
       </button>
     );
@@ -104,19 +104,19 @@ export function SubscriptionBadge({
 
 function CreditMeter({ balance, total, tier }: { balance: number; total: number; tier: SubscriptionTier }) {
   const pct = Math.min(100, (balance / total) * 100);
-  const color = tier === "pro" ? "#F59E0B" : tier === "basic" ? "#8B5CF6" : "#64748B";
+  const color = tier === "pro" ? "#F59E0B" : tier === "basic" ? "#8B5CF6" : "var(--text-secondary)";
   const lowCredit = pct < 20;
   return (
     <div style={{ marginBottom: 20 }}>
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6, fontSize: 12 }}>
-        <span style={{ color: lowCredit ? "#EF4444" : "#94A3B8" }}>
+        <span style={{ color: lowCredit ? "#EF4444" : "var(--text-secondary)" }}>
           {lowCredit ? "⚠️" : "💎"} 剩余点数
         </span>
         <span style={{ color: lowCredit ? "#EF4444" : color, fontWeight: 700 }}>
           {balance.toLocaleString()} / {total.toLocaleString()}
         </span>
       </div>
-      <div style={{ height: 6, background: "#1E1E2E", borderRadius: 3, overflow: "hidden" }}>
+      <div style={{ height: 6, background: "var(--border)", borderRadius: 3, overflow: "hidden" }}>
         <div style={{
           height: "100%", width: `${pct}%`, borderRadius: 3,
           background: lowCredit ? "#EF4444" : color,
@@ -205,7 +205,7 @@ export default function SubscriptionBanner({ walletAddress, onSubscriptionChange
 
   const currentTier = status?.tier ?? "free";
   const TIER_COLORS = {
-    free:  { bg: "#13131A", border: "#1E1E2E", text: "#94A3B8", accent: "#64748B" },
+    free:  { bg: "#13131A", border: "#1E1E2E", text: "var(--text-secondary)", accent: "var(--text-secondary)" },
     basic: { bg: "#0F0A1E", border: "#8B5CF660", text: "#C4B5FD", accent: "#8B5CF6" },
     pro:   { bg: "#1A0E00", border: "#F59E0B60", text: "#FCD34D", accent: "#F59E0B" },
   };
@@ -228,7 +228,7 @@ export default function SubscriptionBanner({ walletAddress, onSubscriptionChange
             onClick={e => e.stopPropagation()}
             style={{
               width: "100%", maxWidth: 900,
-              background: "#0A0A0F", border: "1px solid #1E1E2E",
+              background: "var(--bg-base)", border: "1px solid var(--border)",
               borderRadius: 20, padding: "40px 36px",
               maxHeight: "92vh", overflowY: "auto",
             }}
@@ -236,16 +236,16 @@ export default function SubscriptionBanner({ walletAddress, onSubscriptionChange
             {/* Header */}
             <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 28 }}>
               <div>
-                <h2 style={{ fontSize: 26, fontWeight: 800, color: "#E2E8F0", margin: 0 }}>
+                <h2 style={{ fontSize: 26, fontWeight: 800, color: "var(--text-primary)", margin: 0 }}>
                   Sakura 点数系统
                 </h2>
-                <p style={{ fontSize: 13, color: "#64748B", marginTop: 6, margin: "6px 0 0" }}>
+                <p style={{ fontSize: 13, color: "var(--text-secondary)", marginTop: 6, margin: "6px 0 0" }}>
                   按实际 AI 调用成本计费 · USDC 链上支付 · 30天有效
                 </p>
               </div>
               <button onClick={() => setOpen(false)} style={{
-                width: 32, height: 32, borderRadius: 8, border: "1px solid #1E1E2E",
-                background: "transparent", color: "#64748B", fontSize: 18, cursor: "pointer",
+                width: 32, height: 32, borderRadius: 8, border: "1px solid var(--border)",
+                background: "transparent", color: "var(--text-secondary)", fontSize: 18, cursor: "pointer",
               }}>×</button>
             </div>
 
@@ -260,18 +260,18 @@ export default function SubscriptionBanner({ walletAddress, onSubscriptionChange
 
             {/* Credit cost table */}
             <div style={{
-              background: "#0D0D14", border: "1px solid #1E1E2E",
+              background: "var(--bg-card)", border: "1px solid var(--border)",
               borderRadius: 12, padding: "14px 20px", marginBottom: 24,
             }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: "#64748B", marginBottom: 10, textTransform: "uppercase", letterSpacing: 1 }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text-secondary)", marginBottom: 10, textTransform: "uppercase", letterSpacing: 1 }}>
                 功能点数消耗
               </div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "8px 24px" }}>
                 {status?.creditCosts && Object.entries(status.creditCosts).map(([feature, cost]) => (
                   <div key={feature} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12 }}>
                     <span style={{ color: "#8B5CF6", fontWeight: 700 }}>{cost} 点</span>
-                    <span style={{ color: "#64748B" }}>·</span>
-                    <span style={{ color: "#94A3B8" }}>
+                    <span style={{ color: "var(--text-secondary)" }}>·</span>
+                    <span style={{ color: "var(--text-secondary)" }}>
                       {feature === "advisor_deep" ? "🧠 AI 深度分析 (Sonnet 4.6)" :
                        feature === "advisor"      ? "🤖 AI 对话 (Haiku)" :
                        feature === "analyze"      ? "🔍 安全分析" :
@@ -287,8 +287,8 @@ export default function SubscriptionBanner({ walletAddress, onSubscriptionChange
             {/* Billing toggle */}
             <div style={{ display: "flex", justifyContent: "center", marginBottom: 24 }}>
               <div style={{
-                display: "flex", background: "#13131A",
-                border: "1px solid #1E1E2E", borderRadius: 10, padding: 4,
+                display: "flex", background: "var(--bg-card)",
+                border: "1px solid var(--border)", borderRadius: 10, padding: 4,
               }}>
                 {(["monthly", "annual"] as BillingPeriod[]).map(p => (
                   <button
@@ -298,9 +298,9 @@ export default function SubscriptionBanner({ walletAddress, onSubscriptionChange
                       padding: "6px 16px", borderRadius: 7, border: "none",
                       fontSize: 12, fontWeight: 700, cursor: "pointer",
                       background: billingPeriod === p
-                        ? "linear-gradient(135deg, #8B5CF6, #06B6D4)"
+                        ? "var(--accent)"
                         : "transparent",
-                      color: billingPeriod === p ? "#fff" : "#475569",
+                      color: billingPeriod === p ? "var(--text-primary)" : "var(--text-muted)",
                       transition: "all 0.15s",
                     }}
                   >
@@ -331,7 +331,7 @@ export default function SubscriptionBanner({ walletAddress, onSubscriptionChange
 
             {/* Plans grid */}
             {loading ? (
-              <div style={{ textAlign: "center", color: "#64748B", padding: 40 }}>加载中...</div>
+              <div style={{ textAlign: "center", color: "var(--text-secondary)", padding: 40 }}>加载中...</div>
             ) : (
               <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
                 {(status?.plans ?? DEFAULT_PLANS).map((plan) => {
@@ -351,7 +351,7 @@ export default function SubscriptionBanner({ walletAddress, onSubscriptionChange
                         <div style={{
                           position: "absolute", top: -12, left: "50%",
                           transform: "translateX(-50%)",
-                          background: "linear-gradient(135deg, #8B5CF6, #06B6D4)",
+                          background: "var(--accent)",
                           color: "#fff", fontSize: 10, fontWeight: 700,
                           padding: "3px 14px", borderRadius: 20, whiteSpace: "nowrap",
                         }}>推荐</div>
@@ -374,7 +374,7 @@ export default function SubscriptionBanner({ walletAddress, onSubscriptionChange
                       {/* Price */}
                       <div style={{ marginBottom: 18 }}>
                         {plan.priceMonthly === 0 ? (
-                          <span style={{ fontSize: 32, fontWeight: 900, color: "#E2E8F0" }}>免费</span>
+                          <span style={{ fontSize: 32, fontWeight: 900, color: "var(--text-primary)" }}>免费</span>
                         ) : (
                           <>
                             <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
@@ -383,7 +383,7 @@ export default function SubscriptionBanner({ walletAddress, onSubscriptionChange
                                   ? (plan.priceAnnual / 12).toFixed(1)
                                   : plan.priceMonthly}
                               </span>
-                              <span style={{ fontSize: 12, color: "#64748B" }}>USDC/月</span>
+                              <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>USDC/月</span>
                             </div>
                             {billingPeriod === "annual" && plan.priceAnnual > 0 && (
                               <div style={{ fontSize: 11, color: "#10B981", marginTop: 2 }}>
@@ -396,11 +396,11 @@ export default function SubscriptionBanner({ walletAddress, onSubscriptionChange
 
                       {/* Credits */}
                       <div style={{
-                        background: "#0D0D14", border: "1px solid #1E1E2E",
+                        background: "var(--bg-card)", border: "1px solid var(--border)",
                         borderRadius: 10, padding: "10px 14px", marginBottom: 18,
                       }}>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                          <span style={{ fontSize: 11, color: "#64748B" }}>月点数</span>
+                          <span style={{ fontSize: 11, color: "var(--text-secondary)" }}>月点数</span>
                           <span style={{ fontSize: 22, fontWeight: 900, color: colors.accent }}>
                             {plan.credits.toLocaleString()}
                           </span>
@@ -411,7 +411,7 @@ export default function SubscriptionBanner({ walletAddress, onSubscriptionChange
                           </div>
                         )}
                         {plan.credits === 100 && (
-                          <div style={{ fontSize: 10, color: "#64748B", marginTop: 4 }}>
+                          <div style={{ fontSize: 10, color: "var(--text-secondary)", marginTop: 4 }}>
                             ≈ 1次AI顾问 / 10次安全分析
                           </div>
                         )}
@@ -430,7 +430,7 @@ export default function SubscriptionBanner({ walletAddress, onSubscriptionChange
                       {/* Features */}
                       <ul style={{ listStyle: "none", padding: 0, margin: "0 0 22px 0", display: "flex", flexDirection: "column", gap: 7 }}>
                         {plan.features.map((f, i) => (
-                          <li key={i} style={{ display: "flex", gap: 7, fontSize: 12, color: "#94A3B8" }}>
+                          <li key={i} style={{ display: "flex", gap: 7, fontSize: 12, color: "var(--text-secondary)" }}>
                             <span style={{ color: colors.accent, flexShrink: 0 }}>✓</span>
                             {f}
                           </li>
@@ -441,8 +441,8 @@ export default function SubscriptionBanner({ walletAddress, onSubscriptionChange
                       {plan.tier === "free" ? (
                         <button disabled style={{
                           width: "100%", padding: "10px 0", borderRadius: 10,
-                          border: "1px solid #1E1E2E", background: "transparent",
-                          color: "#475569", fontSize: 13, fontWeight: 600, cursor: "default",
+                          border: "1px solid var(--border)", background: "transparent",
+                          color: "var(--text-secondary)", fontSize: 13, fontWeight: 600, cursor: "default",
                         }}>当前计划</button>
                       ) : isCurrent ? (
                         <button disabled style={{
@@ -460,7 +460,7 @@ export default function SubscriptionBanner({ walletAddress, onSubscriptionChange
                             background: isActivating ? "#1E1E2E"
                               : plan.tier === "pro"
                                 ? "linear-gradient(135deg, #F59E0B, #EF4444)"
-                                : "linear-gradient(135deg, #8B5CF6, #06B6D4)",
+                                : "var(--accent)",
                             color: isActivating ? "#64748B" : "#fff",
                             fontSize: 13, fontWeight: 700,
                             cursor: activating ? "not-allowed" : "pointer",
@@ -480,12 +480,12 @@ export default function SubscriptionBanner({ walletAddress, onSubscriptionChange
             {/* Footer */}
             <div style={{
               marginTop: 24, padding: "14px 20px",
-              background: "#0D0D14", border: "1px solid #1E1E2E", borderRadius: 12,
+              background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 12,
               display: "flex", gap: 12, alignItems: "flex-start",
             }}>
               <span style={{ fontSize: 18 }}>🔒</span>
-              <div style={{ fontSize: 11, color: "#64748B", lineHeight: 1.6 }}>
-                <strong style={{ color: "#94A3B8" }}>链上支付，完全透明。</strong>{" "}
+              <div style={{ fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.6 }}>
+                <strong style={{ color: "var(--text-secondary)" }}>链上支付，完全透明。</strong>{" "}
                 订阅费通过 Phantom 直接发送至 Sakura 费用钱包（USDC on Solana）。
                 点数按实际 AI API 成本设计：深度分析（Sonnet 4.6 + 扩展思考）80 点，
                 简单对话（Haiku）30 点，安全分析 10 点。Basic 可结转 500 点，无绑定、随时停止。

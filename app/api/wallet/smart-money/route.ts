@@ -23,7 +23,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { runQuotaGate } from "@/lib/rate-limit";
+import { runQuotaGate, isValidSolanaAddress } from "@/lib/rate-limit";
 
 const HELIUS_API_KEY = process.env.HELIUS_API_KEY ?? "";
 const SOL_MINT  = "So11111111111111111111111111111111111111112";
@@ -489,6 +489,10 @@ export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const walletAddress = url.searchParams.get("wallet") ?? url.searchParams.get("walletAddress");
   const limit = Math.min(20, parseInt(url.searchParams.get("limit") ?? "7"));
+
+  if (walletAddress && !isValidSolanaAddress(walletAddress)) {
+    return NextResponse.json({ error: "Invalid wallet address" }, { status: 400 });
+  }
 
   // Single wallet analysis
   if (walletAddress && walletAddress.length >= 32) {

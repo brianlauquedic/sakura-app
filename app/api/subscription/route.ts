@@ -24,12 +24,15 @@ import {
   SubscriptionTier,
   BillingPeriod,
 } from "@/lib/subscription";
-import { isAdminWallet } from "@/lib/rate-limit";
+import { isAdminWallet, isValidSolanaAddress } from "@/lib/rate-limit";
 
 // ── GET — subscription status ─────────────────────────────────────
 
 export async function GET(req: NextRequest) {
   const walletAddress = (req.headers.get("x-wallet-address") ?? "").trim();
+  if (walletAddress && !isValidSolanaAddress(walletAddress)) {
+    return NextResponse.json({ error: "Invalid wallet address" }, { status: 400 });
+  }
 
   // Admin wallets get unlimited Pro
   if (walletAddress && isAdminWallet(walletAddress)) {
@@ -76,7 +79,7 @@ interface ActivateBody {
 export async function POST(req: NextRequest) {
   const walletAddress = (req.headers.get("x-wallet-address") ?? "").trim();
 
-  if (!walletAddress || walletAddress.length < 32) {
+  if (!walletAddress || !isValidSolanaAddress(walletAddress)) {
     return NextResponse.json(
       { error: "X-Wallet-Address header required (connected wallet)" },
       { status: 400 }

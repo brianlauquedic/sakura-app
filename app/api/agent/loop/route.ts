@@ -25,7 +25,7 @@ import {
   SOL_MINT,
   USDC_MINT,
 } from "@/lib/agent";
-import { runQuotaGate } from "@/lib/rate-limit";
+import { runQuotaGate, isValidSolanaAddress } from "@/lib/rate-limit";
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY ?? "";
 
@@ -466,6 +466,10 @@ export async function POST(req: NextRequest) {
     body = await req.json() as LoopRequest;
   } catch {
     return new Response("Invalid JSON", { status: 400 });
+  }
+
+  if (!body.walletAddress || !isValidSolanaAddress(body.walletAddress)) {
+    return new Response(JSON.stringify({ error: "Invalid wallet address" }), { status: 400, headers: { "Content-Type": "application/json" } });
   }
 
   const encoder = new TextEncoder();

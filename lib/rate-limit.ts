@@ -40,6 +40,10 @@ export function isAdminWallet(walletAddress: string): boolean {
   return ADMIN_WALLETS.has(walletAddress.trim());
 }
 
+export function isValidSolanaAddress(addr: string): boolean {
+  return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(addr.trim());
+}
+
 export const FEATURE_FEE: Record<Feature, number> = {
   analyze:      100_000,  // $0.10 USDC (non-subscriber one-time)
   advisor:      200_000,  // $0.20 USDC (Haiku simple chat)

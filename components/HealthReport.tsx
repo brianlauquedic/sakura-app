@@ -52,12 +52,12 @@ function ScoreRing({ score }: { score: number }) {
         border: `6px solid ${color}`,
         display: "flex", flexDirection: "column",
         alignItems: "center", justifyContent: "center",
-        background: "#0A0A0F",
+        background: "var(--bg-base)",
         boxShadow: `0 0 24px ${color}40`,
         margin: "0 auto 8px",
       }}>
         <AnimatedNumber value={score} duration={1000} style={{ fontSize: 36, fontWeight: 900, color }} />
-        <span style={{ fontSize: 11, color: "#94A3B8" }}>/ 100</span>
+        <span style={{ fontSize: 11, color: "var(--text-secondary)" }}>/ 100</span>
       </div>
       <span style={{
         fontSize: 12, color,
@@ -82,7 +82,7 @@ function PortfolioBar({ breakdown, totalUSD }: { breakdown: Breakdown; totalUSD:
 
   return (
     <div>
-      <div style={{ fontSize: 12, color: "#475569", marginBottom: 10 }}>{t("assetDistribution")}</div>
+      <div style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 10 }}>{t("assetDistribution")}</div>
       {/* Bar */}
       <div style={{
         display: "flex", borderRadius: 6, overflow: "hidden",
@@ -97,7 +97,7 @@ function PortfolioBar({ breakdown, totalUSD }: { breakdown: Breakdown; totalUSD:
         {/* remainder */}
         {segments.reduce((acc, s) => acc - s.pct, 100) > 0 && (
           <div style={{
-            flex: 1, background: "#1E1E2E",
+            flex: 1, background: "var(--border)",
           }} />
         )}
       </div>
@@ -106,7 +106,7 @@ function PortfolioBar({ breakdown, totalUSD }: { breakdown: Breakdown; totalUSD:
         {segments.map(s => (
           <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 5 }}>
             <div style={{ width: 8, height: 8, borderRadius: 2, background: s.color }} />
-            <span style={{ fontSize: 11, color: "#64748B" }}>
+            <span style={{ fontSize: 11, color: "var(--text-secondary)" }}>
               {s.label} {s.pct.toFixed(0)}%
             </span>
           </div>
@@ -127,7 +127,7 @@ function TokenRow({ token, totalUSD }: { token: Token; totalUSD: number }) {
     liquid_stake: "#06B6D4",
     meme:         "#F59E0B",
     unknown:      "#EF4444",
-    bridge:       "#94A3B8",
+    bridge:       "var(--text-secondary)",
   };
   const typeLabels: Record<string, string> = {
     stablecoin:   t("stablecoin"),
@@ -139,7 +139,7 @@ function TokenRow({ token, totalUSD }: { token: Token; totalUSD: number }) {
     bridge:       t("crosschain"),
   };
 
-  const color = riskColors[token.type] ?? "#94A3B8";
+  const color = riskColors[token.type] ?? "var(--text-secondary)";
   const icon = token.type === "unknown" ? "🚨"
     : token.type === "meme" ? "⚠️"
     : "✅";
@@ -150,7 +150,7 @@ function TokenRow({ token, totalUSD }: { token: Token; totalUSD: number }) {
   const isRisky = token.type === "unknown" || token.type === "meme";
 
   return (
-    <div style={{ borderBottom: "1px solid #1E1E2E" }}>
+    <div style={{ borderBottom: "1px solid var(--border)" }}>
     <div
       style={{
         display: "flex", alignItems: "center",
@@ -162,7 +162,7 @@ function TokenRow({ token, totalUSD }: { token: Token; totalUSD: number }) {
       <span style={{ fontSize: 15 }}>{icon}</span>
       <div style={{ flex: 1 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <span style={{ fontSize: 14, fontWeight: 600, color: "#E2E8F0" }}>
+          <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)" }}>
             {token.symbol}
           </span>
           <span style={{
@@ -171,23 +171,23 @@ function TokenRow({ token, totalUSD }: { token: Token; totalUSD: number }) {
             borderRadius: 4, padding: "1px 5px",
           }}>{typeLabels[token.type] ?? token.type}</span>
         </div>
-        <div style={{ fontSize: 11, color: "#64748B" }}>{token.name}</div>
+        <div style={{ fontSize: 11, color: "var(--text-secondary)" }}>{token.name}</div>
       </div>
       <div style={{ textAlign: "right" }}>
         <div style={{ fontSize: 13, color }}>
           {token.amount.toLocaleString(undefined, { maximumFractionDigits: 4 })}
         </div>
         {token.usdValue !== null ? (
-          <div style={{ fontSize: 11, color: "#64748B" }}>
+          <div style={{ fontSize: 11, color: "var(--text-secondary)" }}>
             ≈ ${token.usdValue.toFixed(2)}
-            {pct && <span style={{ color: "#334155", marginLeft: 4 }}>({pct}%)</span>}
+            {pct && <span style={{ color: "var(--text-muted)", marginLeft: 4 }}>({pct}%)</span>}
           </div>
         ) : (
-          <div style={{ fontSize: 11, color: "#334155" }}>{t("noPriceData")}</div>
+          <div style={{ fontSize: 11, color: "var(--text-muted)" }}>{t("noPriceData")}</div>
         )}
       </div>
       {isRisky && (
-        <span style={{ fontSize: 11, color: "#475569" }}>{expanded ? "▲" : "▼"}</span>
+        <span style={{ fontSize: 11, color: "var(--text-secondary)" }}>{expanded ? "▲" : "▼"}</span>
       )}
     </div>
 
@@ -256,21 +256,21 @@ solis.app`;
       padding: 24,
     }} onClick={onClose}>
       <div style={{
-        background: "#13131A", border: "1px solid #1E1E2E",
+        background: "var(--bg-card)", border: "1px solid var(--border)",
         borderRadius: 20, padding: 32, width: "100%", maxWidth: 480,
         boxShadow: "0 24px 80px rgba(0,0,0,0.6)",
       }} onClick={e => e.stopPropagation()}>
-        <div style={{ fontSize: 18, fontWeight: 700, color: "#fff", marginBottom: 4 }}>
+        <div style={{ fontSize: 18, fontWeight: 700, color: "var(--text-primary)", marginBottom: 4 }}>
           {t("shareTitle")}
         </div>
-        <div style={{ fontSize: 12, color: "#475569", marginBottom: 20 }}>
+        <div style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 20 }}>
           {t("shareHint")}
         </div>
 
         <div style={{
-          background: "#0A0A0F", border: "1px solid #1E1E2E",
+          background: "var(--bg-base)", border: "1px solid var(--border)",
           borderRadius: 12, padding: 16, marginBottom: 16,
-          fontSize: 13, color: "#94A3B8", lineHeight: 1.8,
+          fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.8,
           whiteSpace: "pre-line",
         }}>
           {text}
@@ -279,9 +279,7 @@ solis.app`;
         <div style={{ display: "flex", gap: 10 }}>
           <button onClick={handleCopy} style={{
             flex: 1, padding: "12px",
-            background: copied
-              ? "linear-gradient(135deg, #10B981, #059669)"
-              : "linear-gradient(135deg, #8B5CF6, #06B6D4)",
+            background: copied ? "var(--green)" : "var(--accent)",
             border: "none", borderRadius: 10, fontSize: 14,
             fontWeight: 700, color: "#fff", cursor: "pointer",
           }}>
@@ -289,8 +287,8 @@ solis.app`;
           </button>
           <button onClick={onClose} style={{
             padding: "12px 20px",
-            background: "#1E1E2E", border: "none",
-            borderRadius: 10, fontSize: 14, color: "#64748B", cursor: "pointer",
+            background: "var(--border)", border: "none",
+            borderRadius: 10, fontSize: 14, color: "var(--text-secondary)", cursor: "pointer",
           }}>{t("close")}</button>
         </div>
       </div>
@@ -354,8 +352,8 @@ export default function HealthReport({ walletAddress, onDisconnect, onDataLoaded
       <div style={{ fontSize: 40, marginBottom: 16 }}>⚠️</div>
       <div style={{ fontSize: 16, color: "#EF4444", marginBottom: 8 }}>{error}</div>
       <button onClick={onDisconnect} style={{
-        background: "#13131A", border: "1px solid #1E1E2E",
-        color: "#94A3B8", padding: "10px 20px", borderRadius: 8,
+        background: "var(--bg-card)", border: "1px solid var(--border)",
+        color: "var(--text-secondary)", padding: "10px 20px", borderRadius: 8,
         cursor: "pointer", fontSize: 14,
       }}>{t("retry")}</button>
     </div>
@@ -377,29 +375,29 @@ export default function HealthReport({ walletAddress, onDisconnect, onDataLoaded
         marginBottom: 32,
       }}>
         <div>
-          <div style={{ fontSize: 12, color: "#475569", marginBottom: 4 }}>{t("connectedWallet")}</div>
+          <div style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 4 }}>{t("connectedWallet")}</div>
           <div style={{ fontSize: 14, fontFamily: "monospace", color: "#8B5CF6" }}>{shortAddr}</div>
         </div>
         <button onClick={onDisconnect} style={{
-          background: "#13131A", border: "1px solid #1E1E2E",
-          color: "#94A3B8", padding: "8px 16px", borderRadius: 8,
+          background: "var(--bg-card)", border: "1px solid var(--border)",
+          color: "var(--text-secondary)", padding: "8px 16px", borderRadius: 8,
           cursor: "pointer", fontSize: 13,
         }}>{t("disconnect")}</button>
       </div>
 
       {/* Score + Total + Breakdown */}
       <div style={{
-        background: "#13131A", border: "1px solid #1E1E2E",
+        background: "var(--bg-card)", border: "1px solid var(--border)",
         borderRadius: 16, padding: 32, marginBottom: 20,
       }}>
         <div style={{ display: "flex", alignItems: "flex-start", gap: 40, marginBottom: 24 }}>
           <ScoreRing score={data.healthScore} />
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 13, color: "#475569", marginBottom: 4 }}>{t("walletHealthReport")}</div>
-            <div style={{ fontSize: 36, fontWeight: 900, color: "#fff", marginBottom: 4 }}>
+            <div style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 4 }}>{t("walletHealthReport")}</div>
+            <div style={{ fontSize: 36, fontWeight: 900, color: "var(--text-primary)", marginBottom: 4 }}>
               <AnimatedNumber value={data.totalUSD} prefix="$" duration={1200} />
             </div>
-            <div style={{ fontSize: 13, color: "#64748B", marginBottom: 20 }}>
+            <div style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 20 }}>
               {t("totalAssets")}
             </div>
             {/* Quick stats */}
@@ -408,16 +406,16 @@ export default function HealthReport({ walletAddress, onDisconnect, onDataLoaded
                 <div style={{ fontSize: 18, fontWeight: 700, color: "#8B5CF6" }}>
                   {data.solBalance.toFixed(3)} SOL
                 </div>
-                <div style={{ fontSize: 11, color: "#64748B" }}>≈ ${data.solUSD.toFixed(0)}</div>
+                <div style={{ fontSize: 11, color: "var(--text-secondary)" }}>≈ ${data.solUSD.toFixed(0)}</div>
               </div>
-              <div style={{ width: 1, background: "#1E1E2E" }} />
+              <div style={{ width: 1, background: "var(--border)" }} />
               <div>
                 <div style={{ fontSize: 18, fontWeight: 700, color: "#06B6D4" }}>
                   {data.tokens.length} {t("tokens")}
                 </div>
-                <div style={{ fontSize: 11, color: "#64748B" }}>{t("holdingTokens")}</div>
+                <div style={{ fontSize: 11, color: "var(--text-secondary)" }}>{t("holdingTokens")}</div>
               </div>
-              <div style={{ width: 1, background: "#1E1E2E" }} />
+              <div style={{ width: 1, background: "var(--border)" }} />
               <div>
                 <div style={{
                   fontSize: 18, fontWeight: 700,
@@ -425,7 +423,7 @@ export default function HealthReport({ walletAddress, onDisconnect, onDataLoaded
                 }}>
                   {data.riskyTokenCount} 个
                 </div>
-                <div style={{ fontSize: 11, color: "#64748B" }}>{t("highRiskTokens")}</div>
+                <div style={{ fontSize: 11, color: "var(--text-secondary)" }}>{t("highRiskTokens")}</div>
               </div>
             </div>
           </div>
@@ -433,7 +431,7 @@ export default function HealthReport({ walletAddress, onDisconnect, onDataLoaded
 
         {/* Portfolio bar */}
         {data.breakdown && (
-          <div style={{ borderTop: "1px solid #1E1E2E", paddingTop: 20 }}>
+          <div style={{ borderTop: "1px solid var(--border)", paddingTop: 20 }}>
             <PortfolioBar breakdown={data.breakdown} totalUSD={data.totalUSD} />
           </div>
         )}
@@ -453,7 +451,7 @@ export default function HealthReport({ walletAddress, onDisconnect, onDataLoaded
             <div style={{ fontSize: 14, fontWeight: 700, color: "#10B981", marginBottom: 4 }}>
               {t("idleYieldOpportunity")}
             </div>
-            <div style={{ fontSize: 13, color: "#94A3B8" }}>
+            <div style={{ fontSize: 13, color: "var(--text-secondary)" }}>
               ${data.idleUSDC.toFixed(0)} USDC → Kamino Finance (APY {kaminoAPY.toFixed(1)}%) →{" "}
               <strong style={{ color: "#10B981" }}>${monthlyYield.toFixed(1)}/mo</strong> /{" "}
               <strong style={{ color: "#10B981" }}>${annualYield.toFixed(0)}/yr</strong>
@@ -486,7 +484,7 @@ export default function HealthReport({ walletAddress, onDisconnect, onDataLoaded
             <div style={{ fontSize: 14, fontWeight: 700, color: "#8B5CF6", marginBottom: 4 }}>
               {t("solStakingRecommendation")}
             </div>
-            <div style={{ fontSize: 13, color: "#94A3B8" }}>
+            <div style={{ fontSize: 13, color: "var(--text-secondary)" }}>
               {(data.solBalance * 0.6).toFixed(2)} SOL → Marinade Finance (APY {marinadeAPY.toFixed(1)}%) →{" "}
               <strong style={{ color: "#8B5CF6" }}>
                 +${(data.solUSD * 0.6 * marinadeAPY / 100).toFixed(0)}/yr
@@ -511,7 +509,7 @@ export default function HealthReport({ walletAddress, onDisconnect, onDataLoaded
 
       {/* Token list */}
       <div style={{
-        background: "#13131A", border: "1px solid #1E1E2E",
+        background: "var(--bg-card)", border: "1px solid var(--border)",
         borderRadius: 16, padding: 24, marginBottom: 20,
       }}>
         <div style={{
@@ -519,10 +517,10 @@ export default function HealthReport({ walletAddress, onDisconnect, onDataLoaded
           alignItems: "center", marginBottom: 16,
         }}>
           <div>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "#E2E8F0" }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>
               {t("positionDetails")}
             </div>
-            <div style={{ fontSize: 11, color: "#475569" }}>
+            <div style={{ fontSize: 11, color: "var(--text-secondary)" }}>
               {data.tokens.length} {t("sortedByValue")}
             </div>
           </div>
@@ -540,28 +538,28 @@ export default function HealthReport({ walletAddress, onDisconnect, onDataLoaded
         {/* SOL row */}
         <div style={{
           display: "flex", alignItems: "center",
-          padding: "10px 0", borderBottom: "1px solid #1E1E2E", gap: 10,
+          padding: "10px 0", borderBottom: "1px solid var(--border)", gap: 10,
         }}>
           <span style={{ fontSize: 15 }}>✅</span>
           <div style={{ flex: 1 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <span style={{ fontSize: 14, fontWeight: 600, color: "#E2E8F0" }}>SOL</span>
+              <span style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)" }}>SOL</span>
               <span style={{
                 fontSize: 10, color: "#8B5CF6", background: "#8B5CF620",
                 border: "1px solid #8B5CF640",
                 borderRadius: 4, padding: "1px 5px",
               }}>{t("native")}</span>
             </div>
-            <div style={{ fontSize: 11, color: "#64748B" }}>Solana</div>
+            <div style={{ fontSize: 11, color: "var(--text-secondary)" }}>Solana</div>
           </div>
           <div style={{ textAlign: "right" }}>
             <div style={{ fontSize: 13, color: "#8B5CF6" }}>
               {data.solBalance.toFixed(4)}
             </div>
-            <div style={{ fontSize: 11, color: "#64748B" }}>
+            <div style={{ fontSize: 11, color: "var(--text-secondary)" }}>
               ≈ ${data.solUSD.toFixed(2)}
               {data.totalUSD > 0 && (
-                <span style={{ color: "#334155", marginLeft: 4 }}>
+                <span style={{ color: "var(--text-muted)", marginLeft: 4 }}>
                   ({((data.solUSD / data.totalUSD) * 100).toFixed(1)}%)
                 </span>
               )}
@@ -575,7 +573,7 @@ export default function HealthReport({ walletAddress, onDisconnect, onDataLoaded
 
         {data.tokens.length === 0 && (
           <div style={{
-            fontSize: 13, color: "#475569",
+            fontSize: 13, color: "var(--text-secondary)",
             textAlign: "center", padding: "20px 0",
           }}>
             {t("unknown")}
@@ -585,10 +583,10 @@ export default function HealthReport({ walletAddress, onDisconnect, onDataLoaded
 
       {/* AI Recommendations */}
       <div style={{
-        background: "#13131A", border: "1px solid #1E1E2E",
+        background: "var(--bg-card)", border: "1px solid var(--border)",
         borderRadius: 16, padding: 24, marginBottom: 20,
       }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: "#E2E8F0", marginBottom: 16 }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", marginBottom: 16 }}>
           {t("aiRecommendations")}
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -618,10 +616,10 @@ export default function HealthReport({ walletAddress, onDisconnect, onDataLoaded
       {/* Portfolio History */}
       {history.length > 1 && (
         <div style={{
-          background: "#13131A", border: "1px solid #1E1E2E",
+          background: "var(--bg-card)", border: "1px solid var(--border)",
           borderRadius: 16, padding: 24, marginBottom: 20,
         }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: "#E2E8F0", marginBottom: 16 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", marginBottom: 16 }}>
             📈 {t("assetDistribution")}
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -642,12 +640,12 @@ export default function HealthReport({ walletAddress, onDisconnect, onDataLoaded
                   padding: "8px 12px",
                   background: i === 0 ? "#0A0A0F" : "transparent",
                   borderRadius: 8,
-                  border: i === 0 ? "1px solid #1E1E2E" : "none",
+                  border: i === 0 ? "1px solid var(--border)" : "none",
                 }}>
-                  <div style={{ fontSize: 11, color: "#475569" }}>
+                  <div style={{ fontSize: 11, color: "var(--text-secondary)" }}>
                     {i === 0 ? "🔴 最新" : date}
                   </div>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: "#E2E8F0" }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>
                     ${snap.totalUSD.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                   </div>
                   {diffPct && (
@@ -659,8 +657,8 @@ export default function HealthReport({ walletAddress, onDisconnect, onDataLoaded
                     </div>
                   )}
                   <div style={{
-                    fontSize: 10, color: "#475569",
-                    background: "#1E1E2E", borderRadius: 4,
+                    fontSize: 10, color: "var(--text-secondary)",
+                    background: "var(--border)", borderRadius: 4,
                     padding: "2px 6px",
                   }}>
                     健康 {snap.healthScore}
@@ -677,7 +675,7 @@ export default function HealthReport({ walletAddress, onDisconnect, onDataLoaded
         <button
           onClick={() => setShowShare(true)}
           style={{
-            background: "linear-gradient(135deg, #8B5CF620, #06B6D420)",
+            background: "var(--accent-soft)",
             border: "1px solid #8B5CF640",
             color: "#8B5CF6", padding: "12px 28px", borderRadius: 10,
             fontSize: 14, fontWeight: 600, cursor: "pointer",
@@ -694,7 +692,7 @@ export default function HealthReport({ walletAddress, onDisconnect, onDataLoaded
 function ScanningText() {
   const { t } = useLang();
   return (
-    <div style={{ textAlign: "center", marginTop: 20, fontSize: 13, color: "#475569" }}>
+    <div style={{ textAlign: "center", marginTop: 20, fontSize: 13, color: "var(--text-secondary)" }}>
       {t("scanning")}
     </div>
   );
@@ -705,7 +703,7 @@ function Shimmer({ w, h, radius = 8 }: { w: string | number; h: number; radius?:
   return (
     <div style={{
       width: w, height: h, borderRadius: radius,
-      background: "linear-gradient(90deg, #1E1E2E 25%, #252535 50%, #1E1E2E 75%)",
+      background: "linear-gradient(90deg, var(--bg-card) 25%, var(--bg-card-2) 50%, var(--bg-card) 75%)",
       backgroundSize: "200% 100%",
       animation: "shimmer 1.5s infinite",
     }} />
@@ -733,7 +731,7 @@ function SkeletonReport() {
 
       {/* Score card */}
       <div style={{
-        background: "#13131A", border: "1px solid #1E1E2E",
+        background: "var(--bg-card)", border: "1px solid var(--border)",
         borderRadius: 16, padding: 32, marginBottom: 20,
       }}>
         <div style={{ display: "flex", gap: 40, alignItems: "center", marginBottom: 24 }}>
@@ -753,7 +751,7 @@ function SkeletonReport() {
 
       {/* Alert */}
       <div style={{
-        background: "#13131A", border: "1px solid #1E1E2E",
+        background: "var(--bg-card)", border: "1px solid var(--border)",
         borderRadius: 12, padding: "16px 20px", marginBottom: 16,
         display: "flex", justifyContent: "space-between", alignItems: "center",
       }}>
@@ -766,7 +764,7 @@ function SkeletonReport() {
 
       {/* Token list */}
       <div style={{
-        background: "#13131A", border: "1px solid #1E1E2E",
+        background: "var(--bg-card)", border: "1px solid var(--border)",
         borderRadius: 16, padding: 24,
       }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -844,7 +842,7 @@ function ScoreBreakdown({ data }: { data: WalletData }) {
 
   return (
     <div style={{
-      background: "#13131A", border: "1px solid #1E1E2E",
+      background: "var(--bg-card)", border: "1px solid var(--border)",
       borderRadius: 16, padding: 20, marginBottom: 20,
     }}>
       <button
@@ -855,10 +853,10 @@ function ScoreBreakdown({ data }: { data: WalletData }) {
           cursor: "pointer", padding: 0,
         }}
       >
-        <div style={{ fontSize: 13, fontWeight: 700, color: "#E2E8F0" }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>
           📊 健康分数是怎么算的？
         </div>
-        <span style={{ fontSize: 11, color: "#475569" }}>{open ? "收起 ▲" : "查看详情 ▼"}</span>
+        <span style={{ fontSize: 11, color: "var(--text-secondary)" }}>{open ? "收起 ▲" : "查看详情 ▼"}</span>
       </button>
 
       {open && (
@@ -866,9 +864,9 @@ function ScoreBreakdown({ data }: { data: WalletData }) {
           {/* Base */}
           <div style={{
             display: "flex", alignItems: "center", justifyContent: "space-between",
-            padding: "8px 12px", background: "#0A0A0F", borderRadius: 8,
+            padding: "8px 12px", background: "var(--bg-base)", borderRadius: 8,
           }}>
-            <span style={{ fontSize: 12, color: "#94A3B8" }}>基础分</span>
+            <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>基础分</span>
             <span style={{ fontSize: 13, fontWeight: 700, color: "#8B5CF6" }}>+{base}</span>
           </div>
 
@@ -880,10 +878,10 @@ function ScoreBreakdown({ data }: { data: WalletData }) {
               borderRadius: 8, gap: 12,
             }}>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 12, fontWeight: 600, color: "#E2E8F0", marginBottom: 2 }}>
+                <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text-primary)", marginBottom: 2 }}>
                   {f.label}
                 </div>
-                <div style={{ fontSize: 11, color: "#64748B" }}>{f.desc}</div>
+                <div style={{ fontSize: 11, color: "var(--text-secondary)" }}>{f.desc}</div>
               </div>
               <span style={{
                 fontSize: 13, fontWeight: 700, whiteSpace: "nowrap",
@@ -897,11 +895,11 @@ function ScoreBreakdown({ data }: { data: WalletData }) {
           <div style={{
             display: "flex", alignItems: "center", justifyContent: "space-between",
             padding: "10px 12px",
-            background: "linear-gradient(135deg, #8B5CF610, #06B6D410)",
+            background: "var(--accent-soft)",
             border: "1px solid #8B5CF630",
             borderRadius: 8,
           }}>
-            <span style={{ fontSize: 13, fontWeight: 700, color: "#E2E8F0" }}>最终健康分</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>最终健康分</span>
             <span style={{ fontSize: 18, fontWeight: 900, color: "#8B5CF6" }}>
               {data.healthScore}
             </span>
@@ -924,7 +922,7 @@ function RecommendRow({
         borderRadius: 6, padding: "2px 8px",
         fontSize: 11, whiteSpace: "nowrap",
       }}>{type}</span>
-      <span style={{ fontSize: 13, color: "#94A3B8" }}>{children}</span>
+      <span style={{ fontSize: 13, color: "var(--text-secondary)" }}>{children}</span>
     </div>
   );
 }

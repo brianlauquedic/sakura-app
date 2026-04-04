@@ -12,7 +12,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { runQuotaGate } from "@/lib/rate-limit";
+import { runQuotaGate, isValidSolanaAddress } from "@/lib/rate-limit";
 import {
   guardianCache,
   conditionsCache,
@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
   catch { return NextResponse.json({ error: "invalid json" }, { status: 400 }); }
 
   const walletAddress = (req.headers.get("x-wallet-address") ?? "").trim();
-  if (!walletAddress || walletAddress.length < 32) {
+  if (!walletAddress || !isValidSolanaAddress(walletAddress)) {
     return NextResponse.json({ error: "x-wallet-address header required" }, { status: 400 });
   }
 

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { extractIdentifiers, peekQuota, FREE_QUOTA, FEATURE_FEE, isAdminWallet, Feature } from "@/lib/rate-limit";
+import { extractIdentifiers, peekQuota, FREE_QUOTA, FEATURE_FEE, isAdminWallet, isValidSolanaAddress, Feature } from "@/lib/rate-limit";
 
 const ALL_FEATURES: Feature[] = ["analyze", "advisor", "agent", "verify", "portfolio"];
 
@@ -18,6 +18,9 @@ export async function GET(req: NextRequest) {
 
   const ids = extractIdentifiers(req);
   const wallet = (req.headers.get("x-wallet-address") ?? "").trim();
+  if (wallet && !isValidSolanaAddress(wallet)) {
+    return NextResponse.json({ error: "Invalid wallet address" }, { status: 400 });
+  }
   const admin = wallet ? isAdminWallet(wallet) : false;
 
   const result: Record<string, {

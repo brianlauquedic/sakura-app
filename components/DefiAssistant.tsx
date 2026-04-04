@@ -243,7 +243,7 @@ function OpportunityPanel({
         display: "flex", alignItems: "center", justifyContent: "space-between",
         marginBottom: 12,
       }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: "#E2E8F0" }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>
           💡 为你发现的收益机会
         </div>
         {totalAnnual > 0 && (
@@ -719,9 +719,9 @@ export default function DefiAssistant({ walletAddress, walletSnapshot }: Props) 
           key={toast.id}
           style={{
             position: "fixed", bottom: 80, right: 20, zIndex: 100,
-            background: "#13131A", border: "1px solid #8B5CF660",
+            background: "var(--bg-card)", border: "1px solid #8B5CF660",
             borderRadius: 12, padding: "12px 16px",
-            maxWidth: 320, fontSize: 12, color: "#E2E8F0",
+            maxWidth: 320, fontSize: 12, color: "var(--text-primary)",
             boxShadow: "0 4px 24px #8B5CF620",
             display: "flex", gap: 10, alignItems: "flex-start",
             animation: "slideIn 0.3s ease-out",
@@ -737,7 +737,7 @@ export default function DefiAssistant({ walletAddress, walletSnapshot }: Props) 
           <button
             onClick={() => setToast(null)}
             style={{
-              background: "none", border: "none", color: "#475569",
+              background: "none", border: "none", color: "var(--text-secondary)",
               cursor: "pointer", fontSize: 12, flexShrink: 0,
             }}
           >✕</button>
@@ -747,7 +747,7 @@ export default function DefiAssistant({ walletAddress, walletSnapshot }: Props) 
       {/* ── Live Deliberation Stream (Interleaved Thinking) ── */}
       {loading && thinkingText && (
         <div style={{
-          background: "#0D0D14", border: "1px solid #8B5CF640",
+          background: "var(--bg-card)", border: "1px solid #8B5CF640",
           borderRadius: 12, marginBottom: 12, overflow: "hidden",
         }}>
           <button
@@ -760,13 +760,13 @@ export default function DefiAssistant({ walletAddress, walletSnapshot }: Props) 
           >
             <span style={{ animation: "pulse 1.5s infinite", display: "inline-block" }}>🧠</span>
             Sakura 正在思考... ({thinkingText.length} chars)
-            <span style={{ marginLeft: "auto", color: "#475569" }}>{thinkingOpen ? "▲" : "▼"}</span>
+            <span style={{ marginLeft: "auto", color: "var(--text-secondary)" }}>{thinkingOpen ? "▲" : "▼"}</span>
           </button>
           {thinkingOpen && (
             <div style={{
-              padding: "0 14px 12px", fontSize: 11, color: "#64748B",
+              padding: "0 14px 12px", fontSize: 11, color: "var(--text-secondary)",
               lineHeight: 1.7, whiteSpace: "pre-wrap", maxHeight: 200, overflowY: "auto",
-              borderTop: "1px solid #1E1E2E",
+              borderTop: "1px solid var(--border)",
             }}>
               {thinkingText}
             </div>
@@ -778,13 +778,13 @@ export default function DefiAssistant({ walletAddress, walletSnapshot }: Props) 
       {!loadingWallet && (
         <div className="wallet-summary" style={{
           display: "flex", gap: 16, padding: "12px 16px",
-          background: "#13131A", border: "1px solid #1E1E2E",
+          background: "var(--bg-card)", border: "1px solid var(--border)",
           borderRadius: 12, marginBottom: 20,
         }}>
-          <SummaryPill label={t("totalAssets")} value={`$${wallet.totalUSD.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} color="#E2E8F0" />
-          <div style={{ width: 1, background: "#1E1E2E" }} />
+          <SummaryPill label={t("totalAssets")} value={`$${wallet.totalUSD.toLocaleString(undefined, { maximumFractionDigits: 0 })}`} color="var(--text-primary)" />
+          <div style={{ width: 1, background: "var(--border)" }} />
           <SummaryPill label="SOL" value={`${wallet.solBalance.toFixed(3)}`} color="#8B5CF6" />
-          <div style={{ width: 1, background: "#1E1E2E" }} />
+          <div style={{ width: 1, background: "var(--border)" }} />
           <SummaryPill label="USDC" value={`$${wallet.idleUSDC.toFixed(0)}`} color={wallet.idleUSDC > 10 ? "#F59E0B" : "#475569"} />
           <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 10 }}>
             {liveYield && (
@@ -805,15 +805,15 @@ export default function DefiAssistant({ walletAddress, walletSnapshot }: Props) 
                   setLastActions(null);
                 }}
                 style={{
-                  fontSize: 10, color: "#475569",
-                  background: "transparent", border: "1px solid #1E1E2E",
+                  fontSize: 10, color: "var(--text-secondary)",
+                  background: "transparent", border: "1px solid var(--border)",
                   borderRadius: 8, padding: "2px 8px", cursor: "pointer",
                 }}
               >
                 {t("clearHistory")}
               </button>
             )}
-            <span style={{ fontSize: 11, color: "#334155" }}>
+            <span style={{ fontSize: 11, color: "var(--text-muted)" }}>
               {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
             </span>
           </div>
@@ -822,8 +822,8 @@ export default function DefiAssistant({ walletAddress, walletSnapshot }: Props) 
 
       {loadingWallet && (
         <div style={{
-          padding: 16, background: "#13131A", border: "1px solid #1E1E2E",
-          borderRadius: 12, marginBottom: 20, fontSize: 13, color: "#475569",
+          padding: 16, background: "var(--bg-card)", border: "1px solid var(--border)",
+          borderRadius: 12, marginBottom: 20, fontSize: 13, color: "var(--text-secondary)",
         }}>
           {t("scanning")}
         </div>
@@ -850,11 +850,11 @@ export default function DefiAssistant({ walletAddress, walletSnapshot }: Props) 
                 <div style={{
                   padding: "11px 15px",
                   background: msg.role === "user"
-                    ? "linear-gradient(135deg, #8B5CF6, #06B6D4)"
+                    ? "var(--accent)"
                     : "#13131A",
-                  border: msg.role === "user" ? "none" : "1px solid #1E1E2E",
+                  border: msg.role === "user" ? "none" : "1px solid var(--border)",
                   borderRadius: msg.role === "user" ? "16px 16px 4px 16px" : "16px 16px 16px 4px",
-                  fontSize: 13, color: "#E2E8F0", lineHeight: 1.7,
+                  fontSize: 13, color: "var(--text-primary)", lineHeight: 1.7,
                 }}>
                   {msg.isTyping ? (
                     <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
@@ -903,7 +903,7 @@ export default function DefiAssistant({ walletAddress, walletSnapshot }: Props) 
       {/* ── Quick action grid ── */}
       {messages.length === 0 && (
         <div style={{ marginBottom: 16 }}>
-          <div style={{ fontSize: 11, color: "#475569", marginBottom: 10 }}>{t("agentsTitle")}</div>
+          <div style={{ fontSize: 11, color: "var(--text-secondary)", marginBottom: 10 }}>{t("agentsTitle")}</div>
           <div className="quick-actions-grid" style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8 }}>
             {QUICK_ACTION_DEFS.map(qa => {
               const liveOpp = qa.protocol
@@ -914,7 +914,7 @@ export default function DefiAssistant({ walletAddress, walletSnapshot }: Props) 
                 : qa.fallbackSub;
               return (
                 <button key={qa.label} onClick={() => sendMessage(qa.prompt)} style={{
-                  background: "#13131A", border: `1px solid ${qa.color}30`,
+                  background: "var(--bg-card)", border: `1px solid ${qa.color}30`,
                   borderRadius: 10, padding: "12px 14px",
                   display: "flex", alignItems: "center", gap: 10,
                   cursor: "pointer", textAlign: "left",
@@ -922,7 +922,7 @@ export default function DefiAssistant({ walletAddress, walletSnapshot }: Props) 
                   <span style={{ fontSize: 20 }}>{qa.icon}</span>
                   <div>
                     <div style={{ fontSize: 12, fontWeight: 700, color: qa.color }}>{qa.label}</div>
-                    <div style={{ fontSize: 10, color: "#475569", marginTop: 2 }}>{sub}</div>
+                    <div style={{ fontSize: 10, color: "var(--text-secondary)", marginTop: 2 }}>{sub}</div>
                   </div>
                 </button>
               );
@@ -935,7 +935,7 @@ export default function DefiAssistant({ walletAddress, walletSnapshot }: Props) 
           }}>
             {SUGGESTIONS.map(s => (
               <button key={s} onClick={() => sendMessage(s)} style={{
-                background: "#0A0A0F", border: "1px solid #1E1E2E",
+                background: "var(--bg-base)", border: "1px solid var(--border)",
                 borderRadius: 20, padding: "5px 12px",
                 fontSize: 11, color: "#8B5CF6", cursor: "pointer",
               }}>{s}</button>
@@ -947,7 +947,7 @@ export default function DefiAssistant({ walletAddress, walletSnapshot }: Props) 
       {/* ── Quota / session notice ── */}
       {advisorQuota && !advisorQuota.admin && messages.length === 0 && (
         <div style={{
-          background: "linear-gradient(135deg, #1A0D2E, #0D1A2E)",
+          background: "var(--bg-card-2)",
           border: "1px solid #8B5CF640",
           borderRadius: 12, padding: "14px 16px", marginBottom: 10,
           display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
@@ -956,10 +956,10 @@ export default function DefiAssistant({ walletAddress, walletSnapshot }: Props) 
             <div style={{ fontSize: 13, fontWeight: 700, color: "#8B5CF6", marginBottom: 2 }}>
               🤖 AI 顾问 — Claude Sonnet 4.6
             </div>
-            <div style={{ fontSize: 11, color: "#475569" }}>
+            <div style={{ fontSize: 11, color: "var(--text-secondary)" }}>
               {advisorQuota.remaining > 0
-                ? <>还剩 <strong style={{ color: "#10B981" }}>{advisorQuota.remaining}/3</strong> 次免费 · 超出后每次 <strong style={{ color: "#E2E8F0" }}>0.50 USDC</strong></>
-                : <>免费次数已用完 · 发送消息时自动支付 <strong style={{ color: "#E2E8F0" }}>0.50 USDC</strong></>}
+                ? <>还剩 <strong style={{ color: "#10B981" }}>{advisorQuota.remaining}/3</strong> 次免费 · 超出后每次 <strong style={{ color: "var(--text-primary)" }}>0.50 USDC</strong></>
+                : <>免费次数已用完 · 发送消息时自动支付 <strong style={{ color: "var(--text-primary)" }}>0.50 USDC</strong></>}
             </div>
           </div>
           <span style={{
@@ -986,7 +986,7 @@ export default function DefiAssistant({ walletAddress, walletSnapshot }: Props) 
       <div style={{
         display: "flex", gap: 10,
         paddingTop: messages.length > 0 ? 12 : 0,
-        borderTop: messages.length > 0 ? "1px solid #1E1E2E" : "none",
+        borderTop: messages.length > 0 ? "1px solid var(--border)" : "none",
       }}>
         <input
           type="text" value={input}
@@ -996,8 +996,8 @@ export default function DefiAssistant({ walletAddress, walletSnapshot }: Props) 
           disabled={loading}
           style={{
             flex: 1, padding: "12px 16px",
-            background: "#13131A", border: "1px solid #1E1E2E",
-            borderRadius: 12, fontSize: 13, color: "#E2E8F0", outline: "none",
+            background: "var(--bg-card)", border: "1px solid var(--border)",
+            borderRadius: 12, fontSize: 13, color: "var(--text-primary)", outline: "none",
           }}
         />
         <button
@@ -1005,7 +1005,7 @@ export default function DefiAssistant({ walletAddress, walletSnapshot }: Props) 
           disabled={loading || !input.trim()}
           style={{
             padding: "12px 20px",
-            background: loading || !input.trim() ? "#1E1E2E" : "linear-gradient(135deg, #8B5CF6, #06B6D4)",
+            background: loading || !input.trim() ? "var(--border)" : "var(--accent)",
             border: "none", borderRadius: 12, fontSize: 18,
             cursor: loading ? "not-allowed" : "pointer", color: "#fff",
           }}
@@ -1126,7 +1126,7 @@ function ActionCardView({
 
   return (
     <div style={{
-      background: "#13131A", border: `1px solid ${action.color}30`,
+      background: "var(--bg-card)", border: `1px solid ${action.color}30`,
       borderRadius: 14, padding: "14px 16px",
       display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
     }}>
@@ -1143,8 +1143,8 @@ function ActionCardView({
             风险：{action.riskLevel}
           </span>
         </div>
-        <div style={{ fontSize: 13, color: "#E2E8F0", marginBottom: 2 }}>{action.action}</div>
-        <div style={{ fontSize: 11, color: "#64748B" }}>{action.detail}</div>
+        <div style={{ fontSize: 13, color: "var(--text-primary)", marginBottom: 2 }}>{action.action}</div>
+        <div style={{ fontSize: 11, color: "var(--text-secondary)" }}>{action.detail}</div>
         {action.estimatedEarn && (
           <div style={{ fontSize: 12, color: "#10B981", marginTop: 4, fontWeight: 600 }}>
             预计收益：{action.estimatedEarn}
@@ -1210,7 +1210,7 @@ function ReasoningBox({
 
   return (
     <div style={{
-      background: "#080B14", border: "1px solid #1E3A5F",
+      background: "var(--bg-base)", border: "1px solid var(--border)",
       borderRadius: 10, padding: "8px 12px", marginTop: 2,
     }}>
       <div
@@ -1230,20 +1230,20 @@ function ReasoningBox({
           ) : (
             <span style={{ fontSize: 10 }}>🔐</span>
           )}
-          <span style={{ fontSize: 10, color: "#475569" }}>可验证推理</span>
-          <span style={{ fontSize: 10, color: "#334155", fontFamily: "monospace" }}>
+          <span style={{ fontSize: 10, color: "var(--text-secondary)" }}>可验证推理</span>
+          <span style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: "monospace" }}>
             #{reasoningHash.slice(0, 12)}
           </span>
         </div>
-        <span style={{ fontSize: 9, color: "#334155" }}>{expanded ? "▲" : "▼"}</span>
+        <span style={{ fontSize: 9, color: "var(--text-muted)" }}>{expanded ? "▲" : "▼"}</span>
       </div>
 
       {expanded && (
         <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 6 }}>
-          <div style={{ fontSize: 10, color: "#334155", fontFamily: "monospace", wordBreak: "break-all" }}>
+          <div style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: "monospace", wordBreak: "break-all" }}>
             SHA-256: {reasoningHash}
           </div>
-          <div style={{ fontSize: 10, color: "#334155", fontFamily: "monospace" }}>
+          <div style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: "monospace" }}>
             Memo: {memoPayload}
           </div>
           {memoStatus === "done" ? (
@@ -1254,7 +1254,7 @@ function ReasoningBox({
           ) : (
             <button onClick={writeMemo} disabled={memoStatus === "sending"} style={{
               fontSize: 10, color: memoStatus === "error" ? "#EF4444" : "#60A5FA",
-              background: "none", border: "1px solid #1E3A5F",
+              background: "none", border: "1px solid var(--border)",
               borderRadius: 6, padding: "4px 10px", cursor: "pointer", textAlign: "left",
             }}>
               {memoStatus === "sending" ? "⏳ 写入中..." : memoStatus === "error" ? "❌ 失败，重试" : "⛓ 写入 Solana 链上"}
@@ -1269,7 +1269,7 @@ function ReasoningBox({
 function SummaryPill({ label, value, color }: { label: string; value: string; color: string }) {
   return (
     <div>
-      <div style={{ fontSize: 10, color: "#475569", marginBottom: 2 }}>{label}</div>
+      <div style={{ fontSize: 10, color: "var(--text-secondary)", marginBottom: 2 }}>{label}</div>
       <div style={{ fontSize: 14, fontWeight: 700, color }}>{value}</div>
     </div>
   );

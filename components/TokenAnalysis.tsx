@@ -93,11 +93,11 @@ function ScoreArc({ score }: { score: number }) {
         border: `5px solid ${color}`,
         display: "flex", flexDirection: "column",
         alignItems: "center", justifyContent: "center",
-        background: "#0A0A0F", boxShadow: `0 0 20px ${color}40`,
+        background: `var(--bg-base)`, boxShadow: `0 0 20px ${color}40`,
         margin: "0 auto 8px",
       }}>
         <span style={{ fontSize: 30, fontWeight: 900, color }}>{score}</span>
-        <span style={{ fontSize: 10, color: "#94A3B8" }}>/ 100</span>
+        <span style={{ fontSize: 10, color: "var(--text-secondary)" }}>/ 100</span>
       </div>
       <span style={{
         fontSize: 11, color, background: `${color}20`,
@@ -221,8 +221,8 @@ function ProofPanel({ ai }: { ai: AIAnalysis }) {
 
   return (
     <div style={{
-      background: "#080B14",
-      border: "1px solid #1E3A5F",
+      background: `var(--bg-base)`,
+      border: "1px solid var(--border)",
       borderRadius: 16, padding: 20, marginBottom: 16,
     }}>
       {/* Header */}
@@ -235,18 +235,18 @@ function ProofPanel({ ai }: { ai: AIAnalysis }) {
             fontSize: 10, background: "#1E3A5F", color: "#60A5FA",
             borderRadius: 4, padding: "2px 8px", fontWeight: 700, letterSpacing: 1,
           }}>ON-CHAIN PROOF</span>
-          <span style={{ fontSize: 11, color: "#475569" }}>
+          <span style={{ fontSize: 11, color: "var(--text-secondary)" }}>
             {ai.aiAvailable ? "🤖 Claude AI" : "⚙️ Rule Engine"} · {date}
           </span>
         </div>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <a href="/verify" target="_blank" rel="noopener noreferrer" style={{
             fontSize: 11, color: "#60A5FA", textDecoration: "none",
-            background: "#1E3A5F20", border: "1px solid #1E3A5F",
+            background: "#1E3A5F20", border: "1px solid var(--border)",
             borderRadius: 6, padding: "2px 8px",
           }}>{t("verifyProof")} →</a>
           <button onClick={() => setExpanded(v => !v)} style={{
-            background: "none", border: "none", fontSize: 11, color: "#475569", cursor: "pointer",
+            background: "none", border: "none", fontSize: 11, color: "var(--text-secondary)", cursor: "pointer",
           }}>
             {expanded ? "▲" : "▼"}
           </button>
@@ -269,21 +269,21 @@ function ProofPanel({ ai }: { ai: AIAnalysis }) {
             }}>
               {ai.simulation.isHoneypot ? "卖出模拟失败 — 疑似蜜罐" : "卖出路径验证通过"}
             </span>
-            <span style={{ fontSize: 10, color: "#475569", marginLeft: 8 }}>
+            <span style={{ fontSize: 10, color: "var(--text-secondary)", marginLeft: 8 }}>
               {ai.simulation.reason}
               {ai.simulation.priceImpactPct !== null && ` · 卖出冲击 ${ai.simulation.priceImpactPct.toFixed(2)}%`}
             </span>
           </div>
-          <span style={{ fontSize: 9, color: "#334155", whiteSpace: "nowrap" }}>simulateTx</span>
+          <span style={{ fontSize: 9, color: "var(--text-muted)", whiteSpace: "nowrap" }}>simulateTx</span>
         </div>
       )}
 
       {/* Hash display */}
       <div style={{
-        background: "#0A0A0F", borderRadius: 10, padding: "10px 14px",
+        background: `var(--bg-base)`, borderRadius: 10, padding: "10px 14px",
         marginBottom: 12, display: "flex", alignItems: "center", gap: 10,
       }}>
-        <span style={{ fontSize: 11, color: "#475569" }}>SHA-256</span>
+        <span style={{ fontSize: 11, color: "var(--text-secondary)" }}>SHA-256</span>
         <span style={{ flex: 1, fontSize: 11, fontFamily: "monospace", color: "#60A5FA", wordBreak: "break-all" }}>
           {ai.reasoningHash}
         </span>
@@ -292,11 +292,11 @@ function ProofPanel({ ai }: { ai: AIAnalysis }) {
       {/* Memo row */}
       <div style={{
         display: "flex", alignItems: "center", gap: 10,
-        background: "#0A0A0F", borderRadius: 10, padding: "10px 14px",
+        background: `var(--bg-base)`, borderRadius: 10, padding: "10px 14px",
         marginBottom: 12,
       }}>
-        <span style={{ fontSize: 11, color: "#475569", whiteSpace: "nowrap" }}>Memo</span>
-        <span style={{ flex: 1, fontSize: 12, fontFamily: "monospace", color: "#E2E8F0" }}>
+        <span style={{ fontSize: 11, color: "var(--text-secondary)", whiteSpace: "nowrap" }}>Memo</span>
+        <span style={{ flex: 1, fontSize: 12, fontFamily: "monospace", color: "var(--text-primary)" }}>
           {ai.memoPayload}
         </span>
         <button onClick={copyMemo} style={{
@@ -322,7 +322,7 @@ function ProofPanel({ ai }: { ai: AIAnalysis }) {
             <div style={{ fontSize: 12, color: "#10B981", fontWeight: 700, marginBottom: 4 }}>
               ✅ {t("writtenOnchain")}
             </div>
-            <div style={{ fontSize: 10, color: "#475569", fontFamily: "monospace", wordBreak: "break-all" }}>
+            <div style={{ fontSize: 10, color: "var(--text-secondary)", fontFamily: "monospace", wordBreak: "break-all" }}>
               {txSig.slice(0, 20)}...{txSig.slice(-8)}
             </div>
           </div>
@@ -332,7 +332,7 @@ function ProofPanel({ ai }: { ai: AIAnalysis }) {
             rel="noopener noreferrer"
             style={{
               fontSize: 11, color: "#60A5FA", textDecoration: "none",
-              background: "#1E3A5F", border: "1px solid #1E3A5F40",
+              background: "#1E3A5F", border: "1px solid var(--border)40",
               borderRadius: 6, padding: "6px 12px", whiteSpace: "nowrap",
             }}
           >
@@ -347,11 +347,11 @@ function ProofPanel({ ai }: { ai: AIAnalysis }) {
             style={{
               width: "100%", padding: "11px",
               background: (memoStatus === "paying" || memoStatus === "sending")
-                ? "#13131A"
-                : "linear-gradient(135deg, #1E3A5F, #1E3A8F)",
-              border: "1px solid #1E3A5F",
+                ? `var(--bg-card)`
+                : "var(--accent)",
+              border: "1px solid var(--border)",
               borderRadius: 10, fontSize: 13, fontWeight: 700,
-              color: (memoStatus === "paying" || memoStatus === "sending") ? "#475569" : "#60A5FA",
+              color: (memoStatus === "paying" || memoStatus === "sending") ? "var(--text-secondary)" : "#60A5FA",
               cursor: (memoStatus === "paying" || memoStatus === "sending") ? "not-allowed" : "pointer",
               display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
             }}
@@ -380,16 +380,16 @@ function ProofPanel({ ai }: { ai: AIAnalysis }) {
       {/* Expanded proof data */}
       {expanded && (
         <div style={{
-          background: "#0A0A0F", borderRadius: 10, padding: "12px 14px",
-          fontSize: 11, color: "#475569", fontFamily: "monospace", lineHeight: 1.8,
+          background: `var(--bg-base)`, borderRadius: 10, padding: "12px 14px",
+          fontSize: 11, color: "var(--text-secondary)", fontFamily: "monospace", lineHeight: 1.8,
         }}>
-          <div style={{ color: "#64748B", marginBottom: 6 }}>// {t("aiReasoningHash")}</div>
+          <div style={{ color: "var(--text-secondary)", marginBottom: 6 }}>// {t("aiReasoningHash")}</div>
           <div><span style={{ color: "#8B5CF6" }}>mint</span>: {ai.proofData.mint}</div>
           <div><span style={{ color: "#8B5CF6" }}>securityScore</span>: {ai.proofData.securityScore}</div>
           <div><span style={{ color: "#8B5CF6" }}>decision</span>: &quot;{ai.proofData.decision}&quot;</div>
           <div><span style={{ color: "#8B5CF6" }}>timestamp</span>: {ai.proofData.timestamp}</div>
           <div><span style={{ color: "#8B5CF6" }}>hashAlgo</span>: &quot;{ai.proofData.hashAlgo}&quot;</div>
-          <div style={{ marginTop: 8, color: "#334155", fontSize: 10 }}>
+          <div style={{ marginTop: 8, color: "var(--text-muted)", fontSize: 10 }}>
             // SHA-256 哈希已通过 Phantom 写入 Solana 交易 Memo，永久不可篡改
           </div>
         </div>
@@ -605,13 +605,13 @@ export default function TokenAnalysis({ walletAddress }: Props) {
     <div>
       {/* ── Input Card ── */}
       <div style={{
-        background: "#13131A", border: "1px solid #1E1E2E",
+        background: `var(--bg-card)`, border: "1px solid var(--border)",
         borderRadius: 16, padding: 28, marginBottom: 24,
       }}>
-        <div style={{ fontSize: 16, fontWeight: 700, color: "#E2E8F0", marginBottom: 4 }}>
+        <div style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)", marginBottom: 4 }}>
           {t("tokenSecurityAnalysis")}
         </div>
-        <div style={{ fontSize: 12, color: "#475569", marginBottom: 20 }}>
+        <div style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 20 }}>
           {t("tokenAnalysisSubtitle")}
         </div>
 
@@ -624,9 +624,9 @@ export default function TokenAnalysis({ walletAddress }: Props) {
             placeholder={t("tokenAddressPlaceholder")}
             style={{
               flex: 1, padding: "12px 16px",
-              background: "#0A0A0F",
-              border: `1px solid ${error ? "#EF4444" : "#1E1E2E"}`,
-              borderRadius: 10, fontSize: 13, color: "#E2E8F0",
+              background: `var(--bg-base)`,
+              border: `1px solid ${error ? "#EF4444" : `var(--border)`}`,
+              borderRadius: 10, fontSize: 13, color: "var(--text-primary)",
               outline: "none", fontFamily: "monospace",
             }}
           />
@@ -636,8 +636,8 @@ export default function TokenAnalysis({ walletAddress }: Props) {
             style={{
               padding: "12px 24px",
               background: loadingToken
-                ? "#1E1E2E"
-                : "linear-gradient(135deg, #8B5CF6, #06B6D4)",
+                ? `var(--border)`
+                : "var(--accent)",
               border: "none", borderRadius: 10, fontSize: 14,
               fontWeight: 700, color: "#fff",
               cursor: loadingToken ? "not-allowed" : "pointer",
@@ -681,15 +681,15 @@ export default function TokenAnalysis({ walletAddress }: Props) {
 
         {/* Hot tokens grid */}
         <div style={{ marginTop: 16 }}>
-          <div style={{ fontSize: 11, color: "#475569", marginBottom: 8 }}>{t("hotTokens")}</div>
+          <div style={{ fontSize: 11, color: "var(--text-secondary)", marginBottom: 8 }}>{t("hotTokens")}</div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             {HOT_TOKENS.map(({ label, mint, tag, tagColor }) => (
               <button key={mint}
                 onClick={() => { setMintInput(mint); setError(""); }}
                 style={{
-                  background: "#0A0A0F", border: "1px solid #1E1E2E",
+                  background: `var(--bg-base)`, border: "1px solid var(--border)",
                   borderRadius: 8, padding: "6px 12px", fontSize: 12,
-                  color: "#E2E8F0", cursor: "pointer",
+                  color: "var(--text-primary)", cursor: "pointer",
                   display: "flex", alignItems: "center", gap: 6,
                 }}
               >
@@ -708,14 +708,14 @@ export default function TokenAnalysis({ walletAddress }: Props) {
       {/* ── Loading state ── */}
       {loadingToken && (
         <div style={{
-          background: "#13131A", border: "1px solid #1E1E2E",
+          background: `var(--bg-card)`, border: "1px solid var(--border)",
           borderRadius: 16, padding: "48px 0", textAlign: "center",
         }}>
           <div style={{ fontSize: 36, marginBottom: 12 }}>🔬</div>
           <div style={{ fontSize: 16, color: "#8B5CF6", marginBottom: 6 }}>
             {t("scanning")}
           </div>
-          <div style={{ fontSize: 12, color: "#475569" }}>
+          <div style={{ fontSize: 12, color: "var(--text-secondary)" }}>
             GoPlus · Jupiter · Helius
           </div>
         </div>
@@ -726,7 +726,7 @@ export default function TokenAnalysis({ walletAddress }: Props) {
         <>
           {/* Token Header */}
           <div style={{
-            background: "#13131A", border: "1px solid #1E1E2E",
+            background: `var(--bg-card)`, border: "1px solid var(--border)",
             borderRadius: 16, padding: 24, marginBottom: 16,
             display: "flex", alignItems: "center", gap: 20,
           }}>
@@ -736,7 +736,7 @@ export default function TokenAnalysis({ walletAddress }: Props) {
             ) : (
               <div style={{
                 width: 56, height: 56, borderRadius: "50%",
-                background: "linear-gradient(135deg, #8B5CF6, #06B6D4)",
+                background: "var(--accent)",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 fontSize: 22, fontWeight: 900, color: "#fff",
               }}>
@@ -746,12 +746,12 @@ export default function TokenAnalysis({ walletAddress }: Props) {
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 22, fontWeight: 800, color: "#fff" }}>
                 {tokenData.symbol}
-                <span style={{ fontSize: 13, color: "#64748B", marginLeft: 8 }}>
+                <span style={{ fontSize: 13, color: "var(--text-secondary)", marginLeft: 8 }}>
                   {tokenData.name}
                 </span>
               </div>
               <div style={{
-                fontSize: 11, color: "#334155",
+                fontSize: 11, color: "var(--text-muted)",
                 fontFamily: "monospace", marginTop: 4,
               }}>
                 {tokenData.mint}
@@ -760,15 +760,15 @@ export default function TokenAnalysis({ walletAddress }: Props) {
             <div style={{ textAlign: "right" }}>
               {tokenData.price !== null ? (
                 <>
-                  <div style={{ fontSize: 22, fontWeight: 700, color: "#E2E8F0" }}>
+                  <div style={{ fontSize: 22, fontWeight: 700, color: "var(--text-primary)" }}>
                     ${tokenData.price < 0.0001
                       ? tokenData.price.toExponential(2)
                       : tokenData.price.toLocaleString(undefined, { maximumSignificantDigits: 5 })}
                   </div>
-                  <div style={{ fontSize: 11, color: "#475569" }}>USD</div>
+                  <div style={{ fontSize: 11, color: "var(--text-secondary)" }}>USD</div>
                 </>
               ) : (
-                <div style={{ fontSize: 13, color: "#475569" }}>价格暂无数据</div>
+                <div style={{ fontSize: 13, color: "var(--text-secondary)" }}>价格暂无数据</div>
               )}
             </div>
           </div>
@@ -779,14 +779,14 @@ export default function TokenAnalysis({ walletAddress }: Props) {
             gap: 16, marginBottom: 16,
           }}>
             <div style={{
-              background: "#13131A", border: "1px solid #1E1E2E",
+              background: `var(--bg-card)`, border: "1px solid var(--border)",
               borderRadius: 16, padding: 20, textAlign: "center",
               display: "flex", flexDirection: "column",
               alignItems: "center", justifyContent: "center", gap: 12,
             }}>
-              <div style={{ fontSize: 11, color: "#475569" }}>{t("safetyScore")}</div>
+              <div style={{ fontSize: 11, color: "var(--text-secondary)" }}>{t("safetyScore")}</div>
               <ScoreArc score={tokenData.securityScore} />
-              <div style={{ fontSize: 10, color: "#334155" }}>GoPlus Security</div>
+              <div style={{ fontSize: 10, color: "var(--text-muted)" }}>GoPlus Security</div>
             </div>
 
             <div style={{
@@ -796,7 +796,7 @@ export default function TokenAnalysis({ walletAddress }: Props) {
               boxShadow: `0 0 24px ${vc.glow}`,
             }}>
               <div style={{
-                fontSize: 11, color: "#475569", marginBottom: 12,
+                fontSize: 11, color: "var(--text-secondary)", marginBottom: 12,
                 display: "flex", alignItems: "center", gap: 6,
               }}>
                 {loadingAI ? (
@@ -820,13 +820,13 @@ export default function TokenAnalysis({ walletAddress }: Props) {
 
               {/* AI Reasoning */}
               <div style={{
-                background: "#0A0A0F", borderRadius: 10,
+                background: `var(--bg-base)`, borderRadius: 10,
                 padding: "14px 16px", fontSize: 13,
-                color: "#E2E8F0", lineHeight: 1.7,
+                color: "var(--text-primary)", lineHeight: 1.7,
                 minHeight: 60,
               }}>
                 {loadingAI ? (
-                  <span style={{ color: "#475569" }}>{t("thinking")}</span>
+                  <span style={{ color: "var(--text-secondary)" }}>{t("thinking")}</span>
                 ) : aiData?.reasoning ? (
                   aiData.reasoning
                 ) : (
@@ -852,7 +852,7 @@ export default function TokenAnalysis({ walletAddress }: Props) {
           {/* ── x402 Premium AI Deep Analysis ── */}
           {tokenData && premiumStatus !== "done" && (
             <div style={{
-              background: "linear-gradient(135deg, #0D0A1A, #0A1020)",
+              background: "var(--bg-card-2)",
               border: "1px solid #8B5CF640",
               borderRadius: 16, padding: 20, marginBottom: 16,
             }}>
@@ -861,7 +861,7 @@ export default function TokenAnalysis({ walletAddress }: Props) {
                   <div style={{ fontSize: 13, fontWeight: 700, color: "#8B5CF6", marginBottom: 4 }}>
                     {t("premiumTitle")}
                   </div>
-                  <div style={{ fontSize: 11, color: "#475569", lineHeight: 1.5 }}>
+                  <div style={{ fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.5 }}>
                     {t("premiumSubtitle")}
                   </div>
                 </div>
@@ -871,11 +871,11 @@ export default function TokenAnalysis({ walletAddress }: Props) {
                   style={{
                     padding: "10px 18px",
                     background: premiumStatus === "idle"
-                      ? "linear-gradient(135deg, #8B5CF6, #06B6D4)"
-                      : "#1E1E2E",
+                      ? "var(--accent)"
+                      : `var(--border)`,
                     border: "none", borderRadius: 10,
                     fontSize: 12, fontWeight: 700,
-                    color: premiumStatus === "idle" ? "#fff" : "#475569",
+                    color: premiumStatus === "idle" ? "#fff" : "var(--text-muted)",
                     cursor: premiumStatus === "idle" ? "pointer" : "not-allowed",
                     whiteSpace: "nowrap",
                   }}
@@ -896,20 +896,20 @@ export default function TokenAnalysis({ walletAddress }: Props) {
           {/* Premium result */}
           {premiumStatus === "done" && premiumData && (
             <div style={{
-              background: "#080B14", border: "1px solid #8B5CF660",
+              background: `var(--bg-base)`, border: "1px solid #8B5CF660",
               borderRadius: 16, padding: 20, marginBottom: 16,
             }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: "#8B5CF6", marginBottom: 12 }}>
                 🤖 AI 深度分析{premiumData.demoMode ? "（演示模式）" : "（已验证付款）"}
               </div>
               <div style={{
-                fontSize: 12, color: "#CBD5E1", lineHeight: 1.8,
+                fontSize: 12, color: "var(--text-primary)", lineHeight: 1.8,
                 whiteSpace: "pre-wrap",
               }}>
                 {premiumData.aiDeepAnalysis}
               </div>
               <div style={{
-                marginTop: 12, fontSize: 10, color: "#334155",
+                marginTop: 12, fontSize: 10, color: "var(--text-muted)",
                 fontFamily: "monospace",
               }}>
                 分析哈希: {premiumData.memoPayload} · {premiumData.analysisHash.slice(0, 20)}...
@@ -920,12 +920,12 @@ export default function TokenAnalysis({ walletAddress }: Props) {
           {/* Risk Details */}
           {(tokenData.risks.length > 0 || tokenData.positives.length > 0) && (
             <div style={{
-              background: "#13131A", border: "1px solid #1E1E2E",
+              background: `var(--bg-card)`, border: "1px solid var(--border)",
               borderRadius: 16, padding: 24, marginBottom: 16,
             }}>
               <div style={{
                 fontSize: 13, fontWeight: 700,
-                color: "#E2E8F0", marginBottom: 16,
+                color: "var(--text-primary)", marginBottom: 16,
               }}>
                 {t("contractRisk")}
               </div>
@@ -951,12 +951,12 @@ export default function TokenAnalysis({ walletAddress }: Props) {
           {/* Holder Stats */}
           {(tokenData.holderCount !== null || tokenData.top10HolderPct !== null) && (
             <div style={{
-              background: "#13131A", border: "1px solid #1E1E2E",
+              background: `var(--bg-card)`, border: "1px solid var(--border)",
               borderRadius: 16, padding: 24, marginBottom: 16,
             }}>
               <div style={{
                 fontSize: 13, fontWeight: 700,
-                color: "#E2E8F0", marginBottom: 16,
+                color: "var(--text-primary)", marginBottom: 16,
               }}>
                 {t("holderDistribution")}
               </div>
@@ -991,7 +991,7 @@ export default function TokenAnalysis({ walletAddress }: Props) {
 
           {/* Disclaimer */}
           <div style={{
-            fontSize: 11, color: "#334155", textAlign: "center", padding: "12px 0",
+            fontSize: 11, color: "var(--text-muted)", textAlign: "center", padding: "12px 0",
           }}>
             ⚠️ {t("disclaimer")}
           </div>
@@ -1001,20 +1001,20 @@ export default function TokenAnalysis({ walletAddress }: Props) {
 
     {/* ── Right: Watchlist sidebar ── */}
     <div className="token-sidebar" style={{
-      background: "#13131A", border: "1px solid #1E1E2E",
+      background: `var(--bg-card)`, border: "1px solid var(--border)",
       borderRadius: 16, padding: 16, position: "sticky", top: 80,
     }}>
       <div style={{
-        fontSize: 12, fontWeight: 700, color: "#E2E8F0",
+        fontSize: 12, fontWeight: 700, color: "var(--text-primary)",
         marginBottom: 12, display: "flex",
         alignItems: "center", justifyContent: "space-between",
       }}>
         <span>📋 {t("aiRecommendations")}</span>
-        <span style={{ fontSize: 10, color: "#334155" }}>{watchlist.length}/20</span>
+        <span style={{ fontSize: 10, color: "var(--text-muted)" }}>{watchlist.length}/20</span>
       </div>
 
       {watchlist.length === 0 ? (
-        <div style={{ fontSize: 11, color: "#334155", textAlign: "center", padding: "20px 0" }}>
+        <div style={{ fontSize: 11, color: "var(--text-muted)", textAlign: "center", padding: "20px 0" }}>
           {t("tokenSecurityAnalysis")}
         </div>
       ) : (
@@ -1027,7 +1027,7 @@ export default function TokenAnalysis({ walletAddress }: Props) {
               : `${Math.round(timeAgo / 60)}h`;
             return (
               <div key={t.mint} style={{
-                background: "#0A0A0F", borderRadius: 10,
+                background: `var(--bg-base)`, borderRadius: 10,
                 padding: "10px 12px",
                 border: `1px solid ${vc2.border}30`,
                 cursor: "pointer",
@@ -1038,7 +1038,7 @@ export default function TokenAnalysis({ walletAddress }: Props) {
                   display: "flex", alignItems: "center",
                   justifyContent: "space-between", marginBottom: 4,
                 }}>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: "#E2E8F0" }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>
                     {t.symbol}
                   </span>
                   <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -1051,13 +1051,13 @@ export default function TokenAnalysis({ walletAddress }: Props) {
                       onClick={e => { e.stopPropagation(); removeFromWatchlist(t.mint); setWatchlist(getWatchlist()); }}
                       style={{
                         background: "none", border: "none",
-                        fontSize: 12, color: "#334155",
+                        fontSize: 12, color: "var(--text-muted)",
                         cursor: "pointer", padding: 0, lineHeight: 1,
                       }}
                     >×</button>
                   </div>
                 </div>
-                <div style={{ fontSize: 10, color: "#475569" }}>
+                <div style={{ fontSize: 10, color: "var(--text-secondary)" }}>
                   {t.price !== null
                     ? `$${t.price < 0.001 ? t.price.toExponential(2) : t.price.toFixed(4)}`
                     : "—"
@@ -1078,7 +1078,7 @@ function Stat({ value, label, color }: { value: string; label: string; color: st
   return (
     <div>
       <div style={{ fontSize: 22, fontWeight: 800, color }}>{value}</div>
-      <div style={{ fontSize: 11, color: "#475569" }}>{label}</div>
+      <div style={{ fontSize: 11, color: "var(--text-secondary)" }}>{label}</div>
     </div>
   );
 }
