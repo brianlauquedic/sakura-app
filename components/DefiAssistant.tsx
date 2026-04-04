@@ -851,7 +851,7 @@ export default function DefiAssistant({ walletAddress, walletSnapshot }: Props) 
                   padding: "11px 15px",
                   background: msg.role === "user"
                     ? "var(--accent)"
-                    : "#13131A",
+                    : "var(--bg-card)",
                   border: msg.role === "user" ? "none" : "1px solid var(--border)",
                   borderRadius: msg.role === "user" ? "16px 16px 4px 16px" : "16px 16px 16px 4px",
                   fontSize: 13, color: "var(--text-primary)", lineHeight: 1.7,

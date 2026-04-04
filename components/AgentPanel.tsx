@@ -373,7 +373,7 @@ export default function AgentPanel({ walletAddress, walletSnapshot }: Props) {
 
       {/* ── Header ── */}
       <div style={{
-        background: "linear-gradient(135deg, #13131A, #0D0D1A)",
+        background: "var(--bg-card)",
         border: "1px solid var(--border)",
         borderRadius: 16, padding: 24,
         display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16,
@@ -508,8 +508,8 @@ export default function AgentPanel({ walletAddress, walletSnapshot }: Props) {
       {/* ── Mandate compliance result ── */}
       {complianceResult && plan && (
         <div style={{
-          background: complianceResult.compliant ? "#0A1A0F" : "#1A0808",
-          border: `1px solid ${complianceResult.compliant ? "#10B98140" : "#EF444440"}`,
+          background: complianceResult.compliant ? "rgba(61,122,92,0.12)" : "rgba(168,41,58,0.12)",
+          border: `1px solid ${complianceResult.compliant ? "rgba(61,122,92,0.35)" : "rgba(168,41,58,0.35)"}`,
           borderRadius: 12, padding: "12px 16px",
           fontSize: 12,
           color: complianceResult.compliant ? "#10B981" : "#EF4444",
@@ -548,7 +548,7 @@ export default function AgentPanel({ walletAddress, walletSnapshot }: Props) {
       {/* ── Error ── */}
       {agentState === "error" && (
         <div style={{
-          background: "#1A0808", border: "1px solid #EF4444",
+          background: "rgba(168,41,58,0.12)", border: "1px solid rgba(168,41,58,0.4)",
           borderRadius: 12, padding: "14px 18px",
           fontSize: 13, color: "#EF4444",
         }}>
@@ -561,7 +561,7 @@ export default function AgentPanel({ walletAddress, walletSnapshot }: Props) {
         <>
           {/* Summary */}
           <div style={{
-            background: "#0A1A0F", border: "1px solid #10B98140",
+            background: "rgba(61,122,92,0.10)", border: "1px solid rgba(61,122,92,0.30)",
             borderRadius: 14, padding: "16px 20px",
           }}>
             <div style={{ fontSize: 13, color: "#10B981", fontWeight: 700, marginBottom: 8 }}>
@@ -670,7 +670,7 @@ export default function AgentPanel({ walletAddress, walletSnapshot }: Props) {
 
           {/* On-chain proof */}
           <div style={{
-            background: "var(--bg-base)", border: "1px solid #1E3A5F",
+            background: "var(--bg-card-2)", border: "1px solid var(--border)",
             borderRadius: 12, padding: "14px 16px",
             display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
           }}>
@@ -697,7 +697,7 @@ export default function AgentPanel({ walletAddress, walletSnapshot }: Props) {
                 disabled={memoStatus === "sending"}
                 style={{
                   fontSize: 11, color: "#60A5FA",
-                  background: "#1E3A5F20", border: "1px solid #1E3A5F",
+                  background: "var(--bg-card)", border: "1px solid var(--border)",
                   borderRadius: 8, padding: "6px 14px", cursor: "pointer",
                   whiteSpace: "nowrap",
                 }}

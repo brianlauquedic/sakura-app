@@ -76,9 +76,9 @@ const HOT_TOKENS = [
 
 // ── Verdict config ───────────────────────────────────────────────
 const VC = {
-  buy:     { color: "#10B981", bg: "#0A2010", border: "#10B981", icon: "✅", glow: "#10B98140" },
-  caution: { color: "#F59E0B", bg: "#1A1200", border: "#F59E0B", icon: "⚠️", glow: "#F59E0B40" },
-  avoid:   { color: "#EF4444", bg: "#1A0808", border: "#EF4444", icon: "🚨", glow: "#EF444440" },
+  buy:     { color: "#10B981", bg: "rgba(61,122,92,0.12)",    border: "#10B981", icon: "✅", glow: "#10B98140" },
+  caution: { color: "#F59E0B", bg: "rgba(184,131,42,0.12)",  border: "#F59E0B", icon: "⚠️", glow: "#F59E0B40" },
+  avoid:   { color: "#EF4444", bg: "rgba(168,41,58,0.12)",   border: "#EF4444", icon: "🚨", glow: "#EF444440" },
 };
 
 // ── Score Arc ────────────────────────────────────────────────────
@@ -232,7 +232,8 @@ function ProofPanel({ ai }: { ai: AIAnalysis }) {
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{
-            fontSize: 10, background: "#1E3A5F", color: "#60A5FA",
+            fontSize: 10, background: "var(--bg-card-2)", color: "var(--text-secondary)",
+            border: "1px solid var(--border)",
             borderRadius: 4, padding: "2px 8px", fontWeight: 700, letterSpacing: 1,
           }}>ON-CHAIN PROOF</span>
           <span style={{ fontSize: 11, color: "var(--text-secondary)" }}>
@@ -300,8 +301,8 @@ function ProofPanel({ ai }: { ai: AIAnalysis }) {
           {ai.memoPayload}
         </span>
         <button onClick={copyMemo} style={{
-          background: copied ? "#10B98120" : "#1E3A5F",
-          border: `1px solid ${copied ? "#10B981" : "#1E3A5F"}`,
+          background: copied ? "rgba(61,122,92,0.12)" : "var(--bg-card-2)",
+          border: `1px solid ${copied ? "rgba(61,122,92,0.4)" : "var(--border)"}`,
           borderRadius: 6, padding: "4px 10px",
           fontSize: 11, color: copied ? "#10B981" : "#60A5FA",
           cursor: "pointer", whiteSpace: "nowrap",
@@ -331,8 +332,8 @@ function ProofPanel({ ai }: { ai: AIAnalysis }) {
             target="_blank"
             rel="noopener noreferrer"
             style={{
-              fontSize: 11, color: "#60A5FA", textDecoration: "none",
-              background: "#1E3A5F", border: "1px solid var(--border)40",
+              fontSize: 11, color: "var(--text-secondary)", textDecoration: "none",
+              background: "var(--bg-card-2)", border: "1px solid var(--border)",
               borderRadius: 6, padding: "6px 12px", whiteSpace: "nowrap",
             }}
           >
@@ -932,16 +933,16 @@ export default function TokenAnalysis({ walletAddress }: Props) {
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {tokenData.risks.map((r, i) => (
                   <div key={i} style={{
-                    background: "#1A0808", border: "1px solid #EF444430",
+                    background: "rgba(168,41,58,0.10)", border: "1px solid rgba(168,41,58,0.30)",
                     borderRadius: 8, padding: "10px 14px",
-                    fontSize: 13, color: "#FCA5A5",
+                    fontSize: 13, color: "var(--red)",
                   }}>{r}</div>
                 ))}
                 {tokenData.positives.map((p, i) => (
                   <div key={i} style={{
-                    background: "#0A2010", border: "1px solid #10B98130",
+                    background: "rgba(61,122,92,0.10)", border: "1px solid rgba(61,122,92,0.30)",
                     borderRadius: 8, padding: "10px 14px",
-                    fontSize: 13, color: "#6EE7B7",
+                    fontSize: 13, color: "var(--green)",
                   }}>{p}</div>
                 ))}
               </div>

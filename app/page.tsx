@@ -145,15 +145,25 @@ function AppContent() {
         backdropFilter: "blur(16px)",
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          {/* 和美人 Wa-bijin logo */}
-          <div style={{
-            width: 32, height: 32, borderRadius: 6,
-            overflow: "hidden",
-            flexShrink: 0,
-          }}>
-            <WaBijinSVG size={32} />
-          </div>
-          <span className="jp-heading" style={{ fontSize: 18, fontWeight: 500, color: "var(--text-primary)", letterSpacing: "0.08em" }}>Sakura</span>
+          {/* 和美人 Wa-bijin logo — click to go home */}
+          <button
+            onClick={walletAddress ? disconnect : undefined}
+            title={walletAddress ? t("disconnect") : undefined}
+            style={{
+              display: "flex", alignItems: "center", gap: 10,
+              background: "none", border: "none", padding: 0,
+              cursor: walletAddress ? "pointer" : "default",
+            }}
+          >
+            <div style={{
+              width: 32, height: 32, borderRadius: 6,
+              overflow: "hidden",
+              flexShrink: 0,
+            }}>
+              <WaBijinSVG size={32} />
+            </div>
+            <span className="jp-heading" style={{ fontSize: 18, fontWeight: 500, color: "var(--text-primary)", letterSpacing: "0.08em" }}>Sakura</span>
+          </button>
           <span style={{
             fontSize: 9, color: "var(--accent)", border: "1px solid var(--accent-mid)",
             borderRadius: 3, padding: "1px 5px", letterSpacing: 1.5, fontFamily: "var(--font-mono)",
@@ -255,7 +265,7 @@ function AppContent() {
           )}
 
           <a
-            href="https://x.com/thatbrianlau"
+            href="https://x.com/sakuraaijp"
             target="_blank"
             rel="noopener noreferrer"
             style={{
