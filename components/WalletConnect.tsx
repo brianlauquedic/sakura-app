@@ -23,7 +23,12 @@ const STATS = [
   { numValue: 100, suffix: "%", labelKey: "statLabel4" as const },
 ];
 
-export default function WalletConnect() {
+interface Props {
+  walletAddress?: string | null;
+  onEnterApp?: () => void;
+}
+
+export default function WalletConnect({ walletAddress, onEnterApp }: Props = {}) {
   const { t } = useLang();
 
   return (
@@ -92,42 +97,66 @@ export default function WalletConnect() {
           borderRadius: 12, padding: "24px 28px",
           marginBottom: 52, maxWidth: 460, margin: "0 auto 52px",
         }}>
-          <div className="jp-heading" style={{ fontSize: 14, fontWeight: 400, color: "var(--text-primary)", marginBottom: 6, letterSpacing: "0.06em" }}>
-            {t("ctaFreeLabel")}
-          </div>
-          <div style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.8, marginBottom: 18, letterSpacing: "0.02em" }}>
-            {t("ctaFreeDesc")}
-          </div>
-          {/* Free tier pills — unified outline style */}
-          <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap", marginBottom: 18 }}>
-            {[
-              { label: "3× 安全分析" },
-              { label: "3× AI 顧問" },
-              { label: "3× Agent 再平衡" },
-            ].map(pill => (
-              <span key={pill.label} style={{
-                fontSize: 11, fontWeight: 400,
-                color: "var(--text-secondary)",
-                background: "transparent",
-                border: "1px solid var(--border-light)",
-                borderRadius: 4, padding: "4px 10px",
-                letterSpacing: "0.04em",
-              }}>✓ {pill.label}</span>
-            ))}
-          </div>
-          {/* CTA button — vermillion */}
-          <div style={{
-            background: "var(--accent)",
-            borderRadius: 8, padding: "11px 24px",
-            fontSize: 13, fontWeight: 500, color: "#fff",
-            cursor: "default", letterSpacing: "0.06em",
-            fontFamily: "var(--font-body)",
-          }}>
-            {t("ctaFreeBtn")}
-          </div>
-          <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 10, letterSpacing: "0.03em" }}>
-            {t("ctaSubNote")}
-          </div>
+          {walletAddress ? (
+            /* ── Already connected state ── */
+            <>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 10 }}>
+                <span style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--green)", display: "inline-block" }} />
+                <span className="jp-heading" style={{ fontSize: 14, color: "var(--text-primary)", letterSpacing: "0.06em" }}>
+                  {t("connectedWallet")}
+                </span>
+              </div>
+              <div style={{ fontSize: 12, color: "var(--text-muted)", fontFamily: "var(--font-mono)", marginBottom: 20, letterSpacing: "0.05em" }}>
+                {walletAddress.slice(0, 6)}...{walletAddress.slice(-6)}
+              </div>
+              <button
+                onClick={onEnterApp}
+                style={{
+                  width: "100%", background: "var(--accent)",
+                  borderRadius: 8, padding: "11px 24px", border: "none",
+                  fontSize: 13, fontWeight: 500, color: "#fff",
+                  cursor: "pointer", letterSpacing: "0.06em",
+                  fontFamily: "var(--font-body)",
+                }}
+              >
+                進入 App →
+              </button>
+            </>
+          ) : (
+            /* ── Not connected state ── */
+            <>
+              <div className="jp-heading" style={{ fontSize: 14, fontWeight: 400, color: "var(--text-primary)", marginBottom: 6, letterSpacing: "0.06em" }}>
+                {t("ctaFreeLabel")}
+              </div>
+              <div style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.8, marginBottom: 18, letterSpacing: "0.02em" }}>
+                {t("ctaFreeDesc")}
+              </div>
+              <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap", marginBottom: 18 }}>
+                {["3× 安全分析", "3× AI 顧問", "3× Agent 再平衡"].map(label => (
+                  <span key={label} style={{
+                    fontSize: 11, fontWeight: 400,
+                    color: "var(--text-secondary)",
+                    background: "transparent",
+                    border: "1px solid var(--border-light)",
+                    borderRadius: 4, padding: "4px 10px",
+                    letterSpacing: "0.04em",
+                  }}>✓ {label}</span>
+                ))}
+              </div>
+              <div style={{
+                background: "var(--accent)",
+                borderRadius: 8, padding: "11px 24px",
+                fontSize: 13, fontWeight: 500, color: "#fff",
+                cursor: "default", letterSpacing: "0.06em",
+                fontFamily: "var(--font-body)",
+              }}>
+                {t("ctaFreeBtn")}
+              </div>
+              <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 10, letterSpacing: "0.03em" }}>
+                {t("ctaSubNote")}
+              </div>
+            </>
+          )}
         </div>
       </div>
 

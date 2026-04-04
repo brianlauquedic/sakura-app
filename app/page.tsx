@@ -48,6 +48,7 @@ function getTimeColor() {
 function AppContent() {
   const { lang, setLang, t } = useLang();
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  const [showLanding, setShowLanding] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>("health");
   const [walletSnapshot, setWalletSnapshot] = useState<WalletSnapshot | undefined>();
   const [phantomLoading, setPhantomLoading] = useState(false);
@@ -147,8 +148,8 @@ function AppContent() {
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           {/* 和美人 Wa-bijin logo — click to go home */}
           <button
-            onClick={walletAddress ? disconnect : undefined}
-            title={walletAddress ? t("disconnect") : undefined}
+            onClick={walletAddress ? () => setShowLanding(true) : undefined}
+            title={walletAddress ? "Home" : undefined}
             style={{
               display: "flex", alignItems: "center", gap: 10,
               background: "none", border: "none", padding: 0,
@@ -284,8 +285,11 @@ function AppContent() {
 
       {/* Main Content */}
       <div style={{ maxWidth: 900, margin: "0 auto", padding: "40px 24px" }}>
-        {!walletAddress ? (
-          <WalletConnect />
+        {!walletAddress || showLanding ? (
+          <WalletConnect
+            walletAddress={walletAddress}
+            onEnterApp={() => setShowLanding(false)}
+          />
         ) : (
           <>
             {/* ── 索引 Tab Navigation (日系底線スタイル) ── */}
