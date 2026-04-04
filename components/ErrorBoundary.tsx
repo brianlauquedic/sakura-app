@@ -18,7 +18,7 @@ export default class ErrorBoundary extends React.Component<
     if (!this.state.hasError) return this.props.children;
     return (
       <div style={{
-        background: "#1A0808", border: "1px solid #EF444430",
+        background: "rgba(168,41,58,0.08)", border: "1px solid rgba(168,41,58,0.25)",
         borderRadius: 16, padding: 32, textAlign: "center",
       }}>
         <div style={{ fontSize: 32, marginBottom: 12 }}>⚠️</div>

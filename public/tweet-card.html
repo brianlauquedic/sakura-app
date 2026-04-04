@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sakura Tweet Card</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;500&family=JetBrains+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap');
+
+  body {
+    width: 1200px;
+    height: 628px;
+    background: #F2EBE0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Inter', sans-serif;
+    overflow: hidden;
+  }
+
+  .card {
+    width: 1200px;
+    height: 628px;
+    background: linear-gradient(135deg, #F5EEE4 0%, #F2EBE0 50%, #EEE6D8 100%);
+    display: flex;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Background texture */
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 600px 400px at 20% 50%, rgba(192,57,43,0.05) 0%, transparent 70%),
+      radial-gradient(ellipse 400px 300px at 80% 30%, rgba(139,101,32,0.04) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  /* Grid lines */
+  .card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(42,26,16,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(42,26,16,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+
+  /* ── Left Panel ── */
+  .left {
+    width: 360px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 40px;
+    border-right: 1px solid #C8B89A;
+    position: relative;
+    z-index: 1;
+  }
+
+  .logo-img {
+    width: 140px;
+    height: 186px;
+    object-fit: cover;
+    margin-bottom: 20px;
+    filter: brightness(0.9) contrast(1.05);
+  }
+
+  .brand {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 32px;
+    font-weight: 300;
+    color: #2A1A10;
+    letter-spacing: 0.12em;
+    margin-bottom: 6px;
+  }
+
+  .tagline {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: #C0392B;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+
+  .trust-pills {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    width: 100%;
+  }
+
+  .pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: #EAE0D0;
+    border: 1px solid #C8B89A;
+    border-radius: 6px;
+    font-size: 11px;
+    color: #6B5540;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.04em;
+  }
+
+  .pill .dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* ── Right Panel ── */
+  .right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 48px 52px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hackathon-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(192,57,43,0.12);
+    border: 1px solid rgba(192,57,43,0.3);
+    border-radius: 20px;
+    padding: 5px 14px;
+    margin-bottom: 28px;
+    width: fit-content;
+  }
+
+  .hackathon-badge .badge-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #C0392B;
+  }
+
+  .hackathon-badge span {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: #C0392B;
+    letter-spacing: 0.18em;
+  }
+
+  .headline {
+    font-size: 28px;
+    font-weight: 600;
+    color: #2A1A10;
+    line-height: 1.25;
+    margin-bottom: 28px;
+    letter-spacing: -0.01em;
+  }
+
+  .headline em {
+    color: #C0392B;
+    font-style: normal;
+  }
+
+  /* Flow diagram */
+  .flow {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin-bottom: 32px;
+  }
+
+  .flow-step {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 0;
+    position: relative;
+  }
+
+  .flow-step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 100%;
+    width: 1px;
+    height: 0px;
+    background: rgba(192,57,43,0.3);
+  }
+
+  .step-num {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+
+  .step-num.active {
+    background: rgba(192,57,43,0.2);
+    border: 1px solid rgba(192,57,43,0.5);
+    color: #C0392B;
+  }
+
+  .step-num.normal {
+    background: #EAE0D0;
+    border: 1px solid #C8B89A;
+    color: #9B8570;
+  }
+
+  .step-connector {
+    display: flex;
+    align-items: center;
+    padding: 2px 0 2px 8px;
+    color: rgba(192,57,43,0.4);
+    font-size: 14px;
+  }
+
+  .step-text {
+    flex: 1;
+  }
+
+  .step-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #6B5540;
+    margin-bottom: 2px;
+  }
+
+  .step-label.highlight {
+    color: #2A1A10;
+  }
+
+  .step-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: #9B8570;
+    letter-spacing: 0.03em;
+  }
+
+  .step-sub.highlight {
+    color: #C0392B;
+  }
+
+  .step-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: #10B981;
+    background: rgba(16,185,129,0.1);
+    border: 1px solid rgba(16,185,129,0.25);
+    border-radius: 4px;
+    padding: 2px 7px;
+    white-space: nowrap;
+  }
+
+  .divider {
+    width: 100%;
+    height: 1px;
+    background: #C8B89A;
+    margin-bottom: 24px;
+  }
+
+  /* Bottom row */
+  .bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .verdict {
+    font-size: 13px;
+    color: #9B8570;
+    font-style: italic;
+    letter-spacing: 0.02em;
+  }
+
+  .verdict strong {
+    color: #2A1A10;
+    font-style: normal;
+  }
+
+  .integrations {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .int-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: #6B5540;
+    background: #EAE0D0;
+    border: 1px solid #C8B89A;
+    border-radius: 4px;
+    padding: 3px 8px;
+    letter-spacing: 0.05em;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <!-- Left -->
+  <div class="left">
+    <img class="logo-img" src="/logo-bijin.png" alt="Sakura" />
+    <div class="brand">Sakura</div>
+    <div class="tagline">Solana AI DeFi Advisor</div>
+    <div class="trust-pills">
+      <div class="pill">
+        <div class="dot" style="background:#C0392B"></div>
+        🔐 Read-only · No Custody
+      </div>
+      <div class="pill">
+        <div class="dot" style="background:#10B981"></div>
+        ⛓ SHA-256 Onchain Proof
+      </div>
+      <div class="pill">
+        <div class="dot" style="background:#60A5FA"></div>
+        ⚡ x402 Agent Payments
+      </div>
+    </div>
+  </div>
+
+  <!-- Right -->
+  <div class="right">
+    <div class="headline">
+      AI advice you can<br>
+      <em>actually verify.</em>
+    </div>
+
+    <div class="flow">
+      <div class="flow-step">
+        <div class="step-num normal">01</div>
+        <div class="step-text">
+          <div class="step-label">Claude Sonnet 4.6 reasons with real data</div>
+          <div class="step-sub">Jupiter · Marinade · GoPlus · Helius · Kamino</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="step-num active">02</div>
+        <div class="step-text">
+          <div class="step-label highlight">SHA-256 hash committed to Solana</div>
+          <div class="step-sub highlight">BEFORE result is shown to user — no post-hoc rationalization</div>
+        </div>
+        <div class="step-badge">ON-CHAIN ✓</div>
+      </div>
+      <div class="flow-step">
+        <div class="step-num normal">03</div>
+        <div class="step-text">
+          <div class="step-label">Anyone can verify at /verify</div>
+          <div class="step-sub">Public Solana Memo Program · Immutable ledger</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="bottom">
+      <div class="verdict">
+        Not a black box —<br>
+        <strong>transparent, auditable AI.</strong>
+      </div>
+      <div class="integrations">
+        <span class="int-tag">Claude Sonnet 4.6</span>
+        <span class="int-tag">x402 / MCP</span>
+        <span class="int-tag">Solana Memo</span>
+        <span class="int-tag">Jupiter</span>
+        <span class="int-tag">GoPlus</span>
+        <span class="int-tag">Marinade</span>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

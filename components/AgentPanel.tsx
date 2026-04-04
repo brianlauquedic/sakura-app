@@ -718,7 +718,7 @@ export default function AgentPanel({ walletAddress, walletSnapshot }: Props) {
       {/* ── Idle state ── */}
       {agentState === "idle" && (
         <div style={{
-          background: "var(--bg-card)", border: "1px dashed #1E1E2E",
+          background: "var(--bg-card)", border: "1px dashed var(--border)",
           borderRadius: 14, padding: "40px 24px",
           display: "flex", flexDirection: "column", alignItems: "center", gap: 12,
         }}>

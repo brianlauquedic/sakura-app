@@ -195,7 +195,7 @@ function TokenRow({ token, totalUSD }: { token: Token; totalUSD: number }) {
     {isRisky && expanded && (
       <div style={{
         margin: "0 0 8px 26px",
-        background: "#1A0808", border: "1px solid #EF444430",
+        background: "rgba(168,41,58,0.10)", border: "1px solid rgba(168,41,58,0.25)",
         borderRadius: 8, padding: "10px 14px", fontSize: 12,
       }}>
         <div style={{ color: "#FCA5A5", marginBottom: 8 }}>
@@ -443,7 +443,7 @@ export default function HealthReport({ walletAddress, onDisconnect, onDataLoaded
       {/* Opportunity alert — idle USDC */}
       {data.idleUSDC > 10 && (
         <div className="opportunity-alert" style={{
-          background: "#0A2010", border: "1px solid #10B981",
+          background: "rgba(61,122,92,0.10)", border: "1px solid rgba(61,122,92,0.35)",
           borderRadius: 12, padding: "16px 20px", marginBottom: 16,
           display: "flex", alignItems: "center", justifyContent: "space-between",
         }}>
@@ -476,7 +476,7 @@ export default function HealthReport({ walletAddress, onDisconnect, onDataLoaded
       {/* SOL staking alert */}
       {data.solBalance > 0.5 && (
         <div className="opportunity-alert" style={{
-          background: "#0A0818", border: "1px solid #8B5CF6",
+          background: "rgba(139,92,246,0.08)", border: "1px solid rgba(139,92,246,0.3)",
           borderRadius: 12, padding: "16px 20px", marginBottom: 20,
           display: "flex", alignItems: "center", justifyContent: "space-between",
         }}>
@@ -638,7 +638,7 @@ export default function HealthReport({ walletAddress, onDisconnect, onDataLoaded
                   display: "flex", alignItems: "center",
                   justifyContent: "space-between",
                   padding: "8px 12px",
-                  background: i === 0 ? "#0A0A0F" : "transparent",
+                  background: i === 0 ? "var(--bg-card)" : "transparent",
                   borderRadius: 8,
                   border: i === 0 ? "1px solid var(--border)" : "none",
                 }}>
@@ -874,7 +874,7 @@ function ScoreBreakdown({ data }: { data: WalletData }) {
             <div key={i} style={{
               display: "flex", alignItems: "flex-start", justifyContent: "space-between",
               padding: "8px 12px",
-              background: f.delta > 0 ? "#0A2010" : f.delta < 0 ? "#1A0808" : "#0A0A0F",
+              background: f.delta > 0 ? "rgba(61,122,92,0.10)" : f.delta < 0 ? "rgba(168,41,58,0.10)" : "var(--bg-card)",
               borderRadius: 8, gap: 12,
             }}>
               <div style={{ flex: 1 }}>
