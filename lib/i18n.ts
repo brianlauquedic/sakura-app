@@ -184,6 +184,7 @@ export const translations = {
   positionDetails: { zh: "持倉明細", en: "Position Details", ja: "ポジション詳細" },
   sortedByValue: { zh: "個代幣，按價值排序", en: "tokens, sorted by value", ja: "トークン（価値順）" },
   noPriceData: { zh: "無價格數據", en: "No price data", ja: "価格データなし" },
+  pricing:     { zh: "定價", en: "Pricing", ja: "料金" },
   viewOnSolscan: { zh: "🌸 在 Solscan 查看", en: "🌸 View on Solscan", ja: "🌸 Solscanで確認" },
   rugCheckDetect: { zh: "🔰 RugCheck 檢測", en: "🔰 RugCheck Scan", ja: "🔰 RugCheck検査" },
   aiRecommendations: { zh: "🌿 Sakura AI 建議", en: "🌿 Sakura AI Recommendations", ja: "🌿 Sakura AI 推奨" },

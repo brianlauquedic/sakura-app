@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import WalletConnect from "@/components/WalletConnect";
 import HealthReport from "@/components/HealthReport";
 import TokenAnalysis from "@/components/TokenAnalysis";
@@ -47,6 +48,7 @@ function getTimeColor() {
 
 function AppContent() {
   const { lang, setLang, t } = useLang();
+  const router = useRouter();
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const [showLanding, setShowLanding] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>("health");
@@ -203,6 +205,24 @@ function AppContent() {
 
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <PriceTicker />
+
+          {/* 定價入口 — 不需要連錢包 */}
+          <button
+            onClick={() => router.push("/pricing")}
+            style={{
+              padding: "5px 14px", borderRadius: 6, cursor: "pointer",
+              border: "1px solid var(--border)",
+              background: "var(--bg-card)",
+              color: "var(--text-secondary)",
+              fontSize: 12, fontWeight: 600,
+              fontFamily: "var(--font-body)",
+              transition: "all 0.15s",
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = "var(--accent)"; (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--accent)"; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = "var(--text-secondary)"; (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--border)"; }}
+          >
+            🌸 {t("pricing") ?? "定價"}
+          </button>
 
           {walletAddress && (
             <SubscriptionBanner
