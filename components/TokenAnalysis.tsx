@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { addToWatchlist, getWatchlist, removeFromWatchlist, WatchedToken } from "@/lib/watchlist";
+import { addToWatchlist, getWatchlist, removeFromWatchlist, saveLastPrice, WatchedToken } from "@/lib/watchlist";
 import { saveProof } from "@/lib/proof-store";
 import { payWithPhantom } from "@/lib/x402";
 import { useLang } from "@/contexts/LanguageContext";
@@ -415,7 +415,31 @@ export default function TokenAnalysis({ walletAddress }: Props) {
   const [analyzeQuota, setAnalyzeQuota] = useState<{ remaining: number; used: number } | null>(null);
   const [analyzePaymentSig, setAnalyzePaymentSig] = useState<string | null>(null);
 
-  useEffect(() => { setWatchlist(getWatchlist()); }, []);
+  useEffect(() => {
+    setWatchlist(getWatchlist());
+    // Back-fill null prices using DexScreener for cached entries
+    const list = getWatchlist();
+    const nullPriceTokens = list.filter(t => t.price === null);
+    for (const token of nullPriceTokens) {
+      fetch(`https://api.jup.ag/price/v2?ids=${token.mint}`)
+        .then(r => r.ok ? r.json() : null)
+        .then((d: { data?: Record<string, { price?: string }> } | null) => {
+          const p = d?.data?.[token.mint]?.price;
+          if (p) { saveLastPrice(token.mint, parseFloat(p)); setWatchlist(getWatchlist()); return; }
+          // fallback DexScreener
+          return fetch(`https://api.dexscreener.com/latest/dex/tokens/${token.mint}`)
+            .then(r => r.ok ? r.json() : null)
+            .then((ds: { pairs?: Array<{ priceUsd?: string; liquidity?: { usd?: number } }> } | null) => {
+              const pairs = (ds?.pairs ?? [])
+                .filter(pair => pair.priceUsd && parseFloat(pair.priceUsd) > 0)
+                .sort((a, b) => (b.liquidity?.usd ?? 0) - (a.liquidity?.usd ?? 0));
+              const best = pairs[0]?.priceUsd;
+              if (best) { saveLastPrice(token.mint, parseFloat(best)); setWatchlist(getWatchlist()); }
+            });
+        })
+        .catch(() => {});
+    }
+  }, []);
 
   // Fetch quota status on mount
   useEffect(() => {

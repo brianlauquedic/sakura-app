@@ -37,7 +37,7 @@ export function saveLastPrice(mint: string, price: number): void {
   const list = getWatchlist();
   const updated = list.map(t =>
     t.mint === mint
-      ? { ...t, lastKnownPrice: price, lastPriceCheckedAt: Date.now() }
+      ? { ...t, price, lastKnownPrice: price, lastPriceCheckedAt: Date.now() }
       : t
   );
   localStorage.setItem(KEY, JSON.stringify(updated));

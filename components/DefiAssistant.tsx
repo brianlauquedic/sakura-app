@@ -512,35 +512,63 @@ export default function DefiAssistant({ walletAddress, walletSnapshot }: Props) 
 
   // ── Watchlist price monitoring: re-fetch every 5 min + 30s offset ──
   useEffect(() => {
-    const check = () => {
+    const fetchPrice = async (mint: string): Promise<number | null> => {
+      // Jupiter v2 first
+      try {
+        const r = await fetch(`https://api.jup.ag/price/v2?ids=${mint}`);
+        if (r.ok) {
+          const d = await r.json() as { data?: Record<string, { price?: string }> };
+          const p = d?.data?.[mint]?.price;
+          if (p) return parseFloat(p);
+        }
+      } catch { /* fall through */ }
+      // DexScreener fallback
+      try {
+        const r = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${mint}`);
+        if (r.ok) {
+          const d = await r.json() as { pairs?: Array<{ priceUsd?: string; liquidity?: { usd?: number } }> };
+          const pairs = (d?.pairs ?? [])
+            .filter(p => p.priceUsd && parseFloat(p.priceUsd) > 0)
+            .sort((a, b) => (b.liquidity?.usd ?? 0) - (a.liquidity?.usd ?? 0));
+          const best = pairs[0]?.priceUsd;
+          if (best) return parseFloat(best);
+        }
+      } catch { /* ignore */ }
+      return null;
+    };
+
+    const check = async () => {
       const watchlist = getWatchlist();
-      for (const token of watchlist.slice(0, 5)) { // limit to 5 tokens
-        fetch(`https://price.jup.ag/v6/price?ids=${token.mint}`)
-          .then(r => r.json())
-          .then(d => {
-            const newPrice = d?.data?.[token.mint]?.price as number | undefined;
-            if (!newPrice || !token.lastKnownPrice) {
-              if (newPrice) saveLastPrice(token.mint, newPrice);
-              return;
-            }
-            const changePct = Math.abs(newPrice - token.lastKnownPrice) / token.lastKnownPrice * 100;
-            if (changePct >= 10) {
-              const dir = newPrice > token.lastKnownPrice ? "🚀 上涨" : "📉 下跌";
-              const alertText = `${token.symbol} ${dir} ${changePct.toFixed(1)}%，現價 $${newPrice.toFixed(4)}`;
-              setToast({ id: Date.now(), text: alertText });
-              setMessages(prev => [...prev, {
-                id: Date.now(),
-                role: "assistant",
-                text: `🪭 **價格提醒** — ${alertText}。要查看详情或操作吗？`,
-                isAgentInitiated: true,
-              }]);
-              saveLastPrice(token.mint, newPrice);
-            }
-          })
-          .catch(() => {});
+      let updated = false;
+      for (const token of watchlist.slice(0, 5)) {
+        const newPrice = await fetchPrice(token.mint);
+        if (newPrice === null) continue;
+        const prev = token.lastKnownPrice ?? token.price;
+        if (prev !== null && prev !== undefined) {
+          const changePct = Math.abs(newPrice - prev) / prev * 100;
+          if (changePct >= 10) {
+            const dir = newPrice > prev ? "🚀 上涨" : "📉 下跌";
+            const alertText = `${token.symbol} ${dir} ${changePct.toFixed(1)}%，現價 $${newPrice.toFixed(4)}`;
+            setToast({ id: Date.now(), text: alertText });
+            setMessages(p => [...p, {
+              id: Date.now(), role: "assistant",
+              text: `🪭 **價格提醒** — ${alertText}。要查看详情或操作吗？`,
+              isAgentInitiated: true,
+            }]);
+          }
+        }
+        saveLastPrice(token.mint, newPrice);
+        updated = true;
+      }
+      // Refresh sidebar prices if any changed
+      if (updated) {
+        // TokenAnalysis sidebar reads from localStorage directly; no shared state to update here
       }
     };
-    const interval = setInterval(check, 5 * 60 * 1000 + 30000);
+
+    // Run immediately on mount to fill in any null prices, then every 5 min
+    check();
+    const interval = setInterval(check, 5 * 60 * 1000);
     return () => clearInterval(interval);
   }, []);
 
