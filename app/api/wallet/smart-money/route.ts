@@ -794,6 +794,11 @@ export async function GET(req: NextRequest) {
   if (!gate.proceed) return gate.response;
 
   const url = new URL(req.url);
+  const type = url.searchParams.get("type");
+
+  // ── consensus_24h endpoint ─────────────────────────────────────
+  if (type === "consensus_24h") return handleConsensus24h();
+
   const walletAddress = url.searchParams.get("wallet") ?? url.searchParams.get("walletAddress");
   const limit = Math.min(20, parseInt(url.searchParams.get("limit") ?? "7"));
 
