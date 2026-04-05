@@ -33,8 +33,30 @@ async function getJupiterPrice(mint: string) {
       {},
       6000
     );
+    if (!res.ok) return null;
     const data = await res.json();
     return data?.data?.[mint] ?? null;
+  } catch {
+    return null;
+  }
+}
+
+// ── DexScreener Price (fallback) ─────────────────────────────────
+async function getDexScreenerPrice(mint: string): Promise<number | null> {
+  try {
+    const res = await fetchWithTimeout(
+      `https://api.dexscreener.com/latest/dex/tokens/${mint}`,
+      {},
+      6000
+    );
+    if (!res.ok) return null;
+    const data = await res.json() as { pairs?: Array<{ priceUsd?: string; liquidity?: { usd?: number } }> };
+    // Pick the most liquid pair
+    const pairs = (data?.pairs ?? [])
+      .filter(p => p.priceUsd && parseFloat(p.priceUsd) > 0)
+      .sort((a, b) => (b.liquidity?.usd ?? 0) - (a.liquidity?.usd ?? 0));
+    const best = pairs[0];
+    return best?.priceUsd ? parseFloat(best.priceUsd) : null;
   } catch {
     return null;
   }
@@ -206,8 +228,11 @@ export async function GET(req: NextRequest) {
     mint.slice(0, 6) + "...";
   const logoURI = jupToken?.logoURI ?? null;
 
-  // Price
-  const price = jupPrice?.price ? parseFloat(jupPrice.price) : null;
+  // Price — Jupiter first, DexScreener fallback
+  let price: number | null = jupPrice?.price ? parseFloat(jupPrice.price) : null;
+  if (price === null) {
+    price = await getDexScreenerPrice(mint);
+  }
 
   // Security
   const { score: secScore, risks, positives } = calcSecurityScore(gp);
