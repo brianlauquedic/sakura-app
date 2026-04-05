@@ -335,7 +335,7 @@ function AppContent() {
             )}
             {activeTab === "token" && (
               <ErrorBoundary fallbackLabel={t("tabToken")}>
-                <TokenAnalysis walletAddress={walletAddress} />
+                <TokenAnalysis walletAddress={walletAddress} isDayMode={isDayMode} />
               </ErrorBoundary>
             )}
             {activeTab === "defi" && (

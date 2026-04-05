@@ -60,6 +60,7 @@ interface AIAnalysis {
 
 interface Props {
   walletAddress: string;
+  isDayMode?: boolean;
 }
 
 // ── Hot tokens for quick analysis ────────────────────────────────
@@ -400,7 +401,7 @@ function ProofPanel({ ai }: { ai: AIAnalysis }) {
 }
 
 // ── Main Component ───────────────────────────────────────────────
-export default function TokenAnalysis({ walletAddress }: Props) {
+export default function TokenAnalysis({ walletAddress, isDayMode = false }: Props) {
   const { t } = useLang();
   const [mintInput, setMintInput] = useState("");
   const [tokenData, setTokenData] = useState<TokenData | null>(null);
@@ -799,7 +800,7 @@ export default function TokenAnalysis({ walletAddress }: Props) {
           </div>
 
           {/* GMGN K-Line Chart — server-proxied, no iframe */}
-          <GmgnKlineChart mint={tokenData.mint} symbol={tokenData.symbol} />
+          <GmgnKlineChart mint={tokenData.mint} symbol={tokenData.symbol} isDayMode={isDayMode} />
 
           {/* Score + Decision */}
           <div style={{
@@ -1144,7 +1145,7 @@ const CHART_THEMES: Record<ChartTheme, {
   },
 };
 
-function GmgnKlineChart({ mint, symbol }: { mint: string; symbol: string }) {
+function GmgnKlineChart({ mint, symbol, isDayMode = false }: { mint: string; symbol: string; isDayMode?: boolean }) {
   const containerRef = useRef<HTMLDivElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const chartRef     = useRef<any>(null);
@@ -1154,7 +1155,8 @@ function GmgnKlineChart({ mint, symbol }: { mint: string; symbol: string }) {
   const [loading, setLoading]       = useState(true);
   const [error, setError]           = useState(false);
   const [candles, setCandles]       = useState<Candle[]>([]);
-  const [chartTheme, setChartTheme] = useState<ChartTheme>("dark");
+  // Auto-sync with page day/night mode — no manual toggle needed
+  const chartTheme: ChartTheme = isDayMode ? "light" : "dark";
 
   const RESOLUTIONS: Resolution[] = ["5m", "15m", "1h", "4h", "1d"];
 
@@ -1291,18 +1293,6 @@ function GmgnKlineChart({ mint, symbol }: { mint: string; symbol: string }) {
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          {/* Theme toggle */}
-          <button
-            onClick={() => setChartTheme(t => t === "dark" ? "light" : "dark")}
-            title={chartTheme === "dark" ? "切換白色背景" : "切換深色背景"}
-            style={{
-              fontSize: 13, background: "none", border: "1px solid var(--border)",
-              borderRadius: 6, cursor: "pointer", padding: "2px 8px",
-              color: "var(--text-secondary)", lineHeight: 1,
-            }}
-          >
-            {chartTheme === "dark" ? "☀️" : "🌙"}
-          </button>
           <a href={`https://dexscreener.com/solana/${mint}`} target="_blank" rel="noopener noreferrer"
             style={{ fontSize: 10, color: "var(--text-muted)", textDecoration: "none" }}>
             DexScreener →
