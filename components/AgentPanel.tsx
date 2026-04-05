@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import SwapModal from "./SwapModal";
 import StakeModal from "./StakeModal";
 import LendModal from "./LendModal";
@@ -1026,21 +1027,22 @@ function GuardianConditionsPanel({ walletAddress }: { walletAddress: string }) {
         <span style={{ fontSize: 11, color: "var(--text-secondary)" }}>{open ? "收起 ▲" : "設置 ▼"}</span>
       </button>
 
-      {/* ── Fixed Viewport Toast (guaranteed always visible) ── */}
-      {toast && (
+      {/* ── Portal Toast — rendered into document.body, bypasses all CSS stacking contexts ── */}
+      {toast && typeof document !== "undefined" && createPortal(
         <div style={{
-          position: "fixed", bottom: 28, left: "50%", transform: "translateX(-50%)",
-          zIndex: 99999, pointerEvents: "none",
+          position: "fixed", bottom: 32, left: "50%", transform: "translateX(-50%)",
+          zIndex: 2147483647,
           background: toast.type === "success" ? "#10B981" : "#EF4444",
-          color: "#fff", fontWeight: 700, fontSize: 14,
-          padding: "12px 24px", borderRadius: 10,
-          boxShadow: "0 4px 20px rgba(0,0,0,0.35)",
-          display: "flex", alignItems: "center", gap: 8,
+          color: "#fff", fontWeight: 700, fontSize: 15,
+          padding: "14px 28px", borderRadius: 12,
+          boxShadow: "0 8px 32px rgba(0,0,0,0.45)",
+          display: "flex", alignItems: "center", gap: 10,
           whiteSpace: "nowrap",
-          animation: "fadeInUp 0.2s ease",
+          pointerEvents: "none",
         }}>
           {toast.type === "success" ? "✅" : "❌"} {toast.msg}
-        </div>
+        </div>,
+        document.body
       )}
 
       {open && (
@@ -1152,6 +1154,19 @@ function GuardianConditionsPanel({ walletAddress }: { walletAddress: string }) {
                   </button>
                 </div>
               </div>
+
+              {/* Inline status banner — always visible inside panel, no CSS tricks */}
+              {toast && (
+                <div style={{
+                  marginTop: 10, padding: "10px 14px", borderRadius: 8,
+                  background: toast.type === "success" ? "rgba(16,185,129,0.15)" : "rgba(239,68,68,0.12)",
+                  border: `1px solid ${toast.type === "success" ? "rgba(16,185,129,0.4)" : "rgba(239,68,68,0.35)"}`,
+                  color: toast.type === "success" ? "#10B981" : "#EF4444",
+                  fontSize: 13, fontWeight: 700, textAlign: "center",
+                }}>
+                  {toast.type === "success" ? "✅" : "❌"} {toast.msg}
+                </div>
+              )}
 
               <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 8, textAlign: "center" }}>
                 Guardian 每小時自動評估條件，觸發時通過 AI 顧問通知
