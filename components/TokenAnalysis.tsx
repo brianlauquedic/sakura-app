@@ -810,29 +810,38 @@ export default function TokenAnalysis({ walletAddress }: Props) {
               display: "flex", alignItems: "center", justifyContent: "space-between",
             }}>
               <span style={{ fontSize: 11, fontWeight: 700, color: "var(--text-secondary)" }}>
-                📈 K 線圖 · GMGN
+                📈 K 線圖 · DexScreener
               </span>
-              <a
-                href={`https://gmgn.ai/sol/token/${tokenData.mint}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ fontSize: 10, color: "var(--accent)", textDecoration: "none" }}
-              >
-                在 GMGN 查看 →
-              </a>
+              <div style={{ display: "flex", gap: 10 }}>
+                <a
+                  href={`https://dexscreener.com/solana/${tokenData.mint}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ fontSize: 10, color: "var(--text-muted)", textDecoration: "none" }}
+                >
+                  DexScreener →
+                </a>
+                <a
+                  href={`https://gmgn.ai/sol/token/${tokenData.mint}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ fontSize: 10, color: "var(--accent)", textDecoration: "none" }}
+                >
+                  GMGN →
+                </a>
+              </div>
             </div>
             <iframe
-              src={`https://www.gmgn.cc/kline/sol/${tokenData.mint}?theme=dark&interval=15`}
+              src={`https://dexscreener.com/solana/${tokenData.mint}?embed=1&theme=dark&trades=0&info=0`}
               style={{
                 width: "100%",
-                height: 320,
+                height: 360,
                 border: "none",
                 display: "block",
                 background: "#0d0d14",
               }}
-              title={`${tokenData.symbol} K-line chart`}
+              title={`${tokenData.symbol} price chart`}
               loading="lazy"
-              sandbox="allow-scripts allow-same-origin"
             />
           </div>
 
