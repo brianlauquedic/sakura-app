@@ -1044,3 +1044,431 @@ export async function sakEstimateCloseEmptyAccounts(
     return { estimatedAccounts: 0, estimatedReclaimSol: 0, note: "無法掃描帳戶" };
   }
 }
+
+// ── SAK 極致運用 — 10 個深度工具 ────────────────────────────────────────────
+
+/**
+ * 9. 完整 Token 元數據 (TokenPlugin — tokens.jup.ag)
+ * 含 decimals, freeze authority, mint authority, tags, coingeckoId, 日交易量
+ */
+export async function sakGetTokenMetadata(mintAddress: string): Promise<{
+  address: string; name: string; symbol: string; decimals: number;
+  logoURI?: string; tags?: string[]; dailyVolume?: number;
+  freezeAuthority?: string | null; mintAuthority?: string | null;
+  coingeckoId?: string; isVerified: boolean;
+} | null> {
+  try {
+    const agent  = createReadOnlyAgent();
+    const m      = agent.methods as Record<string, (...a: unknown[]) => Promise<unknown>>;
+    const result = await m.getTokenDataByAddress?.(new PublicKey(mintAddress)) as {
+      address?: string; name?: string; symbol?: string; decimals?: number;
+      logoURI?: string; tags?: string[]; daily_volume?: number;
+      freeze_authority?: string | null; mint_authority?: string | null;
+      extensions?: { coingeckoId?: string };
+    } | undefined;
+    if (!result?.symbol) return null;
+    return {
+      address:        result.address ?? mintAddress,
+      name:           result.name ?? "",
+      symbol:         result.symbol,
+      decimals:       result.decimals ?? 9,
+      logoURI:        result.logoURI,
+      tags:           result.tags,
+      dailyVolume:    result.daily_volume,
+      freezeAuthority: result.freeze_authority,
+      mintAuthority:  result.mint_authority,
+      coingeckoId:    result.extensions?.coingeckoId,
+      isVerified:     (result.tags ?? []).includes("verified"),
+    };
+  } catch { /* fallback below */ }
+  // Fallback: Jupiter tokens API
+  try {
+    const res = await fetch(`https://tokens.jup.ag/token/${mintAddress}`, { next: { revalidate: 3600 } });
+    if (!res.ok) return null;
+    const d = await res.json() as { address?: string; name?: string; symbol?: string; decimals?: number; logoURI?: string; tags?: string[]; daily_volume?: number; freeze_authority?: string; mint_authority?: string };
+    return {
+      address: d.address ?? mintAddress, name: d.name ?? "", symbol: d.symbol ?? "",
+      decimals: d.decimals ?? 9, logoURI: d.logoURI, tags: d.tags,
+      dailyVolume: d.daily_volume, freezeAuthority: d.freeze_authority,
+      mintAuthority: d.mint_authority, isVerified: (d.tags ?? []).includes("verified"),
+    };
+  } catch { return null; }
+}
+
+/**
+ * 10. Allora 所有 ML 推理主題 (MiscPlugin)
+ * 列出所有可用的 AI 預測主題（不只 SOL，還有 BTC/ETH 等）
+ */
+export async function sakGetAlloraTopics(): Promise<Array<{
+  topicId: number; topicName: string; description: string; metadata: string;
+}>> {
+  try {
+    const agent  = createReadOnlyAgent();
+    const m      = agent.methods as Record<string, (...a: unknown[]) => Promise<unknown>>;
+    const topics = await m.getAllTopics?.() as Array<{
+      topicId?: number; id?: number;
+      topicName?: string; name?: string;
+      description?: string; metadata?: string;
+    }> | undefined;
+    if (topics?.length) {
+      return topics.slice(0, 20).map(t => ({
+        topicId:     t.topicId ?? t.id ?? 0,
+        topicName:   t.topicName ?? t.name ?? "Unknown",
+        description: t.description ?? "",
+        metadata:    t.metadata ?? "",
+      }));
+    }
+  } catch { /* no public fallback */ }
+  return [];
+}
+
+/**
+ * 11. Allora 指定主題 ML 推理 (MiscPlugin)
+ * 可獲取任意主題的最新 AI 預測值（topicId 從 getAllTopics 取得）
+ */
+export async function sakGetAlloraInferenceByTopicId(topicId: number): Promise<{
+  topicId: number; networkInference: string; confidenceIntervalPercentiles?: unknown;
+  forecasterInferences?: unknown[]; timestamp?: string;
+} | null> {
+  try {
+    const agent  = createReadOnlyAgent();
+    const m      = agent.methods as Record<string, (...a: unknown[]) => Promise<unknown>>;
+    const result = await m.getInferenceByTopicId?.(topicId) as {
+      networkInference?: string; network_inference?: string;
+      confidenceIntervalPercentiles?: unknown;
+      forecasterInferences?: unknown[];
+      timestamp?: string;
+    } | undefined;
+    if (result) {
+      return {
+        topicId,
+        networkInference: result.networkInference ?? result.network_inference ?? "N/A",
+        confidenceIntervalPercentiles: result.confidenceIntervalPercentiles,
+        forecasterInferences: result.forecasterInferences,
+        timestamp: result.timestamp,
+      };
+    }
+  } catch { /* no public fallback */ }
+  return null;
+}
+
+/**
+ * 12. Elfa AI 關鍵詞社群搜索 (MiscPlugin)
+ * 搜索加密社交媒體中包含特定關鍵詞的帖子
+ * 例：搜索「Solana ETF」「$SOL breakout」等熱議話題
+ */
+export async function sakSearchElfaMentions(
+  keywords: string,
+  fromDays = 7,
+  limit = 20
+): Promise<Array<{
+  id: string; content: string; author: string;
+  publishedAt: string; likeCount: number; repostCount: number;
+}>> {
+  try {
+    const agent  = createReadOnlyAgent();
+    const m      = agent.methods as Record<string, (...a: unknown[]) => Promise<unknown>>;
+    const now    = Math.floor(Date.now() / 1000);
+    const from   = now - fromDays * 86400;
+    const result = await m.searchMentionsByKeywordsUsingElfaAi?.(keywords, from, now, limit) as {
+      data?: Array<{
+        id?: string; content?: string; text?: string;
+        author?: { username?: string } | string;
+        publishedAt?: string; likeCount?: number; retweetCount?: number;
+      }>;
+    } | undefined;
+    if (result?.data?.length) {
+      return result.data.slice(0, limit).map(p => ({
+        id:          String(p.id ?? ""),
+        content:     p.content ?? p.text ?? "",
+        author:      typeof p.author === "string" ? p.author : (p.author?.username ?? "unknown"),
+        publishedAt: p.publishedAt ?? "",
+        likeCount:   p.likeCount ?? 0,
+        repostCount: p.retweetCount ?? 0,
+      }));
+    }
+  } catch { /* Elfa requires API key */ }
+  return [];
+}
+
+/**
+ * 13. Elfa AI 最新聰明錢社交帖子 (MiscPlugin)
+ * 獲取聰明錢帳號最新發布的帖子（未過濾代幣，全市場視野）
+ */
+export async function sakGetElfaSmartMentions(limit = 30): Promise<Array<{
+  id: string; content: string; author: string;
+  publishedAt: string; likeCount: number;
+  mentionedTickers: string[];
+}>> {
+  try {
+    const agent  = createReadOnlyAgent();
+    const m      = agent.methods as Record<string, (...a: unknown[]) => Promise<unknown>>;
+    const result = await m.getSmartMentionsUsingElfaAi?.(limit) as {
+      data?: Array<{
+        id?: string; content?: string; text?: string;
+        author?: { username?: string } | string;
+        publishedAt?: string; likeCount?: number;
+        mentionedTokens?: string[];
+      }>;
+    } | undefined;
+    if (result?.data?.length) {
+      return result.data.slice(0, limit).map(p => {
+        const text = p.content ?? p.text ?? "";
+        // Extract $TICKER mentions
+        const tickers = [...text.matchAll(/\$([A-Z]{2,10})/g)].map(m => m[1]);
+        return {
+          id:               String(p.id ?? ""),
+          content:          text,
+          author:           typeof p.author === "string" ? p.author : (p.author?.username ?? ""),
+          publishedAt:      p.publishedAt ?? "",
+          likeCount:        p.likeCount ?? 0,
+          mentionedTickers: p.mentionedTokens ?? tickers,
+        };
+      });
+    }
+  } catch { /* Elfa requires API key */ }
+  return [];
+}
+
+/**
+ * 14. Drift Protocol L2 訂單簿 (DefiPlugin)
+ * 獲取任意 Drift 永續合約市場的實時買賣盤深度
+ * marketSymbol: "SOL-PERP" | "BTC-PERP" | "ETH-PERP" 等
+ */
+export async function sakGetDriftOrderBook(marketSymbol = "SOL-PERP"): Promise<{
+  market: string;
+  asks: Array<{ price: number; size: number }>;
+  bids: Array<{ price: number; size: number }>;
+  oraclePrice: number;
+  spread: number;
+  spreadPct: string;
+} | null> {
+  try {
+    const agent  = createReadOnlyAgent();
+    const m      = agent.methods as Record<string, (...a: unknown[]) => Promise<unknown>>;
+    const result = await m.getDriftL2OrderBook?.(marketSymbol) as {
+      asks?: Array<{ price?: number | string; size?: number | string }>;
+      bids?: Array<{ price?: number | string; size?: number | string }>;
+      oracleData?: { price?: number | string };
+    } | undefined;
+    if (result) {
+      const asks = (result.asks ?? []).slice(0, 5).map(a => ({
+        price: parseFloat(String(a.price ?? 0)),
+        size:  parseFloat(String(a.size  ?? 0)),
+      }));
+      const bids = (result.bids ?? []).slice(0, 5).map(b => ({
+        price: parseFloat(String(b.price ?? 0)),
+        size:  parseFloat(String(b.size  ?? 0)),
+      }));
+      const bestAsk    = asks[0]?.price ?? 0;
+      const bestBid    = bids[0]?.price ?? 0;
+      const spread     = bestAsk - bestBid;
+      const oraclePrice = parseFloat(String(result.oracleData?.price ?? 0));
+      return {
+        market:     marketSymbol,
+        asks,
+        bids,
+        oraclePrice,
+        spread:     parseFloat(spread.toFixed(4)),
+        spreadPct:  bestBid > 0 ? `${((spread / bestBid) * 100).toFixed(4)}%` : "N/A",
+      };
+    }
+  } catch { /* no public fallback for order books */ }
+  // Fallback: Drift public REST API
+  try {
+    const sym = marketSymbol.replace("-", "%2D");
+    const res = await fetch(
+      `https://dlob.drift.trade/l2?marketName=${sym}&includeOracle=true&depth=5`,
+      { next: { revalidate: 30 } }
+    );
+    if (!res.ok) return null;
+    const d = await res.json() as {
+      asks?: Array<{ price?: string; size?: string }>;
+      bids?: Array<{ price?: string; size?: string }>;
+      oracleData?: { price?: string };
+    };
+    const asks = (d.asks ?? []).slice(0, 5).map(a => ({ price: parseFloat(a.price ?? "0"), size: parseFloat(a.size ?? "0") }));
+    const bids = (d.bids ?? []).slice(0, 5).map(b => ({ price: parseFloat(b.price ?? "0"), size: parseFloat(b.size ?? "0") }));
+    const spread = (asks[0]?.price ?? 0) - (bids[0]?.price ?? 0);
+    return {
+      market: marketSymbol, asks, bids,
+      oraclePrice: parseFloat(d.oracleData?.price ?? "0"),
+      spread: parseFloat(spread.toFixed(4)),
+      spreadPct: bids[0]?.price ? `${((spread / bids[0].price) * 100).toFixed(4)}%` : "N/A",
+    };
+  } catch { return null; }
+}
+
+/**
+ * 15. deBridge 支持的所有跨鏈 (DefiPlugin)
+ * 查詢 deBridge 支持哪些鏈，配合 get_bridge_quote 使用
+ */
+export async function sakGetBridgeChains(): Promise<Array<{
+  chainId: number; chainName: string; nativeCurrency?: string;
+}>> {
+  try {
+    const agent  = createReadOnlyAgent();
+    const m      = agent.methods as Record<string, (...a: unknown[]) => Promise<unknown>>;
+    const result = await m.getDebridgeSupportedChains?.() as {
+      chains?: Array<{ chainId?: number; originalChainId?: number; chainName?: string; nativeCurrency?: { symbol?: string } }>;
+    } | undefined;
+    if (result?.chains?.length) {
+      return result.chains.map(c => ({
+        chainId:        c.chainId ?? c.originalChainId ?? 0,
+        chainName:      c.chainName ?? "Unknown",
+        nativeCurrency: c.nativeCurrency?.symbol,
+      }));
+    }
+  } catch { /* fallback below */ }
+  // Fallback: deBridge public API
+  try {
+    const res = await fetch("https://api.dln.trade/v1.0/supported-chains-info", { next: { revalidate: 86400 } });
+    if (!res.ok) return [];
+    const d = await res.json() as { chains?: Array<{ chainId?: number; chainName?: string }> };
+    return (d.chains ?? []).map(c => ({ chainId: c.chainId ?? 0, chainName: c.chainName ?? "" }));
+  } catch { return []; }
+}
+
+/**
+ * 16. Helius 增強交易解析 (MiscPlugin — parseTransaction)
+ * 輸入任意 tx 哈希，返回人類可讀的操作描述
+ * 用戶可粘貼 tx hash 詢問「這筆交易做了什麼？」
+ */
+export async function sakParseTransaction(txSignature: string): Promise<{
+  signature: string;
+  type: string;
+  description: string;
+  fee: number;
+  feePayer: string;
+  timestamp: string;
+  tokenTransfers: Array<{ mint: string; fromUser: string; toUser: string; amount: number }>;
+  nativeTransfers: Array<{ from: string; to: string; amountSol: number }>;
+  accountsInvolved: string[];
+  source: string;
+} | null> {
+  if (!HELIUS_API_KEY) return null;
+  try {
+    const agent  = createReadOnlyAgent();
+    const m      = agent.methods as Record<string, (...a: unknown[]) => Promise<unknown>>;
+    const result = await m.parseTransaction?.(txSignature) as Array<{
+      signature?: string; type?: string; description?: string;
+      fee?: number; feePayer?: string; timestamp?: number; source?: string;
+      tokenTransfers?: Array<{ mint?: string; fromUserAccount?: string; toUserAccount?: string; tokenAmount?: number }>;
+      nativeTransfers?: Array<{ fromUserAccount?: string; toUserAccount?: string; amount?: number }>;
+      accountData?: Array<{ account?: string }>;
+    }> | undefined;
+    const tx = Array.isArray(result) ? result[0] : result as typeof result extends Array<infer T> ? T : typeof result;
+    if (!tx) return null;
+    return {
+      signature:   tx.signature ?? txSignature,
+      type:        tx.type        ?? "UNKNOWN",
+      description: tx.description ?? "No description available",
+      fee:         (tx.fee ?? 0) / 1e9,
+      feePayer:    tx.feePayer    ?? "",
+      timestamp:   tx.timestamp ? new Date(tx.timestamp * 1000).toISOString() : "",
+      source:      tx.source      ?? "",
+      tokenTransfers: (tx.tokenTransfers ?? []).map(t => ({
+        mint:     t.mint     ?? "",
+        fromUser: t.fromUserAccount ?? "",
+        toUser:   t.toUserAccount   ?? "",
+        amount:   t.tokenAmount     ?? 0,
+      })),
+      nativeTransfers: (tx.nativeTransfers ?? []).map(n => ({
+        from:      n.fromUserAccount ?? "",
+        to:        n.toUserAccount   ?? "",
+        amountSol: (n.amount ?? 0) / 1e9,
+      })),
+      accountsInvolved: (tx.accountData ?? []).map(a => a.account ?? "").filter(Boolean),
+    };
+  } catch { return null; }
+}
+
+/**
+ * 17. Helius DAS — 用戶錢包所有資產 (MiscPlugin — getAssetsByOwner)
+ * 包含 NFT、壓縮 NFT、代幣等所有鏈上資產
+ * 用戶可詢問「我有哪些 NFT？」「我的資產組合」
+ */
+export async function sakGetWalletAssets(
+  walletAddress: string,
+  limit = 20
+): Promise<{
+  totalAssets: number;
+  nfts: Array<{ name: string; collection?: string; imageUri?: string; mint: string }>;
+  fungibleTokens: Array<{ symbol: string; mint: string; balance: number; usdValue?: number }>;
+  compressedNfts: number;
+}> {
+  const empty = { totalAssets: 0, nfts: [], fungibleTokens: [], compressedNfts: 0 };
+  if (!HELIUS_API_KEY) return empty;
+  try {
+    const agent  = createReadOnlyAgent();
+    const m      = agent.methods as Record<string, (...a: unknown[]) => Promise<unknown>>;
+    const result = await m.getAssetsByOwner?.(
+      new PublicKey(walletAddress),
+      limit,
+      1,
+      { showFungible: true, showNativeBalance: false },
+    ) as {
+      items?: Array<{
+        id?: string; interface?: string; compression?: { compressed?: boolean };
+        content?: { metadata?: { name?: string; symbol?: string }; links?: { image?: string } };
+        grouping?: Array<{ group_value?: string }>;
+        token_info?: { symbol?: string; balance?: number; price_info?: { price_per_token?: number } };
+      }>;
+      total?: number;
+    } | undefined;
+    if (!result?.items) return empty;
+    const nfts = result.items
+      .filter(a => a.interface === "V1_NFT" || a.interface === "ProgrammableNFT")
+      .map(a => ({
+        name:       a.content?.metadata?.name ?? "Unknown NFT",
+        collection: a.grouping?.[0]?.group_value,
+        imageUri:   a.content?.links?.image,
+        mint:       a.id ?? "",
+      }));
+    const compressed = result.items.filter(a => a.compression?.compressed).length;
+    const fungible   = result.items
+      .filter(a => a.interface === "FungibleToken" || a.interface === "FungibleAsset")
+      .map(a => ({
+        symbol:   a.content?.metadata?.symbol ?? a.token_info?.symbol ?? "?",
+        mint:     a.id ?? "",
+        balance:  a.token_info?.balance ?? 0,
+        usdValue: a.token_info?.price_info?.price_per_token
+          ? (a.token_info.balance ?? 0) * a.token_info.price_info.price_per_token
+          : undefined,
+      }));
+    return {
+      totalAssets:     result.total ?? result.items.length,
+      nfts,
+      fungibleTokens:  fungible,
+      compressedNfts:  compressed,
+    };
+  } catch { return empty; }
+}
+
+/**
+ * 18. Solayer 液態重質押 (Solayer API — SOL → sSOL)
+ * 返回待用戶 Phantom 簽名的 base64 交易
+ * Solayer 支持原生 SOL 重質押，兼容其他 LST
+ */
+export async function sakPrepareSolayerStakeTx(amountSol: number): Promise<{
+  txBase64: string; protocol: string;
+  description: string; estimatedAPY: string; outputToken: string;
+} | null> {
+  // Direct Solayer API (same endpoint SAK uses internally)
+  try {
+    const res = await fetch(
+      `https://app.solayer.org/api/action/restake/ssol?amount=${amountSol}`,
+      { method: "POST", headers: { "Content-Type": "application/json" } }
+    );
+    if (!res.ok) return null;
+    const data = await res.json() as { transaction?: string; message?: string };
+    if (!data.transaction) return null;
+    return {
+      txBase64:     data.transaction,
+      protocol:     "Solayer",
+      description:  `Stake ${amountSol} SOL → sSOL via Solayer Native Restaking`,
+      estimatedAPY: "6–8% APY (Native Restaking + EigenLayer)",
+      outputToken:  "sSOL",
+    };
+  } catch { return null; }
+}

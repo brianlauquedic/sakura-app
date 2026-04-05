@@ -43,6 +43,17 @@ import {
   sakGetSanctumLSTDetails,
   sakGetElfaTrendingTokens,
   sakEstimateCloseEmptyAccounts,
+  // ── 極致運用：10 個新工具 ──
+  sakGetTokenMetadata,
+  sakGetAlloraTopics,
+  sakGetAlloraInferenceByTopicId,
+  sakSearchElfaMentions,
+  sakGetElfaSmartMentions,
+  sakGetDriftOrderBook,
+  sakGetBridgeChains,
+  sakParseTransaction,
+  sakGetWalletAssets,
+  sakPrepareSolayerStakeTx,
   SOL_MINT,
   USDC_MINT,
 } from "@/lib/agent";
@@ -460,6 +471,115 @@ Use symbol='SOL' for Solana, or provide mint address for SPL tokens.`,
       required: ["wallet_address"],
     },
   },
+  // ── 極致運用：10 個新工具 ──────────────────────────────────────────────
+  {
+    name: "get_token_metadata",
+    description: "Get full token metadata from Jupiter: name, symbol, decimals, daily volume, freeze/mint authority status, tags, and CoinGecko ID. Use when user asks about token details, whether a token is verified, or needs decimals for calculations.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        mint: { type: "string", description: "Token mint address" },
+      },
+      required: ["mint"],
+    },
+  },
+  {
+    name: "get_allora_topics",
+    description: "List all available Allora Network ML inference topics (price predictions for different assets). Use to discover what topics are available before calling get_allora_inference_by_topic.",
+    input_schema: {
+      type: "object" as const,
+      properties: {},
+      required: [],
+    },
+  },
+  {
+    name: "get_allora_inference_by_topic",
+    description: "Get Allora Network ML price inference for a specific topic ID. More flexible than get_price_prediction — supports any asset, not just SOL. First call get_allora_topics to find the right topic ID.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        topic_id: { type: "number", description: "Allora topic ID (get from get_allora_topics)" },
+      },
+      required: ["topic_id"],
+    },
+  },
+  {
+    name: "search_social_mentions",
+    description: "Search crypto social media (Twitter/X) for posts containing specific keywords using Elfa AI. Use when user wants to know what people are saying about a specific topic, token, or narrative (e.g. 'Solana ETF', 'SOL breakout', '$JUP listing').",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        keywords:  { type: "string", description: "Search keywords (e.g. 'SOL breakout', '$BONK pump', 'Solana ETF')" },
+        from_days: { type: "number", description: "How many days back to search (default: 7)" },
+      },
+      required: ["keywords"],
+    },
+  },
+  {
+    name: "get_smart_social_mentions",
+    description: "Get the latest social media posts from smart money / KOL accounts tracked by Elfa AI. Shows what influential crypto figures are currently talking about. Use for macro intelligence and early alpha.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        limit: { type: "number", description: "Number of posts to return (default: 20, max: 50)" },
+      },
+      required: [],
+    },
+  },
+  {
+    name: "get_drift_orderbook",
+    description: "Get real-time L2 order book (bids/asks) for any Drift perpetual market. Shows market depth, best bid/ask, and oracle price. Use when user asks about market liquidity, price impact of large trades, or spread analysis.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        market: { type: "string", description: "Market symbol: SOL-PERP, BTC-PERP, ETH-PERP, etc. (default: SOL-PERP)" },
+      },
+      required: [],
+    },
+  },
+  {
+    name: "get_bridge_chains",
+    description: "List all blockchain networks supported by deBridge for cross-chain transfers. Use when user asks which chains they can bridge to/from, or before making bridge recommendations.",
+    input_schema: {
+      type: "object" as const,
+      properties: {},
+      required: [],
+    },
+  },
+  {
+    name: "parse_transaction",
+    description: "Parse and explain any Solana transaction using Helius enhanced API. Returns human-readable description of what happened: swaps, transfers, staking, etc. Use when user pastes a transaction signature and asks 'what did this transaction do?'",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        tx_signature: { type: "string", description: "Solana transaction signature (base58 encoded, ~88 chars)" },
+      },
+      required: ["tx_signature"],
+    },
+  },
+  {
+    name: "get_wallet_assets",
+    description: "Get all assets in a wallet using Helius DAS API: NFTs, compressed NFTs, fungible tokens. Use when user asks about their NFT portfolio, what tokens they hold, or a complete wallet overview.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        wallet_address: { type: "string", description: "Solana wallet address" },
+        limit:          { type: "number", description: "Max assets to return (default: 20)" },
+      },
+      required: ["wallet_address"],
+    },
+  },
+  {
+    name: "prepare_solayer_stake",
+    description: "Prepare a Solayer native restaking transaction (SOL → sSOL). Solayer offers ~6-8% APY through native restaking + EigenLayer. Returns a serialized transaction for user to sign with Phantom. Use when user wants to stake SOL for maximum yield beyond standard LSTs.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        amount_sol: { type: "number", description: "Amount of SOL to stake via Solayer" },
+      },
+      required: ["amount_sol"],
+    },
+  },
 ];
 
 // ── Tool execution (SAK-backed) ──────────────────────────────────────────────
@@ -846,6 +966,110 @@ async function executeTool(name: string, input: Record<string, unknown>): Promis
       const result = await sakEstimateCloseEmptyAccounts(wallet);
       return { ...result, dataSource: "Solana RPC Token Accounts", action: result.estimatedAccounts > 0 ? "可在錢包管理頁面執行清理" : undefined };
     }
+    // ── 極致運用：10 個新 SAK 工具 ──────────────────────────────────────
+    case "get_token_metadata": {
+      const mint = input.mint as string;
+      const meta = await sakGetTokenMetadata(mint);
+      if (!meta) return { error: `Token metadata not found for mint: ${mint}` };
+      const warnings: string[] = [];
+      if (meta.mintAuthority) warnings.push("⚠️ 此代幣仍可增發（Mint Authority 未放棄）");
+      if (meta.freezeAuthority) warnings.push("⚠️ 此代幣帳戶可被凍結（Freeze Authority 存在）");
+      if (!meta.isVerified) warnings.push("ℹ️ 此代幣未通過 Jupiter 驗證");
+      return { ...meta, warnings, dataSource: "Jupiter Token List via SAK TokenPlugin" };
+    }
+    case "get_allora_topics": {
+      const topics = await sakGetAlloraTopics();
+      return {
+        topics,
+        count: topics.length,
+        dataSource: "Allora Network ML via SAK MiscPlugin",
+        note: topics.length === 0
+          ? "Allora topics unavailable — set ALLORA_API_KEY for access"
+          : `${topics.length} ML inference topics available. Use get_allora_inference_by_topic with a topicId for predictions.`,
+      };
+    }
+    case "get_allora_inference_by_topic": {
+      const topicId = input.topic_id as number;
+      const inference = await sakGetAlloraInferenceByTopicId(topicId);
+      if (!inference) return { error: `Allora inference unavailable for topic ${topicId}. Check ALLORA_API_KEY.` };
+      return { ...inference, dataSource: "Allora Network ML via SAK MiscPlugin" };
+    }
+    case "search_social_mentions": {
+      const keywords = input.keywords as string;
+      const fromDays = (input.from_days as number | undefined) ?? 7;
+      const mentions = await sakSearchElfaMentions(keywords, fromDays);
+      return {
+        keywords, fromDays, mentions, count: mentions.length,
+        dataSource: "Elfa AI Social Search via SAK MiscPlugin",
+        note: mentions.length === 0
+          ? "No mentions found — set ELFA_API_KEY for full social search access"
+          : `Found ${mentions.length} social posts mentioning "${keywords}"`,
+      };
+    }
+    case "get_smart_social_mentions": {
+      const limit = (input.limit as number | undefined) ?? 20;
+      const posts = await sakGetElfaSmartMentions(limit);
+      // Aggregate mentioned tickers
+      const tickerFreq: Record<string, number> = {};
+      posts.forEach(p => p.mentionedTickers.forEach(t => { tickerFreq[t] = (tickerFreq[t] ?? 0) + 1; }));
+      const topTickers = Object.entries(tickerFreq).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([t, c]) => `${t}(×${c})`);
+      return {
+        posts, count: posts.length, topMentionedTickers: topTickers,
+        dataSource: "Elfa AI Smart Mentions via SAK MiscPlugin",
+        note: posts.length === 0 ? "Set ELFA_API_KEY for smart money social feed" : undefined,
+      };
+    }
+    case "get_drift_orderbook": {
+      const market = ((input.market as string | undefined) ?? "SOL-PERP").toUpperCase();
+      const book = await sakGetDriftOrderBook(market);
+      if (!book) return { error: `Order book unavailable for ${market}` };
+      return { ...book, dataSource: "Drift DLOB via SAK DefiPlugin" };
+    }
+    case "get_bridge_chains": {
+      const chains = await sakGetBridgeChains();
+      return {
+        chains, count: chains.length,
+        dataSource: "deBridge via SAK DefiPlugin",
+        note: chains.length === 0
+          ? "deBridge API unavailable"
+          : `${chains.length} chains supported. Use get_bridge_quote to get transfer quotes.`,
+      };
+    }
+    case "parse_transaction": {
+      const sig = input.tx_signature as string;
+      const parsed = await sakParseTransaction(sig);
+      if (!parsed) return {
+        error: "Transaction parsing failed. Ensure HELIUS_API_KEY is set and the signature is valid.",
+        tip: "Paste a valid Solana transaction signature (base58, ~88 characters)",
+      };
+      return { ...parsed, dataSource: "Helius Enhanced Transaction API via SAK MiscPlugin" };
+    }
+    case "get_wallet_assets": {
+      const wallet = input.wallet_address as string;
+      const limit  = (input.limit as number | undefined) ?? 20;
+      const assets = await sakGetWalletAssets(wallet, limit);
+      const totalUSD = assets.fungibleTokens.reduce((s, t) => s + (t.usdValue ?? 0), 0);
+      return {
+        ...assets,
+        totalFungibleUSD: parseFloat(totalUSD.toFixed(2)),
+        dataSource: "Helius DAS API via SAK MiscPlugin",
+        summary: `${assets.nfts.length} NFTs, ${assets.fungibleTokens.length} fungible tokens, ${assets.compressedNfts} compressed NFTs`,
+      };
+    }
+    case "prepare_solayer_stake": {
+      const amountSol = input.amount_sol as number;
+      const result = await sakPrepareSolayerStakeTx(amountSol);
+      if (!result) return {
+        error: "Solayer staking unavailable. The Solayer API may be temporarily down.",
+        fallback: "Consider Marinade (prepare_stake_tx with protocol='marinade') as alternative.",
+      };
+      return {
+        ...result,
+        action: { type: "stake", protocol: "Solayer", amount: amountSol, outputToken: "sSOL" },
+        note: "Transaction prepared. User must sign with Phantom wallet to execute.",
+        dataSource: "Solayer Native Restaking API via SAK DefiPlugin pattern",
+      };
+    }
     default:
       return { error: `Unknown tool: ${name}` };
   }
@@ -896,29 +1120,47 @@ export async function POST(req: NextRequest) {
 
       const client = new Anthropic({ apiKey: ANTHROPIC_API_KEY });
 
-      const systemPrompt = `You are Sakura, an AI-powered DeFi advisor for Solana.
-You have access to real-time data tools. Use them proactively.
+      const systemPrompt = `You are Sakura, an AI-powered DeFi advisor for Solana with access to 40 real-time tools.
 
-TOOL USAGE RULES (严格遵守):
-1. ALWAYS call get_apy_data before making yield/staking/lending recommendations.
-2. ALWAYS call get_wallet_balance to understand the user's portfolio first.
-3. ALWAYS call get_technical_analysis before recommending entry/exit price levels for any token.
-   - The TA engine runs MACD + RSI + Bollinger Bands + OBV + Elliott Wave + Fibonacci.
-   - Only issue a "buy" recommendation if coreGatePassed=true (all 4 core conditions met).
-   - Include the TA tier (strong_buy/buy/neutral/sell/strong_sell) and score in your answer.
-   - Quote the exact TP1/TP2/stopLoss levels calculated from Fibonacci extensions.
-4. Call output_strategy AFTER calling get_technical_analysis when you have a buy/sell recommendation.
-   Use the entry/tp1/tp2/stopLoss from TA result — do NOT invent price levels.
+━━ TOOL USAGE RULES (MANDATORY) ━━
+1. ALWAYS call get_apy_data before yield/staking/lending recommendations.
+2. ALWAYS call get_wallet_balance to understand portfolio first.
+3. ALWAYS call get_technical_analysis before recommending entry/exit levels.
+   - Only issue "buy" if coreGatePassed=true. Use exact TP1/TP2/stopLoss from result.
+4. Call output_strategy AFTER get_technical_analysis for buy/sell recommendations.
+5. For market sentiment questions: call get_fear_greed + get_technical_analysis together.
+6. For "what's happening with [token]": call get_crypto_news + get_social_sentiment together.
+7. For comprehensive research: call get_messari_research + get_defi_llama + get_technical_analysis.
+
+━━ TOOL CAPABILITIES ━━
+PRICING: get_token_price (Jupiter), get_pyth_price (Pyth oracle 400ms), get_token_metadata (full info)
+YIELD:   get_apy_data, get_sanctum_apy, get_sanctum_lst_details (APY+TVL+price), get_drift_borrow_apy
+TRADING: compare_swap_quotes (Jupiter vs OKX), prepare_swap_tx, prepare_stake_tx, prepare_solayer_stake (sSOL)
+ORDERS:  get_user_limit_orders, get_drift_orderbook (L2 depth), get_drift_perp_markets (funding rates)
+BRIDGE:  get_bridge_quote, get_bridge_chains (all supported chains)
+ANALYSIS: get_technical_analysis (6 indicators), get_defi_llama (TVL), get_messari_research (institutional)
+SENTIMENT: get_fear_greed, get_social_sentiment, get_elfa_trending_tokens, get_smart_social_mentions
+SEARCH:  search_social_mentions (keyword search on crypto social), get_crypto_news
+ALLORA:  get_price_prediction (SOL), get_allora_topics (all ML topics), get_allora_inference_by_topic
+WALLET:  get_wallet_balance, get_wallet_assets (NFTs+tokens via Helius DAS), estimate_close_empty_accounts
+UTILITY: parse_transaction (explain any tx hash), get_network_status (TPS), resolve_token_ticker
+
+━━ DATA PRECISION ━━
+- Use Pyth oracle (get_pyth_price) for time-sensitive trades — updates every 400ms
+- Use Sanctum LST details for comprehensive LST comparison with TVL validation
+- Use DeFiLlama TVL to validate protocol health before recommending
+- Combine Fear&Greed + TA score for highest-confidence entry signals
+- For social alpha: search_social_mentions + get_smart_social_mentions together
 
 Wallet: ${body.walletAddress}
-${body.walletSnapshot ? `Current holdings: ${body.walletSnapshot.solBalance.toFixed(3)} SOL, $${body.walletSnapshot.totalUSD.toFixed(0)} total, $${body.walletSnapshot.idleUSDC.toFixed(0)} idle USDC` : ""}
-${body.sessionSummary ? `Previous conversation summary: ${body.sessionSummary}` : ""}
+${body.walletSnapshot ? `Portfolio: ${body.walletSnapshot.solBalance.toFixed(3)} SOL | $${body.walletSnapshot.totalUSD.toFixed(0)} total | $${body.walletSnapshot.idleUSDC.toFixed(0)} idle USDC` : ""}
+${body.sessionSummary ? `Session context: ${body.sessionSummary}` : ""}
 
 Rules:
-- Be specific with numbers (exact SOL amounts, exact APY %, exact USD values)
-- Always explain WHY you chose one protocol over another
-- If preparing transactions, clearly state what the user needs to sign
-- Keep responses under 300 words but information-dense
+- Be specific with numbers (exact SOL amounts, exact APY %, exact USD)
+- Always cite which data source you used and when it was retrieved
+- If preparing transactions, state exactly what the user needs to sign
+- When multiple staking options exist, compare APY + TVL + protocol risk
 - Respond in the same language as the user's message`;
 
       const messages: Anthropic.MessageParam[] = [
