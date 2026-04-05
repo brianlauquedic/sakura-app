@@ -229,7 +229,7 @@ function ShareModal({ data, onClose }: { data: WalletData; onClose: () => void }
   const short = `${data.address.slice(0, 6)}...${data.address.slice(-4)}`;
   const scoreLabel = data.healthScore >= 70 ? `${t("healthy")} ✅` : data.healthScore >= 45 ? `${t("needsAttention")} ⚠️` : `${t("highRisk")} 🚨`;
 
-  const text = `📊 ${t("walletHealthReport")} via Sakura AI
+  const text = `🌸 ${t("walletHealthReport")} via Sakura AI
 
 🏥 Score: ${data.healthScore}/100 ${scoreLabel}
 💰 ${t("totalAssets")}: $${data.totalUSD.toLocaleString(undefined, { maximumFractionDigits: 0 })}
@@ -808,7 +808,7 @@ function SmartMoneySection() {
           <div style={{ display: "flex", borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)" }}>
             {([
               { key: "consensus", label: "🎯 共識信號" },
-              { key: "wallets",   label: "📊 地址追蹤" },
+              { key: "wallets",   label: "🌸 地址追蹤" },
             ] as const).map(t => (
               <button
                 key={t.key}
@@ -925,7 +925,7 @@ function SmartMoneySection() {
             // ── Wallets tab ──
             <div>
               <div style={{ padding: "8px 20px 4px", fontSize: 11, color: "var(--text-muted)" }}>
-                📊 核心聰明錢地址（按活躍度排序）
+                🌸 核心聰明錢地址（按活躍度排序）
               </div>
               {/* Column header */}
               <div style={{
@@ -1163,7 +1163,7 @@ function ScoreBreakdown({ data }: { data: WalletData }) {
         }}
       >
         <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>
-          📊 健康分數是怎麼算的？
+          🌸 健康分數是怎麼算的？
         </div>
         <span style={{ fontSize: 11, color: "var(--text-secondary)" }}>{open ? "收起 ▲" : "查看详情 ▼"}</span>
       </button>

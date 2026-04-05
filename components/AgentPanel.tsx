@@ -427,7 +427,7 @@ export default function AgentPanel({ walletAddress, walletSnapshot }: Props) {
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
             <div style={{ fontSize: 12, fontWeight: 700, color: signedMandate ? "#8B5CF6" : "#475569" }}>
-              {signedMandate ? "🔐 投資規則已簽名上鏈" : "⚙️ 設置投資規則（可選）"}
+              {signedMandate ? "⛩️ 投資規則已簽名上鏈" : "⚙️ 設置投資規則（可選）"}
             </div>
             {signedMandate && (
               <div style={{ fontSize: 10, color: "var(--text-secondary)", marginTop: 3 }}>
@@ -676,7 +676,7 @@ export default function AgentPanel({ walletAddress, walletSnapshot }: Props) {
           }}>
             <div>
               <div style={{ fontSize: 11, color: "var(--text-secondary)", marginBottom: 4 }}>
-                🔐 {t("aiReasoningHash")}
+                ⛩️ {t("aiReasoningHash")}
               </div>
               <div style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: "monospace" }}>
                 {plan.memoPayload} · SHA-256: {plan.planHash.slice(0, 20)}...
@@ -909,7 +909,7 @@ function GuardianConditionsPanel() {
                       }}>{ACTION_LABEL[c.action] ?? c.action}</span>
                       {c.triggeredAt && (
                         <span style={{ fontSize: 10, color: "var(--accent)" }}>
-                          ⚡ {new Date(c.triggeredAt).toLocaleDateString("zh-TW", { month: "short", day: "numeric" })}
+                          🌸 {new Date(c.triggeredAt).toLocaleDateString("zh-TW", { month: "short", day: "numeric" })}
                         </span>
                       )}
                       <button

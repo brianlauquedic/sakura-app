@@ -177,7 +177,7 @@ function generateResponse(
         text: `質押 **${amt.toFixed(2)} SOL** 到流動性質押協議，年化 ${(marinadeAPY * 100).toFixed(1)}-${(jitoAPY * 100).toFixed(1)}%，mSOL/jitoSOL 可繼續用於 DeFi：`,
         actions: [
           { protocol: "Marinade Finance", icon: "🫙", action: `質押 ${amt.toFixed(2)} SOL → mSOL`, detail: "全鏈最大 SOL 質押協議，流動性最好", apy: `${(marinadeAPY * 100).toFixed(1)}%`, estimatedEarn: `+${(amt * marinadeAPY).toFixed(3)} SOL/年`, url: "https://marinade.finance/", color: "#8B5CF6", riskLevel: "低" },
-          { protocol: "Jito", icon: "⚡", action: `質押 ${amt.toFixed(2)} SOL → jitoSOL`, detail: "含 MEV 獎励，APY 略高於 Marinade", apy: `${(jitoAPY * 100).toFixed(1)}%`, estimatedEarn: `+${(amt * jitoAPY).toFixed(3)} SOL/年`, url: "https://www.jito.network/staking/", color: "#06B6D4", riskLevel: "低" },
+          { protocol: "Jito", icon: "🫙", action: `質押 ${amt.toFixed(2)} SOL → jitoSOL`, detail: "含 MEV 獎励，APY 略高於 Marinade", apy: `${(jitoAPY * 100).toFixed(1)}%`, estimatedEarn: `+${(amt * jitoAPY).toFixed(3)} SOL/年`, url: "https://www.jito.network/staking/", color: "#06B6D4", riskLevel: "低" },
         ],
       };
     }
@@ -206,11 +206,11 @@ function generateResponse(
     case "portfolio_check":
       return { text: `你的錢包總資產 **$${total.toFixed(0)}**，含 **${sol.toFixed(3)} SOL** + **$${usdc.toFixed(0)} USDC** 閒置。切換到「🏥 錢包体檢」Tab 查看完整報告。\n\n用我做什麼操作？` };
     case "analyze_token":
-      return { text: `切換到「🔍 代幣分析」Tab，貼上合約地址 **${intent.mint.slice(0, 8)}...** 即可獲得安全評分和買入建議。` };
+      return { text: `切換到「🌸 代幣分析」Tab，貼上合約地址 **${intent.mint.slice(0, 8)}...** 即可獲得安全評分和買入建議。` };
     case "rug_check":
-      return { text: `檢測 **$${intent.token}** 安全性：切換到「🔍 代幣分析」Tab，輸入合約地址，Sakura 將檢測增發權限、持幣集中度、蜜罐等 5 項風險。` };
+      return { text: `檢測 **$${intent.token}** 安全性：切換到「🌸 代幣分析」Tab，輸入合約地址，Sakura 將檢測增發權限、持幣集中度、蜜罐等 5 項風險。` };
     default:
-      return { text: `我可以幫你：\n\n💰 **收益** — "幫我質押 2 SOL" / "USDC 存哪里利息最高"\n🔍 **安全** — "分析這個代幣 [地址]"\n💱 **交易** — "把 1 SOL 換成 USDC"\n📊 **資產** — "查看我的收益机会"`, actions: [] };
+      return { text: `我可以幫你：\n\n💰 **收益** — "幫我質押 2 SOL" / "USDC 存哪里利息最高"\n🌸 **安全** — "分析這個代幣 [地址]"\n💱 **交易** — "把 1 SOL 換成 USDC"\n🌸 **資產** — "查看我的收益机会"`, actions: [] };
   }
 }
 
@@ -292,7 +292,7 @@ function OpportunityPanel({
         marginBottom: 12,
       }}>
         <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>
-          💡 為你發現的收益机会
+          🪷 為你發現的收益机会
         </div>
         {totalAnnual > 0 && (
           <div style={{
@@ -464,7 +464,7 @@ export default function DefiAssistant({ walletAddress, walletSnapshot }: Props) 
                 setMessages(prev => [...prev, {
                   id: Date.now(),
                   role: "assistant",
-                  text: `🔔 **主動提醒** — ${alertText}。要調整持倉吗？`,
+                  text: `🪭 **主動提醒** — ${alertText}。要調整持倉吗？`,
                   isAgentInitiated: true,
                 }]);
                 break; // alert once per cycle
@@ -489,7 +489,7 @@ export default function DefiAssistant({ walletAddress, walletSnapshot }: Props) 
         .then((data: { alerts: Array<{ id: string; message: string; timestamp: number; severity: string }>; count: number }) => {
           if (!data.alerts || data.count === 0) return;
           for (const alert of data.alerts.slice(0, 3)) {
-            const emoji = alert.severity === "critical" ? "🚨" : alert.severity === "warning" ? "⚠️" : "🔔";
+            const emoji = alert.severity === "critical" ? "🚨" : alert.severity === "warning" ? "⚠️" : "🪭";
             setToast({ id: alert.timestamp, text: alert.message });
             setMessages(prev => [...prev, {
               id: alert.timestamp,
@@ -531,7 +531,7 @@ export default function DefiAssistant({ walletAddress, walletSnapshot }: Props) 
               setMessages(prev => [...prev, {
                 id: Date.now(),
                 role: "assistant",
-                text: `🔔 **價格提醒** — ${alertText}。要查看详情或操作吗？`,
+                text: `🪭 **價格提醒** — ${alertText}。要查看详情或操作吗？`,
                 isAgentInitiated: true,
               }]);
               saveLastPrice(token.mint, newPrice);
@@ -692,7 +692,7 @@ export default function DefiAssistant({ walletAddress, walletSnapshot }: Props) 
                 accStrategyCards = [...accStrategyCards, parsed as StrategyCard];
                 setMessages(prev => prev.map(m =>
                   m.id === assistantId
-                    ? { ...m, isTyping: true, thinkingStep: `📊 策略卡片：${(parsed as StrategyCard).asset}` }
+                    ? { ...m, isTyping: true, thinkingStep: `🌸 策略卡片：${(parsed as StrategyCard).asset}` }
                     : m
                 ));
               } else if (event === "thinking_delta") {
@@ -700,7 +700,7 @@ export default function DefiAssistant({ walletAddress, walletSnapshot }: Props) 
                 setThinkingText(accThinking);
                 setMessages(prev => prev.map(m =>
                   m.id === assistantId
-                    ? { ...m, isTyping: true, thinkingStep: "🧠 思考中..." }
+                    ? { ...m, isTyping: true, thinkingStep: "🌿 思考中..." }
                     : m
                 ));
               } else if (event === "thinking") {
@@ -790,7 +790,7 @@ export default function DefiAssistant({ walletAddress, walletSnapshot }: Props) 
             animation: "slideIn 0.3s ease-out",
           }}
         >
-          <span style={{ flexShrink: 0 }}>🤖</span>
+          <span style={{ flexShrink: 0 }}>⚙️</span>
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 700, color: "#8B5CF6", marginBottom: 2, fontSize: 10 }}>
               SOLIS AGENT
@@ -821,7 +821,7 @@ export default function DefiAssistant({ walletAddress, walletSnapshot }: Props) 
               color: "#8B5CF6", fontSize: 11, fontWeight: 700, textAlign: "left",
             }}
           >
-            <span style={{ animation: "pulse 1.5s infinite", display: "inline-block" }}>🧠</span>
+            <span style={{ animation: "pulse 1.5s infinite", display: "inline-block" }}>🌿</span>
             Sakura 正在思考... ({thinkingText.length} chars)
             <span style={{ marginLeft: "auto", color: "var(--text-secondary)" }}>{thinkingOpen ? "▲" : "▼"}</span>
           </button>
@@ -1035,7 +1035,7 @@ export default function DefiAssistant({ walletAddress, walletSnapshot }: Props) 
         }}>
           <div>
             <div style={{ fontSize: 13, fontWeight: 700, color: "#8B5CF6", marginBottom: 2 }}>
-              🤖 AI 顾问 — Claude Sonnet 4.6
+              ⚙️ AI 顾问 — Claude Sonnet 4.6
             </div>
             <div style={{ fontSize: 11, color: "var(--text-secondary)" }}>
               {advisorQuota.remaining > 0
@@ -1423,7 +1423,7 @@ function ReasoningBox({
               animation: "pulse 1s ease-in-out infinite",
             }} />
           ) : (
-            <span style={{ fontSize: 10 }}>🔐</span>
+            <span style={{ fontSize: 10 }}>⛩️</span>
           )}
           <span style={{ fontSize: 10, color: "var(--text-secondary)" }}>可验證推理</span>
           <span style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: "monospace" }}>
@@ -1452,7 +1452,7 @@ function ReasoningBox({
               background: "none", border: "1px solid var(--border)",
               borderRadius: 6, padding: "4px 10px", cursor: "pointer", textAlign: "left",
             }}>
-              {memoStatus === "sending" ? "⏳ 寫入中..." : memoStatus === "error" ? "❌ 失败，重試" : "⛓ 寫入 Solana 鏈上"}
+              {memoStatus === "sending" ? "🌿 寫入中..." : memoStatus === "error" ? "❌ 失败，重試" : "⛩️ 寫入 Solana 鏈上"}
             </button>
           )}
         </div>
@@ -1543,7 +1543,7 @@ function SmartMoneyPanel() {
       <div style={{ display: "flex", borderBottom: "1px solid var(--border)" }}>
         {([
           { key: "consensus", label: "🎯 共識信號" },
-          { key: "wallets",   label: "📊 地址追蹤" },
+          { key: "wallets",   label: "🌸 地址追蹤" },
         ] as const).map(t => (
           <button
             key={t.key}
@@ -1688,7 +1688,7 @@ function SmartMoneyPanel() {
         // ── Wallets tab ──
         <div>
           <div style={{ padding: "8px 16px 4px", fontSize: 11, color: "var(--text-muted)", display: "flex", alignItems: "center", gap: 6 }}>
-            <span>📊</span>
+            <span>🌸</span>
             <span style={{ fontFamily: "var(--font-heading, serif)", letterSpacing: "0.02em" }}>核心聰明錢地址（按活躍度排序）</span>
           </div>
 

@@ -165,7 +165,7 @@ export default function PricingPage() {
   const TIER_STYLE = {
     free:  { accent: "var(--text-secondary)", border: "var(--border)", bg: "var(--bg-card)", badge: "" },
     basic: { accent: "#8B5CF6", border: "rgba(139,92,246,0.35)", bg: "rgba(139,92,246,0.06)", badge: "🔵" },
-    pro:   { accent: "#F59E0B", border: "rgba(245,158,11,0.35)", bg: "rgba(245,158,11,0.06)", badge: "⭐" },
+    pro:   { accent: "#F59E0B", border: "rgba(245,158,11,0.35)", bg: "rgba(245,158,11,0.06)", badge: "🪷" },
   };
 
   const savingsPct = billing === "annual" ? 30 : 0;
@@ -365,7 +365,7 @@ export default function PricingPage() {
                 fontSize: 13, textAlign: "center",
                 color: message.type === "success" ? "#10B981" : "#EF4444",
               }}>
-                {message.type === "success" ? "✅" : "⚠️"} {message.text}
+                {message.type === "success" ? "🌸" : "⚠️"} {message.text}
               </div>
             )}
 
@@ -489,7 +489,7 @@ export default function PricingPage() {
                       } as React.CSSProperties}
                     >
                       {isCurrent
-                        ? "✅ 當前方案"
+                        ? "🌸 當前方案"
                         : plan.tier === "free"
                           ? "免費開始"
                           : isActivating
@@ -576,7 +576,7 @@ export default function PricingPage() {
               borderRadius: 16, padding: "20px 28px",
               display: "flex", gap: 16, alignItems: "flex-start",
             }}>
-              <span style={{ fontSize: 24, flexShrink: 0 }}>🔒</span>
+              <span style={{ fontSize: 24, flexShrink: 0 }}>⛩️</span>
               <div style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.7 }}>
                 <strong style={{ color: "var(--text-primary)" }}>鏈上支付，完全透明。</strong>
                 {" "}訂閱費透過 Phantom 直接發送至 Sakura 費用錢包（USDC on Solana）。

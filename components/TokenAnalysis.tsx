@@ -237,7 +237,7 @@ function ProofPanel({ ai }: { ai: AIAnalysis }) {
             borderRadius: 4, padding: "2px 8px", fontWeight: 700, letterSpacing: 1,
           }}>ON-CHAIN PROOF</span>
           <span style={{ fontSize: 11, color: "var(--text-secondary)" }}>
-            {ai.aiAvailable ? "🤖 Claude AI" : "⚙️ Rule Engine"} · {date}
+            {ai.aiAvailable ? "⚙️ Claude AI" : "⚙️ Rule Engine"} · {date}
           </span>
         </div>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
@@ -307,7 +307,7 @@ function ProofPanel({ ai }: { ai: AIAnalysis }) {
           fontSize: 11, color: copied ? "#10B981" : "#60A5FA",
           cursor: "pointer", whiteSpace: "nowrap",
         }}>
-          {copied ? t("copied") : "📋"}
+          {copied ? t("copied") : "🌿"}
         </button>
       </div>
 
@@ -358,11 +358,11 @@ function ProofPanel({ ai }: { ai: AIAnalysis }) {
             }}
           >
             {memoStatus === "paying" ? (
-              <>⏳ 支付 0.10 USDC...</>
+              <>🌿 支付 0.10 USDC...</>
             ) : memoStatus === "sending" ? (
-              <>⏳ {t("writingOnchain")}</>
+              <>🌿 {t("writingOnchain")}</>
             ) : (
-              <>🔐 {t("writeOnchain")} · 0.10 USDC</>
+              <>⛩️ {t("writeOnchain")} · 0.10 USDC</>
             )}
           </button>
           {memoStatus === "no_wallet" && (
@@ -801,9 +801,9 @@ export default function TokenAnalysis({ walletAddress }: Props) {
                 display: "flex", alignItems: "center", gap: 6,
               }}>
                 {loadingAI ? (
-                  <span style={{ color: "#8B5CF6" }}>🤖 Claude AI {t("analyzing")}</span>
+                  <span style={{ color: "#8B5CF6" }}>⚙️ Claude AI {t("analyzing")}</span>
                 ) : aiData?.aiAvailable ? (
-                  <span style={{ color: "#8B5CF6" }}>🤖 Claude AI</span>
+                  <span style={{ color: "#8B5CF6" }}>⚙️ Claude AI</span>
                 ) : (
                   <span>⚙️ Rule Engine</span>
                 )}
@@ -881,8 +881,8 @@ export default function TokenAnalysis({ walletAddress }: Props) {
                     whiteSpace: "nowrap",
                   }}
                 >
-                  {premiumStatus === "paying" ? "⏳ 支付中..." :
-                   premiumStatus === "loading" ? "⏳ 生成中..." :
+                  {premiumStatus === "paying" ? "🌿 支付中..." :
+                   premiumStatus === "loading" ? "🌿 生成中..." :
                    "解锁 1.00 USDC 深度报告"}
                 </button>
               </div>
@@ -901,7 +901,7 @@ export default function TokenAnalysis({ walletAddress }: Props) {
               borderRadius: 16, padding: 20, marginBottom: 16,
             }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: "#8B5CF6", marginBottom: 12 }}>
-                🤖 AI 深度分析{premiumData.demoMode ? "（演示模式）" : "（已验证付款）"}
+                ⛩️ AI 深度分析報告{premiumData.demoMode ? "（演示模式）" : "（已验证付款）"}
               </div>
               <div style={{
                 fontSize: 12, color: "var(--text-primary)", lineHeight: 1.8,
@@ -1010,7 +1010,7 @@ export default function TokenAnalysis({ walletAddress }: Props) {
         marginBottom: 12, display: "flex",
         alignItems: "center", justifyContent: "space-between",
       }}>
-        <span>📋 {t("aiRecommendations")}</span>
+        <span>🌿 {t("aiRecommendations")}</span>
         <span style={{ fontSize: 10, color: "var(--text-muted)" }}>{watchlist.length}/20</span>
       </div>
 

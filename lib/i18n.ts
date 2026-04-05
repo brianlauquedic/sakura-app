@@ -9,9 +9,9 @@ export function tpl(str: string, vars: Record<string, string | number> = {}): st
 export const translations = {
   // ── Header ──────────────────────────────────────────────────────
   verifyProof: {
-    zh: "🔐 驗證證明",
-    en: "🔐 Verify Proof",
-    ja: "🔐 証明を検証",
+    zh: "⛩️ 驗證證明",
+    en: "⛩️ Verify Proof",
+    ja: "⛩️ 証明を検証",
   },
 
   // ── Hackathon badge ──────────────────────────────────────────────
@@ -79,10 +79,10 @@ export const translations = {
   statLabel4: { zh: "AI 推理鏈上可驗證", en: "AI Reasoning Onchain", ja: "AI推論オンチェーン検証" },
 
   // ── Trust signals ────────────────────────────────────────────────
-  trust1: { zh: "🔐 唯讀 · 不持有資產", en: "🔐 Read-only · No Custody", ja: "🔐 読み取り専用 · 資産管理なし" },
+  trust1: { zh: "⛩️ 唯讀 · 不持有資產", en: "⛩️ Read-only · No Custody", ja: "⛩️ 読み取り専用 · 資産管理なし" },
   trust2: { zh: "⛓️ AI 推理鏈上存證", en: "⛓️ AI Reasoning Onchain", ja: "⛓️ AI推論オンチェーン記録" },
-  trust3: { zh: "🛡️ GoPlus 5 維度安全", en: "🛡️ GoPlus 5-Dim Security", ja: "🛡️ GoPlus 5次元セキュリティ" },
-  trust4: { zh: "⚡ Helius 實時數據", en: "⚡ Helius Real-time Data", ja: "⚡ Heliusリアルタイムデータ" },
+  trust3: { zh: "🔰 GoPlus 5 維度安全", en: "🔰 GoPlus 5-Dim Security", ja: "🔰 GoPlus 5次元セキュリティ" },
+  trust4: { zh: "🫙 Helius 實時數據", en: "🫙 Helius Real-time Data", ja: "🫙 Heliusリアルタイムデータ" },
 
   // ── CTA (new) ──────────────────────────────────────────────────────
   ctaFreeLabel: {
@@ -118,14 +118,14 @@ export const translations = {
     ja: "Sakura AIエージェントはHTTP 402 Payment Required標準をネイティブ実装。Claude Desktop、Cursor、VS Codeなど任意のMCPクライアントがSakura DeFi分析APIを直接呼び出し、1回ごとにUSDCを自動支払い——アカウント不要、真のAgent-to-Agent経済。",
   },
   stripeFeature1: {
-    zh: "⚡ 每次 API 調用自動 USDC 微支付",
-    en: "⚡ Automatic USDC micro-payment per API call",
-    ja: "⚡ API呼び出しごとに自動USDC少額決済",
+    zh: "🫙 每次 API 調用自動 USDC 微支付",
+    en: "🫙 Automatic USDC micro-payment per API call",
+    ja: "🫙 API呼び出しごとに自動USDC少額決済",
   },
   stripeFeature2: {
-    zh: "🤖 AI Agent 直接調用，無需人工介入",
-    en: "🤖 AI agents call directly — zero human intervention",
-    ja: "🤖 AIエージェントが直接呼び出し — 人間介入ゼロ",
+    zh: "⚙️ AI Agent 直接調用，無需人工介入",
+    en: "⚙️ AI agents call directly — zero human intervention",
+    ja: "⚙️ AIエージェントが直接呼び出し — 人間介入ゼロ",
   },
   stripeFeature3: {
     zh: "🌐 任何 MCP 客戶端均可接入",
@@ -135,7 +135,7 @@ export const translations = {
 
   // ── Connect ───────────────────────────────────────────────────────
   connectPhantom: { zh: "👻 連接 Phantom", en: "👻 Connect Phantom", ja: "👻 Phantomを接続" },
-  enterAddress: { zh: "📋 輸入地址", en: "📋 Enter Address", ja: "📋 アドレス入力" },
+  enterAddress: { zh: "🌿 輸入地址", en: "🌿 Enter Address", ja: "🌿 アドレス入力" },
   phantomDetected: {
     zh: "偵測到 Phantom 錢包。Sakura 僅讀取地址用於分析，不會請求任何簽名或轉帳權限。",
     en: "Phantom wallet detected. Sakura only reads your address for analysis — no signing or transfer permissions requested.",
@@ -184,14 +184,14 @@ export const translations = {
   positionDetails: { zh: "持倉明細", en: "Position Details", ja: "ポジション詳細" },
   sortedByValue: { zh: "個代幣，按價值排序", en: "tokens, sorted by value", ja: "トークン（価値順）" },
   noPriceData: { zh: "無價格數據", en: "No price data", ja: "価格データなし" },
-  viewOnSolscan: { zh: "🔍 在 Solscan 查看", en: "🔍 View on Solscan", ja: "🔍 Solscanで確認" },
-  rugCheckDetect: { zh: "🛡️ RugCheck 檢測", en: "🛡️ RugCheck Scan", ja: "🛡️ RugCheck検査" },
-  aiRecommendations: { zh: "📋 Sakura AI 建議", en: "📋 Sakura AI Recommendations", ja: "📋 Sakura AI 推奨" },
+  viewOnSolscan: { zh: "🌸 在 Solscan 查看", en: "🌸 View on Solscan", ja: "🌸 Solscanで確認" },
+  rugCheckDetect: { zh: "🔰 RugCheck 檢測", en: "🔰 RugCheck Scan", ja: "🔰 RugCheck検査" },
+  aiRecommendations: { zh: "🌿 Sakura AI 建議", en: "🌿 Sakura AI Recommendations", ja: "🌿 Sakura AI 推奨" },
   recommendation: { zh: "建議", en: "Recommendation", ja: "推奨" },
   opportunity: { zh: "機會", en: "Opportunity", ja: "機会" },
   risk: { zh: "風險", en: "Risk", ja: "リスク" },
   good: { zh: "良好", en: "Good", ja: "良好" },
-  shareReport: { zh: "📤 分享我的錢包報告", en: "📤 Share My Wallet Report", ja: "📤 ウォレットレポートをシェア" },
+  shareReport: { zh: "🪭 分享我的錢包報告", en: "🪭 Share My Wallet Report", ja: "🪭 ウォレットレポートをシェア" },
   scanning: { zh: "Sakura 正在掃描鏈上數據...", en: "Sakura is scanning onchain data...", ja: "Sakuraがオンチェーンデータをスキャン中..." },
   healthy: { zh: "健康", en: "Healthy", ja: "健全" },
   needsAttention: { zh: "需關注", en: "Needs Attention", ja: "要注意" },
@@ -205,7 +205,7 @@ export const translations = {
   meme: { zh: "Meme", en: "Meme", ja: "Meme" },
 
   // ── TokenAnalysis ──────────────────────────────────────────────
-  tokenSecurityAnalysis: { zh: "🛡️ 代幣安全分析", en: "🛡️ Token Security Analysis", ja: "🛡️ トークンセキュリティ分析" },
+  tokenSecurityAnalysis: { zh: "🔰 代幣安全分析", en: "🔰 Token Security Analysis", ja: "🔰 トークンセキュリティ分析" },
   tokenAnalysisSubtitle: {
     zh: "輸入任意 Solana 代幣合約地址，Sakura 立即調用 GoPlus · Jupiter · Helius 三方數據 + Claude AI 給出買入決策",
     en: "Enter any Solana token contract address. Sakura calls GoPlus · Jupiter · Helius + Claude AI for an instant buy/avoid decision.",
@@ -214,7 +214,7 @@ export const translations = {
   tokenAddressPlaceholder: { zh: "輸入代幣合約地址（Mint Address）...", en: "Enter token mint address...", ja: "トークンミントアドレスを入力..." },
   analyzeBtn: { zh: "開始分析 →", en: "Analyze →", ja: "分析開始 →" },
   analyzing: { zh: "掃描中...", en: "Scanning...", ja: "スキャン中..." },
-  hotTokens: { zh: "🔥 熱門代幣快速分析：", en: "🔥 Quick Analysis — Hot Tokens:", ja: "🔥 人気トークン クイック分析：" },
+  hotTokens: { zh: "🌺 熱門代幣快速分析：", en: "🌺 Quick Analysis — Hot Tokens:", ja: "🌺 人気トークン クイック分析：" },
   safetyScore: { zh: "安全評分", en: "Safety Score", ja: "安全スコア" },
   contractRisk: { zh: "🛡 合約風險詳情", en: "🛡 Contract Risk Details", ja: "🛡 コントラクトリスク詳細" },
   holderDistribution: { zh: "👥 持幣分布", en: "👥 Holder Distribution", ja: "👥 ホルダー分布" },
@@ -227,11 +227,11 @@ export const translations = {
   mintAuth: { zh: "增發權限", en: "Mint Authority", ja: "発行権限" },
   freezeAuth: { zh: "凍結權限", en: "Freeze Authority", ja: "凍結権限" },
   disclaimer: { zh: "以上分析僅供參考，不構成投資建議。加密貨幣投資有風險，請謹慎決策。", en: "Analysis is for reference only and does not constitute investment advice. Crypto investing involves risk.", ja: "本分析は参考情報のみであり、投資アドバイスではありません。暗号資産投資にはリスクが伴います。" },
-  writeOnchain: { zh: "🔐 寫入 Solana 鏈上", en: "🔐 Write to Solana", ja: "🔐 Solanaに記録" },
+  writeOnchain: { zh: "⛩️ 寫入 Solana 鏈上", en: "⛩️ Write to Solana", ja: "⛩️ Solanaに記録" },
   writingOnchain: { zh: "提交中...", en: "Submitting...", ja: "送信中..." },
   writtenOnchain: { zh: "已上鏈 ✓", en: "On-chain ✓", ja: "オンチェーン済 ✓" },
   unlockPremium: { zh: "解鎖 0.10 USDC", en: "Unlock 0.10 USDC", ja: "0.10 USDCでロック解除" },
-  premiumTitle: { zh: "🔒 AI 深度分析報告", en: "🔒 AI Deep Analysis Report", ja: "🔒 AI詳細分析レポート" },
+  premiumTitle: { zh: "⛩️ AI 深度分析報告", en: "⛩️ AI Deep Analysis Report", ja: "⛩️ AI詳細分析レポート" },
   premiumSubtitle: {
     zh: "Claude AI 生成完整風險評估 + 倉位建議，透過 x402 鏈上支付解鎖",
     en: "Claude AI generates complete risk assessment + position sizing. Unlocked via x402 onchain payment.",
@@ -249,10 +249,10 @@ export const translations = {
   sendBtn: { zh: "發送", en: "Send", ja: "送信" },
   clearHistory: { zh: "清除記錄", en: "Clear History", ja: "履歴を削除" },
   thinking: { zh: "思考中...", en: "Thinking...", ja: "考え中..." },
-  agentInitiated: { zh: "🤖 主動提醒", en: "🤖 Proactive Alert", ja: "🤖 プロアクティブ通知" },
+  agentInitiated: { zh: "⚙️ 主動提醒", en: "⚙️ Proactive Alert", ja: "⚙️ プロアクティブ通知" },
 
   // ── AgentPanel ───────────────────────────────────────────────────
-  agentPanelTitle: { zh: "🤖 AI 再平衡 Agent", en: "🤖 AI Rebalance Agent", ja: "🤖 AIリバランスエージェント" },
+  agentPanelTitle: { zh: "⚙️ AI 再平衡 Agent", en: "⚙️ AI Rebalance Agent", ja: "⚙️ AIリバランスエージェント" },
   agentPanelSubtitle: {
     zh: "自主分析你的持倉，生成量化收益方案，一鍵執行",
     en: "Autonomously analyzes your portfolio and generates a quantified yield plan — one click to execute.",
@@ -267,11 +267,11 @@ export const translations = {
   recommendedAllocation: { zh: "推薦配置", en: "Recommended Allocation", ja: "推奨配分" },
   currentAnnualYield: { zh: "當前年化", en: "Current Annual Yield", ja: "現在の年利" },
   projectedYield: { zh: "推薦後年化", en: "Projected Yield", ja: "推奨後の年利" },
-  submitOnchain: { zh: "⛓ 提交方案上鏈", en: "⛓ Commit Plan Onchain", ja: "⛓ プランをオンチェーンに送信" },
+  submitOnchain: { zh: "⛩️ 提交方案上鏈", en: "⛩️ Commit Plan Onchain", ja: "⛩️ プランをオンチェーンに送信" },
   submitting: { zh: "提交中...", en: "Submitting...", ja: "送信中..." },
   submitted: { zh: "已上鏈 ✓", en: "On-chain ✓", ja: "オンチェーン済 ✓" },
   execute: { zh: "執行", en: "Execute", ja: "実行" },
-  aiReasoningHash: { zh: "🔐 AI 推理哈希（可驗證）", en: "🔐 AI Reasoning Hash (Verifiable)", ja: "🔐 AI推論ハッシュ（検証可能）" },
+  aiReasoningHash: { zh: "⛩️ AI 推理哈希（可驗證）", en: "⛩️ AI Reasoning Hash (Verifiable)", ja: "⛩️ AI推論ハッシュ（検証可能）" },
   deterministicNote: {
     zh: "基於規則引擎生成（無 AI API Key 時的確定性方案）",
     en: "Generated by rule engine (deterministic fallback when no AI API key)",
@@ -331,10 +331,10 @@ export const translations = {
   gettingRates: { zh: "正在獲取實時利率...", en: "Fetching real-time rates...", ja: "リアルタイムレート取得中..." },
 
   // ── Share modal ───────────────────────────────────────────────────
-  shareTitle: { zh: "📤 分享你的錢包報告", en: "📤 Share Your Wallet Report", ja: "📤 ウォレットレポートをシェア" },
+  shareTitle: { zh: "🪭 分享你的錢包報告", en: "🪭 Share Your Wallet Report", ja: "🪭 ウォレットレポートをシェア" },
   shareHint: { zh: "複製下方內容，分享到 X / Twitter / Telegram", en: "Copy the text below and share on X / Twitter / Telegram", ja: "下のテキストをコピーしてX / Twitter / Telegramでシェア" },
-  copied: { zh: "✅ 已複製！", en: "✅ Copied!", ja: "✅ コピーしました！" },
-  copyText: { zh: "📋 複製文字", en: "📋 Copy Text", ja: "📋 テキストをコピー" },
+  copied: { zh: "🌸 已複製！", en: "🌸 Copied!", ja: "🌸 コピーしました！" },
+  copyText: { zh: "🌿 複製文字", en: "🌿 Copy Text", ja: "🌿 テキストをコピー" },
   close: { zh: "關閉", en: "Close", ja: "閉じる" },
 
   // ── Footer ────────────────────────────────────────────────────────
