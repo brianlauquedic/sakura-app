@@ -27,6 +27,11 @@ import {
   sakGetAlloraInference,
   sakGetSanctumAPY,
   sakGetOkxQuote,
+  sakGetTokenByTicker,
+  sakGetTopGainers,
+  sakGetTrendingPools,
+  sakGetBridgeQuote,
+  sakGetDriftBorrowAPY,
   SOL_MINT,
   USDC_MINT,
 } from "@/lib/agent";
@@ -281,6 +286,57 @@ Use symbol='SOL' for Solana, or provide mint address for SPL tokens.`,
       required: ["input_mint", "output_mint", "amount"],
     },
   },
+  {
+    name: "resolve_token_ticker",
+    description: "Resolve a token ticker/name to its Solana mint address using SAK TokenPlugin. Use when user mentions a token by name (e.g. 'WIF', 'BONK', 'JUP') and you need the mint address for price checks or swaps.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        ticker: { type: "string", description: "Token ticker symbol (e.g. WIF, BONK, JUP, PYTH)" },
+      },
+      required: ["ticker"],
+    },
+  },
+  {
+    name: "get_top_gainers",
+    description: "Get today's top performing tokens by price gain percentage using SAK MiscPlugin. Use when user asks about which tokens are going up, best performers, or market movers.",
+    input_schema: {
+      type: "object" as const,
+      properties: {},
+      required: [],
+    },
+  },
+  {
+    name: "get_trending_pools",
+    description: "Get currently trending liquidity pools on Solana (Raydium/Orca/Meteora) using SAK MiscPlugin. Returns volume, APR and token pairs. Use when user asks about yield opportunities, new pools, or liquidity mining.",
+    input_schema: {
+      type: "object" as const,
+      properties: {},
+      required: [],
+    },
+  },
+  {
+    name: "get_bridge_quote",
+    description: "Get cross-chain bridge quote via deBridge using SAK DefiPlugin. Supports Solana → Ethereum/BSC/Arbitrum. Use when user asks about moving assets cross-chain.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        to_chain:      { type: "string", enum: ["ethereum", "bsc", "arbitrum"], description: "Destination chain" },
+        token_address: { type: "string", description: "Token mint address on Solana" },
+        amount:        { type: "number", description: "Amount in token units" },
+      },
+      required: ["to_chain", "amount"],
+    },
+  },
+  {
+    name: "get_drift_borrow_apy",
+    description: "Get Drift Protocol real-time lending and borrowing APY rates using SAK DefiPlugin. More comprehensive than Kamino-only data. Use when user asks about borrowing costs or lending yields on Drift.",
+    input_schema: {
+      type: "object" as const,
+      properties: {},
+      required: [],
+    },
+  },
 ];
 
 // ── Tool execution (SAK-backed) ──────────────────────────────────────────────
@@ -532,6 +588,33 @@ async function executeTool(name: string, input: Record<string, unknown>): Promis
           ? "OKX DEX 未配置 API Key，僅顯示 Jupiter 報價。設置 OKX_API_KEY 環境變量即可啟用雙聚合器比較。"
           : undefined,
       };
+    }
+    case "resolve_token_ticker": {
+      const ticker = input.ticker as string;
+      const result = await sakGetTokenByTicker(ticker);
+      return result ?? { error: `Could not resolve ticker: ${ticker}` };
+    }
+    case "get_top_gainers": {
+      const gainers = await sakGetTopGainers();
+      return { gainers, count: gainers.length };
+    }
+    case "get_trending_pools": {
+      const pools = await sakGetTrendingPools();
+      return { pools, count: pools.length };
+    }
+    case "get_bridge_quote": {
+      const chainMap: Record<string, number> = { ethereum: 1, bsc: 56, arbitrum: 42161 };
+      const toChainId = chainMap[input.to_chain as string] ?? 1;
+      const result = await sakGetBridgeQuote(
+        toChainId,
+        (input.token_address as string) ?? SOL_MINT.toBase58(),
+        input.amount as number
+      );
+      return result ?? { error: "Bridge quote unavailable — deBridge may not support this route" };
+    }
+    case "get_drift_borrow_apy": {
+      const rates = await sakGetDriftBorrowAPY();
+      return { rates, count: rates.length };
     }
     default:
       return { error: `Unknown tool: ${name}` };
