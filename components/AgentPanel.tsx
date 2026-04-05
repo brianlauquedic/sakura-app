@@ -828,7 +828,7 @@ export default function AgentPanel({ walletAddress, walletSnapshot, isDayMode = 
       )}
 
       {/* ── Guardian Conditions ── */}
-      <GuardianConditionsPanel />
+      <GuardianConditionsPanel walletAddress={walletAddress} />
 
       {/* ── Idle state ── */}
       {agentState === "idle" && (
@@ -886,12 +886,12 @@ const CONDITION_TEMPLATES: Array<{
   metric: string; label: string; operator: string;
   threshold: number; action: string; description: string; color: string;
 }> = [
-  { metric: "sol_price",         label: "SOL 價格跌破",     operator: "<",  threshold: 150, action: "alert_only",    description: "SOL 跌破 $150 時提醒",       color: "#EF4444" },
-  { metric: "sol_price",         label: "SOL 價格突破",     operator: ">",  threshold: 200, action: "alert_only",    description: "SOL 突破 $200 時提醒",       color: "#10B981" },
-  { metric: "usdc_apy_kamino",   label: "USDC APY 上升",    operator: ">",  threshold: 8,   action: "prepare_lend",  description: "Kamino APY > 8% 準備存款",   color: "#06B6D4" },
-  { metric: "sol_apy_marinade",  label: "質押 APY 下降",    operator: "<",  threshold: 6,   action: "alert_only",    description: "Marinade APY < 6% 提醒",    color: "#F59E0B" },
-  { metric: "health_factor",     label: "健康系數警告",     operator: "<",  threshold: 1.5, action: "alert_only",    description: "借貸健康系數 < 1.5 緊急提醒", color: "#EF4444" },
-  { metric: "smart_money_buy",   label: "聰明錢買入信號",   operator: ">",  threshold: 2,   action: "alert_only",    description: "≥ 2個聰明錢同時買入提醒",   color: "#8B5CF6" },
+  { metric: "sol_price",         label: "SOL 價格跌破",     operator: "lt",  threshold: 150, action: "alert_only",    description: "SOL 跌破 $150 時提醒",       color: "#EF4444" },
+  { metric: "sol_price",         label: "SOL 價格突破",     operator: "gt",  threshold: 200, action: "alert_only",    description: "SOL 突破 $200 時提醒",       color: "#10B981" },
+  { metric: "usdc_apy_kamino",   label: "USDC APY 上升",    operator: "gt",  threshold: 8,   action: "prepare_lend",  description: "Kamino APY > 8% 準備存款",   color: "#06B6D4" },
+  { metric: "sol_apy_marinade",  label: "質押 APY 下降",    operator: "lt",  threshold: 6,   action: "alert_only",    description: "Marinade APY < 6% 提醒",    color: "#F59E0B" },
+  { metric: "health_factor",     label: "健康系數警告",     operator: "lt",  threshold: 1.5, action: "alert_only",    description: "借貸健康系數 < 1.5 緊急提醒", color: "#EF4444" },
+  { metric: "smart_money_buy",   label: "聰明錢買入信號",   operator: "gt",  threshold: 2,   action: "alert_only",    description: "≥ 2個聰明錢同時買入提醒",   color: "#8B5CF6" },
 ];
 
 const ACTION_LABEL: Record<string, string> = {
@@ -901,18 +901,33 @@ const ACTION_LABEL: Record<string, string> = {
   prepare_swap:  "🔄 準備兌換",
 };
 
-function GuardianConditionsPanel() {
+function GuardianConditionsPanel({ walletAddress }: { walletAddress: string }) {
   const [open, setOpen] = useState(false);
   const [conditions, setConditions] = useState<GuardianCondition[]>([]);
   const [loading, setLoading] = useState(false);
   const [adding, setAdding] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState(0);
   const [customThreshold, setCustomThreshold] = useState<string>("");
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  function showSuccess(msg: string) {
+    setSuccessMsg(msg);
+    setErrorMsg(null);
+    setTimeout(() => setSuccessMsg(null), 3500);
+  }
+  function showError(msg: string) {
+    setErrorMsg(msg);
+    setSuccessMsg(null);
+    setTimeout(() => setErrorMsg(null), 4000);
+  }
 
   async function loadConditions() {
     setLoading(true);
     try {
-      const res = await fetch("/api/cron/guardian/conditions");
+      const res = await fetch("/api/cron/guardian/conditions", {
+        headers: { "X-Wallet-Address": walletAddress ?? "" },
+      });
       if (!res.ok) return;
       const data = await res.json() as { conditions: GuardianCondition[] };
       setConditions(data.conditions ?? []);
@@ -921,34 +936,50 @@ function GuardianConditionsPanel() {
   }
 
   async function addCondition() {
+    if (!walletAddress) { showError("請先連接錢包"); return; }
     const tpl = CONDITION_TEMPLATES[selectedTemplate];
     const threshold = customThreshold ? parseFloat(customThreshold) : tpl.threshold;
-    if (isNaN(threshold)) return;
+    if (isNaN(threshold)) { showError("請輸入有效的數值"); return; }
 
     setAdding(true);
     try {
       const res = await fetch("/api/cron/guardian/conditions", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-Wallet-Address": walletAddress,
+          "X-Device-ID": (typeof window !== "undefined" ? localStorage.getItem("solis_device_id") ?? "" : ""),
+        },
         body: JSON.stringify({
-          metric: tpl.metric,
-          operator: tpl.operator,
+          metric:    tpl.metric,
+          operator:  tpl.operator,
           threshold,
-          action: tpl.action,
-          label: tpl.label,
+          action:    tpl.action,
+          label:     `${tpl.label} ${tpl.operator === "lt" ? "<" : ">"} ${threshold}`,
         }),
       });
       if (res.ok) {
         setCustomThreshold("");
+        showSuccess(`✅ 條件已新增：${tpl.label} ${tpl.operator === "lt" ? "<" : ">"} ${threshold}`);
         await loadConditions();
+      } else {
+        const err = await res.json() as { error?: string };
+        showError(err.error ?? "新增失敗，請重試");
       }
-    } catch { /* silent */ }
+    } catch { showError("網絡錯誤，請重試"); }
     finally { setAdding(false); }
   }
 
   async function deleteCondition(id: string) {
     try {
-      await fetch(`/api/cron/guardian/conditions?id=${id}`, { method: "DELETE" });
+      await fetch("/api/cron/guardian/conditions", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Wallet-Address": walletAddress ?? "",
+        },
+        body: JSON.stringify({ conditionId: id }),
+      });
       setConditions(prev => prev.filter(c => c.id !== id));
     } catch { /* silent */ }
   }
@@ -991,6 +1022,28 @@ function GuardianConditionsPanel() {
 
       {open && (
         <div style={{ marginTop: 16 }}>
+
+          {/* ── Success / Error Toast ── */}
+          {successMsg && (
+            <div style={{
+              background: "rgba(16,185,129,0.12)", border: "1px solid rgba(16,185,129,0.35)",
+              borderRadius: 8, padding: "10px 14px", marginBottom: 12,
+              fontSize: 13, color: "#10B981", fontWeight: 600,
+              display: "flex", alignItems: "center", gap: 8,
+            }}>
+              {successMsg}
+            </div>
+          )}
+          {errorMsg && (
+            <div style={{
+              background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)",
+              borderRadius: 8, padding: "10px 14px", marginBottom: 12,
+              fontSize: 13, color: "#EF4444", fontWeight: 600,
+            }}>
+              ❌ {errorMsg}
+            </div>
+          )}
+
           {loading ? (
             <div style={{ textAlign: "center", padding: 16, color: "var(--text-secondary)", fontSize: 13 }}>
               載入中...
