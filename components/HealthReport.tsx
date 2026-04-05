@@ -234,7 +234,7 @@ function ShareModal({ data, onClose }: { data: WalletData; onClose: () => void }
 🏥 Score: ${data.healthScore}/100 ${scoreLabel}
 💰 ${t("totalAssets")}: $${data.totalUSD.toLocaleString(undefined, { maximumFractionDigits: 0 })}
 🪙 SOL: ${data.solBalance.toFixed(3)} SOL ≈ $${data.solUSD.toFixed(0)}
-📦 ${t("holdingTokens")}: ${data.tokens.length} ${t("tokens")}
+📦 ${t("holdingTokens")}: ${(data.tokens ?? []).length} ${t("tokens")}
 ⚠️ ${t("highRiskTokens")}: ${data.riskyTokenCount}
 
 ${short}
@@ -332,7 +332,7 @@ export default function HealthReport({ walletAddress, onDisconnect, onDataLoaded
         const snap: PortfolioSnapshot = {
           address: walletAddress, totalUSD: json.totalUSD,
           solBalance: json.solBalance, healthScore: json.healthScore,
-          tokenCount: json.tokens.length, savedAt: Date.now(),
+          tokenCount: (json.tokens ?? []).length, savedAt: Date.now(),
         };
         saveSnapshot(snap);
         setHistory(getHistory(walletAddress));
@@ -411,7 +411,7 @@ export default function HealthReport({ walletAddress, onDisconnect, onDataLoaded
               <div style={{ width: 1, background: "var(--border)" }} />
               <div>
                 <div style={{ fontSize: 18, fontWeight: 700, color: "#06B6D4" }}>
-                  {data.tokens.length} {t("tokens")}
+                  {(data.tokens ?? []).length} {t("tokens")}
                 </div>
                 <div style={{ fontSize: 11, color: "var(--text-secondary)" }}>{t("holdingTokens")}</div>
               </div>
@@ -521,7 +521,7 @@ export default function HealthReport({ walletAddress, onDisconnect, onDataLoaded
               {t("positionDetails")}
             </div>
             <div style={{ fontSize: 11, color: "var(--text-secondary)" }}>
-              {data.tokens.length} {t("sortedByValue")}
+              {(data.tokens ?? []).length} {t("sortedByValue")}
             </div>
           </div>
           {data.riskyTokenCount > 0 && (
@@ -571,7 +571,7 @@ export default function HealthReport({ walletAddress, onDisconnect, onDataLoaded
           <TokenRow key={i} token={token} totalUSD={data.totalUSD} />
         ))}
 
-        {data.tokens.length === 0 && (
+        {(data.tokens ?? []).length === 0 && (
           <div style={{
             fontSize: 13, color: "var(--text-secondary)",
             textAlign: "center", padding: "20px 0",
@@ -770,8 +770,8 @@ function SmartMoneySection() {
     setOpen(v => !v);
   }
 
-  const totalBatches = data ? Math.ceil(data.activeWallets.length / PAGE_SIZE) : 1;
-  const pageWallets  = data ? data.activeWallets.slice(walletPage * PAGE_SIZE, (walletPage + 1) * PAGE_SIZE) : [];
+  const totalBatches = data ? Math.ceil((data.activeWallets?.length ?? 0) / PAGE_SIZE) : 1;
+  const pageWallets  = data ? (data.activeWallets ?? []).slice(walletPage * PAGE_SIZE, (walletPage + 1) * PAGE_SIZE) : [];
 
   return (
     <div style={{

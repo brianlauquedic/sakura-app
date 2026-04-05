@@ -1479,8 +1479,8 @@ function SmartMoneyPanel() {
   const [expanded, setExpanded]   = useState<string | null>(null);
 
   const PAGE_SIZE   = 10;
-  const totalBatches = data ? Math.ceil(data.activeWallets.length / PAGE_SIZE) : 1;
-  const pageWallets  = data ? data.activeWallets.slice(walletPage * PAGE_SIZE, (walletPage + 1) * PAGE_SIZE) : [];
+  const totalBatches = data ? Math.ceil((data.activeWallets?.length ?? 0) / PAGE_SIZE) : 1;
+  const pageWallets  = data ? (data.activeWallets ?? []).slice(walletPage * PAGE_SIZE, (walletPage + 1) * PAGE_SIZE) : [];
 
   const LABEL_COLOR: Record<string, string> = {
     Cabal:       "#C0392B",
