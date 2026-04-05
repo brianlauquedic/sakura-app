@@ -75,12 +75,12 @@ const DEFAULT_PLANS: PlanInfo[] = [
 ];
 
 const CREDIT_COSTS: { icon: string; label: string; cost: number; feature: string }[] = [
-  { icon: "🧠", label: "AI 深度分析 (Sonnet 4.6)", cost: 80, feature: "advisor_deep" },
-  { icon: "🤖", label: "AI 對話 (Haiku)", cost: 30, feature: "advisor" },
-  { icon: "🔍", label: "安全分析", cost: 10, feature: "analyze" },
-  { icon: "⚡", label: "Agent 執行", cost: 20, feature: "agent" },
-  { icon: "📊", label: "組合優化", cost: 15, feature: "portfolio" },
-  { icon: "✅", label: "鏈上驗證", cost: 5, feature: "verify" },
+  { icon: "🌿", label: "AI 深度分析 (Sonnet 4.6)", cost: 80, feature: "advisor_deep" },
+  { icon: "💬", label: "AI 對話 (Haiku)", cost: 30, feature: "advisor" },
+  { icon: "🔰", label: "安全分析", cost: 10, feature: "analyze" },
+  { icon: "⚙️", label: "Agent 執行", cost: 20, feature: "agent" },
+  { icon: "🌸", label: "組合優化", cost: 15, feature: "portfolio" },
+  { icon: "⛩️", label: "鏈上驗證", cost: 5, feature: "verify" },
 ];
 
 export default function PricingPage() {

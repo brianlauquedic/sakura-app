@@ -691,50 +691,76 @@ export default function HealthReport({ walletAddress, onDisconnect, onDataLoaded
   );
 }
 
-// ── Smart Money Tracking Section ─────────────────────────────────
-interface SmartWallet {
-  address: string;
-  shortAddress: string;
-  label: string;
-  category: string;
-  score: number;
-  winRate: number;
-  estimatedPnlPct: number;
-  totalClosedTrades: number;
-  copySignal?: { token: string; recentBuyCount: number; confidence: number; reason: string };
-  dataQuality: string;
-  topWins: Array<{ mint: string; pnlPct: number }>;
+// ── Smart Money Tracking Section (GMGN style) ────────────────────
+
+interface HRConsensusToken {
+  mint: string;
+  symbol?: string;
+  buyerCount: number;
+  buyerLabels: string;
+  buyers: Array<{ shortAddr: string; twitter?: string; name?: string; labels: string[] }>;
+  totalBuyUSD: number;
+  starRating: 1|2|3|4|5;
+  firstSeenAt: number;
 }
 
-interface ConsensusSignal {
-  token: string;
-  walletCount: number;
-  wallets: string[];
-  signal: string;
-  confidence: number;
+interface HRTrackedWallet {
+  address: string;
+  shortAddress: string;
+  labels: string[];
+  twitter?: string;
+  name?: string;
+  activityCount: number;
+}
+
+interface HRSmartMoneyData {
+  consensusTokens: HRConsensusToken[];
+  activeWallets: HRTrackedWallet[];
+  trackedWallets: number;
+  dataSource: "helius_realtime" | "demo";
+}
+
+const HR_LABEL_COLOR: Record<string, string> = {
+  Cabal:       "#C0392B",
+  KOL:         "#8B5CF6",
+  Whale:       "#0EA5E9",
+  Smart_Money: "#10B981",
+  HighLight:   "#F59E0B",
+};
+
+function hrFormatTimeAgo(ts: number): string {
+  const diff = Date.now() - ts;
+  if (diff < 3600000)  return `${Math.floor(diff / 60000)}m 前`;
+  if (diff < 86400000) return `${Math.floor(diff / 3600000)}h 前`;
+  return `${Math.floor(diff / 86400000)}d 前`;
+}
+
+function HRStars({ n }: { n: number }) {
+  return (
+    <span>
+      {Array.from({ length: 5 }, (_, i) => (
+        <span key={i} style={{ color: i < n ? "#F59E0B" : "var(--border)", fontSize: 12 }}>★</span>
+      ))}
+    </span>
+  );
 }
 
 function SmartMoneySection() {
-  const [open, setOpen] = useState(false);
-  const [wallets, setWallets] = useState<SmartWallet[]>([]);
-  const [consensus, setConsensus] = useState<ConsensusSignal[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [dataSource, setDataSource] = useState<"helius_realtime" | "demo">("demo");
+  const [open, setOpen]         = useState(false);
+  const [tab, setTab]           = useState<"consensus" | "wallets">("consensus");
+  const [data, setData]         = useState<HRSmartMoneyData | null>(null);
+  const [loading, setLoading]   = useState(false);
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const [walletPage, setWalletPage] = useState(0);
+  const PAGE_SIZE = 10;
 
   async function load() {
-    if (wallets.length > 0) return; // already loaded
+    if (data) return; // already loaded
     setLoading(true);
     try {
-      const res = await fetch("/api/wallet/smart-money?limit=6");
+      const res = await fetch("/api/wallet/smart-money?type=consensus_24h");
       if (!res.ok) return;
-      const data = await res.json() as {
-        wallets: SmartWallet[];
-        consensusSignals: ConsensusSignal[];
-        dataSource: "helius_realtime" | "demo";
-      };
-      setWallets(data.wallets ?? []);
-      setConsensus(data.consensusSignals ?? []);
-      setDataSource(data.dataSource ?? "demo");
+      setData(await res.json() as HRSmartMoneyData);
     } catch { /* silent */ }
     finally { setLoading(false); }
   }
@@ -744,160 +770,228 @@ function SmartMoneySection() {
     setOpen(v => !v);
   }
 
-  const CATEGORY_COLOR: Record<string, string> = {
-    "鲸鱼": "#C0392B", "DeFi专家": "#10B981", "套利机器人": "#F59E0B",
-    "大户": "#8B5CF6", "高频机器人": "#F97316", "聪明钱": "#06B6D4",
-  };
+  const totalBatches = data ? Math.ceil(data.activeWallets.length / PAGE_SIZE) : 1;
+  const pageWallets  = data ? data.activeWallets.slice(walletPage * PAGE_SIZE, (walletPage + 1) * PAGE_SIZE) : [];
 
   return (
     <div style={{
       background: "var(--bg-card)", border: "1px solid var(--border)",
-      borderRadius: 16, padding: 20, marginBottom: 20,
+      borderRadius: 16, marginBottom: 20, overflow: "hidden",
     }}>
+      {/* Toggle header */}
       <button
         onClick={handleToggle}
         style={{
           width: "100%", background: "none", border: "none",
           display: "flex", alignItems: "center", justifyContent: "space-between",
-          cursor: "pointer", padding: 0,
+          cursor: "pointer", padding: "16px 20px",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>
-            🐋 聰明錢追蹤
+          <span style={{ fontSize: 15 }}>🐋</span>
+          <span style={{ fontFamily: "var(--font-heading, serif)", fontSize: 13, fontWeight: 600, color: "var(--text-primary)", letterSpacing: "0.03em" }}>
+            聰明錢追蹤
           </span>
-          <span style={{
-            fontSize: 10, color: "#10B981",
-            background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.25)",
-            borderRadius: 4, padding: "1px 6px",
-          }}>真實鏈上 P&L</span>
-          {dataSource === "demo" && (
-            <span style={{ fontSize: 10, color: "var(--text-muted)" }}>（演示）</span>
+          {data?.dataSource === "helius_realtime" && (
+            <span style={{ fontSize: 9, color: "#10B981", background: "#10B98115", border: "1px solid #10B98130", borderRadius: 4, padding: "2px 6px" }}>● 真實鏈上</span>
+          )}
+          {data?.dataSource === "demo" && (
+            <span style={{ fontSize: 9, color: "#F59E0B", background: "#F59E0B15", border: "1px solid #F59E0B30", borderRadius: 4, padding: "2px 6px" }}>演示數據</span>
           )}
         </div>
         <span style={{ fontSize: 11, color: "var(--text-secondary)" }}>{open ? "收起 ▲" : "展開 ▼"}</span>
       </button>
 
       {open && (
-        <div style={{ marginTop: 16 }}>
+        <>
+          {/* Tabs */}
+          <div style={{ display: "flex", borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)" }}>
+            {([
+              { key: "consensus", label: "🎯 共識信號" },
+              { key: "wallets",   label: "📊 地址追蹤" },
+            ] as const).map(t => (
+              <button
+                key={t.key}
+                onClick={() => setTab(t.key)}
+                style={{
+                  flex: 1, padding: "9px 0",
+                  background: "none", border: "none",
+                  borderBottom: tab === t.key ? "2px solid var(--accent)" : "2px solid transparent",
+                  color: tab === t.key ? "var(--accent)" : "var(--text-secondary)",
+                  fontSize: 12, fontWeight: tab === t.key ? 700 : 400,
+                  cursor: "pointer",
+                }}
+              >{t.label}</button>
+            ))}
+          </div>
+
           {loading ? (
-            <div style={{ textAlign: "center", padding: "20px 0", color: "var(--text-secondary)", fontSize: 13 }}>
-              ⏳ 正在分析鏈上交易...
+            <div style={{ padding: "28px", textAlign: "center" }}>
+              <div style={{ display: "flex", gap: 6, justifyContent: "center", marginBottom: 10 }}>
+                {[0, 1, 2].map(i => (
+                  <div key={i} style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--accent)", animation: `bounce 1s ${i * 0.15}s infinite` }} />
+                ))}
+              </div>
+              <div style={{ fontSize: 11, color: "var(--text-muted)" }}>正在分析 24h 鏈上數據…</div>
+            </div>
+          ) : tab === "consensus" ? (
+            // ── Consensus tab ──
+            <div>
+              <div style={{ padding: "8px 20px 4px", fontSize: 11, color: "var(--text-muted)" }}>
+                🎯 聰明錢最新關注的代幣
+              </div>
+              {!data?.consensusTokens?.length ? (
+                <div style={{ padding: "20px", textAlign: "center", fontSize: 12, color: "var(--text-muted)" }}>
+                  過去 24h 暫無共識信號
+                </div>
+              ) : data.consensusTokens.map((token, idx) => (
+                <div key={token.mint}>
+                  <div
+                    onClick={() => setExpanded(expanded === token.mint ? null : token.mint)}
+                    style={{
+                      padding: "13px 20px",
+                      borderBottom: "1px solid var(--border)",
+                      cursor: "pointer",
+                      background: expanded === token.mint ? "rgba(192,57,43,0.04)" : "transparent",
+                    }}
+                  >
+                    {/* Token name */}
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 7 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{ fontSize: 14 }}>{idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : `${idx + 1}.`}</span>
+                        <span style={{ fontSize: 14, fontWeight: 700, fontFamily: "var(--font-mono, monospace)", color: "var(--text-primary)" }}>
+                          ${token.symbol ?? token.mint.slice(0, 6) + "…"}
+                        </span>
+                        <span style={{ fontSize: 9, color: "var(--text-muted)", background: "var(--bg-base)", border: "1px solid var(--border)", borderRadius: 4, padding: "1px 5px" }}>Solana</span>
+                      </div>
+                      <span style={{ fontSize: 10, color: "var(--text-muted)" }}>{expanded === token.mint ? "▲" : "▼"}</span>
+                    </div>
+                    {/* Stats */}
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px 16px" }}>
+                      <div style={{ fontSize: 11, color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: 4 }}>
+                        共識強度 <HRStars n={token.starRating} />
+                        <span style={{ color: token.starRating >= 5 ? "#10B981" : "#F59E0B", fontWeight: 700 }}>
+                          {token.starRating >= 5 ? " 高" : token.starRating >= 4 ? " 中高" : " 中"}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: 11, color: "var(--text-secondary)" }}>
+                        24h淨買入&nbsp;
+                        <span style={{ color: "#10B981", fontWeight: 700, fontFamily: "var(--font-mono, monospace)" }}>
+                          ${token.totalBuyUSD >= 1000 ? (token.totalBuyUSD / 1000).toFixed(2) + "K" : token.totalBuyUSD.toFixed(0)}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: 11, color: "var(--text-secondary)" }}>
+                        買入地址&nbsp;
+                        <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>{token.buyerCount} 個</span>
+                        <span style={{ fontSize: 10, color: "var(--text-muted)", marginLeft: 4 }}>({token.buyerLabels})</span>
+                      </div>
+                      <div style={{ fontSize: 11, color: "var(--text-secondary)" }}>
+                        首次發現&nbsp;<span style={{ color: "var(--text-muted)" }}>{hrFormatTimeAgo(token.firstSeenAt)}</span>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Expanded buyers */}
+                  {expanded === token.mint && (
+                    <div style={{ background: "var(--bg-base)", borderBottom: "1px solid var(--border)", padding: "10px 20px" }}>
+                      <div style={{ fontSize: 10, color: "var(--text-muted)", marginBottom: 7, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>主要買家</div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+                        {token.buyers.map((b, i) => (
+                          <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 11 }}>
+                            <span style={{ color: "var(--text-muted)", fontFamily: "var(--font-mono, monospace)", fontSize: 10 }}>{b.shortAddr}</span>
+                            {b.twitter ? (
+                              <a href={`https://twitter.com/${b.twitter.replace("@", "")}`} target="_blank" rel="noopener noreferrer"
+                                style={{ color: "#0EA5E9", textDecoration: "none", fontWeight: 600 }}>{b.twitter}</a>
+                            ) : <span style={{ color: "var(--text-muted)", fontSize: 10 }}>匿名地址</span>}
+                            {b.name && <span style={{ color: "var(--text-secondary)" }}>({b.name})</span>}
+                            <div style={{ display: "flex", gap: 3, marginLeft: "auto" }}>
+                              {b.labels.map(l => (
+                                <span key={l} style={{
+                                  fontSize: 9, color: HR_LABEL_COLOR[l] ?? "#888",
+                                  background: `${HR_LABEL_COLOR[l] ?? "#888"}15`,
+                                  border: `1px solid ${HR_LABEL_COLOR[l] ?? "#888"}30`,
+                                  borderRadius: 3, padding: "1px 5px",
+                                }}>{l === "Smart_Money" ? "Smart" : l}</span>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           ) : (
-            <>
-              {/* Consensus signals */}
-              {consensus.length > 0 && (
-                <div style={{ marginBottom: 16 }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-secondary)", marginBottom: 8, textTransform: "uppercase", letterSpacing: 1 }}>
-                    🔥 共識買入信號（多個聰明錢同時買入）
+            // ── Wallets tab ──
+            <div>
+              <div style={{ padding: "8px 20px 4px", fontSize: 11, color: "var(--text-muted)" }}>
+                📊 核心聰明錢地址（按活躍度排序）
+              </div>
+              {/* Column header */}
+              <div style={{
+                display: "grid",
+                gridTemplateColumns: "minmax(0,2.5fr) 0.5fr 1.2fr 0.9fr 0.9fr 0.6fr",
+                gap: 6, padding: "7px 20px",
+                background: "var(--bg-base)",
+                borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)",
+              }}>
+                {["地址", "链", "标签", "Twitter", "名称", "24h活动"].map(h => (
+                  <div key={h} style={{ fontSize: 10, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: 0.5 }}>{h}</div>
+                ))}
+              </div>
+              {pageWallets.map((w, i) => (
+                <div key={w.address} style={{
+                  display: "grid",
+                  gridTemplateColumns: "minmax(0,2.5fr) 0.5fr 1.2fr 0.9fr 0.9fr 0.6fr",
+                  gap: 6, padding: "11px 20px",
+                  borderBottom: "1px solid var(--border)",
+                  alignItems: "start",
+                  background: i % 2 === 0 ? "transparent" : "rgba(0,0,0,0.02)",
+                }}>
+                  <a href={`https://solscan.io/account/${w.address}`} target="_blank" rel="noopener noreferrer"
+                    style={{ color: "#0EA5E9", textDecoration: "none", fontSize: 10, fontFamily: "var(--font-mono, monospace)", wordBreak: "break-all", lineHeight: 1.4 }}>
+                    {w.address}
+                  </a>
+                  <div style={{ fontSize: 11, color: "var(--text-secondary)", paddingTop: 1 }}>Solana</div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
+                    {w.labels.map(l => (
+                      <span key={l} style={{
+                        fontSize: 9, color: HR_LABEL_COLOR[l] ?? "#888",
+                        border: `1px solid ${HR_LABEL_COLOR[l] ?? "#888"}50`,
+                        borderRadius: 3, padding: "1px 4px", whiteSpace: "nowrap",
+                      }}>{l === "Smart_Money" ? "Smart" : l}</span>
+                    ))}
                   </div>
-                  {consensus.map((c, i) => (
-                    <div key={i} style={{
-                      display: "flex", alignItems: "center", justifyContent: "space-between",
-                      padding: "8px 12px", marginBottom: 6,
-                      background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.25)",
-                      borderRadius: 8,
-                    }}>
-                      <div>
-                        <span style={{ fontFamily: "var(--font-mono, monospace)", fontSize: 12, color: "var(--text-primary)", fontWeight: 700 }}>
-                          {c.token}
-                        </span>
-                        <span style={{ fontSize: 11, color: "var(--text-secondary)", marginLeft: 8 }}>
-                          {c.signal}
-                        </span>
-                      </div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <span style={{ fontSize: 11, color: "var(--text-secondary)" }}>
-                          {c.wallets.join(", ")}
-                        </span>
-                        <span style={{
-                          fontSize: 11, fontWeight: 700,
-                          background: "rgba(16,185,129,0.1)", color: "#10B981",
-                          border: "1px solid rgba(16,185,129,0.25)",
-                          borderRadius: 4, padding: "2px 6px",
-                          fontFamily: "var(--font-mono, monospace)",
-                        }}>
-                          {c.confidence}% 信心
-                        </span>
-                      </div>
-                    </div>
-                  ))}
+                  <div>
+                    {w.twitter
+                      ? <a href={`https://twitter.com/${w.twitter.replace("@", "")}`} target="_blank" rel="noopener noreferrer" style={{ color: "#0EA5E9", textDecoration: "none", fontSize: 11 }}>{w.twitter}</a>
+                      : <span style={{ color: "var(--text-muted)", fontSize: 11 }}>—</span>}
+                  </div>
+                  <div style={{ fontSize: 11, color: "var(--text-secondary)" }}>{w.name ?? <span style={{ color: "var(--text-muted)" }}>—</span>}</div>
+                  <div style={{ fontSize: 11, color: w.activityCount > 0 ? "#10B981" : "var(--text-muted)", fontWeight: w.activityCount > 0 ? 600 : 400 }}>
+                    {w.activityCount > 0 ? `${w.activityCount}個代幣` : "—"}
+                  </div>
                 </div>
-              )}
-
-              {/* Wallet list */}
-              <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-secondary)", marginBottom: 8, textTransform: "uppercase", letterSpacing: 1 }}>
-                頂級聰明錢錢包（30日）
+              ))}
+              {/* Pagination */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, padding: "12px 20px" }}>
+                {totalBatches > 1 && (
+                  <>
+                    <span style={{ fontSize: 11, color: "var(--text-muted)" }}>第 {walletPage + 1} 批 / 共 {totalBatches} 批</span>
+                    <button
+                      onClick={() => setWalletPage(p => (p + 1) % totalBatches)}
+                      style={{
+                        background: "var(--bg-base)", border: "1px solid var(--border)",
+                        borderRadius: 20, padding: "5px 14px", fontSize: 11,
+                        color: "var(--text-secondary)", cursor: "pointer",
+                      }}
+                    >換一批 ↓</button>
+                  </>
+                )}
               </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {wallets.map((w, i) => {
-                  const catColor = CATEGORY_COLOR[w.category] ?? "#8B5CF6";
-                  const pnlPositive = w.estimatedPnlPct >= 0;
-                  return (
-                    <div key={i} style={{
-                      display: "flex", alignItems: "center", gap: 10,
-                      padding: "10px 12px",
-                      background: "var(--bg-base)", border: "1px solid var(--border)",
-                      borderRadius: 10,
-                    }}>
-                      {/* Rank */}
-                      <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-muted)", width: 18, flexShrink: 0 }}>
-                        {i + 1}
-                      </span>
-                      {/* Category badge */}
-                      <span style={{
-                        fontSize: 10, fontWeight: 700, color: catColor,
-                        background: `${catColor}18`, border: `1px solid ${catColor}35`,
-                        borderRadius: 4, padding: "2px 6px", whiteSpace: "nowrap", flexShrink: 0,
-                      }}>{w.category}</span>
-                      {/* Address */}
-                      <span style={{
-                        flex: 1, fontFamily: "var(--font-mono, monospace)",
-                        fontSize: 11, color: "var(--text-secondary)",
-                      }}>{w.shortAddress}</span>
-                      {/* Win rate */}
-                      <div style={{ textAlign: "right", flexShrink: 0 }}>
-                        <div style={{ fontSize: 13, fontWeight: 700, color: "#10B981" }}>
-                          {w.winRate.toFixed(1)}%
-                        </div>
-                        <div style={{ fontSize: 10, color: "var(--text-muted)" }}>勝率</div>
-                      </div>
-                      {/* P&L */}
-                      <div style={{ textAlign: "right", flexShrink: 0, minWidth: 56 }}>
-                        <div style={{
-                          fontSize: 13, fontWeight: 700,
-                          color: pnlPositive ? "#10B981" : "#EF4444",
-                          fontFamily: "var(--font-mono, monospace)",
-                        }}>
-                          {pnlPositive ? "+" : ""}{w.estimatedPnlPct.toFixed(1)}%
-                        </div>
-                        <div style={{ fontSize: 10, color: "var(--text-muted)" }}>{w.totalClosedTrades}筆</div>
-                      </div>
-                      {/* Copy signal */}
-                      {w.copySignal && (
-                        <span style={{
-                          fontSize: 10, color: "#C0392B",
-                          background: "rgba(192,57,43,0.1)", border: "1px solid rgba(192,57,43,0.25)",
-                          borderRadius: 4, padding: "2px 6px", whiteSpace: "nowrap", flexShrink: 0,
-                        }}>
-                          🔥 {w.copySignal.confidence.toFixed(0)}%
-                        </span>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Data note */}
-              <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 10, textAlign: "center" }}>
-                {dataSource === "helius_realtime"
-                  ? "✅ 真實鏈上數據：基於 Helius API 閉合交易 P&L"
-                  : "📋 演示數據：配置 HELIUS_API_KEY 啟用真實鏈上 P&L 計算"}
-              </div>
-            </>
+            </div>
           )}
-        </div>
+        </>
       )}
     </div>
   );

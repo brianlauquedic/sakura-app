@@ -380,7 +380,7 @@ export default function AgentPanel({ walletAddress, walletSnapshot }: Props) {
       }}>
         <div>
           <div style={{ fontSize: 18, fontWeight: 800, color: "var(--text-primary)", marginBottom: 4 }}>
-            🤖 AI 再平衡 Agent
+            ⚙️ AI 再平衡 Agent
           </div>
           <div style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.5 }}>
             自主分析你的持倉，生成最優 DeFi 收益方案。
@@ -725,7 +725,7 @@ export default function AgentPanel({ walletAddress, walletSnapshot }: Props) {
           borderRadius: 14, padding: "40px 24px",
           display: "flex", flexDirection: "column", alignItems: "center", gap: 12,
         }}>
-          <div style={{ fontSize: 48 }}>🤖</div>
+          <div style={{ fontSize: 48 }}>⚙️</div>
           <div style={{ fontSize: 14, color: "var(--text-primary)", fontWeight: 600 }}>
             {t("runAgent")}
           </div>
@@ -863,7 +863,7 @@ function GuardianConditionsPanel() {
       >
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>
-            🛡 Guardian 自動條件
+            🔰 Guardian 自動條件
           </span>
           {conditions.length > 0 && (
             <span style={{

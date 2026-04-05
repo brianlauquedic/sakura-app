@@ -43,6 +43,37 @@ interface ActionCard {
   estimatedEarn?: string;
 }
 
+// ── Smart Money Panel types ──────────────────────────────────────
+interface ConsensusToken {
+  mint: string;
+  symbol?: string;
+  buyerCount: number;
+  buyerLabels: string;
+  buyers: Array<{ shortAddr: string; twitter?: string; name?: string; labels: string[] }>;
+  totalBuyUSD: number;
+  starRating: 1|2|3|4|5;
+  firstSeenAt: number;
+}
+
+interface TrackedWallet {
+  address: string;
+  shortAddress: string;
+  labels: string[];
+  twitter?: string;
+  name?: string;
+  activityCount: number;
+  tokens: string[];
+}
+
+interface SmartMoneyData {
+  consensusTokens: ConsensusToken[];
+  activeWallets: TrackedWallet[];
+  solPrice: number;
+  trackedWallets: number;
+  dataSource: "helius_realtime" | "demo";
+  updatedAt: number;
+}
+
 interface StrategyCard {
   asset: string;
   action: "buy" | "sell" | "stake" | "lend" | "reduce" | "hold" | "swap";
@@ -281,11 +312,15 @@ function OpportunityPanel({
 }
 
 // ── Quick Actions (sub populated dynamically with live APY) ──────
-const QUICK_ACTION_DEFS = [
-  { icon: "🫙", label: "質押 SOL", protocol: "Marinade Finance", fallbackSub: "Marinade / Jito", color: "#8B5CF6", prompt: "幫我質押 SOL 獲取最高收益" },
-  { icon: "🌿", label: "USDC 理财", protocol: "Kamino Finance", fallbackSub: "Kamino Finance", color: "#10B981", prompt: "我的 USDC 存哪里利息最高" },
-  { icon: "🪐", label: "代幣兑換", protocol: null, fallbackSub: "Jupiter 最優路由", color: "#06B6D4", prompt: "把 1 SOL 換成 USDC" },
-  { icon: "💡", label: "收益机会", protocol: null, fallbackSub: "全部 DeFi 机会排行", color: "#F59E0B", prompt: "给我看所有收益机会" },
+const QUICK_ACTION_DEFS: Array<{
+  icon: string; label: string; protocol: string | null;
+  fallbackSub: string; color: string; prompt: string | null;
+}> = [
+  { icon: "🫙", label: "質押 SOL",    protocol: "Marinade Finance", fallbackSub: "Marinade / Jito",    color: "#8B5CF6", prompt: "幫我質押 SOL 獲取最高收益" },
+  { icon: "🌿", label: "USDC 理财",   protocol: "Kamino Finance",   fallbackSub: "Kamino Finance",     color: "#10B981", prompt: "我的 USDC 存哪里利息最高" },
+  { icon: "🌊", label: "代幣兑換",    protocol: null,               fallbackSub: "Jupiter 最優路由",   color: "#06B6D4", prompt: "把 1 SOL 換成 USDC" },
+  { icon: "🪷", label: "收益机会",    protocol: null,               fallbackSub: "全部 DeFi 机会排行", color: "#F59E0B", prompt: "给我看所有收益机会" },
+  { icon: "🐋", label: "聰明錢追蹤", protocol: null,               fallbackSub: "24h 共識買入信號",   color: "#C0392B", prompt: null },
 ];
 
 // ── Suggestion Chips ─────────────────────────────────────────────
@@ -317,6 +352,7 @@ export default function DefiAssistant({ walletAddress, walletSnapshot }: Props) 
   const [thinkingOpen, setThinkingOpen] = useState(false);
   const [advisorQuota, setAdvisorQuota] = useState<{ remaining: number; used: number; admin?: boolean } | null>(null);
   const [advisorPaymentSig, setAdvisorPaymentSig] = useState<string | null>(null);
+  const [showSmartMoney, setShowSmartMoney] = useState(false);
   const lastYieldRef = useRef<LiveYield | null>(null);
   const lastAlertTimestampRef = useRef<number>(0);
 
@@ -946,16 +982,24 @@ export default function DefiAssistant({ walletAddress, walletSnapshot }: Props) 
               const sub = liveOpp
                 ? `${qa.protocol?.split(" ")[0]}，APY ${liveOpp.apyDisplay}`
                 : qa.fallbackSub;
+              const isSmartMoney = qa.prompt === null;
+              const isActive = isSmartMoney && showSmartMoney;
               return (
-                <button key={qa.label} onClick={() => sendMessage(qa.prompt)} style={{
-                  background: "var(--bg-card)", border: `1px solid ${qa.color}30`,
-                  borderRadius: 10, padding: "12px 14px",
-                  display: "flex", alignItems: "center", gap: 10,
-                  cursor: "pointer", textAlign: "left",
-                }}>
+                <button
+                  key={qa.label}
+                  onClick={() => isSmartMoney ? setShowSmartMoney(v => !v) : sendMessage(qa.prompt!)}
+                  style={{
+                    background: isActive ? "var(--accent-soft)" : "var(--bg-card)",
+                    border: `1px solid ${isActive ? "var(--accent)" : qa.color + "30"}`,
+                    borderRadius: 10, padding: "12px 14px",
+                    display: "flex", alignItems: "center", gap: 10,
+                    cursor: "pointer", textAlign: "left",
+                    transition: "all 0.15s",
+                  }}
+                >
                   <span style={{ fontSize: 20 }}>{qa.icon}</span>
                   <div>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: qa.color }}>{qa.label}</div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: isActive ? "var(--accent)" : qa.color }}>{qa.label}</div>
                     <div style={{ fontSize: 10, color: "var(--text-secondary)", marginTop: 2 }}>{sub}</div>
                   </div>
                 </button>
@@ -977,6 +1021,9 @@ export default function DefiAssistant({ walletAddress, walletSnapshot }: Props) 
           </div>
         </div>
       )}
+
+      {/* ── Smart Money Panel ── */}
+      {messages.length === 0 && showSmartMoney && <SmartMoneyPanel />}
 
       {/* ── Quota / session notice ── */}
       {advisorQuota && !advisorQuota.admin && messages.length === 0 && (
@@ -1421,6 +1468,325 @@ function SummaryPill({ label, value, color }: { label: string; value: string; co
       <div style={{ fontSize: 14, fontWeight: 700, color }}>{value}</div>
     </div>
   );
+}
+
+// ── Smart Money Panel ────────────────────────────────────────────
+function SmartMoneyPanel() {
+  const [tab, setTab]             = useState<"consensus" | "wallets">("consensus");
+  const [data, setData]           = useState<SmartMoneyData | null>(null);
+  const [loading, setLoading]     = useState(true);
+  const [walletPage, setWalletPage] = useState(0);
+  const [expanded, setExpanded]   = useState<string | null>(null);
+
+  const PAGE_SIZE   = 10;
+  const totalBatches = data ? Math.ceil(data.activeWallets.length / PAGE_SIZE) : 1;
+  const pageWallets  = data ? data.activeWallets.slice(walletPage * PAGE_SIZE, (walletPage + 1) * PAGE_SIZE) : [];
+
+  const LABEL_COLOR: Record<string, string> = {
+    Cabal:       "#C0392B",
+    KOL:         "#8B5CF6",
+    Whale:       "#0EA5E9",
+    Smart_Money: "#10B981",
+    HighLight:   "#F59E0B",
+  };
+
+  useEffect(() => {
+    fetch("/api/wallet/smart-money?type=consensus_24h")
+      .then(r => r.json())
+      .then(d => { setData(d as SmartMoneyData); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, []);
+
+  function Stars({ n }: { n: number }) {
+    return (
+      <span>
+        {Array.from({ length: 5 }, (_, i) => (
+          <span key={i} style={{ color: i < n ? "#F59E0B" : "var(--border)", fontSize: 13 }}>★</span>
+        ))}
+      </span>
+    );
+  }
+
+  return (
+    <div style={{
+      background: "var(--bg-card)",
+      border: "1px solid var(--border)",
+      borderRadius: 14,
+      marginBottom: 16,
+      overflow: "hidden",
+    }}>
+      {/* Header */}
+      <div style={{
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        padding: "12px 16px",
+        borderBottom: "1px solid var(--border)",
+        background: "var(--bg-card-2)",
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ fontSize: 15 }}>🐋</span>
+          <span style={{ fontFamily: "var(--font-heading, serif)", fontSize: 13, fontWeight: 600, color: "var(--text-primary)", letterSpacing: "0.03em" }}>
+            聰明錢地址追蹤
+          </span>
+          {data?.dataSource === "demo" && (
+            <span style={{ fontSize: 9, color: "#F59E0B", background: "#F59E0B15", border: "1px solid #F59E0B30", borderRadius: 4, padding: "2px 6px" }}>演示數據</span>
+          )}
+          {data?.dataSource === "helius_realtime" && (
+            <span style={{ fontSize: 9, color: "#10B981", background: "#10B98115", border: "1px solid #10B98130", borderRadius: 4, padding: "2px 6px" }}>● 真實鏈上</span>
+          )}
+        </div>
+        <span style={{ fontSize: 10, color: "var(--text-muted)" }}>
+          追蹤 {data?.trackedWallets ?? "—"} 個地址
+        </span>
+      </div>
+
+      {/* Tabs */}
+      <div style={{ display: "flex", borderBottom: "1px solid var(--border)" }}>
+        {([
+          { key: "consensus", label: "🎯 共識信號" },
+          { key: "wallets",   label: "📊 地址追蹤" },
+        ] as const).map(t => (
+          <button
+            key={t.key}
+            onClick={() => setTab(t.key)}
+            style={{
+              flex: 1, padding: "10px 0",
+              background: "none", border: "none",
+              borderBottom: tab === t.key ? "2px solid var(--accent)" : "2px solid transparent",
+              color: tab === t.key ? "var(--accent)" : "var(--text-secondary)",
+              fontSize: 12, fontWeight: tab === t.key ? 700 : 400,
+              cursor: "pointer",
+            }}
+          >{t.label}</button>
+        ))}
+      </div>
+
+      {/* Content */}
+      {loading ? (
+        <div style={{ padding: "28px 16px", textAlign: "center" }}>
+          <div style={{ display: "flex", gap: 6, justifyContent: "center", marginBottom: 10 }}>
+            {[0, 1, 2].map(i => (
+              <div key={i} style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--accent)", animation: `bounce 1s ease-in-out ${i * 0.15}s infinite` }} />
+            ))}
+          </div>
+          <div style={{ fontSize: 11, color: "var(--text-muted)" }}>正在分析 24h 鏈上數據…</div>
+        </div>
+      ) : tab === "consensus" ? (
+        // ── Consensus signals tab ──
+        <div>
+          <div style={{ padding: "8px 16px 4px", fontSize: 11, color: "var(--text-muted)", display: "flex", alignItems: "center", gap: 6 }}>
+            <span>🎯</span>
+            <span style={{ fontFamily: "var(--font-heading, serif)", letterSpacing: "0.02em" }}>聰明錢最新關注的代幣</span>
+          </div>
+          {!data?.consensusTokens?.length ? (
+            <div style={{ padding: "24px 16px", textAlign: "center", fontSize: 12, color: "var(--text-muted)" }}>
+              過去 24h 暫無共識信號
+            </div>
+          ) : data.consensusTokens.map((token, idx) => (
+            <div key={token.mint}>
+              {/* Token row */}
+              <div
+                onClick={() => setExpanded(expanded === token.mint ? null : token.mint)}
+                style={{
+                  padding: "13px 16px",
+                  borderBottom: "1px solid var(--border)",
+                  cursor: "pointer",
+                  background: expanded === token.mint ? "rgba(192,57,43,0.04)" : "transparent",
+                  transition: "background 0.15s",
+                }}
+              >
+                {/* Token name + chain */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: 15 }}>
+                      {idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : `${idx + 1}.`}
+                    </span>
+                    <span style={{
+                      fontSize: 14, fontWeight: 700,
+                      fontFamily: "var(--font-mono, 'JetBrains Mono', monospace)",
+                      color: "var(--text-primary)",
+                    }}>
+                      ${token.symbol ?? (token.mint.slice(0, 6) + "…")}
+                    </span>
+                    <span style={{
+                      fontSize: 10, color: "var(--text-muted)",
+                      background: "var(--bg-base)", border: "1px solid var(--border)",
+                      borderRadius: 4, padding: "1px 6px",
+                    }}>Solana</span>
+                  </div>
+                  <span style={{ fontSize: 10, color: "var(--text-muted)" }}>{expanded === token.mint ? "▲" : "▼"}</span>
+                </div>
+
+                {/* Stats grid */}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "5px 20px" }}>
+                  <div style={{ fontSize: 11, color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: 4 }}>
+                    共識強度 <span style={{ marginLeft: 2 }}><Stars n={token.starRating} /></span>
+                    <span style={{ color: token.starRating >= 5 ? "#10B981" : token.starRating >= 4 ? "#F59E0B" : "var(--text-muted)", fontWeight: 700 }}>
+                      {token.starRating >= 5 ? " 高" : token.starRating >= 4 ? " 中高" : " 中"}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: 11, color: "var(--text-secondary)" }}>
+                    24h淨買入&nbsp;
+                    <span style={{
+                      color: "#10B981", fontWeight: 700,
+                      fontFamily: "var(--font-mono, monospace)",
+                    }}>
+                      ${token.totalBuyUSD >= 1000 ? (token.totalBuyUSD / 1000).toFixed(2) + "K" : token.totalBuyUSD.toFixed(0)}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: 11, color: "var(--text-secondary)" }}>
+                    買入地址&nbsp;
+                    <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>{token.buyerCount} 個</span>
+                    <span style={{ fontSize: 10, color: "var(--text-muted)", marginLeft: 4 }}>
+                      ({token.buyerLabels})
+                    </span>
+                  </div>
+                  <div style={{ fontSize: 11, color: "var(--text-secondary)" }}>
+                    首次發現&nbsp;
+                    <span style={{ color: "var(--text-muted)" }}>{smFormatTimeAgo(token.firstSeenAt)}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Expanded buyer list */}
+              {expanded === token.mint && (
+                <div style={{
+                  background: "var(--bg-base)",
+                  borderBottom: "1px solid var(--border)",
+                  padding: "12px 16px",
+                }}>
+                  <div style={{ fontSize: 10, color: "var(--text-muted)", marginBottom: 8, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>主要買家</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {token.buyers.map((b, i) => (
+                      <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 11 }}>
+                        <span style={{ color: "var(--text-muted)", fontFamily: "var(--font-mono, monospace)", fontSize: 10 }}>{b.shortAddr}</span>
+                        {b.twitter ? (
+                          <a href={`https://twitter.com/${b.twitter.replace("@", "")}`} target="_blank" rel="noopener noreferrer"
+                            style={{ color: "#0EA5E9", textDecoration: "none", fontWeight: 600 }}>{b.twitter}</a>
+                        ) : (
+                          <span style={{ color: "var(--text-muted)", fontSize: 10 }}>匿名地址</span>
+                        )}
+                        {b.name && <span style={{ color: "var(--text-secondary)" }}>({b.name})</span>}
+                        <div style={{ display: "flex", gap: 3, marginLeft: "auto", flexWrap: "wrap" }}>
+                          {b.labels.map(l => (
+                            <span key={l} style={{
+                              fontSize: 9, color: LABEL_COLOR[l] ?? "#888",
+                              background: `${LABEL_COLOR[l] ?? "#888"}15`,
+                              border: `1px solid ${LABEL_COLOR[l] ?? "#888"}35`,
+                              borderRadius: 3, padding: "1px 5px",
+                            }}>{l === "Smart_Money" ? "Smart" : l}</span>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      ) : (
+        // ── Wallets tab ──
+        <div>
+          <div style={{ padding: "8px 16px 4px", fontSize: 11, color: "var(--text-muted)", display: "flex", alignItems: "center", gap: 6 }}>
+            <span>📊</span>
+            <span style={{ fontFamily: "var(--font-heading, serif)", letterSpacing: "0.02em" }}>核心聰明錢地址（按活躍度排序）</span>
+          </div>
+
+          {/* Column header */}
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "minmax(0,2.5fr) 0.5fr 1.2fr 0.9fr 0.9fr 0.7fr",
+            gap: 6, padding: "8px 16px",
+            borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)",
+            background: "var(--bg-base)",
+          }}>
+            {["地址", "链", "标签", "Twitter", "名称", "24h活动"].map(h => (
+              <div key={h} style={{ fontSize: 10, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: 0.5 }}>{h}</div>
+            ))}
+          </div>
+
+          {pageWallets.map((w, i) => (
+            <div key={w.address} style={{
+              display: "grid",
+              gridTemplateColumns: "minmax(0,2.5fr) 0.5fr 1.2fr 0.9fr 0.9fr 0.7fr",
+              gap: 6, padding: "11px 16px",
+              borderBottom: "1px solid var(--border)",
+              alignItems: "start",
+              background: i % 2 === 0 ? "transparent" : "rgba(0,0,0,0.02)",
+            }}>
+              {/* Address */}
+              <a href={`https://solscan.io/account/${w.address}`} target="_blank" rel="noopener noreferrer"
+                style={{ color: "#0EA5E9", textDecoration: "none", fontSize: 10, fontFamily: "var(--font-mono, monospace)", wordBreak: "break-all", lineHeight: 1.4 }}>
+                {w.address}
+              </a>
+              {/* Chain */}
+              <div style={{ fontSize: 11, color: "var(--text-secondary)", paddingTop: 1 }}>Solana</div>
+              {/* Labels */}
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
+                {w.labels.map(l => (
+                  <span key={l} style={{
+                    fontSize: 9, color: LABEL_COLOR[l] ?? "#888",
+                    border: `1px solid ${LABEL_COLOR[l] ?? "#888"}50`,
+                    borderRadius: 3, padding: "1px 4px", whiteSpace: "nowrap",
+                  }}>{l === "Smart_Money" ? "Smart" : l}</span>
+                ))}
+              </div>
+              {/* Twitter */}
+              <div>
+                {w.twitter ? (
+                  <a href={`https://twitter.com/${w.twitter.replace("@", "")}`} target="_blank" rel="noopener noreferrer"
+                    style={{ color: "#0EA5E9", textDecoration: "none", fontSize: 11 }}>{w.twitter}</a>
+                ) : <span style={{ color: "var(--text-muted)", fontSize: 11 }}>—</span>}
+              </div>
+              {/* Name */}
+              <div style={{ fontSize: 11, color: "var(--text-secondary)" }}>
+                {w.name ?? <span style={{ color: "var(--text-muted)" }}>—</span>}
+              </div>
+              {/* Activity */}
+              <div style={{ fontSize: 11, color: w.activityCount > 0 ? "#10B981" : "var(--text-muted)", fontWeight: w.activityCount > 0 ? 600 : 400 }}>
+                {w.activityCount > 0 ? `${w.activityCount}個代幣` : "—"}
+              </div>
+            </div>
+          ))}
+
+          {/* Pagination */}
+          <div style={{
+            display: "flex", alignItems: "center", justifyContent: "center",
+            gap: 12, padding: "12px 16px",
+          }}>
+            {totalBatches > 1 && (
+              <>
+                <span style={{ fontSize: 11, color: "var(--text-muted)" }}>
+                  第 {walletPage + 1} 批 / 共 {totalBatches} 批
+                </span>
+                <button
+                  onClick={() => setWalletPage(p => (p + 1) % totalBatches)}
+                  style={{
+                    background: "var(--bg-base)", border: "1px solid var(--border)",
+                    borderRadius: 20, padding: "5px 14px", fontSize: 11,
+                    color: "var(--text-secondary)", cursor: "pointer",
+                    display: "flex", alignItems: "center", gap: 4,
+                  }}
+                >
+                  換一批 ↓
+                </button>
+              </>
+            )}
+            {!data?.trackedWallets && (
+              <span style={{ fontSize: 10, color: "var(--text-muted)" }}>暫無活躍地址</span>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function smFormatTimeAgo(ts: number): string {
+  const diff = Date.now() - ts;
+  if (diff < 3600000)  return `${Math.floor(diff / 60000)}m 前`;
+  if (diff < 86400000) return `${Math.floor(diff / 3600000)}h 前`;
+  return `${Math.floor(diff / 86400000)}d 前`;
 }
 
 // ── Simple Markdown ──────────────────────────────────────────────

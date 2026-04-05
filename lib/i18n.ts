@@ -164,10 +164,10 @@ export const translations = {
   enterAddressError: { zh: "請輸入錢包地址", en: "Please enter a wallet address", ja: "ウォレットアドレスを入力してください" },
 
   // ── Tabs ──────────────────────────────────────────────────────────
-  tabHealth: { zh: "📊 持倉體檢", en: "📊 Portfolio", ja: "📊 診断" },
-  tabToken: { zh: "🛡️ 安全分析", en: "🛡️ Security", ja: "🛡️ セキュリティ" },
-  tabDefi: { zh: "💬 AI 顧問", en: "💬 AI Advisor", ja: "💬 AIアドバイザー" },
-  tabAgent: { zh: "🤖 自主 Agent", en: "🤖 Rebalance Agent", ja: "🤖 自律エージェント" },
+  tabHealth: { zh: "🌸 持倉體檢", en: "🌸 Portfolio", ja: "🌸 診断" },
+  tabToken: { zh: "🔰 安全分析", en: "🔰 Security", ja: "🔰 セキュリティ" },
+  tabDefi: { zh: "🌿 AI 顧問", en: "🌿 AI Advisor", ja: "🌿 AIアドバイザー" },
+  tabAgent: { zh: "⚙️ 自主 Agent", en: "⚙️ Rebalance Agent", ja: "⚙️ 自律エージェント" },
 
   // ── HealthReport ─────────────────────────────────────────────────
   walletHealthReport: { zh: "錢包體檢報告", en: "Wallet Health Report", ja: "ウォレット診断レポート" },
@@ -177,8 +177,8 @@ export const translations = {
   holdingTokens: { zh: "當前持有", en: "Holding", ja: "保有中" },
   tokens: { zh: "個代幣", en: "tokens", ja: "トークン" },
   highRiskTokens: { zh: "高風險代幣", en: "High Risk Tokens", ja: "高リスクトークン" },
-  idleYieldOpportunity: { zh: "💡 發現閒置收益機會", en: "💡 Idle Yield Opportunity", ja: "💡 遊休収益機会を発見" },
-  solStakingRecommendation: { zh: "⚡ SOL 質押建議", en: "⚡ SOL Staking Recommendation", ja: "⚡ SOLステーキング推奨" },
+  idleYieldOpportunity: { zh: "🪷 發現閒置收益機會", en: "🪷 Idle Yield Opportunity", ja: "🪷 遊休収益機会を発見" },
+  solStakingRecommendation: { zh: "🫙 SOL 質押建議", en: "🫙 SOL Staking Recommendation", ja: "🫙 SOLステーキング推奨" },
   viewPlan: { zh: "查看方案 →", en: "View Plan →", ja: "プランを見る →" },
   learnMore: { zh: "了解更多 →", en: "Learn More →", ja: "詳細を見る →" },
   positionDetails: { zh: "持倉明細", en: "Position Details", ja: "ポジション詳細" },

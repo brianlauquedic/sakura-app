@@ -480,6 +480,313 @@ const SEED_WALLETS = [
   "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R",
 ];
 
+// ── Labeled wallets database (GMGN-style — 30 public addresses) ───
+interface LabeledWallet {
+  address: string;
+  labels: Array<"KOL" | "Whale" | "Smart_Money" | "Cabal" | "HighLight">;
+  twitter?: string;
+  name?: string;
+}
+
+const LABELED_WALLETS: LabeledWallet[] = [
+  // ── Verified from community / screenshot ────────────────────────
+  { address: "9jyqFiLnruggwNn4EQwBNFXwpbLM9hrA4hV59ytyAVVz", labels: ["Cabal", "KOL"],               twitter: "@NachSOL",       name: "Nach" },
+  { address: "DNfuF1L62WWyW3pNakVkyGGFzVVhj4Yr52jSmdTyeBHm", labels: ["Smart_Money", "KOL", "HighLight"], twitter: "@Ga__ke",        name: "Gake_2" },
+  { address: "C3nLTNMK6Ao1s3J1CQhv8GbT3NoMmifWoi9PGEcYd9hP", labels: ["Smart_Money", "Whale"] },
+  { address: "8tP391aDbKKpQS7eKnCEfnJ8Cmek6jatEe2LFkdJ2PRP", labels: ["Smart_Money", "KOL"],            twitter: "@LongzuAlpha",   name: "Jinmu" },
+  { address: "2btYi2pqVgtgzLqeAXE122FPhN2xBJMQpE1V9CMNv4EH", labels: ["Smart_Money", "KOL"],            twitter: "@Ed_x0101",     name: "Ed_x區塊日記" },
+  // ── Additional KOL / HighLight ──────────────────────────────────
+  { address: "5tzFkiKscXHK5ZXCGbfy7mQfK3NaXNGFoqwfRzTDFBhV", labels: ["KOL", "Smart_Money"],          twitter: "@realpandapunks", name: "Panda" },
+  { address: "HXRicMzuHsmDuGULgVSBdBfn3xhEjUm7BVEMP5eTQVxx", labels: ["KOL"],                          twitter: "@SolBigBrain",  name: "BigBrain" },
+  { address: "Ae1W8RXnWbXPBgU52EZqCkBnJdNr1VKV2oJkTK6fFkHY", labels: ["Cabal", "KOL"],                 twitter: "@AlphaSolana",  name: "AlphaSOL" },
+  { address: "BGq4iuvTHBHYE8gJFzMnYBxiZS64FvxbCkCrCdMKCeJR", labels: ["Smart_Money", "KOL"] },
+  { address: "9vNBe3M7QnN9YmCi5Q4gXpDzJhY3o74RaX1FdHtKxBSy", labels: ["Cabal", "KOL"] },
+  // ── Whale / Cabal ───────────────────────────────────────────────
+  { address: "GThUX1Atko4tqhN2NaiTazWSeFWMoAE1hBHJJ4XJhPMt", labels: ["Whale", "Smart_Money"] },
+  { address: "BNSwdmtKrKN9MvqBqnPQejT3x6E2VBtdSiELGefUvRTH", labels: ["Cabal", "Whale"] },
+  { address: "EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm", labels: ["Whale", "Cabal"] },
+  { address: "CuieVDEDtLo7FypA9SbLM9saXFdb1dsshEkyErMqkRQq", labels: ["Whale"] },
+  { address: "J27ma1MPBRvmPJxLqBqQGNECMXDm1skxAMpL3WeRzGrM", labels: ["Whale"] },
+  { address: "2xNweLHLqrbx4zo1wKRntv4ST7CZUjEiN544zoeA8cjo", labels: ["Smart_Money", "Whale"] },
+  { address: "JDKJSkxMZ9iNHBMHkAjE4Y3emvjQomBW3jL1ZmF7FVAJ", labels: ["Whale", "HighLight"] },
+  // ── Smart_Money / HighLight ─────────────────────────────────────
+  { address: "AHLwq66Cg3CuDJTFtwjPfwjJhB7JLMB64nFnB3oHyMW", labels: ["Smart_Money", "HighLight"] },
+  { address: "FWznbcNXWquhrqkNBvmLJBN6ZNi1UPan9TRVDBsqDRHf", labels: ["Smart_Money"] },
+  { address: "6kTGPRFESTSuTtBMtxHHbvnA7raxJMmYb3UE6fHDGN7A", labels: ["Smart_Money"] },
+  { address: "3AXhpJJkJJEFUC2C1GWpMb3EL3fz6QdvFBF1C2RCkWBB", labels: ["Smart_Money", "HighLight"] },
+  { address: "7ZBE9JqM8UUDkNm7JVnMmf2h2V7xMaXmyS1vDv4ZoRV9", labels: ["Smart_Money"] },
+  { address: "FBTjSBF9dpGAuvMpFBhpd8ZAr9sYMMRhm6JpJjuRhFPP", labels: ["Cabal", "Smart_Money"] },
+  // ── SEED_WALLETS promoted to Whale labels ───────────────────────
+  { address: "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM", labels: ["Whale"] },
+  { address: "DfXygSm4jCyNCybVYYK6DwvWqjKee8pbDmJGcLWNDXjh", labels: ["Whale", "Smart_Money"] },
+  { address: "3XFMsNi28sE99aX4BCpkKXjx7Bxuuz3pJNXeGhwn5vR3", labels: ["Whale"] },
+  { address: "7YttLkHDoNj9wyDur5pM1ejNaAvT9X4eqaYcHQqtj2G5", labels: ["Smart_Money"] },
+  { address: "5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1", labels: ["Smart_Money"] },
+  { address: "HmRGnNRMGznFw6VJ8LCeChQ9wjt2E5hCEbpBSBSE7UBY", labels: ["Whale"] },
+  { address: "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R", labels: ["Smart_Money"] },
+];
+
+// ── SOL price (CoinGecko quick fetch, fallback $170) ──────────────
+async function getSolPrice(): Promise<number> {
+  try {
+    const res = await fetchWithTimeout(
+      "https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd", {}, 5000
+    );
+    if (!res.ok) return 170;
+    const data = await res.json() as { solana?: { usd?: number } };
+    return data?.solana?.usd ?? 170;
+  } catch { return 170; }
+}
+
+// ── 24h swap fetch for a single labeled wallet ────────────────────
+async function get24hSwaps(walletAddress: string): Promise<ParsedSwap[]> {
+  if (!HELIUS_API_KEY) return [];
+  const cutoffSec = Math.floor(Date.now() / 1000) - 86400;
+  const swaps: ParsedSwap[] = [];
+  try {
+    const url = `https://api.helius.xyz/v0/addresses/${walletAddress}/transactions` +
+      `?api-key=${HELIUS_API_KEY}&type=SWAP&limit=100`;
+    const res = await fetchWithTimeout(url, {}, 8000);
+    if (!res.ok) return [];
+    const txs = await res.json() as HeliusTx[];
+    for (const tx of txs) {
+      if (tx.timestamp < cutoffSec) break;
+      const transfers = tx.tokenTransfers ?? [];
+      const nativeOut = (tx.nativeTransfers ?? []).filter(t => t.fromUserAccount === walletAddress);
+      const nativeIn  = (tx.nativeTransfers ?? []).filter(t => t.toUserAccount   === walletAddress);
+      const tokOut    = transfers.filter(t => t.fromUserAccount === walletAddress);
+      const tokIn     = transfers.filter(t => t.toUserAccount   === walletAddress);
+      if (nativeOut.length > 0 && tokIn.length > 0) {
+        swaps.push({ signature: tx.signature, timestamp: tx.timestamp, soldMint: SOL_MINT, soldAmount: nativeOut.reduce((s, t) => s + t.amount, 0) / 1e9, boughtMint: tokIn[0].mint, boughtAmount: tokIn[0].tokenAmount });
+      } else if (tokOut.length > 0 && nativeIn.length > 0) {
+        swaps.push({ signature: tx.signature, timestamp: tx.timestamp, soldMint: tokOut[0].mint, soldAmount: tokOut[0].tokenAmount, boughtMint: SOL_MINT, boughtAmount: nativeIn.reduce((s, t) => s + t.amount, 0) / 1e9 });
+      } else if (tokOut.length > 0 && tokIn.length > 0) {
+        const outTok = tokOut[0], inTok = tokIn[0];
+        if (!BASE_MINTS.has(outTok.mint) && BASE_MINTS.has(inTok.mint)) {
+          swaps.push({ signature: tx.signature, timestamp: tx.timestamp, soldMint: outTok.mint, soldAmount: outTok.tokenAmount, boughtMint: inTok.mint, boughtAmount: inTok.tokenAmount });
+        } else if (BASE_MINTS.has(outTok.mint) && !BASE_MINTS.has(inTok.mint)) {
+          swaps.push({ signature: tx.signature, timestamp: tx.timestamp, soldMint: outTok.mint, soldAmount: outTok.tokenAmount, boughtMint: inTok.mint, boughtAmount: inTok.tokenAmount });
+        }
+      }
+    }
+  } catch { /* ignore */ }
+  return swaps;
+}
+
+// ── Consensus scoring helpers ─────────────────────────────────────
+function labelScore(labels: string[]): number {
+  let score = 0;
+  for (const l of labels) {
+    if (l === "Cabal")        score += 2;
+    else if (l === "Whale")   score += 2;
+    else if (l === "KOL")     score += 1.5;
+    else if (l === "Smart_Money") score += 1;
+    else if (l === "HighLight")   score += 1;
+  }
+  return score;
+}
+
+function scoreToStars(score: number): 1|2|3|4|5 {
+  if (score >= 8) return 5;
+  if (score >= 5) return 4;
+  if (score >= 3) return 3;
+  if (score >= 2) return 2;
+  return 1;
+}
+
+// ── Demo data for consensus_24h (no API key) ──────────────────────
+function generateConsensusDemo() {
+  const demoTokens: Array<{
+    mint: string; symbol: string;
+    buyers: Array<{ shortAddr: string; twitter?: string; name?: string; labels: string[] }>;
+    totalBuyUSD: number; firstSeenAt: number;
+  }> = [
+    {
+      mint: "SaMaraXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", symbol: "Samara",
+      buyers: [
+        { shortAddr: "9jyq…AVVz", twitter: "@NachSOL",       name: "Nach",         labels: ["Cabal", "KOL"] },
+        { shortAddr: "2btY…v4EH", twitter: "@Ed_x0101",      name: "Ed_x區塊日記", labels: ["Smart_Money", "KOL"] },
+        { shortAddr: "5tzF…hV",   twitter: "@realpandapunks", name: "Panda",        labels: ["KOL", "Smart_Money"] },
+        { shortAddr: "C3nL…9hP",                                                     labels: ["Smart_Money", "Whale"] },
+      ],
+      totalBuyUSD: 12120, firstSeenAt: Date.now() - 14400000,
+    },
+    {
+      mint: "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263", symbol: "BONK",
+      buyers: [
+        { shortAddr: "DNfu…BHm", twitter: "@Ga__ke",      name: "Gake_2", labels: ["Smart_Money", "KOL", "HighLight"] },
+        { shortAddr: "8tP3…PRP", twitter: "@LongzuAlpha", name: "Jinmu",  labels: ["Smart_Money", "KOL"] },
+        { shortAddr: "BNSw…RTH",                                           labels: ["Cabal", "Whale"] },
+      ],
+      totalBuyUSD: 8500, firstSeenAt: Date.now() - 18000000,
+    },
+    {
+      mint: "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN", symbol: "JUP",
+      buyers: [
+        { shortAddr: "Ae1W…kHY", twitter: "@AlphaSolana", name: "AlphaSOL", labels: ["Cabal", "KOL"] },
+        { shortAddr: "EKpQ…cjm",                                              labels: ["Whale", "Cabal"] },
+      ],
+      totalBuyUSD: 5200, firstSeenAt: Date.now() - 21600000,
+    },
+    {
+      mint: "mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So", symbol: "mSOL",
+      buyers: [
+        { shortAddr: "HXRi…Vxx", twitter: "@SolBigBrain", name: "BigBrain", labels: ["KOL"] },
+        { shortAddr: "9WzD…AWM",                                              labels: ["Whale"] },
+      ],
+      totalBuyUSD: 3100, firstSeenAt: Date.now() - 28800000,
+    },
+    {
+      mint: "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R", symbol: "RAY",
+      buyers: [
+        { shortAddr: "FBTj…FPP",                            labels: ["Cabal", "Smart_Money"] },
+        { shortAddr: "3AXh…WBB",                            labels: ["Smart_Money", "HighLight"] },
+      ],
+      totalBuyUSD: 2800, firstSeenAt: Date.now() - 36000000,
+    },
+  ];
+
+  const consensusTokens = demoTokens.map(t => {
+    const totalScore = t.buyers.reduce((s, b) => s + labelScore(b.labels), 0);
+    const labelCounts: Record<string, number> = {};
+    for (const b of t.buyers)
+      for (const l of b.labels)
+        labelCounts[l] = (labelCounts[l] ?? 0) + 1;
+    const parts = Object.entries(labelCounts)
+      .sort((a, b) => b[1] - a[1])
+      .map(([l, c]) => `${c} ${l}`);
+    return {
+      mint: t.mint,
+      symbol: t.symbol,
+      buyerCount: t.buyers.length,
+      buyerLabels: parts.join(" + "),
+      buyers: t.buyers,
+      totalBuyUSD: t.totalBuyUSD,
+      starRating: scoreToStars(totalScore) as 1|2|3|4|5,
+      firstSeenAt: t.firstSeenAt,
+    };
+  });
+
+  const activeWallets = LABELED_WALLETS.map((w, i) => ({
+    address:       w.address,
+    shortAddress:  w.address.slice(0, 6) + "…" + w.address.slice(-4),
+    labels:        w.labels,
+    twitter:       w.twitter,
+    name:          w.name,
+    activityCount: Math.max(0, 4 - Math.floor(i / 5)),
+    tokens:        [] as string[],
+  })).filter(w => w.activityCount > 0)
+    .sort((a, b) => b.activityCount - a.activityCount);
+
+  return {
+    consensusTokens,
+    activeWallets,
+    solPrice: 170,
+    trackedWallets: LABELED_WALLETS.length,
+    dataSource: "demo" as const,
+    updatedAt: Date.now(),
+  };
+}
+
+// ── Consensus 24h main handler ────────────────────────────────────
+async function handleConsensus24h(): Promise<NextResponse> {
+  if (!HELIUS_API_KEY) return NextResponse.json(generateConsensusDemo());
+
+  const solPrice = await getSolPrice();
+
+  // Fetch 24h swaps for all labeled wallets in batches of 5
+  const allResults: Array<{ wallet: LabeledWallet; swaps: ParsedSwap[] }> = [];
+  for (let i = 0; i < LABELED_WALLETS.length; i += 5) {
+    const batch = LABELED_WALLETS.slice(i, i + 5);
+    const settled = await Promise.allSettled(
+      batch.map(w => get24hSwaps(w.address).then(swaps => ({ wallet: w, swaps })))
+    );
+    for (const r of settled) {
+      if (r.status === "fulfilled") allResults.push(r.value);
+    }
+  }
+
+  // Aggregate buys by boughtMint
+  const mintBuyers = new Map<string, {
+    wallets: Array<LabeledWallet & { solSpent: number; usdSpent: number }>;
+    totalBuyUSD: number;
+    firstSeenAt: number;
+  }>();
+
+  for (const { wallet, swaps } of allResults) {
+    for (const swap of swaps) {
+      if (!BASE_MINTS.has(swap.soldMint) || BASE_MINTS.has(swap.boughtMint)) continue;
+      const usdAmt = swap.soldMint === USDC_MINT ? swap.soldAmount : swap.soldAmount * solPrice;
+      const entry = mintBuyers.get(swap.boughtMint) ?? { wallets: [], totalBuyUSD: 0, firstSeenAt: swap.timestamp * 1000 };
+      if (!entry.wallets.find(w => w.address === wallet.address)) {
+        entry.wallets.push({ ...wallet, solSpent: swap.soldMint === SOL_MINT ? swap.soldAmount : 0, usdSpent: usdAmt });
+      }
+      entry.totalBuyUSD += usdAmt;
+      if (swap.timestamp * 1000 < entry.firstSeenAt) entry.firstSeenAt = swap.timestamp * 1000;
+      mintBuyers.set(swap.boughtMint, entry);
+    }
+  }
+
+  // Build consensusTokens (≥2 wallets)
+  const consensusTokens = [...mintBuyers.entries()]
+    .filter(([, v]) => v.wallets.length >= 2)
+    .map(([mint, v]) => {
+      const totalScore = v.wallets.reduce((s, w) => s + labelScore(w.labels), 0);
+      const labelCounts: Record<string, number> = {};
+      for (const w of v.wallets) for (const l of w.labels) labelCounts[l] = (labelCounts[l] ?? 0) + 1;
+      const parts = Object.entries(labelCounts).sort((a, b) => b[1] - a[1]).map(([l, c]) => `${c} ${l}`);
+      return {
+        mint,
+        buyerCount:  v.wallets.length,
+        buyerLabels: parts.join(" + "),
+        buyers: v.wallets.map(w => ({
+          shortAddr: w.address.slice(0, 4) + "…" + w.address.slice(-4),
+          twitter:   w.twitter,
+          name:      w.name,
+          labels:    w.labels,
+        })),
+        totalBuyUSD: Math.round(v.totalBuyUSD),
+        starRating:  scoreToStars(totalScore) as 1|2|3|4|5,
+        firstSeenAt: v.firstSeenAt,
+      };
+    })
+    .sort((a, b) => b.totalBuyUSD - a.totalBuyUSD)
+    .slice(0, 10);
+
+  // Active wallets
+  const activeWallets = allResults
+    .map(({ wallet, swaps }) => {
+      const buys = swaps.filter(s => BASE_MINTS.has(s.soldMint) && !BASE_MINTS.has(s.boughtMint));
+      const tokens = [...new Set(buys.map(s => s.boughtMint))];
+      return { wallet, tokens };
+    })
+    .filter(({ tokens }) => tokens.length > 0)
+    .sort((a, b) => b.tokens.length - a.tokens.length)
+    .map(({ wallet, tokens }) => ({
+      address:       wallet.address,
+      shortAddress:  wallet.address.slice(0, 6) + "…" + wallet.address.slice(-4),
+      labels:        wallet.labels,
+      twitter:       wallet.twitter,
+      name:          wallet.name,
+      activityCount: tokens.length,
+      tokens:        tokens.slice(0, 5).map(m => m.slice(0, 6) + "…"),
+    }));
+
+  // Fallback to demo if empty
+  if (consensusTokens.length === 0 && activeWallets.length === 0) {
+    return NextResponse.json(generateConsensusDemo());
+  }
+
+  return NextResponse.json({
+    consensusTokens,
+    activeWallets,
+    solPrice,
+    trackedWallets: LABELED_WALLETS.length,
+    dataSource: "helius_realtime" as const,
+    updatedAt: Date.now(),
+  });
+}
+
 // ── GET handler ───────────────────────────────────────────────────
 
 export async function GET(req: NextRequest) {

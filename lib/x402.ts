@@ -49,7 +49,7 @@ export async function payWithPhantom(
     }
 
     const RPC = typeof window !== "undefined"
-      ? "/api/rpc"
+      ? `${window.location.origin}/api/rpc`
       : `https://mainnet.helius-rpc.com/?api-key=${process.env.HELIUS_API_KEY ?? ""}`;
     const conn = new Connection(RPC, "confirmed");
 
