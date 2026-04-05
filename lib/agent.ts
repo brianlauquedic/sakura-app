@@ -542,3 +542,220 @@ export async function sakGetDriftBorrowAPY(): Promise<{ token: string; depositAP
     }));
   } catch { return []; }
 }
+
+// ── 新數據源：DeFiLlama + Fear & Greed ─────────────────────────────────────
+
+/**
+ * DeFiLlama — Solana 生態 TVL + 高收益池
+ * 完全免費公開 API，無需 Key
+ */
+export interface DefiLlamaResult {
+  solanaTVL: number;           // Solana 鏈總 TVL (USD)
+  tvl24hChange: number;        // 24h TVL 變化 %
+  topProtocols: Array<{
+    name: string;
+    tvl: number;
+    change24h: number;
+    category: string;
+  }>;
+  topYieldPools: Array<{
+    project: string;
+    symbol: string;
+    apy: number;
+    tvlUsd: number;
+    chain: string;
+  }>;
+}
+
+export async function sakGetDefiLlamaData(): Promise<DefiLlamaResult> {
+  const empty: DefiLlamaResult = { solanaTVL: 0, tvl24hChange: 0, topProtocols: [], topYieldPools: [] };
+  try {
+    // 並行請求：鏈 TVL + 協議列表 + 收益池
+    const [chainsRes, protocolsRes, yieldsRes] = await Promise.allSettled([
+      fetch("https://api.llama.fi/v2/chains",    { next: { revalidate: 1800 } }),
+      fetch("https://api.llama.fi/protocols",     { next: { revalidate: 1800 } }),
+      fetch("https://yields.llama.fi/pools",      { next: { revalidate: 1800 } }),
+    ]);
+
+    // Solana 鏈 TVL
+    let solanaTVL = 0;
+    let tvl24hChange = 0;
+    if (chainsRes.status === "fulfilled" && chainsRes.value.ok) {
+      const chains = await chainsRes.value.json() as Array<{
+        name: string; tvl: number; change_1d?: number;
+      }>;
+      const sol = chains.find(c => c.name.toLowerCase() === "solana");
+      if (sol) { solanaTVL = sol.tvl; tvl24hChange = sol.change_1d ?? 0; }
+    }
+
+    // Solana 協議 Top 8（按 TVL 排序）
+    let topProtocols: DefiLlamaResult["topProtocols"] = [];
+    if (protocolsRes.status === "fulfilled" && protocolsRes.value.ok) {
+      const protocols = await protocolsRes.value.json() as Array<{
+        name: string; tvl: number; change_1d?: number; category?: string;
+        chains?: string[];
+      }>;
+      topProtocols = protocols
+        .filter(p => p.chains?.some(c => c.toLowerCase() === "solana") && p.tvl > 1_000_000)
+        .sort((a, b) => b.tvl - a.tvl)
+        .slice(0, 8)
+        .map(p => ({
+          name:      p.name,
+          tvl:       Math.round(p.tvl),
+          change24h: p.change_1d ?? 0,
+          category:  p.category ?? "DeFi",
+        }));
+    }
+
+    // Solana 高收益池 Top 8（APY > 3%，TVL > $500K）
+    let topYieldPools: DefiLlamaResult["topYieldPools"] = [];
+    if (yieldsRes.status === "fulfilled" && yieldsRes.value.ok) {
+      const yieldsData = await yieldsRes.value.json() as {
+        data?: Array<{ project: string; symbol: string; apy: number; tvlUsd: number; chain: string }>;
+      };
+      topYieldPools = (yieldsData.data ?? [])
+        .filter(p => p.chain === "Solana" && p.apy > 3 && p.tvlUsd > 500_000)
+        .sort((a, b) => b.tvlUsd - a.tvlUsd)
+        .slice(0, 8)
+        .map(p => ({
+          project: p.project,
+          symbol:  p.symbol,
+          apy:     parseFloat(p.apy.toFixed(2)),
+          tvlUsd:  Math.round(p.tvlUsd),
+          chain:   p.chain,
+        }));
+    }
+
+    return { solanaTVL, tvl24hChange, topProtocols, topYieldPools };
+  } catch { return empty; }
+}
+
+/**
+ * Fear & Greed Index — 加密市場情緒指數
+ * alternative.me 免費公開 API，無需 Key
+ * 返回當前值 + 過去 7 天趨勢
+ */
+export interface FearGreedResult {
+  current: {
+    value: number;          // 0=極度恐懼，100=極度貪婪
+    classification: string; // "Extreme Fear" | "Fear" | "Neutral" | "Greed" | "Extreme Greed"
+    timestamp: string;
+  };
+  weekly: Array<{
+    value: number;
+    classification: string;
+    date: string;
+  }>;
+  trend: "improving" | "deteriorating" | "stable";
+  insight: string;  // AI-friendly 解讀文字
+}
+
+/**
+ * CryptoPanic — 加密新聞聚合
+ * 免費 tier (無 API key) 支持公開新聞，有 key 可解鎖更多
+ * 按代幣過濾最新重要新聞
+ */
+export interface CryptoNewsResult {
+  items: Array<{
+    title: string;
+    url: string;
+    source: string;
+    publishedAt: string;
+    votes: { positive: number; negative: number };
+    sentiment: "bullish" | "bearish" | "neutral";
+  }>;
+  currency: string;
+}
+
+export async function sakGetCryptoNews(currency = "SOL"): Promise<CryptoNewsResult> {
+  const empty: CryptoNewsResult = { items: [], currency };
+  try {
+    const key = process.env.CRYPTOPANIC_API_KEY ?? "free";
+    const url = key === "free"
+      ? `https://cryptopanic.com/api/free/v1/posts/?auth_token=free&currencies=${currency}&kind=news&public=true`
+      : `https://cryptopanic.com/api/v1/posts/?auth_token=${key}&currencies=${currency}&kind=news&public=true`;
+
+    const res = await fetch(url, { next: { revalidate: 900 } });  // 15分鐘緩存
+    if (!res.ok) return empty;
+
+    const json = await res.json() as {
+      results?: Array<{
+        title: string;
+        url: string;
+        source: { title: string };
+        published_at: string;
+        votes: { positive?: number; negative?: number };
+      }>;
+    };
+
+    const items = (json.results ?? []).slice(0, 8).map(item => {
+      const pos = item.votes?.positive ?? 0;
+      const neg = item.votes?.negative ?? 0;
+      const sentiment: CryptoNewsResult["items"][0]["sentiment"] =
+        pos > neg * 1.5 ? "bullish" : neg > pos * 1.5 ? "bearish" : "neutral";
+      return {
+        title:       item.title,
+        url:         item.url,
+        source:      item.source.title,
+        publishedAt: item.published_at.slice(0, 10),
+        votes:       { positive: pos, negative: neg },
+        sentiment,
+      };
+    });
+
+    return { items, currency };
+  } catch { return empty; }
+}
+
+export async function sakGetFearGreed(): Promise<FearGreedResult | null> {
+  try {
+    const res = await fetch(
+      "https://api.alternative.me/fng/?limit=7&format=json",
+      { next: { revalidate: 3600 } }  // 1小時緩存，指數每日更新
+    );
+    if (!res.ok) return null;
+
+    const json = await res.json() as {
+      data?: Array<{ value: string; value_classification: string; timestamp: string }>;
+    };
+    const data = json.data ?? [];
+    if (data.length === 0) return null;
+
+    const current = data[0];
+    const weekly = data.map(d => ({
+      value:          parseInt(d.value),
+      classification: d.value_classification,
+      date:           new Date(parseInt(d.timestamp) * 1000).toISOString().slice(0, 10),
+    }));
+
+    // 計算趨勢：今日 vs 7日前
+    const todayVal = parseInt(current.value);
+    const weekAgoVal = parseInt(data[data.length - 1].value);
+    const diff = todayVal - weekAgoVal;
+    const trend: FearGreedResult["trend"] =
+      diff > 5 ? "improving" : diff < -5 ? "deteriorating" : "stable";
+
+    // 生成 AI 可直接引用的解讀
+    const lvl = parseInt(current.value);
+    let insight = "";
+    if (lvl <= 25)      insight = `市場處於極度恐懼（${lvl}），歷史上往往是逢低買入機會，但需確認趨勢反轉信號。`;
+    else if (lvl <= 45) insight = `市場偏向恐懼（${lvl}），投資者謹慎，可考慮分批建倉優質資產。`;
+    else if (lvl <= 55) insight = `市場情緒中性（${lvl}），無明顯方向性偏差，關注個別資產基本面。`;
+    else if (lvl <= 75) insight = `市場處於貪婪區間（${lvl}），注意風險管理，避免追高。`;
+    else                insight = `市場極度貪婪（${lvl}），歷史上這往往預示近期回調風險升高，謹慎為上。`;
+
+    if (trend === "improving")     insight += ` 過去一週情緒持續改善（+${diff}點）。`;
+    else if (trend === "deteriorating") insight += ` 過去一週情緒持續惡化（${diff}點）。`;
+
+    return {
+      current: {
+        value:          lvl,
+        classification: current.value_classification,
+        timestamp:      new Date(parseInt(current.timestamp) * 1000).toISOString().slice(0, 10),
+      },
+      weekly,
+      trend,
+      insight,
+    };
+  } catch { return null; }
+}

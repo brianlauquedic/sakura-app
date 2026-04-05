@@ -32,6 +32,9 @@ import {
   sakGetTrendingPools,
   sakGetBridgeQuote,
   sakGetDriftBorrowAPY,
+  sakGetDefiLlamaData,
+  sakGetFearGreed,
+  sakGetCryptoNews,
   SOL_MINT,
   USDC_MINT,
 } from "@/lib/agent";
@@ -337,6 +340,38 @@ Use symbol='SOL' for Solana, or provide mint address for SPL tokens.`,
       required: [],
     },
   },
+  {
+    name: "get_defi_llama",
+    description: "Get Solana ecosystem TVL data and top yield pools from DeFiLlama. Use when user asks about: total Solana DeFi TVL, which protocols have the most locked value, top yield opportunities on Solana, protocol health trends, or DeFi ecosystem overview.",
+    input_schema: {
+      type: "object" as const,
+      properties: {},
+      required: [],
+    },
+  },
+  {
+    name: "get_fear_greed",
+    description: "Get the Crypto Fear & Greed Index (0=Extreme Fear, 100=Extreme Greed) with 7-day trend. ALWAYS call this when user asks about market sentiment, whether it's a good time to buy/sell, market mood, or macro outlook. Pair with technical analysis for complete picture.",
+    input_schema: {
+      type: "object" as const,
+      properties: {},
+      required: [],
+    },
+  },
+  {
+    name: "get_crypto_news",
+    description: "Get latest crypto news headlines for a specific token or the market. Includes sentiment (bullish/bearish/neutral) per article based on community votes. Use when user asks about recent news, what's happening with a token, market events, or catalysts.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        currency: {
+          type: "string",
+          description: "Token ticker to filter news (e.g. SOL, BTC, ETH, BONK, JUP). Default: SOL",
+        },
+      },
+      required: [],
+    },
+  },
 ];
 
 // ── Tool execution (SAK-backed) ──────────────────────────────────────────────
@@ -615,6 +650,38 @@ async function executeTool(name: string, input: Record<string, unknown>): Promis
     case "get_drift_borrow_apy": {
       const rates = await sakGetDriftBorrowAPY();
       return { rates, count: rates.length };
+    }
+    case "get_defi_llama": {
+      const data = await sakGetDefiLlamaData();
+      return {
+        solanaTVL:    data.solanaTVL,
+        tvl24hChange: data.tvl24hChange,
+        topProtocols: data.topProtocols,
+        topYieldPools: data.topYieldPools,
+        dataSource:   "DeFiLlama",
+        note: data.solanaTVL === 0
+          ? "DeFiLlama API temporarily unavailable"
+          : `Solana DeFi TVL: $${(data.solanaTVL / 1e9).toFixed(2)}B`,
+      };
+    }
+    case "get_fear_greed": {
+      const fg = await sakGetFearGreed();
+      if (!fg) return { error: "Fear & Greed Index unavailable — alternative.me API may be down" };
+      return {
+        ...fg,
+        dataSource: "alternative.me Crypto Fear & Greed Index",
+      };
+    }
+    case "get_crypto_news": {
+      const currency = (input.currency as string | undefined) ?? "SOL";
+      const news = await sakGetCryptoNews(currency.toUpperCase());
+      return {
+        ...news,
+        dataSource: "CryptoPanic",
+        note: news.items.length === 0
+          ? "CryptoPanic API unavailable or no recent news for this token"
+          : `${news.items.length} latest news items for ${currency}`,
+      };
     }
     default:
       return { error: `Unknown tool: ${name}` };
