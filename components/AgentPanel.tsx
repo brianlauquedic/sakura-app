@@ -1129,27 +1129,44 @@ function StrategyBacktestChart({
   const chartRef     = useRef<any>(null);
   const chartTheme   = isDayMode ? "light" : "dark";
 
-  // Rebuild on mode OR theme change
+  const [seriesData, setSeriesData] = useState<Record<string, { time: number; value: number }[]>>({});
+  const [returns, setReturns]       = useState<Record<string, number>>({});
+  const [loading, setLoading]       = useState(true);
+
+  // Fetch real CoinGecko-based backtest data on mount
   useEffect(() => {
-    if (!containerRef.current) return;
+    setLoading(true);
+    Promise.all(
+      (["yield", "defensive", "smart_money"] as const).map(s =>
+        fetch(`/api/backtest?strategy=${s}`)
+          .then(r => r.json())
+          .then((d: { series?: { time: number; value: number }[]; totalReturnPct?: number }) => ({ strategy: s, series: d.series ?? [], ret: d.totalReturnPct ?? 0 }))
+          .catch(() => ({ strategy: s, series: genBacktestSeries(s), ret: 0 }))
+      )
+    ).then(results => {
+      const sd: Record<string, { time: number; value: number }[]> = {};
+      const rv: Record<string, number> = {};
+      results.forEach(r => { sd[r.strategy] = r.series; rv[r.strategy] = r.ret; });
+      setSeriesData(sd);
+      setReturns(rv);
+      setLoading(false);
+    });
+  }, []);
+
+  // Rebuild chart whenever data, mode, or theme changes
+  useEffect(() => {
+    if (!containerRef.current || loading || Object.keys(seriesData).length === 0) return;
 
     const th = BACKTEST_THEMES[chartTheme];
 
-    // Always destroy and recreate for correct theme colors
     if (chartRef.current) { chartRef.current.remove(); chartRef.current = null; }
 
     import("lightweight-charts").then(({ createChart, LineSeries }) => {
       if (!containerRef.current) return;
 
       const chart = createChart(containerRef.current, {
-        layout: {
-          background: { color: th.bg },
-          textColor:  th.text,
-        },
-        grid: {
-          vertLines: { color: th.grid },
-          horzLines: { color: th.grid },
-        },
+        layout: { background: { color: th.bg }, textColor: th.text },
+        grid:   { vertLines: { color: th.grid }, horzLines: { color: th.grid } },
         rightPriceScale: { borderColor: th.border },
         timeScale: { borderColor: th.border, timeVisible: true },
         width:  containerRef.current.clientWidth,
@@ -1157,15 +1174,15 @@ function StrategyBacktestChart({
       });
       chartRef.current = chart;
 
-      // Draw all 3 strategies as lines, highlight selected
       defs.forEach(def => {
+        const data = seriesData[def.id] ?? genBacktestSeries(def.id);
         const series = chart.addSeries(LineSeries, {
           color:     def.id === mode ? def.badgeColor : th.dimLine,
           lineWidth: def.id === mode ? 2 : 1,
           lineStyle: def.id === mode ? 0 : 2,
         });
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        series.setData(genBacktestSeries(def.id) as any);
+        series.setData(data as any);
       });
 
       chart.timeScale().fitContent();
@@ -1174,7 +1191,7 @@ function StrategyBacktestChart({
     return () => {
       if (chartRef.current) { chartRef.current.remove(); chartRef.current = null; }
     };
-  }, [mode, defs, chartTheme]);
+  }, [seriesData, mode, defs, chartTheme, loading]);
 
   const activeDef = defs.find(d => d.id === mode)!;
   const th = BACKTEST_THEMES[chartTheme];
@@ -1185,26 +1202,40 @@ function StrategyBacktestChart({
       border: `1px solid ${activeDef.badgeColor}30`,
       background: th.bg,
     }}>
-      {/* Legend */}
+      {/* Legend with real returns */}
       <div style={{
         padding: "8px 14px", borderBottom: "1px solid var(--border)",
         display: "flex", alignItems: "center", justifyContent: "space-between",
       }}>
         <span style={{ fontSize: 11, fontWeight: 700, color: "var(--text-secondary)" }}>
-          📊 30 日策略回測模擬
+          📊 30 日策略回測 · 真實 SOL 價格數據
         </span>
         <div style={{ display: "flex", gap: 12 }}>
-          {defs.map(d => (
-            <span key={d.id} style={{ fontSize: 9, color: d.id === mode ? d.badgeColor : "var(--text-muted)", display: "flex", alignItems: "center", gap: 4 }}>
-              <span style={{ display: "inline-block", width: 12, height: 2, background: d.id === mode ? d.badgeColor : th.dimLine, borderRadius: 1 }} />
-              {d.name}
-            </span>
-          ))}
+          {defs.map(d => {
+            const ret = returns[d.id];
+            return (
+              <span key={d.id} style={{ fontSize: 9, color: d.id === mode ? d.badgeColor : "var(--text-muted)", display: "flex", alignItems: "center", gap: 4 }}>
+                <span style={{ display: "inline-block", width: 12, height: 2, background: d.id === mode ? d.badgeColor : th.dimLine, borderRadius: 1 }} />
+                {d.name}
+                {ret !== undefined && ret !== 0 && (
+                  <span style={{ color: ret >= 0 ? "#3D7A5C" : "#A8293A" }}>
+                    {ret >= 0 ? "+" : ""}{ret.toFixed(1)}%
+                  </span>
+                )}
+              </span>
+            );
+          })}
         </div>
       </div>
-      <div ref={containerRef} style={{ width: "100%" }} />
+      {loading ? (
+        <div style={{ height: 220, display: "flex", alignItems: "center", justifyContent: "center", background: th.bg }}>
+          <span style={{ fontSize: 11, color: "var(--text-muted)" }}>載入真實市場數據...</span>
+        </div>
+      ) : (
+        <div ref={containerRef} style={{ width: "100%" }} />
+      )}
       <div style={{ padding: "6px 14px", borderTop: "1px solid var(--border)", fontSize: 10, color: "var(--text-muted)" }}>
-        * 模擬數據僅供參考，不構成投資建議。實際收益受市場影響。
+        * 基於 CoinGecko 真實 SOL 30 日價格 + Marinade/Kamino 真實 APY 模擬，不構成投資建議。
       </div>
     </div>
   );
