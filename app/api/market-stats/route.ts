@@ -9,7 +9,7 @@ async function get(url: string, ms = 8000): Promise<unknown> {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), ms);
   try {
-    const res = await fetch(url, { signal: controller.signal, headers: { "User-Agent": UA } });
+    const res = await fetch(url, { signal: controller.signal, headers: { "User-Agent": UA }, cache: "no-store" });
     return res.json();
   } catch {
     return null;
@@ -18,15 +18,22 @@ async function get(url: string, ms = 8000): Promise<unknown> {
   }
 }
 
+// Use Helius RPC if key available; fall back to public endpoint
+const HELIUS_KEY = process.env.HELIUS_API_KEY;
+const RPC_URL = HELIUS_KEY
+  ? `https://mainnet.helius-rpc.com/?api-key=${HELIUS_KEY}`
+  : "https://api.mainnet-beta.solana.com";
+
 async function rpc(method: string, params: unknown[] = [], ms = 10000): Promise<unknown> {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), ms);
   try {
-    const res = await fetch("https://api.mainnet-beta.solana.com", {
+    const res = await fetch(RPC_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json", "User-Agent": UA },
       body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
       signal: controller.signal,
+      cache: "no-store",
     });
     const d = await res.json() as { result?: unknown };
     return d?.result ?? null;
