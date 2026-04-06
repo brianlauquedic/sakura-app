@@ -9,7 +9,7 @@ interface MarketStats {
   solanaTvl:  string | null;
   solPrice:   string | null;
   solChange:  string | null;
-  jupVol7d:   string | null;
+  dexVol7d:   string | null;
   fees7d:     string | null;
   validators: string | null;
   updatedAt:  string | null;
@@ -210,11 +210,11 @@ export default function WalletConnect({ walletAddress, onEnterApp }: Props = {})
             },
             {
               labelZh: "SOL 現價", labelEn: "SOL Price", labelJa: "SOL価格",
-              value: stats?.solPrice ?? "—", sub: stats?.solChange ?? "CoinGecko", gold: false,
+              value: stats?.solPrice ?? "—", sub: stats?.solChange ?? "DeFiLlama", gold: false,
             },
             {
-              labelZh: "Jupiter 7日量", labelEn: "Jupiter 7d Vol", labelJa: "Jupiter 7日出来高",
-              value: stats?.jupVol7d ?? "—", sub: "DeFiLlama DEX", gold: false,
+              labelZh: "SOL DEX 7日量", labelEn: "DEX Vol 7d", labelJa: "DEX出来高 7日",
+              value: stats?.dexVol7d ?? "—", sub: "DeFiLlama · Solana", gold: false,
             },
             {
               labelZh: "活躍驗證者", labelEn: "Validators", labelJa: "バリデーター",
@@ -226,7 +226,7 @@ export default function WalletConnect({ walletAddress, onEnterApp }: Props = {})
             },
             {
               labelZh: "資料來源", labelEn: "Data Sources", labelJa: "データソース",
-              value: "Live", sub: "CoinGecko · DeFiLlama · RPC", gold: false,
+              value: "Live", sub: "DeFiLlama · Solana RPC", gold: false,
             },
           ]).map((item, i) => (
             <div key={i} style={{
