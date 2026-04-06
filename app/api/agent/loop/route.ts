@@ -1099,6 +1099,24 @@ export async function POST(req: NextRequest) {
     return new Response(JSON.stringify({ error: "Invalid wallet address" }), { status: 400, headers: { "Content-Type": "application/json" } });
   }
 
+  // Prompt injection guard: sanitize all user-controlled string inputs
+  const MAX_MSG = 3000;
+  const MAX_HISTORY_MSG = 1000;
+  const MAX_SUMMARY = 200;
+
+  function sanitize(s: string, maxLen: number): string {
+    return s.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "").slice(0, maxLen);
+  }
+
+  const safeMessage = sanitize(body.message ?? "", MAX_MSG);
+  const safeHistory = (body.history ?? []).slice(-8).map(h => ({
+    role: h.role,
+    content: sanitize(h.content, MAX_HISTORY_MSG),
+  }));
+  const safeSessionSummary = body.sessionSummary
+    ? sanitize(body.sessionSummary, MAX_SUMMARY)
+    : undefined;
+
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
@@ -1154,7 +1172,7 @@ UTILITY: parse_transaction (explain any tx hash), get_network_status (TPS), reso
 
 Wallet: ${body.walletAddress}
 ${body.walletSnapshot ? `Portfolio: ${body.walletSnapshot.solBalance.toFixed(3)} SOL | $${body.walletSnapshot.totalUSD.toFixed(0)} total | $${body.walletSnapshot.idleUSDC.toFixed(0)} idle USDC` : ""}
-${body.sessionSummary ? `Session context: ${body.sessionSummary}` : ""}
+${safeSessionSummary ? `Session context: ${safeSessionSummary}` : ""}
 
 Rules:
 - Be specific with numbers (exact SOL amounts, exact APY %, exact USD)
@@ -1164,11 +1182,11 @@ Rules:
 - Respond in the same language as the user's message`;
 
       const messages: Anthropic.MessageParam[] = [
-        ...(body.history ?? []).slice(-8).map(h => ({
+        ...safeHistory.map(h => ({
           role: h.role as "user" | "assistant",
           content: h.content,
         })),
-        { role: "user", content: body.message },
+        { role: "user", content: safeMessage },
       ];
 
       let allThinkingText = "";
