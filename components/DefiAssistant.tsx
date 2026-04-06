@@ -528,10 +528,10 @@ export default function DefiAssistant({ walletAddress, walletSnapshot }: Props) 
         })
         .catch(() => {});
     };
-    // Stagger: run 2.5 min after APY check
+    // Check immediately on mount, then every 5 min
+    check();
     const interval = setInterval(check, 5 * 60 * 1000);
-    const delay = setTimeout(check, 2.5 * 60 * 1000);
-    return () => { clearInterval(interval); clearTimeout(delay); };
+    return () => clearInterval(interval);
   }, []);
 
   // ── Watchlist price monitoring: re-fetch every 5 min + 30s offset ──

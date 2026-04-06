@@ -1067,6 +1067,23 @@ function GuardianConditionsPanel({ walletAddress }: { walletAddress: string }) {
                     background: "rgba(139,92,246,0.1)", borderRadius: 4, padding: "1px 5px",
                   }}>{ACTION_LABEL[c.action] ?? c.action}</span>
                   <button
+                    type="button"
+                    title="模擬觸發 → 發送通知到 AI 顧問"
+                    onClick={() => {
+                      fetch("/api/cron/alerts/test", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ label: c.label, metric: c.metric, severity: "warning" }),
+                      }).then(() => showStatus(`🔔 已發送通知到 AI 顧問：${c.label}`, "success"))
+                        .catch(() => showStatus("發送失敗", "error"));
+                    }}
+                    style={{
+                      background: "none", border: "1px solid var(--border)", cursor: "pointer",
+                      color: "var(--text-secondary)", fontSize: 10, padding: "2px 6px",
+                      borderRadius: 4, lineHeight: 1.4, whiteSpace: "nowrap",
+                    }}
+                  >🔔 提醒</button>
+                  <button
                     onClick={() => deleteCondition(c.id)}
                     style={{
                       background: "none", border: "none", cursor: "pointer",
