@@ -623,6 +623,7 @@ export const translations = {
   footerFeatureX402:       { zh: "x402 微支付免訂閱", en: "x402 Micropayment — No Subscription", ja: "x402マイクロペイメント（定額不要）" },
   footerDocs:             { zh: "使用手冊", en: "Docs", ja: "ドキュメント" },
   footerUseCases:         { zh: "使用案例", en: "Use Cases", ja: "使用事例" },
+  footerMarket:           { zh: "市場週報", en: "Market Report", ja: "マーケットレポート" },
   footerPricing:          { zh: "定價", en: "Pricing", ja: "料金" },
   footerTerms:            { zh: "使用條款", en: "Terms of Service", ja: "利用規約" },
   footerPrivacy:          { zh: "隱私政策", en: "Privacy Policy", ja: "プライバシーポリシー" },
