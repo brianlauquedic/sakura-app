@@ -930,6 +930,7 @@ function GuardianConditionsPanel({ walletAddress }: { walletAddress: string }) {
   }
 
   async function addCondition() {
+    console.log("[Guardian] addCondition called, walletAddress=", walletAddress);
     if (!walletAddress) { showStatus("請先連接錢包", "error"); return; }
     const tpl       = CONDITION_TEMPLATES[selectedTemplate];
     const threshold = customThreshold ? parseFloat(customThreshold) : tpl.threshold;
@@ -1118,16 +1119,18 @@ function GuardianConditionsPanel({ walletAddress }: { walletAddress: string }) {
                 }}
               />
               <button
-                onClick={addCondition}
+                type="button"
+                onClick={(e) => { e.stopPropagation(); e.preventDefault(); void addCondition(); }}
                 disabled={adding}
                 style={{
                   padding: "6px 16px", borderRadius: 6, border: "none", minWidth: 72,
                   background: adding ? "var(--border)" : "var(--accent)",
                   color: "#fff", fontSize: 12, fontWeight: 700,
                   cursor: adding ? "not-allowed" : "pointer",
+                  position: "relative", zIndex: 10,
                 }}
               >
-                {adding ? "處理中…" : "+ 新增"}
+                {adding ? "處理中…" : "✚ 新增條件"}
               </button>
             </div>
           </div>
