@@ -116,62 +116,72 @@ async function getHeliusMetadata(mint: string) {
   }
 }
 
+type Lang = "zh" | "en" | "ja";
+
 // ── Security Score Calculator ────────────────────────────────────
-function calcSecurityScore(gp: Record<string, string> | null): {
+function calcSecurityScore(gp: Record<string, string> | null, lang: Lang = "en"): {
   score: number;
   risks: string[];
   positives: string[];
 } {
-  if (!gp) return { score: 50, risks: ["无法获取安全数据"], positives: [] };
+  const L = {
+    noData: { zh: "無法獲取安全數據", en: "Unable to fetch security data", ja: "セキュリティデータを取得できません" },
+    mintRisk: { zh: "🔴 合約含增發權限（Mintable）— 可無限增發代幣", en: "🔴 Mintable contract — unlimited token issuance possible", ja: "🔴 発行権限あり（Mintable）— 無制限のトークン増刷が可能" },
+    noMint: { zh: "✅ 無增發權限，供應量固定", en: "✅ No mint authority — fixed supply", ja: "✅ 発行権限なし、供給量固定" },
+    freezeRisk: { zh: "🔴 合約含凍結權限（Freezable）— 可凍結用戶賬戶", en: "🔴 Freezable contract — accounts can be frozen", ja: "🔴 凍結権限あり（Freezable）— ユーザーアカウントを凍結可能" },
+    noFreeze: { zh: "✅ 無凍結權限", en: "✅ No freeze authority", ja: "✅ 凍結権限なし" },
+    holderConc: (pct: string) => ({
+      zh: `🔴 前10持幣地址占 ${pct}%，高度集中`,
+      en: `🔴 Top-10 holders own ${pct}% — highly concentrated`,
+      ja: `🔴 上位10アドレスが${pct}%保有 — 高度に集中`
+    }),
+    holderMid: (pct: string) => ({
+      zh: `⚠️ 前10持幣地址占 ${pct}%，較為集中`,
+      en: `⚠️ Top-10 holders own ${pct}% — moderately concentrated`,
+      ja: `⚠️ 上位10アドレスが${pct}%保有 — やや集中`
+    }),
+    holderOk: (pct: string) => ({
+      zh: `✅ 前10持幣分散（${pct}%）`,
+      en: `✅ Top-10 holders well distributed (${pct}%)`,
+      ja: `✅ 上位10アドレスの保有分散良好（${pct}%）`
+    }),
+    creatorHigh: (pct: string) => ({
+      zh: `🔴 創建者持倉 ${pct}%，拋壓風險高`,
+      en: `🔴 Creator holds ${pct}% — high sell pressure risk`,
+      ja: `🔴 開発者保有${pct}% — 売り圧力リスクが高い`
+    }),
+    creatorMid: (pct: string) => ({
+      zh: `⚠️ 創建者持倉 ${pct}%`,
+      en: `⚠️ Creator holds ${pct}%`,
+      ja: `⚠️ 開発者保有${pct}%`
+    }),
+    creatorLow: { zh: "✅ 創建者持倉比例低", en: "✅ Low developer holdings", ja: "✅ 開発者保有率が低い" },
+    honeypot: { zh: "🚨 檢測到 Honeypot（蜜罐騙局）— 無法賣出", en: "🚨 Honeypot detected — unable to sell", ja: "🚨 ハニーポット検出 — 売却不可" },
+  };
+
+  if (!gp) return { score: 50, risks: [L.noData[lang]], positives: [] };
 
   let score = 100;
   const risks: string[] = [];
   const positives: string[] = [];
 
-  // Mint authority
-  if (gp.mintable === "1") {
-    score -= 25;
-    risks.push("🔴 合约含增发权限（Mintable）— 可无限增发代币");
-  } else {
-    positives.push("✅ 无增发权限，供应量固定");
-  }
+  if (gp.mintable === "1") { score -= 25; risks.push(L.mintRisk[lang]); }
+  else { positives.push(L.noMint[lang]); }
 
-  // Freeze authority
-  if (gp.freezable === "1") {
-    score -= 20;
-    risks.push("🔴 合约含冻结权限（Freezable）— 可冻结用户账户");
-  } else {
-    positives.push("✅ 无冻结权限");
-  }
+  if (gp.freezable === "1") { score -= 20; risks.push(L.freezeRisk[lang]); }
+  else { positives.push(L.noFreeze[lang]); }
 
-  // Holder concentration
   const topHolderPct = parseFloat(gp.top10_holder_percent ?? "0") * 100;
-  if (topHolderPct > 80) {
-    score -= 25;
-    risks.push(`🔴 前10持币地址占 ${topHolderPct.toFixed(1)}%，高度集中`);
-  } else if (topHolderPct > 50) {
-    score -= 10;
-    risks.push(`⚠️ 前10持币地址占 ${topHolderPct.toFixed(1)}%，较为集中`);
-  } else if (topHolderPct > 0) {
-    positives.push(`✅ 前10持币分散（${topHolderPct.toFixed(1)}%）`);
-  }
+  if (topHolderPct > 80) { score -= 25; risks.push(L.holderConc(topHolderPct.toFixed(1))[lang]); }
+  else if (topHolderPct > 50) { score -= 10; risks.push(L.holderMid(topHolderPct.toFixed(1))[lang]); }
+  else if (topHolderPct > 0) { positives.push(L.holderOk(topHolderPct.toFixed(1))[lang]); }
 
-  // Creator holding
   const creatorPct = parseFloat(gp.creator_percentage ?? "0") * 100;
-  if (creatorPct > 20) {
-    score -= 15;
-    risks.push(`🔴 创建者持仓 ${creatorPct.toFixed(1)}%，抛压风险高`);
-  } else if (creatorPct > 5) {
-    risks.push(`⚠️ 创建者持仓 ${creatorPct.toFixed(1)}%`);
-  } else if (creatorPct >= 0) {
-    positives.push("✅ 创建者持仓比例低");
-  }
+  if (creatorPct > 20) { score -= 15; risks.push(L.creatorHigh(creatorPct.toFixed(1))[lang]); }
+  else if (creatorPct > 5) { risks.push(L.creatorMid(creatorPct.toFixed(1))[lang]); }
+  else if (creatorPct >= 0) { positives.push(L.creatorLow[lang]); }
 
-  // Rug pull / honeypot
-  if (gp.is_honeypot === "1") {
-    score -= 40;
-    risks.push("🚨 检测到 Honeypot（蜜罐骗局）— 无法卖出");
-  }
+  if (gp.is_honeypot === "1") { score -= 40; risks.push(L.honeypot[lang]); }
 
   score = Math.max(0, Math.min(100, score));
   return { score, risks, positives };
@@ -182,6 +192,7 @@ function generateDecision(
   secScore: number,
   price: number | null,
   walletRiskyPct: number,
+  lang: Lang = "en",
 ): {
   verdict: "buy" | "caution" | "avoid";
   label: string;
@@ -191,34 +202,51 @@ function generateDecision(
   if (secScore < 40) {
     return {
       verdict: "avoid",
-      label: "建议回避",
-      reason: "安全评分过低，存在严重合约风险",
-      suggestion: "该代币具有高风险合约特征，不建议买入。",
+      label: lang === "zh" ? "建議迴避" : lang === "ja" ? "回避推奨" : "Avoid",
+      reason: lang === "zh" ? "安全評分過低，存在嚴重合約風險" : lang === "ja" ? "安全スコアが低すぎます。深刻な契約リスクがあります" : "Security score too low — serious contract risks detected",
+      suggestion: lang === "zh" ? "該代幣具有高風險合約特徵，不建議買入。" : lang === "ja" ? "このトークンは高リスクな契約特性を持っています。購入は推奨しません。" : "This token has high-risk contract characteristics. Not recommended for purchase.",
     };
   }
 
   if (secScore < 65) {
+    const suggZh = `如果決定買入，建議倉位控制在總資產的 3-5%，並設置 -30% 止損。`;
+    const suggEn = `If buying, limit position to 3–5% of total assets and set a −30% stop-loss.`;
+    const suggJa = `購入する場合は、総資産の3〜5%以内に抑え、−30%のストップロスを設定してください。`;
     return {
       verdict: "caution",
-      label: "谨慎操作",
-      reason: "存在潜在风险信号，需谨慎",
-      suggestion: `如果决定买入，建议仓位控制在总资产的 3-5%，并设置 -30% 止损。`,
+      label: lang === "zh" ? "謹慎考慮" : lang === "ja" ? "慎重に検討" : "Proceed with Caution",
+      reason: lang === "zh" ? "存在潛在風險信號，需謹慎" : lang === "ja" ? "潜在的なリスクシグナルがあります。慎重に" : "Potential risk signals detected — proceed carefully",
+      suggestion: lang === "zh" ? suggZh : lang === "ja" ? suggJa : suggEn,
     };
   }
 
   // High score
-  let positionAdvice = "建议仓位不超过总资产的 10%。";
+  let suggestion: string;
   if (walletRiskyPct > 60) {
-    positionAdvice = `⚠️ 你的钱包中 Meme/未知代币已占 ${walletRiskyPct.toFixed(0)}%，风险已过度集中。建议最多投入总资产的 3%。`;
+    suggestion = lang === "zh"
+      ? `⚠️ 你的錢包中 Meme/未知代幣已占 ${walletRiskyPct.toFixed(0)}%，風險已過度集中。建議最多投入總資產的 3%。`
+      : lang === "ja"
+      ? `⚠️ Meme/未知トークンがウォレットの${walletRiskyPct.toFixed(0)}%を占め、リスクが集中しています。最大3%の投入を推奨します。`
+      : `⚠️ Meme/unknown tokens already make up ${walletRiskyPct.toFixed(0)}% of your wallet. Keep this position under 3% of total assets.`;
   } else if (walletRiskyPct > 30) {
-    positionAdvice = `你的钱包风险代币占 ${walletRiskyPct.toFixed(0)}%，建议仓位控制在 5-8%。`;
+    suggestion = lang === "zh"
+      ? `你的錢包風險代幣占 ${walletRiskyPct.toFixed(0)}%，建議倉位控制在 5-8%。`
+      : lang === "ja"
+      ? `ウォレットのリスクトークンが${walletRiskyPct.toFixed(0)}%あります。ポジションは5〜8%以内に抑えてください。`
+      : `Risky tokens make up ${walletRiskyPct.toFixed(0)}% of your wallet. Limit this position to 5–8%.`;
+  } else {
+    suggestion = lang === "zh"
+      ? "建議倉位不超過總資產的 10%。"
+      : lang === "ja"
+      ? "ポジションは総資産の10%以内に抑えることをお勧めします。"
+      : "Keep position size under 10% of total assets.";
   }
 
   return {
     verdict: "buy",
-    label: "可以考虑",
-    reason: "安全评分良好，合约风险较低",
-    suggestion: positionAdvice,
+    label: lang === "zh" ? "可以考慮" : lang === "ja" ? "検討の余地あり" : "Worth Considering",
+    reason: lang === "zh" ? "安全評分良好，合約風險較低" : lang === "ja" ? "安全スコアが良好、契約リスクが低い" : "Good security score — low contract risk",
+    suggestion,
   };
 }
 
@@ -226,6 +254,8 @@ function generateDecision(
 export async function GET(req: NextRequest) {
   const mint = req.nextUrl.searchParams.get("mint");
   const wallet = req.nextUrl.searchParams.get("wallet");
+  const rawLang = req.nextUrl.searchParams.get("lang") ?? "en";
+  const lang: Lang = (rawLang === "zh" || rawLang === "ja") ? rawLang : "en";
 
   if (!mint) return NextResponse.json({ error: "Missing mint address" }, { status: 400 });
   if (!isValidSolanaAddress(mint)) return NextResponse.json({ error: "Invalid mint address" }, { status: 400 });
@@ -261,7 +291,7 @@ export async function GET(req: NextRequest) {
   if (price === null && isPumpFun) price = pumpData?.price ?? null;
 
   // Security
-  const { score: secScore, risks, positives } = calcSecurityScore(gp);
+  const { score: secScore, risks, positives } = calcSecurityScore(gp, lang);
 
   // Holder info
   const holderCount = gp?.holder_count ? parseInt(gp.holder_count) : null;
@@ -288,7 +318,7 @@ export async function GET(req: NextRequest) {
     } catch { /* ignore */ }
   }
 
-  const decision = generateDecision(secScore, price, walletRiskyPct);
+  const decision = generateDecision(secScore, price, walletRiskyPct, lang);
 
   return NextResponse.json({
     mint,

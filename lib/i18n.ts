@@ -599,6 +599,11 @@ export const translations = {
   planProFeature2:     { zh: "~75次 AI 顧問 / ~600次安全分析", en: "~75 AI analyses / ~600 security scans", ja: "~75 AI分析 / ~600セキュリティスキャン" },
   planProFeature3:     { zh: "MCP API 無限存取", en: "Unlimited MCP API access", ja: "MCP API無制限アクセス" },
   planProFeature4:     { zh: "最高優先級回應", en: "Highest priority responses", ja: "最優先レスポンス" },
+  // ── HealthReport — portfolio history ────────────────────────────
+  latest:                { zh: "最新", en: "Latest", ja: "最新" },
+  analyzing24h:          { zh: "正在分析 24h 鏈上數據…", en: "Analyzing 24h on-chain data…", ja: "24hのオンチェーンデータを分析中…" },
+  smartMoneyLatestTokens:{ zh: "聰明錢最新關注的代幣", en: "Tokens Smart Money is Watching Now", ja: "スマートマネーが注目しているトークン" },
+  noConsensus24h:        { zh: "過去 24h 暫無共識信號", en: "No consensus signals in the past 24h", ja: "過去24hにコンセンサスシグナルなし" },
   // ── HealthReport extras ──────────────────────────────────────────
   howScoreCalc:        { zh: "🌸 健康分數是怎麼算的？", en: "🌸 How is the health score calculated?", ja: "🌸 健康スコアの算出方法は？" },
   viewDetails:         { zh: "查看詳情 ▼", en: "View Details ▼", ja: "詳細を見る ▼" },
@@ -608,6 +613,11 @@ export const translations = {
   healthLabel:         { zh: "健康", en: "Health", ja: "健全" },
   smartMoneySection:   { zh: "聰明錢追蹤", en: "Smart Money Tracker", ja: "スマートマネー追跡" },
   countUnit:           { zh: "個", en: "", ja: "件" },
+  // ── TokenAnalysis — chart labels ────────────────────────────────
+  klineGmgn:   { zh: "K 線圖 · GMGN", en: "Chart · GMGN", ja: "チャート · GMGN" },
+  loadingGmgn: { zh: "載入 GMGN 數據…", en: "Loading GMGN data…", ja: "GMGNデータを読み込み中…" },
+  viewOnGmgn:  { zh: "在 GMGN 查看", en: "View on GMGN", ja: "GMGNで見る" },
+  noKlineData: { zh: "暫無 K 線數據", en: "No chart data available", ja: "チャートデータなし" },
   // ── TokenAnalysis — API data mapping ────────────────────────────
   checkNoMint:         { zh: "無增發權限，供應量固定", en: "No mint authority — fixed supply", ja: "発行権限なし、供給量固定" },
   checkNoFreeze:       { zh: "無凍結權限", en: "No freeze authority", ja: "凍結権限なし" },

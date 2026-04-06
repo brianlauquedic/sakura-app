@@ -429,7 +429,7 @@ function localizeVerdict(verdict: string, t: (key: TranslationKey) => string): s
 
 // ── Main Component ───────────────────────────────────────────────
 export default function TokenAnalysis({ walletAddress, isDayMode = false }: Props) {
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const [mintInput, setMintInput] = useState("");
   const [tokenData, setTokenData] = useState<TokenData | null>(null);
   const [aiData, setAiData] = useState<AIAnalysis | null>(null);
@@ -503,7 +503,7 @@ export default function TokenAnalysis({ walletAddress, isDayMode = false }: Prop
     setLoadingToken(true);
     let td: TokenData;
     try {
-      const res = await fetch(`/api/token?mint=${mint}&wallet=${walletAddress}`);
+      const res = await fetch(`/api/token?mint=${mint}&wallet=${walletAddress}&lang=${lang}`);
       const json = await res.json();
       if (json.error) throw new Error(json.error);
       td = json;
@@ -1173,6 +1173,7 @@ const CHART_THEMES: Record<ChartTheme, {
 };
 
 function GmgnKlineChart({ mint, symbol, isDayMode = false }: { mint: string; symbol: string; isDayMode?: boolean }) {
+  const { t } = useLang();
   const containerRef = useRef<HTMLDivElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const chartRef     = useRef<any>(null);
@@ -1290,7 +1291,7 @@ function GmgnKlineChart({ mint, symbol, isDayMode = false }: { mint: string; sym
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <span style={{ fontSize: 11, fontWeight: 700, color: "var(--text-secondary)" }}>
-            📈 K 線圖 · GMGN
+            📈 {t("klineGmgn")}
           </span>
           {/* Resolution switcher */}
           <div style={{ display: "flex", gap: 4 }}>
@@ -1330,7 +1331,7 @@ function GmgnKlineChart({ mint, symbol, isDayMode = false }: { mint: string; sym
             justifyContent: "center", flexDirection: "column", gap: 8,
           }}>
             <div style={{ width: 24, height: 24, border: "2px solid var(--accent)", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
-            <span style={{ fontSize: 11, color: "var(--text-muted)" }}>載入 GMGN 數據…</span>
+            <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{t("loadingGmgn")}</span>
           </div>
         )}
         {error && !loading && (
@@ -1339,7 +1340,7 @@ function GmgnKlineChart({ mint, symbol, isDayMode = false }: { mint: string; sym
             justifyContent: "center", flexDirection: "column", gap: 12,
           }}>
             <span style={{ fontSize: 13, color: "var(--text-secondary)" }}>
-              暫無 K 線數據
+              {t("noKlineData")}
             </span>
             <div style={{ display: "flex", gap: 8 }}>
               <a href={`https://gmgn.ai/sol/token/${mint}`} target="_blank" rel="noopener noreferrer"
@@ -1347,7 +1348,7 @@ function GmgnKlineChart({ mint, symbol, isDayMode = false }: { mint: string; sym
                   fontSize: 11, padding: "6px 14px", borderRadius: 6, cursor: "pointer",
                   background: "var(--accent)", color: "#fff", textDecoration: "none",
                 }}>
-                在 GMGN 查看
+                {t("viewOnGmgn")}
               </a>
               <a href={`https://dexscreener.com/solana/${mint}`} target="_blank" rel="noopener noreferrer"
                 style={{

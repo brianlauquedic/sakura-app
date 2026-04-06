@@ -407,9 +407,12 @@ export default function DefiAssistant({ walletAddress, walletSnapshot }: Props) 
         !m.text.startsWith("🚨 Guardian Alert") &&
         !m.text.startsWith("🪭 Guardian Alert") &&
         !m.text.includes("暫時無法回答") &&
+        !m.text.includes("暂时无法回答") &&
         !m.text.includes("unable to answer right now") &&
+        !m.text.includes("unable to answer") &&
         !m.text.includes("現在お答えできません") &&
-        !m.text.includes("暫時無法連線")
+        !m.text.includes("暫時無法連線") &&
+        !m.text.includes("暂时无法连线")
       );
       if (real.length > 0) {
         const loaded: Message[] = real.map((m, i) => ({

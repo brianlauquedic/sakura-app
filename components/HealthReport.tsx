@@ -643,7 +643,7 @@ export default function HealthReport({ walletAddress, onDisconnect, onDataLoaded
                   border: i === 0 ? "1px solid var(--border)" : "none",
                 }}>
                   <div style={{ fontSize: 11, color: "var(--text-secondary)" }}>
-                    {i === 0 ? "🔴 最新" : date}
+                    {i === 0 ? `🔴 ${t("latest")}` : date}
                   </div>
                   <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>
                     ${snap.totalUSD.toLocaleString(undefined, { maximumFractionDigits: 0 })}
@@ -833,17 +833,17 @@ function SmartMoneySection() {
                   <div key={i} style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--accent)", animation: `bounce 1s ${i * 0.15}s infinite` }} />
                 ))}
               </div>
-              <div style={{ fontSize: 11, color: "var(--text-muted)" }}>正在分析 24h 鏈上數據…</div>
+              <div style={{ fontSize: 11, color: "var(--text-muted)" }}>{t("analyzing24h")}</div>
             </div>
           ) : tab === "consensus" ? (
             // ── Consensus tab ──
             <div>
               <div style={{ padding: "8px 20px 4px", fontSize: 11, color: "var(--text-muted)" }}>
-                🎯 聰明錢最新關注的代幣
+                🎯 {t("smartMoneyLatestTokens")}
               </div>
               {!data?.consensusTokens?.length ? (
                 <div style={{ padding: "20px", textAlign: "center", fontSize: 12, color: "var(--text-muted)" }}>
-                  過去 24h 暫無共識信號
+                  {t("noConsensus24h")}
                 </div>
               ) : data.consensusTokens.map((token, idx) => (
                 <div key={token.mint}>
