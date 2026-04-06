@@ -318,13 +318,13 @@ function DocsContent() {
       { v: "SHA-256", l: "AI 推理鏈上存證" },
       { v: "3", l: "免費體驗次數" },
     ],
-    introTitle: "Sakura 是什麼",
-    introDesc: "Solana 是世界上移動最快的區塊鏈——而速度，從來都是一把雙刃劍。機會與騙局以同樣的速度出現。大多數用戶依賴直覺、朋友的推薦、或 Twitter 上匿名帳號的喊單——而這些，遠遠不夠。Sakura 是一位真正懂 Solana 的 AI 顧問，在您點擊「確認交易」的那一秒之前，已完成人類無法手動完成的安全審查、聰明錢比對與收益計算。",
-    introPara2: "但 Sakura 與所有 AI 工具最根本的差異不是功能——是可信度。我們的每一個 AI 推理結果都以 SHA-256 雜湊值的形式，透過 Solana Memo Program 永久寫入鏈上。這意味著：AI 說了什麼、何時說的、基於哪些數據推理的，全部有憑有據，任何人都可以獨立驗證。不是承諾，是證明。",
+    introTitle: "在點擊確認之前",
+    introDesc: "某個週五晚上，一個擁有 8 萬粉絲的 Twitter KOL 發出一條推文：「這個代幣要動了，準備好了嗎？」四分鐘內，超過兩百個錢包完成了買入。第六分鐘，那個代幣的流動性池被創辦人一鍵抽走。所有買入者的資金歸零。這些人沒有做錯任何事——他們只是沒有一個工具，能在點擊確認之前告訴他們真相。",
+    introPara2: "Sakura 是為了讓你成為沒有買的那個人而存在的。不是靠運氣，不是靠直覺——而是因為在你點擊「確認交易」的那一刻之前，Sakura 已完成了 GoPlus 5 維度安全掃描、30+ 聰明錢地址比對與實時 APY 計算。更關鍵的是：Sakura 的每一個 AI 推理結果，都以 SHA-256 雜湊值永久寫入 Solana 鏈上——AI 說了什麼、基於什麼數據說的，全部可以被任何人獨立驗證。不是承諾，是可審計的記錄。",
     diffLabel: "差異化比較",
-    whyTitle: "為什麼要打造 Sakura",
-    whyDesc: "DeFi 市場每年因詐騙代幣、蜜罐陷阱和信息不對稱造成的損失難以估計——而這些損失中，有相當一部分本可以被一個工具在五秒鐘內阻止。我們在使用各種 DeFi 工具的過程中反覆發現：要麼工具夠安全但功能太弱，要麼功能夠強但讓普通用戶完全看不懂。更糟的是，當你問 ChatGPT「這個代幣安全嗎」，它根本沒有能力回答——因為它沒有接入鏈上的真實數據。",
-    whyPara2: "Sakura 的答案是：把機構投資者才能獲得的信息能力，交給每一個持有 Phantom 錢包的人。不是訂閱制的月費平台，不是需要信任第三方保管資產的服務——而是一個真正屬於您的 Web3 原生工具。您的私鑰從不離開您的設備，您的每次 AI 諮詢都有鏈上記錄，您用多少付多少，沒有任何隱性成本。",
+    whyTitle: "這個行業有一個沒人說出口的事實",
+    whyDesc: "做 DeFi 的散戶和機構，用的根本不是同一個層級的工具。機構在建倉任何代幣之前，有完整的鏈上安全審計、有聰明錢數據庫、有多協議收益橫向對比——散戶有的，是 Twitter 和直覺。這個信息差，每天都在以真實的資金損失被填補。而最讓人沮喪的是：大多數損失，在發生之前就已經可以被預防。",
+    whyPara2: "Sakura 的起點只是一個問題：如果這些工具能讓機構避開損失，為什麼持有 Phantom 錢包的普通人不能用？答案不是技術上做不到。是沒有人去做。我們選擇去做——不是做月費 SaaS，不是讓你把資產交給任何人保管，而是一個真正屬於你的工具：私鑰不離設備，AI 判斷上鏈存證，用多少付多少，沒有任何隱性成本。",
     whoTitle: "Sakura 為誰而生",
     whoItems: [
       { icon: "👤", title: "剛進入 DeFi 的新人", desc: "您看到一個代幣飛速上漲，群組裡所有人都說「趕緊上車」。但您不確定它是不是蜜罐。這正是 Sakura 誕生的原因——在您行動前，先告訴您真相。" },
@@ -436,13 +436,13 @@ function DocsContent() {
       { v: "SHA-256", l: "AI推論オンチェーン記録" },
       { v: "3", l: "無料体験回数" },
     ],
-    introTitle: "Sakuraとは何か",
-    introDesc: "Solanaは世界で最も高速なブロックチェーンです。しかし速度は常に両刃の剣です。機会と詐欺は同じ速さで現れます。多くのユーザーは直感、友人の推薦、またはTwitterの匿名アカウントのシグナルに頼っています——それだけでは全く不十分です。Sakuraは、あなたが「トランザクションを確認」をクリックする前の一瞬に、人間が手動では到底できないセキュリティ審査、スマートマネー分析、収益計算を完了する、真のSolana AIアドバイザーです。",
-    introPara2: "しかし、Sakuraが他のすべてのAIツールと根本的に異なるのは機能ではありません——信頼性です。すべてのAI推論結果はSHA-256ハッシュとして、Solana Memo Programを通じてオンチェーンに永久記録されます。AIが何を言ったか、いつ言ったか、どのデータに基づいて推論したかが、すべて証明可能です。約束ではなく、証明です。",
+    introTitle: "確認を押す前に",
+    introDesc: "ある金曜の夜、フォロワー8万人のKOLが一言投稿しました：「このトークン、動くよ。準備できてる？」4分以内に200以上のウォレットが買い入れました。6分後、デプロイヤーが流動性プールを引き抜きました。買い入れたすべての人の資金がゼロになりました。彼らは不注意だったわけでも、初心者だったわけでもありません。ただ、確認ボタンを押す前に真実を教えてくれるツールが、誰にもなかっただけです。",
+    introPara2: "Sakuraは、あなたがその200人の中に入らないために存在します。運でも直感でもなく——あなたが確認する前の一瞬に、GoPlus 5次元セキュリティスキャン、30以上のスマートマネーアドレス照合、リアルタイムAPY計算がすでに完了しているからです。そして、すべてのSakura AI推論出力はSHA-256ハッシュとしてSolana Memo Programにオンチェーン永久記録されます。AIが何を言ったか、どのデータに基づいて推論したかが、誰でも独立して検証できます。約束ではなく、監査可能な記録です。",
     diffLabel: "機能比較",
-    whyTitle: "なぜSakuraを作ったのか",
-    whyDesc: "DeFi市場では毎年、詐欺トークン、ハニーポット、情報の非対称性によって多くの資産が失われています。そしてこれらの損失の多くは、適切なツールがあれば5秒以内に防げたはずです。私たちは様々なDeFiツールを使い続ける中で繰り返し発見しました：ツールが安全すぎて機能が弱い、または機能が強すぎて普通のユーザーには理解できない。さらに悪いことに、ChatGPTに「このトークンは安全ですか」と聞いても、リアルタイムのオンチェーンデータにアクセスできないため、まともな答えは返ってきません。",
-    whyPara2: "Sakuraの答えはシンプルです：機関投資家だけが持てた情報力を、Phantomウォレットを持つすべての人に届けること。月額課金のSaaSではなく、資産を第三者に預ける必要もない——真にあなたのものであるWeb3ネイティブツールを作りました。秘密鍵はデバイスから離れず、AI相談はオンチェーン記録され、使った分だけ支払う。隠れたコストは一切ありません。",
+    whyTitle: "業界が口に出さない事実",
+    whyDesc: "リテール投資家と機関投資家は、まったく同じ情報環境で戦っていません。機関投資家がポジションを取る前には、オンチェーンセキュリティ監査、スマートマネーデータフロー、マルチプロトコル収益比較があります。リテールにあるのは、TwitterとGut feelingです。この情報格差は毎日、リアルマネーの損失として埋められています——そしてその損失のほとんどは、すでに存在していたデータがあれば防げたはずです。",
+    whyPara2: "Sakuraの出発点はシンプルな問いです：これらのツールが機関投資家の損失回避に役立つなら、Phantomウォレットを持つ普通の人がそれを使えない理由はあるのか？答えは技術的な限界ではありません——誰も作っていなかっただけです。私たちはそれを作りました。月額課金のSaaSとしてではなく、資産を第三者に預けるサービスとしてでもなく——本当にあなたのものとして：秘密鍵はデバイスから離れず、AI判断はオンチェーンに記録され、使った分だけ支払います。隠れたコストは一切ありません。",
     whoTitle: "誰のためのツールか",
     whoItems: [
       { icon: "👤", title: "DeFiを始めたばかりの方", desc: "急騰するトークンを見て、みんなが「今すぐ買え」と言っている。でもそれがハニーポットかもしれない。Sakuraはあなたが行動する前に真実を教えます。" },
@@ -554,13 +554,13 @@ function DocsContent() {
       { v: "SHA-256", l: "AI Reasoning On-Chain" },
       { v: "3", l: "Free Uses / Feature" },
     ],
-    introTitle: "What Sakura Is",
-    introDesc: "Solana is the world's fastest blockchain. Speed, however, is always a double-edged sword. Opportunities and scams arrive at the same velocity. Most users rely on intuition, friends' recommendations, or anonymous accounts shouting on Twitter — none of which is nearly enough. Sakura is an AI advisor that genuinely understands Solana. In the fraction of a second before you click \"Confirm Transaction,\" it has already completed the security audit, smart money cross-check, and yield calculation that no human could do manually.",
-    introPara2: "But Sakura's most fundamental difference from every other AI tool isn't features — it's accountability. Every AI reasoning result is written on-chain as a SHA-256 hash via Solana Memo Program. That means what the AI said, when it said it, and what data it reasoned from are all permanently provable. Anyone can independently verify the complete reasoning process. Not a promise. Proof.",
+    introTitle: "Before You Click Confirm",
+    introDesc: "On a Friday evening, a KOL with 80,000 followers posted one sentence: \"This token is about to run. Are you ready?\" Over two hundred wallets bought in within four minutes. By minute six, the deployer had drained the liquidity pool. Every wallet that bought in lost everything. These weren't careless people. They weren't new to crypto. They simply had no tool that could tell them the truth before they clicked confirm.",
+    introPara2: "Sakura exists so that you're the one who didn't buy — not because you got lucky, but because you knew. In the moment before you confirm a transaction, Sakura has already completed a GoPlus 5-dimension security scan, cross-referenced 30+ labeled smart money wallets, and calculated yield alternatives. And every Sakura AI reasoning output is hashed with SHA-256 and recorded permanently on Solana — what the AI said, when it said it, and what data it used, all independently verifiable by anyone. Not a promise. An auditable record.",
     diffLabel: "Capability Comparison",
-    whyTitle: "Why We Built Sakura",
-    whyDesc: "DeFi markets lose enormous sums each year to scam tokens, honeypot traps, and information asymmetry — and a significant share of those losses could have been stopped in under five seconds by the right tool. Working across DeFi products, we kept finding the same frustrating pattern: tools that are safe enough but too weak, or powerful enough but completely incomprehensible to most users. Worse, when you ask ChatGPT \"Is this token safe?\" it simply can't answer — because it has no access to real-time on-chain data.",
-    whyPara2: "Sakura's answer is straightforward: give every person holding a Phantom wallet the information power that used to belong only to institutional investors. Not a subscription SaaS platform. Not a service that requires trusting a third party with your assets. A tool that is truly yours — your keys never leave your device, your AI consultations are recorded on-chain, and you pay only for what you use. No hidden costs. No lock-in.",
+    whyTitle: "A Fact the Industry Rarely Says Out Loud",
+    whyDesc: "Retail traders and institutional investors are not operating in the same information environment. Before any institution takes a position, it has on-chain security audits, smart money data feeds, and multi-protocol yield comparisons. Retail has Twitter and gut instinct. This information gap is filled every single day with real money lost — and most of those losses were preventable with data that already existed.",
+    whyPara2: "Sakura starts from a simple question: if these tools help institutions avoid losses, why can't someone holding a Phantom wallet use them? The answer was never technical limitation — no one had built it yet. We built it. Not as a subscription SaaS. Not as a service requiring you to hand your assets to a third party. A tool that is genuinely yours: keys never leave your device, AI reasoning is recorded on-chain, you pay per use. Nothing is hidden.",
     whoTitle: "Who Sakura Is For",
     whoItems: [
       { icon: "👤", title: "New to DeFi", desc: "You see a token mooning, everyone in the group is saying \"get in now\" — but you're not sure if it's a honeypot. Sakura was built for exactly this moment: to tell you the truth before you act." },
@@ -776,20 +776,25 @@ function DocsContent() {
 
           {/* ── Pull Quote ── */}
           <div style={{
-            borderLeft: "3px solid var(--accent)", padding: "16px 24px",
+            borderLeft: "3px solid var(--accent)", padding: "20px 28px",
             background: "var(--accent-soft)", borderRadius: "0 10px 10px 0",
             marginBottom: 48,
           }}>
             <p style={{
-              margin: 0, fontSize: 16, fontStyle: "italic",
-              color: "var(--text-primary)", lineHeight: 1.8, fontFamily: "var(--font-heading)",
+              margin: "0 0 10px", fontSize: 17, fontStyle: "italic",
+              color: "var(--text-primary)", lineHeight: 1.75, fontFamily: "var(--font-heading)",
               fontWeight: 300, letterSpacing: "0.01em",
             }}>
               {lang === "zh"
-                ? "「AI 說了什麼，應該要可以被證明。Sakura 是第一個把這件事做到的 Solana DeFi 顧問。」"
+                ? "「在 Solana 上，一個代幣從上線到流動性被抽空，最快只需要四分鐘。大多數散戶是在資金歸零之後，才發現那個合約有增發權限。」"
                 : lang === "ja"
-                ? "「AIが何を言ったかは、証明できるべきです。SakuraはそれをSolana DeFiアドバイザーとして初めて実現しました。」"
-                : "\"What an AI says should be provable. Sakura is the first Solana DeFi advisor to make that a reality.\""}
+                ? "「Solanaでは、トークンが上場してから流動性が引き抜かれるまで、最短4分しかかからない。ほとんどのリテールトレーダーは、そのコントラクトに発行権限があることを、損失が出てから初めて知る。」"
+                : "\"On Solana, a token can go from launch to drained liquidity in under four minutes. Most retail traders find out a contract had mint authority only after the loss has already happened.\""}
+            </p>
+            <p style={{ margin: 0, fontSize: 12, color: "var(--text-muted)", letterSpacing: "0.04em" }}>
+              {lang === "zh" ? "—— 這正是 Sakura 安全分析存在的理由"
+                : lang === "ja" ? "—— これがSakuraセキュリティ分析が存在する理由です"
+                : "—— This is why Sakura Security Analysis exists"}
             </p>
           </div>
 
