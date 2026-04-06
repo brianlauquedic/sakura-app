@@ -11,7 +11,8 @@
 
 import { SolanaAgentKit, KeypairWallet } from "solana-agent-kit";
 import TokenPlugin from "@solana-agent-kit/plugin-token";
-import DefiPlugin  from "@solana-agent-kit/plugin-defi";
+// DefiPlugin removed: @meteora-ag/dlmm has ERR_UNSUPPORTED_DIR_IMPORT in Node ESM
+// OKX quotes fall back to direct HMAC REST; bridge/drift use their own fetch paths
 import MiscPlugin  from "@solana-agent-kit/plugin-misc";
 import { Keypair, PublicKey, Connection } from "@solana/web3.js";
 
@@ -47,8 +48,6 @@ export function createReadOnlyAgent() {
     signOnly: true,
   })
     .use(TokenPlugin)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .use(DefiPlugin as any)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .use(MiscPlugin as any);
 }
