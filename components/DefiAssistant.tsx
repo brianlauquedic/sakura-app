@@ -389,44 +389,61 @@ export default function DefiAssistant({ walletAddress, walletSnapshot }: Props) 
   const bottomRef = useRef<HTMLDivElement>(null);
   const memorySavedRef = useRef(false);
 
-  // Load chat history on mount
+  // Load chat history when wallet changes (or on first mount)
   useEffect(() => {
+    if (!walletAddress) return;
+    memorySavedRef.current = false;
+    setMessages([]);   // Clear previous wallet's messages first
+
     const memory = loadChatMemory(walletAddress);
     if (memory && memory.messages.length > 0) {
-      const loaded: Message[] = memory.messages.map((m, i) => ({
-        id: i,
-        role: m.role,
-        text: m.text,
-      }));
-      setMessages(loaded);
-      if (memory.sessionSummary) setSessionSummary(memory.sessionSummary);
-      // Welcome-back message
-      // Use sessionSummary if available; otherwise find last real user message
-      // (skip any previously-saved welcome-back messages to prevent nesting)
-      const lastRealMsg = memory.messages
-        .filter(m => !m.text.startsWith("歡迎回來！上次我們讨論了"))
-        .slice(-1)[0];
-      const preview = memory.sessionSummary
-        ? memory.sessionSummary.slice(0, 60)
-        : lastRealMsg?.text?.slice(0, 40) ?? "";
-      if (preview) {
-        setMessages(prev => [...prev, {
-          id: Date.now(),
-          role: "assistant",
-          text: `歡迎回來！上次我們讨論了「${preview}…」，繼續吗？`,
-        }]);
+      // Filter: skip welcome-back, Guardian alerts, error messages
+      const real = memory.messages.filter(m =>
+        !m.text.startsWith("歡迎回來！") &&
+        !m.text.startsWith("🗑️ Guardian") &&
+        !m.text.startsWith("⚠️ Guardian Alert") &&
+        !m.text.startsWith("🚨 Guardian Alert") &&
+        !m.text.startsWith("🪭 Guardian Alert") &&
+        !m.text.includes("暫時無法回答") &&
+        !m.text.includes("暫時無法連線")
+      );
+      if (real.length > 0) {
+        const loaded: Message[] = real.map((m, i) => ({
+          id: i, role: m.role, text: m.text,
+        }));
+        setMessages(loaded);
+        if (memory.sessionSummary) setSessionSummary(memory.sessionSummary);
+
+        // Welcome-back: use last USER message as preview (not AI response)
+        const lastUserMsg = real.filter(m => m.role === "user").slice(-1)[0];
+        const preview = memory.sessionSummary
+          ? memory.sessionSummary.slice(0, 60)
+          : lastUserMsg?.text?.slice(0, 50) ?? "";
+        if (preview) {
+          setMessages(prev => [...prev, {
+            id: Date.now(),
+            role: "assistant",
+            text: `歡迎回來！上次我們討論了「${preview}${preview.length >= 50 ? "…" : ""}」，繼續嗎？`,
+          }]);
+        }
       }
     }
     memorySavedRef.current = true;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [walletAddress]);
 
-  // Save chat history whenever messages change
+  // Save chat history whenever messages change (per wallet address)
   useEffect(() => {
-    if (!memorySavedRef.current) return;
-    // Filter out: typing placeholders + welcome-back greetings (prevents nesting on reload)
-    const real = messages.filter(
-      m => !m.isTyping && !m.text.startsWith("歡迎回來！上次我們讨論了")
+    if (!memorySavedRef.current || !walletAddress) return;
+    // Filter: no typing placeholders, no welcome-back, no Guardian alerts, no error msgs
+    const real = messages.filter(m =>
+      !m.isTyping &&
+      !m.text.startsWith("歡迎回來！") &&
+      !m.text.startsWith("🗑️ Guardian") &&
+      !m.text.startsWith("⚠️ Guardian Alert") &&
+      !m.text.startsWith("🚨 Guardian Alert") &&
+      !m.text.startsWith("🪭 Guardian Alert") &&
+      !m.text.includes("暫時無法回答") &&
+      !m.text.includes("暫時無法連線")
     );
     if (real.length === 0) return;
     saveChatMemory(walletAddress, {
