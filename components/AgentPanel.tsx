@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { createPortal } from "react-dom";
 import SwapModal from "./SwapModal";
 import StakeModal from "./StakeModal";
 import LendModal from "./LendModal";
@@ -903,48 +902,49 @@ const ACTION_LABEL: Record<string, string> = {
 };
 
 function GuardianConditionsPanel({ walletAddress }: { walletAddress: string }) {
-  const [open, setOpen] = useState(false);
-  const [conditions, setConditions] = useState<GuardianCondition[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [adding, setAdding] = useState(false);
-  const [addedOk, setAddedOk] = useState(false);   // inline button feedback
+  const [open, setOpen]                   = useState(false);
+  const [conditions, setConditions]       = useState<GuardianCondition[]>([]);
+  const [loadingList, setLoadingList]     = useState(false);  // only the conditions list loading
+  const [adding, setAdding]               = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState(0);
-  const [customThreshold, setCustomThreshold] = useState<string>("");
-  const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
+  const [customThreshold, setCustomThreshold]   = useState<string>("");
+  // Status banner — outside loading conditional so it's ALWAYS visible
+  const [status, setStatus] = useState<{ msg: string; type: "success" | "error" } | null>(null);
 
-  // Fixed-position viewport toast — guaranteed visible regardless of parent CSS
-  function showToast(msg: string, type: "success" | "error") {
-    setToast({ msg, type });
-    setTimeout(() => setToast(null), 4000);
+  function showStatus(msg: string, type: "success" | "error") {
+    setStatus({ msg, type });
+    setTimeout(() => setStatus(null), 5000);
   }
 
   async function loadConditions() {
-    setLoading(true);
+    setLoadingList(true);
     try {
-      const res = await fetch("/api/cron/guardian/conditions", {
+      const res  = await fetch("/api/cron/guardian/conditions", {
         headers: { "X-Wallet-Address": walletAddress ?? "" },
       });
       if (!res.ok) return;
       const data = await res.json() as { conditions: GuardianCondition[] };
       setConditions(data.conditions ?? []);
     } catch { /* silent */ }
-    finally { setLoading(false); }
+    finally { setLoadingList(false); }
   }
 
   async function addCondition() {
-    if (!walletAddress) { showToast("請先連接錢包", "error"); return; }
-    const tpl = CONDITION_TEMPLATES[selectedTemplate];
+    if (!walletAddress) { showStatus("請先連接錢包", "error"); return; }
+    const tpl       = CONDITION_TEMPLATES[selectedTemplate];
     const threshold = customThreshold ? parseFloat(customThreshold) : tpl.threshold;
-    if (isNaN(threshold)) { showToast("請輸入有效的數值", "error"); return; }
+    if (isNaN(threshold)) { showStatus("請輸入有效的數值", "error"); return; }
 
     setAdding(true);
+    setStatus(null);
     try {
       const res = await fetch("/api/cron/guardian/conditions", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type":   "application/json",
           "X-Wallet-Address": walletAddress,
-          "X-Device-ID": (typeof window !== "undefined" ? localStorage.getItem("solis_device_id") ?? "" : ""),
+          "X-Device-ID":    typeof window !== "undefined"
+            ? (localStorage.getItem("solis_device_id") ?? "") : "",
         },
         body: JSON.stringify({
           metric:    tpl.metric,
@@ -956,21 +956,20 @@ function GuardianConditionsPanel({ walletAddress }: { walletAddress: string }) {
       });
       if (res.ok) {
         setCustomThreshold("");
-        setAddedOk(true);
-        setTimeout(() => setAddedOk(false), 2500);
-        showToast(`條件已新增：${tpl.label} ${tpl.operator === "lt" ? "<" : ">"} ${threshold}`, "success");
-        await loadConditions();
+        showStatus(`✅ 條件已新增：${tpl.label} ${tpl.operator === "lt" ? "<" : ">"} ${threshold}`, "success");
+        // Load conditions AFTER setting status — avoid batching hiding the banner
+        setTimeout(() => loadConditions(), 0);
       } else {
         let errMsg = "新增失敗，請重試";
         try {
-          const errData = await res.json() as { error?: string; message?: string };
-          if (errData.message) errMsg = errData.message;
-          else if (errData.error === "free_credits_exhausted") errMsg = "免費額度不足，請升級訂閱";
-          else if (errData.error) errMsg = errData.error;
-        } catch { /* ignore parse error */ }
-        showToast(errMsg, "error");
+          const d = await res.json() as { error?: string; message?: string };
+          if (d.message) errMsg = d.message;
+          else if (d.error === "free_credits_exhausted") errMsg = "免費額度不足，請升級訂閱";
+          else if (d.error) errMsg = d.error;
+        } catch { /* ignore */ }
+        showStatus(errMsg, "error");
       }
-    } catch { showToast("網絡錯誤，請重試", "error"); }
+    } catch { showStatus("網絡錯誤，請重試", "error"); }
     finally { setAdding(false); }
   }
 
@@ -978,15 +977,12 @@ function GuardianConditionsPanel({ walletAddress }: { walletAddress: string }) {
     try {
       const res = await fetch("/api/cron/guardian/conditions", {
         method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Wallet-Address": walletAddress ?? "",
-        },
+        headers: { "Content-Type": "application/json", "X-Wallet-Address": walletAddress ?? "" },
         body: JSON.stringify({ conditionId: id }),
       });
       if (res.ok) {
         setConditions(prev => prev.filter(c => c.id !== id));
-        showToast("條件已刪除", "success");
+        showStatus("條件已刪除", "success");
       }
     } catch { /* silent */ }
   }
@@ -1003,6 +999,7 @@ function GuardianConditionsPanel({ walletAddress }: { walletAddress: string }) {
       background: "var(--bg-card)", border: "1px solid var(--border)",
       borderRadius: 16, padding: 20, marginBottom: 20,
     }}>
+      {/* Header */}
       <button
         onClick={handleToggle}
         style={{
@@ -1027,152 +1024,117 @@ function GuardianConditionsPanel({ walletAddress }: { walletAddress: string }) {
         <span style={{ fontSize: 11, color: "var(--text-secondary)" }}>{open ? "收起 ▲" : "設置 ▼"}</span>
       </button>
 
-      {/* ── Portal Toast — rendered into document.body, bypasses all CSS stacking contexts ── */}
-      {toast && typeof document !== "undefined" && createPortal(
-        <div style={{
-          position: "fixed", bottom: 32, left: "50%", transform: "translateX(-50%)",
-          zIndex: 2147483647,
-          background: toast.type === "success" ? "#10B981" : "#EF4444",
-          color: "#fff", fontWeight: 700, fontSize: 15,
-          padding: "14px 28px", borderRadius: 12,
-          boxShadow: "0 8px 32px rgba(0,0,0,0.45)",
-          display: "flex", alignItems: "center", gap: 10,
-          whiteSpace: "nowrap",
-          pointerEvents: "none",
-        }}>
-          {toast.type === "success" ? "✅" : "❌"} {toast.msg}
-        </div>,
-        document.body
-      )}
-
       {open && (
         <div style={{ marginTop: 16 }}>
-          {loading ? (
-            <div style={{ textAlign: "center", padding: 16, color: "var(--text-secondary)", fontSize: 13 }}>
-              載入中...
+
+          {/* ── Status banner — OUTSIDE loading conditional, always visible ── */}
+          {status && (
+            <div style={{
+              padding: "12px 16px", borderRadius: 8, marginBottom: 12,
+              background: status.type === "success"
+                ? "rgba(16,185,129,0.15)" : "rgba(239,68,68,0.12)",
+              border: `1px solid ${status.type === "success"
+                ? "rgba(16,185,129,0.5)" : "rgba(239,68,68,0.4)"}`,
+              color: status.type === "success" ? "#10B981" : "#EF4444",
+              fontSize: 13, fontWeight: 700,
+            }}>
+              {status.msg}
             </div>
-          ) : (
-            <>
-              {/* Active conditions */}
-              {conditions.length > 0 && (
-                <div style={{ marginBottom: 16 }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-secondary)", marginBottom: 8, textTransform: "uppercase", letterSpacing: 1 }}>
-                    活躍條件
-                  </div>
-                  {conditions.map(c => (
-                    <div key={c.id} style={{
-                      display: "flex", alignItems: "center", gap: 8,
-                      padding: "8px 12px", marginBottom: 6,
-                      background: "var(--bg-base)", border: "1px solid var(--border)",
-                      borderRadius: 8,
-                    }}>
-                      <span style={{ width: 6, height: 6, borderRadius: "50%", background: c.isActive ? "#10B981" : "#475569", flexShrink: 0 }} />
-                      <span style={{ flex: 1, fontSize: 12, color: "var(--text-primary)" }}>{c.label}</span>
-                      <span style={{ fontSize: 11, color: "var(--text-secondary)", fontFamily: "var(--font-mono, monospace)" }}>
-                        {c.operator} {c.threshold}
-                      </span>
-                      <span style={{
-                        fontSize: 10, color: "#8B5CF6",
-                        background: "rgba(139,92,246,0.1)", borderRadius: 4, padding: "1px 5px",
-                      }}>{ACTION_LABEL[c.action] ?? c.action}</span>
-                      {c.triggeredAt && (
-                        <span style={{ fontSize: 10, color: "var(--accent)" }}>
-                          🌸 {new Date(c.triggeredAt).toLocaleDateString("zh-TW", { month: "short", day: "numeric" })}
-                        </span>
-                      )}
-                      <button
-                        onClick={() => deleteCondition(c.id)}
-                        style={{
-                          background: "none", border: "none", cursor: "pointer",
-                          color: "var(--text-muted)", fontSize: 14, padding: "0 2px",
-                          lineHeight: 1,
-                        }}
-                        title="刪除"
-                      >×</button>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Add new condition */}
-              <div style={{
-                background: "var(--bg-base)", border: "1px solid var(--border)",
-                borderRadius: 10, padding: "12px 14px",
-              }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-secondary)", marginBottom: 10, textTransform: "uppercase", letterSpacing: 1 }}>
-                  新增條件
-                </div>
-
-                {/* Template selector */}
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
-                  {CONDITION_TEMPLATES.map((t, i) => (
-                    <button
-                      key={i}
-                      onClick={() => { setSelectedTemplate(i); setCustomThreshold(""); }}
-                      style={{
-                        padding: "4px 10px", borderRadius: 6,
-                        fontSize: 11, cursor: "pointer",
-                        background: selectedTemplate === i ? `${t.color}18` : "var(--bg-card)",
-                        color: selectedTemplate === i ? t.color : "var(--text-secondary)",
-                        border: `1px solid ${selectedTemplate === i ? t.color + "40" : "var(--border)"}`,
-                        transition: "all 0.15s",
-                      } as React.CSSProperties}
-                    >
-                      {t.label}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Description + threshold input */}
-                <div style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 10 }}>
-                  {tpl.description}
-                </div>
-                <div style={{ display: "flex", gap: 8 }}>
-                  <input
-                    type="number"
-                    placeholder={`閾值（預設 ${tpl.threshold}）`}
-                    value={customThreshold}
-                    onChange={e => setCustomThreshold(e.target.value)}
-                    style={{
-                      flex: 1, background: "var(--bg-card)", border: "1px solid var(--border)",
-                      color: "var(--text-primary)", borderRadius: 6, padding: "6px 10px", fontSize: 12,
-                    }}
-                  />
-                  <button
-                    onClick={addCondition}
-                    disabled={adding || addedOk}
-                    style={{
-                      padding: "6px 16px", borderRadius: 6, border: "none",
-                      background: addedOk ? "#10B981" : adding ? "var(--border)" : "var(--accent)",
-                      color: "#fff", fontSize: 12, fontWeight: 700,
-                      cursor: (adding || addedOk) ? "not-allowed" : "pointer",
-                      transition: "background 0.2s",
-                      minWidth: 72,
-                    }}
-                  >
-                    {adding ? "…" : addedOk ? "✓ 已新增" : "+ 新增"}
-                  </button>
-                </div>
-              </div>
-
-              {/* Inline status banner — always visible inside panel, no CSS tricks */}
-              {toast && (
-                <div style={{
-                  marginTop: 10, padding: "10px 14px", borderRadius: 8,
-                  background: toast.type === "success" ? "rgba(16,185,129,0.15)" : "rgba(239,68,68,0.12)",
-                  border: `1px solid ${toast.type === "success" ? "rgba(16,185,129,0.4)" : "rgba(239,68,68,0.35)"}`,
-                  color: toast.type === "success" ? "#10B981" : "#EF4444",
-                  fontSize: 13, fontWeight: 700, textAlign: "center",
-                }}>
-                  {toast.type === "success" ? "✅" : "❌"} {toast.msg}
-                </div>
-              )}
-
-              <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 8, textAlign: "center" }}>
-                Guardian 每小時自動評估條件，觸發時通過 AI 顧問通知
-              </div>
-            </>
           )}
+
+          {/* ── Conditions list (has its own loading state) ── */}
+          {loadingList ? (
+            <div style={{ textAlign: "center", padding: "8px 0", color: "var(--text-secondary)", fontSize: 12, marginBottom: 12 }}>
+              載入條件中...
+            </div>
+          ) : conditions.length > 0 && (
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-secondary)", marginBottom: 8, textTransform: "uppercase", letterSpacing: 1 }}>
+                活躍條件
+              </div>
+              {conditions.map(c => (
+                <div key={c.id} style={{
+                  display: "flex", alignItems: "center", gap: 8,
+                  padding: "8px 12px", marginBottom: 6,
+                  background: "var(--bg-base)", border: "1px solid var(--border)",
+                  borderRadius: 8,
+                }}>
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#10B981", flexShrink: 0 }} />
+                  <span style={{ flex: 1, fontSize: 12, color: "var(--text-primary)" }}>{c.label}</span>
+                  <span style={{
+                    fontSize: 10, color: "#8B5CF6",
+                    background: "rgba(139,92,246,0.1)", borderRadius: 4, padding: "1px 5px",
+                  }}>{ACTION_LABEL[c.action] ?? c.action}</span>
+                  <button
+                    onClick={() => deleteCondition(c.id)}
+                    style={{
+                      background: "none", border: "none", cursor: "pointer",
+                      color: "var(--text-muted)", fontSize: 16, padding: "0 2px", lineHeight: 1,
+                    }}
+                    title="刪除"
+                  >×</button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* ── Add new condition — ALWAYS visible, not inside loading conditional ── */}
+          <div style={{
+            background: "var(--bg-base)", border: "1px solid var(--border)",
+            borderRadius: 10, padding: "12px 14px",
+          }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-secondary)", marginBottom: 10, textTransform: "uppercase", letterSpacing: 1 }}>
+              新增條件
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
+              {CONDITION_TEMPLATES.map((t, i) => (
+                <button
+                  key={i}
+                  onClick={() => { setSelectedTemplate(i); setCustomThreshold(""); }}
+                  style={{
+                    padding: "4px 10px", borderRadius: 6, fontSize: 11, cursor: "pointer",
+                    background: selectedTemplate === i ? `${t.color}18` : "var(--bg-card)",
+                    color: selectedTemplate === i ? t.color : "var(--text-secondary)",
+                    border: `1px solid ${selectedTemplate === i ? t.color + "40" : "var(--border)"}`,
+                    transition: "all 0.15s",
+                  } as React.CSSProperties}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+            <div style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 10 }}>
+              {tpl.description}
+            </div>
+            <div style={{ display: "flex", gap: 8 }}>
+              <input
+                type="number"
+                placeholder={`閾值（預設 ${tpl.threshold}）`}
+                value={customThreshold}
+                onChange={e => setCustomThreshold(e.target.value)}
+                style={{
+                  flex: 1, background: "var(--bg-card)", border: "1px solid var(--border)",
+                  color: "var(--text-primary)", borderRadius: 6, padding: "6px 10px", fontSize: 12,
+                }}
+              />
+              <button
+                onClick={addCondition}
+                disabled={adding}
+                style={{
+                  padding: "6px 16px", borderRadius: 6, border: "none", minWidth: 72,
+                  background: adding ? "var(--border)" : "var(--accent)",
+                  color: "#fff", fontSize: 12, fontWeight: 700,
+                  cursor: adding ? "not-allowed" : "pointer",
+                }}
+              >
+                {adding ? "處理中…" : "+ 新增"}
+              </button>
+            </div>
+          </div>
+
+          <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 8, textAlign: "center" }}>
+            Guardian 每小時自動評估條件，觸發時通過 AI 顧問通知
+          </div>
         </div>
       )}
     </div>
