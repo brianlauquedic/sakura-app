@@ -61,6 +61,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     if (saved === "1") setIsDayMode(true);
   }, []);
 
+  // Sync body background with theme so it doesn't show dark bg below themed wrappers
+  useEffect(() => {
+    document.body.style.background = isDayMode ? "#F2EBE0" : "#0E0C0A";
+  }, [isDayMode]);
+
   useEffect(() => {
     const tick = () => setTimeBg(getTimeColor());
     tick();

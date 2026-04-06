@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useLang } from "@/contexts/LanguageContext";
 import ThemeWrapper from "@/components/ThemeWrapper";
+import Footer from "@/components/Footer";
 import type { Lang } from "@/lib/i18n";
 import type { WeeklyReport, ReportProtocol, DexShare, NarrativeSection } from "@/app/api/weekly-report/route";
 
@@ -185,13 +186,13 @@ function HotSectorBanner({ sector, lang }: { sector: WeeklyReport["hotSector"]; 
 }
 
 // ── Standard Components ───────────────────────────────────────────
-function ReportSection({ emoji, title }: { emoji: string; title: string }) {
+function ReportSection({ emoji, title, accentColor }: { emoji: string; title: string; accentColor?: string }) {
   return (
     <div style={{
       display: "flex", alignItems: "center", gap: 10,
-      fontSize: 20, fontWeight: 700, color: "var(--text-primary)",
+      fontSize: 20, fontWeight: 700, color: accentColor ?? "var(--text-primary)",
       marginTop: 36, marginBottom: 14,
-      paddingBottom: 12, borderBottom: "1px solid var(--border)",
+      paddingBottom: 12, borderBottom: `1px solid ${accentColor ?? "var(--border)"}`,
     }}>
       <span style={{ fontSize: 18 }}>{emoji}</span>
       <span style={{ fontFamily: "var(--font-heading)", letterSpacing: "0.01em" }}>{title}</span>
@@ -411,6 +412,7 @@ export default function MarketPage() {
         }
       `}</style>
       <MarketPageInner />
+      <Footer />
     </ThemeWrapper>
   );
 }
@@ -490,40 +492,6 @@ function MarketPageInner() {
     { label: { zh: "協議費用 7 日（DeFiLlama）",     en: "Protocol Fees 7d (DeFiLlama)",    ja: "プロトコル手数料7日"         }, value: report?.fees7d ?? "—",                                          status: "safe" as Status },
   ];
 
-  // ── pump.fun rows (structural, no live API) ────────────────────
-  const pumpRows = [
-    { label: { zh: "新幣上線量觀察",   en: "New Launch Volume Signal",   ja: "新規上場量シグナル"   }, value: L === "zh" ? "高峰數萬/日 · 低谷數千/日" : "Peak: 10k+/day · Trough: 1k+/day", status: "info" as Status },
-    { label: { zh: "關鍵指標",         en: "Key Metric to Track",         ja: "追跡すべき重要指標"   }, value: L === "zh" ? "畢業率（遷移至 Raydium）"   : "Graduation rate (→ Raydium)",       status: "safe" as Status },
-    { label: { zh: "安全建議",         en: "Security Recommendation",     ja: "セキュリティ推奨"     }, value: L === "zh" ? "GoPlus 審查後再交互"         : "Screen with GoPlus before trading",  status: "safe" as Status },
-    { label: { zh: "數據說明",         en: "Data Note",                   ja: "データ注記"           }, value: L === "zh" ? "本期無 pump.fun 實時 API"   : "No live pump.fun API this issue",     status: "warn" as Status },
-  ];
-
-  // ── NFT rows ───────────────────────────────────────────────────
-  const nftRows = [
-    { label: { zh: "市場結構",     en: "Market Structure",              ja: "市場構造"       }, value: "Tensor vs Magic Eden",                                               status: "info" as Status },
-    { label: { zh: "藍籌代表",     en: "Blue-chip Representative",      ja: "ブルーチップ"   }, value: L === "zh" ? "Mad Lads（社群驅動）" : "Mad Lads (community-driven)",   status: "safe" as Status },
-    { label: { zh: "整體趨勢",     en: "Overall Trend",                  ja: "全体トレンド"   }, value: L === "zh" ? "SOL 價格主導地板價走勢" : "SOL price drives floor dynamics", status: "info" as Status },
-    { label: { zh: "數據說明",     en: "Data Note",                      ja: "データ注記"     }, value: L === "zh" ? "本期無實時 NFT API" : "No live NFT API this issue",       status: "warn" as Status },
-  ];
-
-  // ── Static narratives for sections without live API ───────────
-  const pumpNarrative: T3 = {
-    zh: "pump.fun 是觀察 Solana 散戶情緒最直接的窗口。真正重要的不是新幣絕對數量，而是「畢業率」——順利遷移至 Raydium 的比例。畢業率高意味著有買盤承接，低意味著市場在篩選。GoPlus 安全層在這個環境下至關重要：大多數新幣含有不同程度的合約風險，未經審查交互是高風險行為。",
-    en: "pump.fun is the most direct window into Solana retail sentiment. What matters isn't absolute launch volume but the graduation rate — tokens successfully migrating to Raydium. High graduation rates signal genuine buy-side depth. GoPlus screening is critical: most new launches carry contract risk, and unscreened interaction is high-risk behavior.",
-    ja: "pump.funはSolanaリテールセンチメントの最もダイレクトな窓だ。重要なのは絶対的な上場数ではなく卒業率——Raydiumへの移行に成功したトークンの割合だ。GoPlus審査なしのインタラクションは高リスクだ。",
-  };
-
-  const nftNarrative: T3 = {
-    zh: "Solana NFT 市場正在進行平台層再分配。Tensor 的專業交易工具持續蠶食 Magic Eden 份額——這個趨勢從 2024 年中延續至今。藍籌集合（Mad Lads）憑社群網絡效應保持了相對抗跌性。NFT 不是當前 Solana 的主要敘事，但平台競爭格局的演變值得持續關注。",
-    en: "Solana NFT markets are undergoing platform-layer redistribution. Tensor's professional tools have steadily eroded Magic Eden's dominance since mid-2024. Blue-chip collections like Mad Lads maintain relative resilience through community network effects. NFT is not Solana's primary narrative driver today, but the evolving platform competition warrants tracking.",
-    ja: "Solana NFT市場はプラットフォーム層の再分配が進んでいる。Tensorのプロツールが2024年中頃からMagic Edenのシェアを継続的に侵食。ブルーチップ（Mad Lads）はコミュニティ効果で底堅さを維持。NFTは現在のSolanaの主要ナラティブではないが、競争推移は追跡に値する。",
-  };
-
-  const flowNarrative: T3 = {
-    zh: "資金流向是市場最誠實的語言。在 Solana 生態中，持有核心 DeFi 代幣（JUP、jitoSOL、BONK）的地址，與活躍在新發 meme 代幣的地址，是幾乎完全不同的群體。資本在這兩層之間的流動方向，是判斷市場情緒階段的有效指標。Sakura 的智能體架構支持對鏈上地址進行實時追蹤。",
-    en: "Capital flows are the most honest language in markets. In Solana, addresses holding core DeFi assets (JUP, jitoSOL, BONK) and addresses active in newly launched meme tokens are almost entirely distinct populations. The direction of capital flow between these two layers is a reliable sentiment-phase indicator. Sakura's agent architecture enables real-time on-chain address tracking.",
-    ja: "資金フローは市場で最も正直な言語だ。Solanaでは、コアDeFiアセット（JUP、jitoSOL、BONK）保有アドレスと新規ミームトークン活発アドレスはほぼ完全に異なる母集団だ。この2層間の資本フロー方向は信頼できるセンチメント指標だ。",
-  };
 
   // ── Render ─────────────────────────────────────────────────────
   return (
@@ -532,9 +500,12 @@ function MarketPageInner() {
 
         {/* Header */}
         <div style={{ marginBottom: 32 }}>
-          <h1 style={{ margin: "0 0 8px", fontSize: 30, fontWeight: 700, color: "var(--text-primary)", fontFamily: "var(--font-heading)", lineHeight: 1.25 }}>
-            {issueLabel}
+          <h1 style={{ margin: "0 0 4px", fontSize: "clamp(18px, 3vw, 26px)", fontWeight: 700, color: "var(--text-primary)", fontFamily: "var(--font-heading)", lineHeight: 1.3 }}>
+            {narr?.headline ?? issueLabel}
           </h1>
+          <p style={{ margin: "0 0 10px", fontSize: 12, color: "var(--text-muted)" }}>
+            {report ? `Issue #${report.issue} · ${report.issueDate}` : ""}
+          </p>
           <p style={{ margin: "0 0 16px", fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.8, fontStyle: "italic", borderLeft: "2px solid var(--border)", paddingLeft: 12 }}>
             {tx(introText, L)}
           </p>
@@ -554,10 +525,31 @@ function MarketPageInner() {
               </div>
             )}
           </div>
+
+          {/* News ticker */}
+          {report?.newsItems && report.newsItems.length > 0 && (
+            <div style={{
+              background: "var(--bg-card-2)", border: "1px solid var(--border)",
+              borderRadius: 8, padding: "10px 16px", marginTop: 16,
+              fontSize: 12, display: "flex", gap: 16, flexWrap: "wrap", alignItems: "center",
+            }}>
+              <span style={{ fontWeight: 700, opacity: 0.5, flexShrink: 0 }}>
+                📡 {L === "zh" ? "本週動態" : L === "ja" ? "今週の動向" : "This Week"}
+              </span>
+              {report.newsItems.map((item, i) => (
+                <span key={i} style={{ opacity: 0.7 }}>
+                  · {item.replace(/^\[.+?\]\s*/, "")}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Report body */}
         <div style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 16, padding: "28px 32px", marginBottom: 40 }}>
+
+          {/* Opening narrative */}
+          {!loading && narr?.opening && <AIPara text={narr.opening} />}
 
           {/* ── 1. Key Metrics ── */}
           <ReportSection emoji="🎯" title={L === "zh" ? "本週核心指標" : L === "ja" ? "今週の主要指標" : "Key Metrics This Week"} />
@@ -586,7 +578,6 @@ function MarketPageInner() {
 
           {/* ── 3. Network Health ── */}
           <ReportSection emoji="🌐" title={L === "zh" ? "SOL 鏈上網絡健康度" : L === "ja" ? "SOLオンチェーンネットワーク健全性" : "SOL On-Chain Network Health"} />
-          {loading ? <><LoadingPulse /><LoadingPulse /></> : <AIPara text={narr?.opening} />}
           <TableCaption text={L === "zh" ? "Solana 網絡基礎指標（本週）：" : L === "ja" ? "Solanaネットワーク基本指標（今週）：" : "Solana Network Fundamentals (this week):"} />
           <MetricsTable rows={networkRows} lang={L} />
 
@@ -616,21 +607,15 @@ function MarketPageInner() {
             : null
           }
 
-          {/* ── 8. pump.fun Ecosystem Signal ── */}
-          <ReportSection emoji="🚀" title={L === "zh" ? "pump.fun 生態信號" : L === "ja" ? "pump.fun エコシステムシグナル" : "pump.fun Ecosystem Signal"} />
-          <AIPara text={tx(pumpNarrative, L)} />
-          <MetricsTable rows={pumpRows} lang={L} />
+          {/* ── 8. Macro Context ── */}
+          <ReportSection emoji="🌍" title={L === "zh" ? "宏觀背景" : L === "ja" ? "マクロ環境" : "Macro Context"} />
+          {loading ? <LoadingPulse /> : <AIPara text={narr?.macroContext} />}
 
-          {/* ── 9. NFT & Gaming ── */}
-          <ReportSection emoji="🎨" title={L === "zh" ? "NFT 與遊戲生態" : L === "ja" ? "NFT & ゲーム生態系" : "NFT & Gaming Ecosystem"} />
-          <AIPara text={tx(nftNarrative, L)} />
-          <MetricsTable rows={nftRows} lang={L} />
+          {/* ── 9. Risk Radar ── */}
+          <ReportSection emoji="⚠️" title={L === "zh" ? "風險雷達" : L === "ja" ? "リスクレーダー" : "Risk Radar"} accentColor="#ef4444" />
+          {loading ? <LoadingPulse /> : <AIPara text={narr?.riskRadar} />}
 
-          {/* ── 10. Smart Money Flow ── */}
-          <ReportSection emoji="🐋" title={L === "zh" ? "聰明錢資金流向" : L === "ja" ? "スマートマネー資金フロー" : "Smart Money Capital Flow"} />
-          <AIPara text={tx(flowNarrative, L)} />
-
-          {/* ── 11. Findings + Verdict ── */}
+          {/* ── 10. Findings + Verdict ── */}
           <ReportSection emoji="🔭" title={L === "zh" ? "關鍵發現與研判" : L === "ja" ? "主要発見と判断" : "Key Findings & Verdict"} />
           {loading ? (
             <><LoadingPulse /><LoadingPulse /><LoadingPulse /></>
