@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { LanguageProvider, useLang } from "@/contexts/LanguageContext";
 import Footer from "@/components/Footer";
+import ThemeWrapper from "@/components/ThemeWrapper";
 
 function DocsContent() {
   const { t, lang } = useLang();
@@ -142,7 +143,7 @@ function DocsContent() {
   ];
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg-base)", color: "var(--text-primary)" }}>
+    <ThemeWrapper>
       {/* Nav */}
       <nav style={{
         borderBottom: "1px solid var(--border)", background: "var(--bg-card)",
@@ -293,7 +294,7 @@ function DocsContent() {
       </div>
 
       <Footer />
-    </div>
+    </ThemeWrapper>
   );
 }
 

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { LanguageProvider, useLang } from "@/contexts/LanguageContext";
 import Footer from "@/components/Footer";
+import ThemeWrapper from "@/components/ThemeWrapper";
 
 function UseCasesContent() {
   const { lang } = useLang();
@@ -255,7 +256,7 @@ function UseCasesContent() {
   ];
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg-base)", color: "var(--text-primary)" }}>
+    <ThemeWrapper>
       {/* Nav */}
       <nav style={{
         borderBottom: "1px solid var(--border)", background: "var(--bg-card)",
@@ -388,7 +389,7 @@ function UseCasesContent() {
       </div>
 
       <Footer />
-    </div>
+    </ThemeWrapper>
   );
 }
 
