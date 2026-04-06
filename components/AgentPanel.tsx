@@ -240,6 +240,21 @@ export default function AgentPanel({ walletAddress, walletSnapshot, isDayMode = 
   // Strategy mode
   const [strategyMode, setStrategyMode] = useState<StrategyMode>("yield");
   const [showBacktest, setShowBacktest] = useState(false);
+  // Real 30-day returns from backtest API (replaces hardcoded simReturn30d)
+  const [realReturns, setRealReturns] = useState<Record<string, number>>({});
+  useEffect(() => {
+    const strategies: StrategyMode[] = ["yield", "defensive", "smart_money"];
+    strategies.forEach(s => {
+      fetch(`/api/backtest?strategy=${s}`)
+        .then(r => r.json())
+        .then((d: { totalReturnPct?: number }) => {
+          if (typeof d.totalReturnPct === "number") {
+            setRealReturns(prev => ({ ...prev, [s]: d.totalReturnPct! }));
+          }
+        })
+        .catch(() => {});
+    });
+  }, []);
 
   // Quota tracking
   const [agentQuota, setAgentQuota] = useState<{ remaining: number; used: number; admin?: boolean } | null>(null);
@@ -511,8 +526,12 @@ export default function AgentPanel({ walletAddress, walletSnapshot, isDayMode = 
                 </div>
                 <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)", marginBottom: 3 }}>{s.name}</div>
                 <div style={{ fontSize: 10, color: "var(--text-muted)", lineHeight: 1.4 }}>{s.desc}</div>
-                <div style={{ marginTop: 6, fontSize: 11, fontWeight: 700, color: s.badgeColor }}>
-                  +{(s.simReturn30d / 100).toFixed(2)}% <span style={{ fontSize: 9, fontWeight: 400, color: "var(--text-muted)" }}>30日模擬</span>
+                <div style={{ marginTop: 6, fontSize: 11, fontWeight: 700, color: realReturns[s.id] !== undefined ? (realReturns[s.id] >= 0 ? "#10B981" : "#EF4444") : s.badgeColor }}>
+                  {realReturns[s.id] !== undefined
+                    ? `${realReturns[s.id] >= 0 ? "+" : ""}${realReturns[s.id].toFixed(2)}%`
+                    : "載入中…"
+                  }
+                  {" "}<span style={{ fontSize: 9, fontWeight: 400, color: "var(--text-muted)" }}>30日實測</span>
                 </div>
               </button>
             ))}
