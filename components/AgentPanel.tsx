@@ -495,56 +495,91 @@ export default function AgentPanel({ walletAddress, walletSnapshot, isDayMode = 
             whiteSpace: "nowrap", minWidth: 120,
           }}
         >
-          {isRunning ? t("analyzingPortfolio") : agentState === "done" ? t("reanalyze") : t("runAgent")}
+          {isRunning
+            ? t("analyzingPortfolio")
+            : agentState === "done"
+            ? t("reanalyze")
+            : `▶ ${STRATEGY_DEFS.find(s => s.id === strategyMode)?.name ?? t("runAgent")}`}
         </button>
         </div>
 
-        {/* ── 3 Strategy Mode Selector ── */}
+        {/* ── 3 Strategy Mode Selector — compare & choose ── */}
         <div>
           <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", marginBottom: 10, letterSpacing: "0.08em" }}>
-            選擇 AUTOPILOT 策略模式
+            比較並選擇策略 · 點擊卡片選中後執行 Agent
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10 }}>
-            {STRATEGY_DEFS.map(s => (
-              <button
-                key={s.id}
-                onClick={() => setStrategyMode(s.id)}
-                style={{
-                  border: `1px solid ${strategyMode === s.id ? s.badgeColor : "var(--border)"}`,
-                  borderRadius: 12, padding: "12px 10px",
-                  background: strategyMode === s.id ? `${s.badgeColor}12` : "transparent",
-                  cursor: "pointer", textAlign: "left",
-                  transition: "all 0.2s",
-                }}
-              >
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
-                  <span style={{ fontSize: 16 }}>{s.icon}</span>
-                  <span style={{
-                    fontSize: 9, fontWeight: 700, padding: "1px 6px", borderRadius: 4,
-                    background: `${s.badgeColor}20`, color: s.badgeColor,
-                  }}>{s.badge}</span>
-                </div>
-                <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)", marginBottom: 3 }}>{s.name}</div>
-                <div style={{ fontSize: 10, color: "var(--text-muted)", lineHeight: 1.4 }}>{s.desc}</div>
-                <div style={{ marginTop: 6, fontSize: 11, fontWeight: 700, color: realReturns[s.id] !== undefined ? (realReturns[s.id] >= 0 ? "#10B981" : "#EF4444") : s.badgeColor }}>
-                  {realReturns[s.id] !== undefined
-                    ? `${realReturns[s.id] >= 0 ? "+" : ""}${realReturns[s.id].toFixed(2)}%`
-                    : "載入中…"
-                  }
-                  {" "}<span style={{ fontSize: 9, fontWeight: 400, color: "var(--text-muted)" }}>30日實測</span>
-                </div>
-              </button>
-            ))}
+            {STRATEGY_DEFS.map(s => {
+              const selected = strategyMode === s.id;
+              const ret = realReturns[s.id];
+              const retColor = ret !== undefined ? (ret >= 0 ? "#10B981" : "#EF4444") : s.badgeColor;
+              return (
+                <button
+                  key={s.id}
+                  onClick={() => setStrategyMode(s.id)}
+                  style={{
+                    border: `2px solid ${selected ? s.badgeColor : "var(--border)"}`,
+                    borderRadius: 12, padding: "14px 12px",
+                    background: selected ? `${s.badgeColor}14` : "var(--bg-base)",
+                    cursor: "pointer", textAlign: "left",
+                    transition: "all 0.2s", position: "relative",
+                    boxShadow: selected ? `0 0 0 1px ${s.badgeColor}40` : "none",
+                  }}
+                >
+                  {/* Selected badge */}
+                  {selected && (
+                    <div style={{
+                      position: "absolute", top: -10, left: "50%", transform: "translateX(-50%)",
+                      background: s.badgeColor, color: "#fff",
+                      fontSize: 9, fontWeight: 800, padding: "2px 10px", borderRadius: 10,
+                      whiteSpace: "nowrap", letterSpacing: "0.05em",
+                    }}>✓ 已選擇</div>
+                  )}
+                  {/* Icon + badge row */}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                    <span style={{ fontSize: 20 }}>{s.icon}</span>
+                    <span style={{
+                      fontSize: 9, fontWeight: 700, padding: "2px 7px", borderRadius: 4,
+                      background: `${s.badgeColor}20`, color: s.badgeColor,
+                    }}>{s.badge}</span>
+                  </div>
+                  {/* Name */}
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", marginBottom: 4 }}>{s.name}</div>
+                  {/* Description */}
+                  <div style={{ fontSize: 10, color: "var(--text-muted)", lineHeight: 1.5, marginBottom: 10 }}>{s.desc}</div>
+                  {/* Divider */}
+                  <div style={{ height: 1, background: "var(--border)", marginBottom: 10 }} />
+                  {/* 30-day real return */}
+                  <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
+                    <span style={{ fontSize: 18, fontWeight: 800, color: retColor, fontFamily: "var(--font-mono)" }}>
+                      {ret !== undefined ? `${ret >= 0 ? "+" : ""}${ret.toFixed(2)}%` : "—"}
+                    </span>
+                    <span style={{ fontSize: 9, color: "var(--text-muted)" }}>30日實測</span>
+                  </div>
+                  {/* Select CTA */}
+                  <div style={{
+                    marginTop: 10, padding: "5px 0", borderRadius: 6, textAlign: "center",
+                    fontSize: 11, fontWeight: 700,
+                    background: selected ? s.badgeColor : "var(--bg-card)",
+                    color: selected ? "#fff" : "var(--text-secondary)",
+                    border: `1px solid ${selected ? s.badgeColor : "var(--border)"}`,
+                    transition: "all 0.2s",
+                  }}>
+                    {selected ? `▶ 用此策略執行` : "點擊選擇"}
+                  </div>
+                </button>
+              );
+            })}
           </div>
           <button
             onClick={() => setShowBacktest(v => !v)}
             style={{
-              marginTop: 8, background: "none", border: "none", cursor: "pointer",
+              marginTop: 10, background: "none", border: "none", cursor: "pointer",
               fontSize: 11, color: "var(--text-secondary)", padding: "4px 0",
               textDecoration: "underline",
             }}
           >
-            {showBacktest ? "▲ 收起回測圖表" : "▼ 查看 30 日策略回測"}
+            {showBacktest ? "▲ 收起回測圖表" : "▼ 查看 30 日回測走勢圖"}
           </button>
           {showBacktest && <StrategyBacktestChart mode={strategyMode} defs={STRATEGY_DEFS} isDayMode={isDayMode} />}
         </div>
