@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import WaBijinSVG from "@/components/WaBijinSVG";
-import { LanguageProvider, useLang } from "@/contexts/LanguageContext";
+import { useLang } from "@/contexts/LanguageContext";
 import Footer from "@/components/Footer";
 import ThemeWrapper from "@/components/ThemeWrapper";
 
@@ -969,33 +968,6 @@ function UseCasesContent() {
 
   return (
     <ThemeWrapper>
-      {/* Nav */}
-      <nav style={{
-        borderBottom: "1px solid var(--border)", background: "var(--bg-card)",
-        padding: "14px 40px", display: "flex", alignItems: "center", justifyContent: "space-between",
-      }}>
-        <Link href="/" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
-          <div style={{ width: 28, height: 28, borderRadius: 6, overflow: "hidden", flexShrink: 0 }}>
-            <WaBijinSVG size={28} />
-          </div>
-          <span style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", fontFamily: "var(--font-heading)" }}>Sakura</span>
-        </Link>
-        <div style={{ display: "flex", gap: 20, alignItems: "center" }}>
-          <Link href="/docs" style={{ fontSize: 13, color: "var(--text-secondary)", textDecoration: "none" }}>
-            {L === "ja" ? "ドキュメント" : L === "zh" ? "使用手冊" : "Docs"}
-          </Link>
-          <Link href="/pricing" style={{ fontSize: 13, color: "var(--text-secondary)", textDecoration: "none" }}>
-            {L === "ja" ? "料金" : L === "zh" ? "定價" : "Pricing"}
-          </Link>
-          <Link href="/" style={{
-            fontSize: 13, padding: "7px 18px", borderRadius: 8,
-            background: "var(--accent)", color: "#fff", textDecoration: "none", fontWeight: 600,
-          }}>
-            {L === "ja" ? "アプリを起動" : L === "zh" ? "啟動應用" : "Launch App"}
-          </Link>
-        </div>
-      </nav>
-
       {/* Content */}
       <div style={{ padding: "60px 40px 0", maxWidth: 800, margin: "0 auto" }}>
 
@@ -1079,9 +1051,5 @@ function UseCasesContent() {
 }
 
 export default function UseCasesPage() {
-  return (
-    <LanguageProvider>
-      <UseCasesContent />
-    </LanguageProvider>
-  );
+  return <UseCasesContent />;
 }

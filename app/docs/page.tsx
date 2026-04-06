@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { LanguageProvider, useLang } from "@/contexts/LanguageContext";
+import { useLang } from "@/contexts/LanguageContext";
 import Footer from "@/components/Footer";
 import ThemeWrapper from "@/components/ThemeWrapper";
 
@@ -670,42 +670,6 @@ function DocsContent() {
 
   return (
     <ThemeWrapper>
-      {/* ── Nav ── */}
-      <nav style={{
-        position: "sticky", top: 0, zIndex: 100,
-        borderBottom: "1px solid var(--border)", background: "var(--bg-card)",
-        padding: "13px 32px", display: "flex", alignItems: "center", justifyContent: "space-between",
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
-          <Link href="/" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
-            <div style={{
-              width: 26, height: 26, background: "var(--accent)",
-              borderRadius: 6, display: "flex", alignItems: "center",
-              justifyContent: "center", fontSize: 13, fontWeight: 700, color: "#fff",
-            }}>S</div>
-            <span style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", fontFamily: "var(--font-heading)" }}>Sakura</span>
-          </Link>
-          <div style={{ height: 16, width: 1, background: "var(--border)" }} />
-          <span style={{ fontSize: 12, color: "var(--text-muted)", letterSpacing: "0.06em" }}>
-            {content.pageLabel}
-          </span>
-        </div>
-        <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
-          <Link href="/use-cases" style={{ fontSize: 13, color: "var(--text-secondary)", textDecoration: "none" }}>
-            {lang === "ja" ? "使用事例" : lang === "zh" ? "使用案例" : "Use Cases"}
-          </Link>
-          <Link href="/pricing" style={{ fontSize: 13, color: "var(--text-secondary)", textDecoration: "none" }}>
-            {lang === "ja" ? "料金" : lang === "zh" ? "定價" : "Pricing"}
-          </Link>
-          <Link href="/" style={{
-            fontSize: 12, padding: "6px 16px", borderRadius: 7,
-            background: "var(--accent)", color: "#fff", textDecoration: "none", fontWeight: 600,
-          }}>
-            {lang === "ja" ? "アプリへ" : lang === "zh" ? "啟動應用" : "Launch App"}
-          </Link>
-        </div>
-      </nav>
-
       {/* ── 3-column layout ── */}
       <div style={{ display: "flex", maxWidth: 1280, margin: "0 auto", minHeight: "calc(100vh - 56px)" }}>
 
@@ -977,9 +941,5 @@ function DocsContent() {
 // ─── Page ───────────────────────────────────────────────────────────────────
 
 export default function DocsPage() {
-  return (
-    <LanguageProvider>
-      <DocsContent />
-    </LanguageProvider>
-  );
+  return <DocsContent />;
 }

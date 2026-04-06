@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { lookupProof, getAllProofs, ProofRecord } from "@/lib/proof-store";
-import Link from "next/link";
 import { getDeviceId } from "@/lib/device-id";
 import { payWithPhantom } from "@/lib/x402";
 import { useLang } from "@/contexts/LanguageContext";
@@ -124,25 +123,6 @@ export default function VerifyPage() {
 
   return (
     <main style={{ background: "#0A0A0F", minHeight: "100vh" }}>
-      {/* Header */}
-      <header style={{
-        borderBottom: "1px solid #1E1E2E", padding: "14px 32px",
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        background: "rgba(10,10,15,0.95)", backdropFilter: "blur(12px)",
-        position: "sticky", top: 0, zIndex: 50,
-      }}>
-        <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
-          <div style={{
-            width: 28, height: 28, borderRadius: 7,
-            background: "linear-gradient(135deg, #8B5CF6, #06B6D4)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 14, fontWeight: 900, color: "#fff",
-          }}>S</div>
-          <span style={{ fontSize: 16, fontWeight: 800, color: "#fff" }}>Sakura</span>
-        </Link>
-        <span style={{ fontSize: 12, color: "#60A5FA" }}>{t("verifyPageHeader")}</span>
-      </header>
-
       <div style={{ maxWidth: 680, margin: "0 auto", padding: "48px 24px" }}>
 
         {/* Title */}

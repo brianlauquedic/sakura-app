@@ -4,8 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { getDeviceId } from "@/lib/device-id";
 import { payWithPhantom } from "@/lib/x402";
-import WaBijinSVG from "@/components/WaBijinSVG";
-import { LanguageProvider, useLang } from "@/contexts/LanguageContext";
+import { useLang } from "@/contexts/LanguageContext";
 import type { Lang } from "@/lib/i18n";
 
 type SubscriptionTier = "free" | "basic" | "pro";
@@ -36,58 +35,104 @@ interface SubscriptionStatus {
 
 const SOLIS_FEE_WALLET = "Goc5kAMb9NTXjobxzZogAWaHwajmQjw7CdmATWJN1mQh";
 
-const DEFAULT_PLANS: PlanInfo[] = [
-  {
-    tier: "free", label: "Free", priceMonthly: 0, priceAnnual: 0,
-    currency: "USDC", credits: 100, rollover: 0, savingsAnnual: 0,
-    features: [
-      "100 點 / 月",
-      "1 次 AI 深度顧問",
-      "10 次安全分析",
-      "體驗全部功能",
-    ],
-    recommended: false,
-  },
-  {
-    tier: "basic", label: "Basic", priceMonthly: 8, priceAnnual: 67,
-    currency: "USDC", credits: 1500, rollover: 500, savingsAnnual: 29,
-    features: [
-      "1,500 點 / 月",
-      "結轉最多 500 點到下月",
-      "~50 次 AI 對話",
-      "~18 次 AI 深度分析",
-      "聰明錢追蹤",
-      "Guardian 借貸監控",
-    ],
-    recommended: true,
-  },
-  {
-    tier: "pro", label: "Pro", priceMonthly: 28, priceAnnual: 235,
-    currency: "USDC", credits: 6000, rollover: 2000, savingsAnnual: 101,
-    features: [
-      "6,000 點 / 月",
-      "結轉最多 2,000 點到下月",
-      "~200 次 AI 對話",
-      "~75 次 AI 深度分析",
-      "~600 次安全分析",
-      "MCP API 無限存取",
-      "最高優先級回應",
-    ],
-    recommended: false,
-  },
-];
+function getDefaultPlans(lang: Lang): PlanInfo[] {
+  const e = lang === "en", j = lang === "ja";
+  return [
+    {
+      tier: "free", label: "Free", priceMonthly: 0, priceAnnual: 0,
+      currency: "USDC", credits: 100, rollover: 0, savingsAnnual: 0,
+      features: e ? [
+        "100 Credits / month",
+        "1× AI Deep Analysis",
+        "10× Security Scans",
+        "Try all features",
+      ] : j ? [
+        "100 クレジット / 月",
+        "1× AI 深度分析",
+        "10× セキュリティ分析",
+        "全機能を体験",
+      ] : [
+        "100 點 / 月",
+        "1 次 AI 深度顧問",
+        "10 次安全分析",
+        "體驗全部功能",
+      ],
+      recommended: false,
+    },
+    {
+      tier: "basic", label: "Basic", priceMonthly: 8, priceAnnual: 67,
+      currency: "USDC", credits: 1500, rollover: 500, savingsAnnual: 29,
+      features: e ? [
+        "1,500 Credits / month",
+        "Roll over up to 500 credits",
+        "~50× AI conversations",
+        "~18× AI deep analysis",
+        "Smart money tracking",
+        "Guardian lending monitor",
+      ] : j ? [
+        "1,500 クレジット / 月",
+        "最大500クレジット繰越",
+        "~50× AI 会話",
+        "~18× AI 深度分析",
+        "スマートマネー追跡",
+        "Guardian 融資モニター",
+      ] : [
+        "1,500 點 / 月",
+        "結轉最多 500 點到下月",
+        "~50 次 AI 對話",
+        "~18 次 AI 深度分析",
+        "聰明錢追蹤",
+        "Guardian 借貸監控",
+      ],
+      recommended: true,
+    },
+    {
+      tier: "pro", label: "Pro", priceMonthly: 28, priceAnnual: 235,
+      currency: "USDC", credits: 6000, rollover: 2000, savingsAnnual: 101,
+      features: e ? [
+        "6,000 Credits / month",
+        "Roll over up to 2,000 credits",
+        "~200× AI conversations",
+        "~75× AI deep analysis",
+        "~600× Security scans",
+        "Unlimited MCP API access",
+        "Highest priority responses",
+      ] : j ? [
+        "6,000 クレジット / 月",
+        "最大2,000クレジット繰越",
+        "~200× AI 会話",
+        "~75× AI 深度分析",
+        "~600× セキュリティ分析",
+        "MCP API 無制限アクセス",
+        "最高優先度レスポンス",
+      ] : [
+        "6,000 點 / 月",
+        "結轉最多 2,000 點到下月",
+        "~200 次 AI 對話",
+        "~75 次 AI 深度分析",
+        "~600 次安全分析",
+        "MCP API 無限存取",
+        "最高優先級回應",
+      ],
+      recommended: false,
+    },
+  ];
+}
 
-const CREDIT_COSTS: { icon: string; label: string; cost: number; feature: string }[] = [
-  { icon: "🌿", label: "AI 深度分析 (Sonnet 4.6)", cost: 80, feature: "advisor_deep" },
-  { icon: "💬", label: "AI 對話 (Haiku)", cost: 30, feature: "advisor" },
-  { icon: "🔰", label: "安全分析", cost: 10, feature: "analyze" },
-  { icon: "⚙️", label: "Agent 執行", cost: 20, feature: "agent" },
-  { icon: "🌸", label: "組合優化", cost: 15, feature: "portfolio" },
-  { icon: "⛩️", label: "鏈上驗證", cost: 5, feature: "verify" },
-];
+function getCreditCosts(lang: Lang) {
+  const e = lang === "en", j = lang === "ja";
+  return [
+    { icon: "🌿", label: e ? "AI Deep Analysis (Sonnet 4.6)" : j ? "AI 深度分析 (Sonnet 4.6)" : "AI 深度分析 (Sonnet 4.6)", cost: 80, feature: "advisor_deep" },
+    { icon: "💬", label: e ? "AI Chat (Haiku)" : j ? "AI 会話 (Haiku)" : "AI 對話 (Haiku)", cost: 30, feature: "advisor" },
+    { icon: "🔰", label: e ? "Security Scan" : j ? "セキュリティ分析" : "安全分析", cost: 10, feature: "analyze" },
+    { icon: "⚙️", label: e ? "Agent Execution" : j ? "Agent 実行" : "Agent 執行", cost: 20, feature: "agent" },
+    { icon: "🌸", label: e ? "Portfolio Optimize" : j ? "ポートフォリオ最適化" : "組合優化", cost: 15, feature: "portfolio" },
+    { icon: "⛩️", label: e ? "On-chain Verify" : j ? "オンチェーン検証" : "鏈上驗證", cost: 5, feature: "verify" },
+  ];
+}
 
 export default function PricingPage() {
-  return <LanguageProvider><PricingInner /></LanguageProvider>;
+  return <PricingInner />;
 }
 
 function PricingInner() {
@@ -99,13 +144,9 @@ function PricingInner() {
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const [activating, setActivating] = useState<SubscriptionTier | null>(null);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
-  const [isDayMode, setIsDayMode] = useState(false);
-
   useEffect(() => {
     const saved = localStorage.getItem("sakura_wallet");
     if (saved) setWalletAddress(saved);
-    const day = localStorage.getItem("sakura_day_mode");
-    if (day === "1") setIsDayMode(true);
   }, []);
 
   const fetchStatus = useCallback(async () => {
@@ -122,7 +163,7 @@ function PricingInner() {
 
   async function handleSubscribe(tier: "basic" | "pro") {
     if (!walletAddress) {
-      setMessage({ type: "error", text: "請先連接 Phantom 錢包" });
+      setMessage({ type: "error", text: tx("請先連接 Phantom 錢包", "Please connect your Phantom wallet first", "Phantomウォレットを先に接続してください") });
       return;
     }
     const plan = (status?.plans ?? DEFAULT_PLANS).find(p => p.tier === tier);
@@ -167,17 +208,13 @@ function PricingInner() {
     }
   }
 
+  const DEFAULT_PLANS = getDefaultPlans(lang);
+  const CREDIT_COSTS = getCreditCosts(lang);
   const plans = status?.plans ?? DEFAULT_PLANS;
   const currentTier = status?.tier ?? "free";
 
   const tx = (zh: string, en: string, ja: string) =>
     lang === "en" ? en : lang === "ja" ? ja : zh;
-
-  const LANG_LABELS: { lang: Lang; flag: string; label: string }[] = [
-    { lang: "zh", flag: "🇹🇼", label: "中文" },
-    { lang: "en", flag: "🇺🇸", label: "EN" },
-    { lang: "ja", flag: "🇯🇵", label: "日本語" },
-  ];
 
   const TIER_STYLE = {
     free:  { accent: "var(--text-secondary)", border: "var(--border)", bg: "var(--bg-card)", badge: "" },
@@ -187,93 +224,10 @@ function PricingInner() {
 
   const savingsPct = billing === "annual" ? 30 : 0;
 
-  const dayVars = isDayMode ? {
-    "--bg-base":       "#F2EBE0",
-    "--bg-card":       "#EAE0D0",
-    "--bg-card-2":     "#E0D4C0",
-    "--bg-header":     "rgba(242,235,224,0.95)",
-    "--border":        "#C8B89A",
-    "--text-primary":  "#2A1A10",
-    "--text-secondary":"#6B5540",
-    "--text-muted":    "#9B8570",
-    "--accent-soft":   "rgba(192,57,43,0.08)",
-    "--accent-mid":    "rgba(192,57,43,0.18)",
-  } as React.CSSProperties : {} as React.CSSProperties;
-
   return (
-    <div style={{
-      minHeight: "100vh",
-      background: isDayMode ? "#F2EBE0" : "#09090F",
-      color: "var(--text-primary)",
-      fontFamily: "var(--font-body, 'Noto Sans JP', sans-serif)",
-      ...dayVars,
-    }}>
-      {/* ── Header ─────────────────────────────────────────────────── */}
-      <header style={{
-        position: "sticky", top: 0, zIndex: 100,
-        borderBottom: "1px solid var(--border)",
-        background: isDayMode ? "rgba(242,235,224,0.95)" : "rgba(9,9,15,0.92)",
-        backdropFilter: "blur(16px)",
-        padding: "0 40px",
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        height: 60,
-      }}>
-        <button
-          onClick={() => router.push("/")}
-          style={{
-            display: "flex", alignItems: "center", gap: 8,
-            background: "none", border: "none", cursor: "pointer",
-            color: "var(--text-primary)", fontSize: 20, fontWeight: 800,
-          }}
-        >
-          <div style={{ width: 28, height: 28, borderRadius: 6, overflow: "hidden", flexShrink: 0 }}>
-            <WaBijinSVG size={28} />
-          </div>
-          <span style={{ fontFamily: "var(--font-heading, 'Noto Serif JP', serif)", letterSpacing: "0.05em" }}>
-            Sakura
-          </span>
-        </button>
-
-        <span style={{
-          fontSize: 14, fontWeight: 700,
-          color: "var(--text-primary)",
-          borderBottom: "2px solid var(--accent)",
-          paddingBottom: 2,
-        }}>{tx("定價", "Pricing", "料金")}</span>
-
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          {/* Language switcher */}
-          <div style={{ display: "flex", gap: 4 }}>
-            {LANG_LABELS.map(item => (
-              <button
-                key={item.lang}
-                onClick={() => setLang(item.lang)}
-                style={{
-                  padding: "4px 10px", borderRadius: 6, border: "none",
-                  fontSize: 11, fontWeight: 600, cursor: "pointer",
-                  background: lang === item.lang ? "var(--accent)" : "var(--bg-card-2, var(--bg-card))",
-                  color: lang === item.lang ? "#fff" : "var(--text-secondary)",
-                  transition: "all 0.15s",
-                }}
-              >{item.flag} {item.label}</button>
-            ))}
-          </div>
-          <button
-            onClick={() => router.push("/")}
-            style={{
-              padding: "7px 18px", borderRadius: 8,
-              background: "var(--accent)", border: "none",
-              color: "#fff", fontSize: 13, fontWeight: 700,
-              cursor: "pointer",
-            }}
-          >
-            {tx("進入應用程序 →", "Launch App →", "アプリを開く →")}
-          </button>
-        </div>
-      </header>
-
+    <>
       {/* ── Main Content ────────────────────────────────────────────── */}
-      <main style={{ maxWidth: 1080, margin: "0 auto", padding: "60px 24px 80px" }}>
+      <main style={{ maxWidth: 1080, margin: "0 auto", padding: "40px 24px 80px" }}>
 
         {/* Title */}
         <div style={{ textAlign: "center", marginBottom: 40 }}>
@@ -319,9 +273,9 @@ function PricingInner() {
             borderRadius: 20,
           }}>
             <div style={{ fontSize: 48, marginBottom: 16 }}>⛩️</div>
-            <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 12 }}>企業方案</h2>
+            <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 12 }}>{tx("企業方案", "Enterprise Plan", "エンタープライズプラン")}</h2>
             <p style={{ fontSize: 15, color: "var(--text-secondary)", maxWidth: 480, margin: "0 auto 28px" }}>
-              需要更大配額、私有部署或 API 整合？歡迎洽談企業定制方案。
+              {tx("需要更大配額、私有部署或 API 整合？歡迎洽談企業定制方案。", "Need higher quotas, private deployment, or API integration? Contact us about enterprise pricing.", "大容量クォータ、プライベートデプロイ、またはAPI統合が必要ですか？エンタープライズプランについてお問い合わせください。")}
             </p>
             <button
               onClick={() => window.open("https://t.me/mmm0113mmm0113", "_blank")}
@@ -330,7 +284,7 @@ function PricingInner() {
                 background: "var(--accent)", border: "none",
                 color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer",
               }}
-            >✈️ Telegram 聯繫我們</button>
+            >✈️ {tx("Telegram 聯繫我們", "Contact us on Telegram", "Telegramでお問い合わせ")}</button>
           </div>
         ) : (
           <>
@@ -466,14 +420,14 @@ function PricingInner() {
                     {/* Price */}
                     <div style={{ marginBottom: 6 }}>
                       {plan.priceMonthly === 0 ? (
-                        <div style={{ fontSize: 40, fontWeight: 800, color: "var(--text-primary)" }}>免費</div>
+                        <div style={{ fontSize: 40, fontWeight: 800, color: "var(--text-primary)" }}>{tx("免費", "Free", "無料")}</div>
                       ) : (
                         <>
                           <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
                             <span style={{ fontSize: 44, fontWeight: 800, color: "var(--text-primary)" }}>
                               ${monthlyEquiv}
                             </span>
-                            <span style={{ fontSize: 13, color: "var(--text-secondary)" }}>每月</span>
+                            <span style={{ fontSize: 13, color: "var(--text-secondary)" }}>{tx("每月", "/ mo", "/ 月")}</span>
                           </div>
                           {billing === "annual" && (
                             <div style={{
@@ -484,7 +438,7 @@ function PricingInner() {
                                 display: "inline-flex", alignItems: "center",
                                 background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.25)",
                                 borderRadius: 12, padding: "1px 8px",
-                              }}>按年支付 ${plan.priceAnnual} · 節省 {savingsPct}%</span>
+                              }}>{tx("按年支付", "Billed annually", "年払い")} ${plan.priceAnnual} · {tx("節省", "Save", "節約")} {savingsPct}%</span>
                             </div>
                           )}
                         </>
@@ -539,12 +493,12 @@ function PricingInner() {
                         fontSize: 22, fontWeight: 700,
                         color: style.accent !== "var(--text-secondary)" ? style.accent : "var(--text-primary)",
                       }}>
-                        {plan.credits.toLocaleString()} 點
+                        {plan.credits.toLocaleString()} {tx("點", "Credits", "クレジット")}
                       </span>
-                      <span style={{ fontSize: 12, color: "var(--text-secondary)", marginLeft: 6 }}>/月</span>
+                      <span style={{ fontSize: 12, color: "var(--text-secondary)", marginLeft: 6 }}>/{tx("月", "mo", "月")}</span>
                       {plan.rollover > 0 && (
                         <div style={{ fontSize: 11, color: "#10B981", marginTop: 3 }}>
-                          ＋ 可結轉最多 {plan.rollover.toLocaleString()} 點
+                          ＋ {tx(`可結轉最多 ${plan.rollover.toLocaleString()} 點`, `Roll over up to ${plan.rollover.toLocaleString()} credits`, `最大${plan.rollover.toLocaleString()}クレジット繰越`)}
                         </div>
                       )}
                     </div>
@@ -610,15 +564,17 @@ function PricingInner() {
             }}>
               <span style={{ fontSize: 24, flexShrink: 0 }}>⛩️</span>
               <div style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.7 }}>
-                <strong style={{ color: "var(--text-primary)" }}>鏈上支付，完全透明。</strong>
-                {" "}訂閱費透過 Phantom 直接發送至 Sakura 費用錢包（USDC on Solana）。
-                點數按實際 AI API 成本設計，無綁定、隨時取消、按月自動結算。
-                Basic 方案可結轉 500 點，Pro 方案可結轉 2,000 點到下月。
+                <strong style={{ color: "var(--text-primary)" }}>{tx("鏈上支付，完全透明。", "On-chain payments, fully transparent.", "オンチェーン決済、完全透明。")}</strong>
+                {" "}{tx(
+                  "訂閱費透過 Phantom 直接發送至 Sakura 費用錢包（USDC on Solana）。點數按實際 AI API 成本設計，無綁定、隨時取消、按月自動結算。Basic 方案可結轉 500 點，Pro 方案可結轉 2,000 點到下月。",
+                  "Subscription fees are sent directly to Sakura's fee wallet via Phantom (USDC on Solana). Credits are priced at actual AI API cost — no lock-in, cancel anytime, billed monthly. Basic rolls over 500 credits; Pro rolls over 2,000 credits to the next month.",
+                  "サブスクリプション料金はPhantomを通じてSakuraの手数料ウォレットに直接送付されます（USDC on Solana）。クレジットは実際のAI APIコストに基づき設計されており、ロックインなし、いつでもキャンセル可能、月次自動決済。Basicは500クレジット、Proは2,000クレジットを翌月に繰り越せます。"
+                )}
               </div>
             </div>
           </>
         )}
       </main>
-    </div>
+    </>
   );
 }

@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import WaBijinSVG from "@/components/WaBijinSVG";
-import { LanguageProvider, useLang } from "@/contexts/LanguageContext";
+import { useLang } from "@/contexts/LanguageContext";
 import ThemeWrapper from "@/components/ThemeWrapper";
 import type { Lang } from "@/lib/i18n";
 
@@ -285,11 +284,9 @@ function VerdictCard({ text }: { text: string }) {
 
 export default function MarketPage() {
   return (
-    <LanguageProvider>
-      <ThemeWrapper>
-        <MarketPageInner />
-      </ThemeWrapper>
-    </LanguageProvider>
+    <ThemeWrapper>
+      <MarketPageInner />
+    </ThemeWrapper>
   );
 }
 
@@ -463,71 +460,9 @@ function MarketPageInner() {
     );
   }
 
-  const LANG_BTNS: { lang: "zh" | "en" | "ja"; flag: string; label: string }[] = [
-    { lang: "zh", flag: "🇹🇼", label: "中文" },
-    { lang: "en", flag: "🇺🇸", label: "EN" },
-    { lang: "ja", flag: "🇯🇵", label: "日本語" },
-  ];
 
   return (
     <div>
-      {/* ── Nav ── */}
-      <nav style={{
-        borderBottom: "1px solid var(--border)", background: "var(--bg-card)",
-        padding: "14px 40px", display: "flex", alignItems: "center", justifyContent: "space-between",
-        position: "sticky", top: 0, zIndex: 50,
-      }}>
-        <Link href="/" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
-          <div style={{ width: 28, height: 28, borderRadius: 6, overflow: "hidden", flexShrink: 0 }}>
-            <WaBijinSVG size={28} />
-          </div>
-          <span style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", fontFamily: "var(--font-heading)" }}>Sakura</span>
-        </Link>
-
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          {/* Week badge */}
-          <span style={{
-            fontSize: 11, fontWeight: 700, color: "#C9A84C",
-            background: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.3)",
-            borderRadius: 6, padding: "3px 10px", fontFamily: "var(--font-mono)",
-          }}>W14 2026 · {L === "zh" ? "每週一 00:00 更新" : L === "ja" ? "毎週月曜 00:00 更新" : "Updated Mon 00:00"}</span>
-
-          {/* Share button */}
-          <button
-            onClick={handleShare}
-            style={{
-              padding: "5px 14px", borderRadius: 6, border: "1px solid var(--border)",
-              background: copied ? "rgba(61,122,92,0.15)" : "var(--bg-card-2)",
-              color: copied ? "#3D7A5C" : "var(--text-secondary)",
-              fontSize: 12, fontWeight: 600, cursor: "pointer", transition: "all 0.15s",
-            }}
-          >
-            {copied ? "✅ " + (L === "zh" ? "已複製" : L === "ja" ? "コピー済" : "Copied") : "🔗 " + (L === "zh" ? "分享報告" : L === "ja" ? "レポートを共有" : "Share Report")}
-          </button>
-
-          {/* Lang switcher */}
-          <div style={{ display: "flex", gap: 3 }}>
-            {LANG_BTNS.map(item => (
-              <button
-                key={item.lang}
-                onClick={() => setLang(item.lang)}
-                style={{
-                  padding: "4px 9px", borderRadius: 5, border: "none",
-                  fontSize: 11, fontWeight: 600, cursor: "pointer",
-                  background: lang === item.lang ? "var(--accent)" : "var(--bg-card-2)",
-                  color: lang === item.lang ? "#fff" : "var(--text-secondary)",
-                  transition: "all 0.15s",
-                }}
-              >{item.flag} {item.label}</button>
-            ))}
-          </div>
-
-          <Link href="/use-cases" style={{ fontSize: 13, color: "var(--text-secondary)", textDecoration: "none" }}>
-            {L === "zh" ? "← 使用案例" : L === "ja" ? "← 使用例" : "← Use Cases"}
-          </Link>
-        </div>
-      </nav>
-
       {/* ── Page Header ── */}
       <div style={{ maxWidth: 900, margin: "0 auto", padding: "40px 24px 0" }}>
         <div style={{ marginBottom: 32 }}>
