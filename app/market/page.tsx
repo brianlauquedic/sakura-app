@@ -303,7 +303,7 @@ function MarketPageInner() {
   }
 
   // ── Data ────────────────────────────────────────────────────────────────────
-  const title: T3 = { zh: "Solana 生態全景週報 (W14 2026)", en: "Solana Ecosystem Weekly (W14 2026)", ja: "Solana エコシステム週報 (W14 2026)" };
+  const title: T3 = { zh: "Solana 生態全景週報 — 第 1 期 (April 6, 2026)", en: "Solana Ecosystem Weekly — Issue 1 (April 6, 2026)", ja: "Solana エコシステム週報 — 第 1 号 (April 6, 2026)" };
   const intro: T3 = {
     zh: "本報告基於 Helius 鏈上交易數據、Kamino / Marginfi / Drift 協議 API、Jupiter 聚合器指標、Magic Eden NFT 數據及 30 個 GMGN 標記錢包的實時追蹤，覆蓋 Solana 生態九個維度。數字會說話——但只有讀懂它們背後的邏輯，才能在這個生態佔據真正的信息優勢。",
     en: "This report draws from Helius on-chain feeds, Kamino / Marginfi / Drift protocol APIs, Jupiter aggregator metrics, Magic Eden NFT data, and real-time surveillance of 30 GMGN-labeled wallets — covering nine dimensions of the Solana ecosystem. Numbers tell a story. Only those who understand the logic behind them hold a genuine edge.",
