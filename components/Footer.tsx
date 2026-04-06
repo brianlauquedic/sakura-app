@@ -47,14 +47,14 @@ export default function Footer() {
       }}>
         {/* Brand */}
         <div style={{ minWidth: 200, maxWidth: 260 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+          <Link href="/" style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12, textDecoration: "none" }}>
             <div style={{ width: 28, height: 28, borderRadius: 6, overflow: "hidden", flexShrink: 0 }}>
               <WaBijinSVG size={28} />
             </div>
             <span style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)", fontFamily: "var(--font-heading)" }}>
               Sakura
             </span>
-          </div>
+          </Link>
           <p style={{ fontSize: 12, color: "var(--text-primary)", lineHeight: 1.9, margin: 0, opacity: 0.6 }}>
             {t("footerTagline")}
           </p>
