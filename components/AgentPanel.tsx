@@ -173,42 +173,17 @@ type StrategyMode = "yield" | "defensive" | "smart_money";
 interface StrategyDef {
   id: StrategyMode;
   icon: string;
-  name: string;
-  desc: string;
+  nameKey: string;
+  descKey: string;
   badge: string;
   badgeColor: string;
-  // 30-day simulated return basis points (e.g. 1200 = 12%)
   simReturn30d: number;
 }
 
 const STRATEGY_DEFS: StrategyDef[] = [
-  {
-    id: "yield",
-    icon: "⚡",
-    name: "收益最大化",
-    desc: "Stake + Lend + LP 全倉出擊，追求最高年化",
-    badge: "Autopilot I",
-    badgeColor: "#C9A84C",
-    simReturn30d: 1840,
-  },
-  {
-    id: "defensive",
-    icon: "🛡",
-    name: "防禦模式",
-    desc: "70% 穩定幣 + Marinade mSOL，波動最小化",
-    badge: "Autopilot II",
-    badgeColor: "#3D7A5C",
-    simReturn30d: 620,
-  },
-  {
-    id: "smart_money",
-    icon: "🐋",
-    name: "聰明錢跟隨",
-    desc: "根據 KOL/Whale 24h 共識信號動態調倉",
-    badge: "Autopilot III",
-    badgeColor: "#C94030",
-    simReturn30d: 3120,
-  },
+  { id: "yield",       icon: "⚡", nameKey: "strategyYieldName", descKey: "strategyYieldDesc", badge: "Autopilot I",   badgeColor: "#C9A84C", simReturn30d: 1840 },
+  { id: "defensive",   icon: "🛡", nameKey: "strategyDefName",   descKey: "strategyDefDesc",   badge: "Autopilot II",  badgeColor: "#3D7A5C", simReturn30d: 620  },
+  { id: "smart_money", icon: "🐋", nameKey: "strategySmartName", descKey: "strategySmartDesc", badge: "Autopilot III", badgeColor: "#C94030", simReturn30d: 3120 },
 ];
 
 // ── Backtest simulation data generator ───────────────────────────────────
@@ -463,10 +438,10 @@ export default function AgentPanel({ walletAddress, walletSnapshot, isDayMode = 
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
         <div>
           <div style={{ fontSize: 18, fontWeight: 800, color: "var(--text-primary)", marginBottom: 4 }}>
-            ⚙️ Sakura AI Agent · 3 種自動策略
+            {t("agentPanelTitle")}
           </div>
           <div style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.5 }}>
-            選擇策略模式，Agent 自動分析持倉、生成最優方案並可一鍵執行。
+            {t("agentPanelSubtitle")}
           </div>
           {agentQuota && !agentQuota.admin && (
             <div style={{
@@ -478,8 +453,8 @@ export default function AgentPanel({ walletAddress, walletSnapshot, isDayMode = 
               color: agentQuota.remaining > 1 ? "#10B981" : agentQuota.remaining === 1 ? "#F59E0B" : "#8B5CF6",
             }}>
               {agentQuota.remaining > 0
-                ? `🆓 ${agentQuota.remaining}/3 次免費剩餘`
-                : "💰 免費次數已用完 · $0.10 USDC/次"}
+                ? t("agentFreeRemaining", { n: agentQuota.remaining })
+                : t("agentFreeExhausted")}
             </div>
           )}
         </div>
@@ -499,14 +474,14 @@ export default function AgentPanel({ walletAddress, walletSnapshot, isDayMode = 
             ? t("analyzingPortfolio")
             : agentState === "done"
             ? t("reanalyze")
-            : `▶ ${STRATEGY_DEFS.find(s => s.id === strategyMode)?.name ?? t("runAgent")}`}
+            : `▶ ${t((STRATEGY_DEFS.find(s => s.id === strategyMode)?.nameKey ?? "runAgent") as Parameters<typeof t>[0])}`}
         </button>
         </div>
 
         {/* ── 3 Strategy Mode Selector — compare & choose ── */}
         <div>
           <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", marginBottom: 10, letterSpacing: "0.08em" }}>
-            比較並選擇策略 · 點擊卡片選中後執行 Agent
+            {t("strategyCompareLabel")}
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10 }}>
             {STRATEGY_DEFS.map(s => {
@@ -533,7 +508,7 @@ export default function AgentPanel({ walletAddress, walletSnapshot, isDayMode = 
                       background: s.badgeColor, color: "#fff",
                       fontSize: 9, fontWeight: 800, padding: "2px 10px", borderRadius: 10,
                       whiteSpace: "nowrap", letterSpacing: "0.05em",
-                    }}>✓ 已選擇</div>
+                    }}>{t("strategySelected")}</div>
                   )}
                   {/* Icon + badge row */}
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
@@ -544,9 +519,9 @@ export default function AgentPanel({ walletAddress, walletSnapshot, isDayMode = 
                     }}>{s.badge}</span>
                   </div>
                   {/* Name */}
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", marginBottom: 4 }}>{s.name}</div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", marginBottom: 4 }}>{t(s.nameKey as Parameters<typeof t>[0])}</div>
                   {/* Description */}
-                  <div style={{ fontSize: 10, color: "var(--text-muted)", lineHeight: 1.5, marginBottom: 10 }}>{s.desc}</div>
+                  <div style={{ fontSize: 10, color: "var(--text-muted)", lineHeight: 1.5, marginBottom: 10 }}>{t(s.descKey as Parameters<typeof t>[0])}</div>
                   {/* Divider */}
                   <div style={{ height: 1, background: "var(--border)", marginBottom: 10 }} />
                   {/* 30-day real return */}
@@ -554,7 +529,7 @@ export default function AgentPanel({ walletAddress, walletSnapshot, isDayMode = 
                     <span style={{ fontSize: 18, fontWeight: 800, color: retColor, fontFamily: "var(--font-mono)" }}>
                       {ret !== undefined ? `${ret >= 0 ? "+" : ""}${ret.toFixed(2)}%` : "—"}
                     </span>
-                    <span style={{ fontSize: 9, color: "var(--text-muted)" }}>30日實測</span>
+                    <span style={{ fontSize: 9, color: "var(--text-muted)" }}>{t("strategyThirtyDay")}</span>
                   </div>
                   {/* Select CTA */}
                   <div style={{
@@ -565,7 +540,7 @@ export default function AgentPanel({ walletAddress, walletSnapshot, isDayMode = 
                     border: `1px solid ${selected ? s.badgeColor : "var(--border)"}`,
                     transition: "all 0.2s",
                   }}>
-                    {selected ? `▶ 用此策略執行` : "點擊選擇"}
+                    {selected ? t("strategyExecuteWith") : t("strategyClickSelect")}
                   </div>
                 </button>
               );
@@ -579,7 +554,7 @@ export default function AgentPanel({ walletAddress, walletSnapshot, isDayMode = 
               textDecoration: "underline",
             }}
           >
-            {showBacktest ? "▲ 收起回測圖表" : "▼ 查看 30 日回測走勢圖"}
+            {showBacktest ? t("hideBacktest") : t("viewBacktest")}
           </button>
           {showBacktest && <StrategyBacktestChart mode={strategyMode} defs={STRATEGY_DEFS} isDayMode={isDayMode} />}
         </div>
@@ -593,11 +568,11 @@ export default function AgentPanel({ walletAddress, walletSnapshot, isDayMode = 
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
             <div style={{ fontSize: 12, fontWeight: 700, color: signedMandate ? "#8B5CF6" : "#475569" }}>
-              {signedMandate ? "⛩️ 投資規則已簽名上鏈" : "⚙️ 設置投資規則（可選）"}
+              {signedMandate ? t("mandateSignedTitle") : t("mandateTitle")}
             </div>
             {signedMandate && (
               <div style={{ fontSize: 10, color: "var(--text-secondary)", marginTop: 3 }}>
-                最大質押 {signedMandate.mandate.maxStakePct}% · 單協議上限 {signedMandate.mandate.maxSingleProtocolPct}% · 已用 Phantom 簽名
+                {t("mandateSignedNote", { maxStakePct: signedMandate.mandate.maxStakePct, maxSingleProtocolPct: signedMandate.mandate.maxSingleProtocolPct })}
               </div>
             )}
           </div>
@@ -608,7 +583,7 @@ export default function AgentPanel({ walletAddress, walletSnapshot, isDayMode = 
               color: "var(--text-secondary)", fontSize: 11, cursor: "pointer", padding: "4px 10px",
             }}
           >
-            {showMandateEditor ? "收起" : signedMandate ? "修改" : "設置"}
+            {showMandateEditor ? t("mandateCollapse") : signedMandate ? t("mandateEdit") : t("mandateEdit")}
           </button>
         </div>
 
@@ -616,7 +591,7 @@ export default function AgentPanel({ walletAddress, walletSnapshot, isDayMode = 
           <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 14 }}>
             <div>
               <div style={{ fontSize: 11, color: "var(--text-secondary)", marginBottom: 6 }}>
-                最大質押比例: <b style={{ color: "#8B5CF6" }}>{mandateDraft.maxStakePct}%</b>
+                {t("mandateMaxStake")}: <b style={{ color: "#8B5CF6" }}>{mandateDraft.maxStakePct}%</b>
               </div>
               <input type="range" min={10} max={100} value={mandateDraft.maxStakePct}
                 onChange={e => setMandateDraft(d => ({ ...d, maxStakePct: Number(e.target.value) }))}
@@ -625,7 +600,7 @@ export default function AgentPanel({ walletAddress, walletSnapshot, isDayMode = 
             </div>
             <div>
               <div style={{ fontSize: 11, color: "var(--text-secondary)", marginBottom: 6 }}>
-                單協議上限: <b style={{ color: "#06B6D4" }}>{mandateDraft.maxSingleProtocolPct}%</b>
+                {t("mandateSingleCap")}: <b style={{ color: "#06B6D4" }}>{mandateDraft.maxSingleProtocolPct}%</b>
               </div>
               <input type="range" min={10} max={100} value={mandateDraft.maxSingleProtocolPct}
                 onChange={e => setMandateDraft(d => ({ ...d, maxSingleProtocolPct: Number(e.target.value) }))}
@@ -633,7 +608,7 @@ export default function AgentPanel({ walletAddress, walletSnapshot, isDayMode = 
               />
             </div>
             <div>
-              <div style={{ fontSize: 11, color: "var(--text-secondary)", marginBottom: 8 }}>允许協議</div>
+              <div style={{ fontSize: 11, color: "var(--text-secondary)", marginBottom: 8 }}>{t("mandateAllowed")}</div>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 {(["marinade", "jito", "kamino", "solend"] as const).map(p => (
                   <label key={p} style={{ display: "flex", alignItems: "center", gap: 5, cursor: "pointer" }}>
@@ -662,10 +637,10 @@ export default function AgentPanel({ walletAddress, walletSnapshot, isDayMode = 
                 fontSize: 12, fontWeight: 700, cursor: mandateSigning ? "not-allowed" : "pointer",
               }}
             >
-              {mandateSigning ? "等待 Phantom 簽名..." : "👻 用 Phantom 簽名此規則"}
+              {mandateSigning ? t("mandateSigning") : t("mandateSignBtn")}
             </button>
             <div style={{ fontSize: 10, color: "var(--text-muted)" }}>
-              規則將由你的錢包私鑰簽名，寫入鏈上 Memo。AI 只能在此範围内操作。
+              {t("mandateNote")}
             </div>
           </div>
         )}
@@ -748,7 +723,7 @@ export default function AgentPanel({ walletAddress, walletSnapshot, isDayMode = 
                 </div>
               </div>
               <div style={{ marginLeft: "auto", textAlign: "right" }}>
-                <div style={{ fontSize: 10, color: "var(--text-secondary)" }}>AI 置信度</div>
+                <div style={{ fontSize: 10, color: "var(--text-secondary)" }}>{t("aiConfidence")}</div>
                 <div style={{ fontSize: 16, fontWeight: 700, color: "#8B5CF6" }}>
                   {plan.confidenceScore}%
                 </div>
@@ -937,22 +912,22 @@ interface GuardianCondition {
 }
 
 const CONDITION_TEMPLATES: Array<{
-  metric: string; label: string; operator: string;
-  threshold: number; action: string; description: string; color: string;
+  metric: string; labelKey: string; operator: string;
+  threshold: number; action: string; descKey: string; color: string;
 }> = [
-  { metric: "sol_price",         label: "SOL 價格跌破",     operator: "lt",  threshold: 150, action: "alert_only",    description: "SOL 跌破 $150 時提醒",       color: "#EF4444" },
-  { metric: "sol_price",         label: "SOL 價格突破",     operator: "gt",  threshold: 200, action: "alert_only",    description: "SOL 突破 $200 時提醒",       color: "#10B981" },
-  { metric: "usdc_apy_kamino",   label: "USDC APY 上升",    operator: "gt",  threshold: 8,   action: "prepare_lend",  description: "Kamino APY > 8% 準備存款",   color: "#06B6D4" },
-  { metric: "sol_apy_marinade",  label: "質押 APY 下降",    operator: "lt",  threshold: 6,   action: "alert_only",    description: "Marinade APY < 6% 提醒",    color: "#F59E0B" },
-  { metric: "health_factor",     label: "健康系數警告",     operator: "lt",  threshold: 1.5, action: "alert_only",    description: "借貸健康系數 < 1.5 緊急提醒", color: "#EF4444" },
-  { metric: "smart_money_buy",   label: "聰明錢買入信號",   operator: "gt",  threshold: 2,   action: "alert_only",    description: "≥ 2個聰明錢同時買入提醒",   color: "#8B5CF6" },
+  { metric: "sol_price",         labelKey: "condSOLFall",    operator: "lt",  threshold: 150, action: "alert_only",   descKey: "condSOLFallDesc",    color: "#EF4444" },
+  { metric: "sol_price",         labelKey: "condSOLRise",    operator: "gt",  threshold: 200, action: "alert_only",   descKey: "condSOLRiseDesc",    color: "#10B981" },
+  { metric: "usdc_apy_kamino",   labelKey: "condUSDCAPY",    operator: "gt",  threshold: 8,   action: "prepare_lend", descKey: "condUSDCAPYDesc",    color: "#06B6D4" },
+  { metric: "sol_apy_marinade",  labelKey: "condStakeAPY",   operator: "lt",  threshold: 6,   action: "alert_only",   descKey: "condStakeAPYDesc",   color: "#F59E0B" },
+  { metric: "health_factor",     labelKey: "condHealth",     operator: "lt",  threshold: 1.5, action: "alert_only",   descKey: "condHealthDesc",     color: "#EF4444" },
+  { metric: "smart_money_buy",   labelKey: "condSmartMoney", operator: "gt",  threshold: 2,   action: "alert_only",   descKey: "condSmartMoneyDesc", color: "#8B5CF6" },
 ];
 
-const ACTION_LABEL: Record<string, string> = {
-  alert_only:    "📢 提醒",
-  prepare_stake: "🔒 準備質押",
-  prepare_lend:  "💰 準備存款",
-  prepare_swap:  "🔄 準備兌換",
+const ACTION_KEY: Record<string, string> = {
+  alert_only:    "actionAlert",
+  prepare_stake: "actionPrepareStake",
+  prepare_lend:  "actionPrepareLend",
+  prepare_swap:  "actionPrepareSwap",
 };
 
 // ── localStorage helpers (keyed per wallet) ─────────────────────
@@ -966,6 +941,7 @@ function lsLoad(wallet: string): GuardianCondition[] {
 }
 
 function GuardianConditionsPanel({ walletAddress }: { walletAddress: string }) {
+  const { t } = useLang();
   const [open, setOpen]                   = useState(false);
   const [conditions, setConditions]       = useState<GuardianCondition[]>(() => lsLoad(walletAddress));
   const [loadingList, setLoadingList]     = useState(false);
@@ -1026,10 +1002,10 @@ function GuardianConditionsPanel({ walletAddress }: { walletAddress: string }) {
   }
 
   async function addCondition() {
-    if (!walletAddress) { showStatus("請先連接錢包", "error"); return; }
+    if (!walletAddress) { showStatus(t("guardianNoWallet"), "error"); return; }
     const tpl       = CONDITION_TEMPLATES[selectedTemplate];
     const threshold = customThreshold ? parseFloat(customThreshold) : tpl.threshold;
-    if (isNaN(threshold)) { showStatus("請輸入有效的數值", "error"); return; }
+    if (isNaN(threshold)) { showStatus(t("guardianInvalidVal"), "error"); return; }
 
     setAdding(true);
     setStatus(null);
@@ -1043,12 +1019,13 @@ function GuardianConditionsPanel({ walletAddress }: { walletAddress: string }) {
         },
         body: JSON.stringify({
           metric: tpl.metric, operator: tpl.operator, threshold, action: tpl.action,
-          label: `${tpl.label} ${tpl.operator === "lt" ? "<" : ">"} ${threshold}`,
+          label: `${t(tpl.labelKey as Parameters<typeof t>[0])} ${tpl.operator === "lt" ? "<" : ">"} ${threshold}`,
         }),
       });
       if (res.ok) {
         setCustomThreshold("");
-        showStatus(`✅ 條件已新增：${tpl.label} ${tpl.operator === "lt" ? "<" : ">"} ${threshold}`, "success");
+        const condLabel = `${t(tpl.labelKey as Parameters<typeof t>[0])} ${tpl.operator === "lt" ? "<" : ">"} ${threshold}`;
+        showStatus(t("guardianAddedMsg", { label: condLabel }), "success");
         setTimeout(() => {
           loadConditions().then(() => {
             // Sync latest to localStorage after server confirms
@@ -1056,16 +1033,16 @@ function GuardianConditionsPanel({ walletAddress }: { walletAddress: string }) {
           });
         }, 0);
       } else {
-        let errMsg = "新增失敗，請重試";
+        let errMsg = t("guardianAddFail");
         try {
           const d = await res.json() as { error?: string; message?: string };
           if (d.message) errMsg = d.message;
-          else if (d.error === "free_credits_exhausted") errMsg = "免費額度不足，請升級訂閱";
+          else if (d.error === "free_credits_exhausted") errMsg = t("guardianCreditExhausted");
           else if (d.error) errMsg = d.error;
         } catch { /* ignore */ }
         showStatus(errMsg, "error");
       }
-    } catch { showStatus("網絡錯誤，請重試", "error"); }
+    } catch { showStatus(t("guardianNetErr"), "error"); }
     finally { setAdding(false); }
   }
 
@@ -1081,10 +1058,10 @@ function GuardianConditionsPanel({ walletAddress }: { walletAddress: string }) {
         const updated = conditions.filter(c => c.id !== id);
         setConditions(updated);
         lsSave(walletAddress, updated);   // persist deletion
-        showStatus("條件已刪除", "success");
+        showStatus(t("guardianDeleted"), "success");
         // Notify AI advisor that condition was removed
         if (deleted) {
-          const msg = `🗑️ Guardian 條件已移除：${deleted.label}。如需重新設置可返回 Agent Tab。`;
+          const msg = t("guardianConditionRemoved", { label: deleted.label });
           window.dispatchEvent(new CustomEvent("guardian-alert", { detail: { message: msg } }));
         }
       }
@@ -1114,7 +1091,7 @@ function GuardianConditionsPanel({ walletAddress }: { walletAddress: string }) {
       >
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>
-            🔰 Guardian 自動條件
+            {t("guardianTitle")}
           </span>
           {conditions.length > 0 && (
             <span style={{
@@ -1122,10 +1099,10 @@ function GuardianConditionsPanel({ walletAddress }: { walletAddress: string }) {
               background: "rgba(16,185,129,0.1)", color: "#10B981",
               border: "1px solid rgba(16,185,129,0.25)",
               borderRadius: 4, padding: "1px 6px",
-            }}>{conditions.length} 個活躍</span>
+            }}>{t("guardianActive", { n: conditions.length })}</span>
           )}
         </div>
-        <span style={{ fontSize: 11, color: "var(--text-secondary)" }}>{open ? "收起 ▲" : "設置 ▼"}</span>
+        <span style={{ fontSize: 11, color: "var(--text-secondary)" }}>{open ? t("guardianCollapse") : t("guardianSetup")}</span>
       </button>
 
       {open && (
@@ -1149,12 +1126,12 @@ function GuardianConditionsPanel({ walletAddress }: { walletAddress: string }) {
           {/* ── Conditions list (has its own loading state) ── */}
           {loadingList ? (
             <div style={{ textAlign: "center", padding: "8px 0", color: "var(--text-secondary)", fontSize: 12, marginBottom: 12 }}>
-              載入條件中...
+              {t("loadingConditions")}
             </div>
           ) : conditions.length > 0 && (
             <div style={{ marginBottom: 16 }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-secondary)", marginBottom: 8, textTransform: "uppercase", letterSpacing: 1 }}>
-                活躍條件
+                {t("guardianActiveSection")}
               </div>
               {conditions.map(c => (
                 <div key={c.id} style={{
@@ -1168,12 +1145,12 @@ function GuardianConditionsPanel({ walletAddress }: { walletAddress: string }) {
                   <span style={{
                     fontSize: 10, color: "#8B5CF6",
                     background: "rgba(139,92,246,0.1)", borderRadius: 4, padding: "1px 5px",
-                  }}>{ACTION_LABEL[c.action] ?? c.action}</span>
+                  }}>{t((ACTION_KEY[c.action] ?? "actionAlert") as Parameters<typeof t>[0])}</span>
                   <button
                     type="button"
-                    title="發送此條件通知到 AI 顧問聊天"
+                    title={t("guardianNotifyTitle")}
                     onClick={() => {
-                      const msg = `⚠️ Guardian Alert — 條件觸發：${c.label}（當前值已達閾值）→ 請檢查您的倉位。要調整持倉嗎？`;
+                      const msg = t("guardianAlertMsg", { label: c.label });
                       // Store in localStorage so DefiAssistant picks it up instantly
                       try {
                         const pending = JSON.parse(localStorage.getItem("guardian_pending_alerts") ?? "[]") as string[];
@@ -1182,21 +1159,21 @@ function GuardianConditionsPanel({ walletAddress }: { walletAddress: string }) {
                       } catch { /* ignore */ }
                       // Dispatch window event for immediate cross-component delivery
                       window.dispatchEvent(new CustomEvent("guardian-alert", { detail: { message: msg } }));
-                      showStatus(`📤 已發送到 AI 顧問：${c.label}`, "success");
+                      showStatus(t("guardianSentToAI", { label: c.label }), "success");
                     }}
                     style={{
                       background: "none", border: "1px solid var(--border)", cursor: "pointer",
                       color: "var(--text-secondary)", fontSize: 10, padding: "2px 6px",
                       borderRadius: 4, lineHeight: 1.4, whiteSpace: "nowrap",
                     }}
-                  >📤 通知 AI</button>
+                  >{t("guardianNotifyAI")}</button>
                   <button
                     onClick={() => deleteCondition(c.id)}
                     style={{
                       background: "none", border: "none", cursor: "pointer",
                       color: "var(--text-muted)", fontSize: 16, padding: "0 2px", lineHeight: 1,
                     }}
-                    title="刪除"
+                    title={t("delete")}
                   >×</button>
                 </div>
               ))}
@@ -1209,32 +1186,32 @@ function GuardianConditionsPanel({ walletAddress }: { walletAddress: string }) {
             borderRadius: 10, padding: "12px 14px",
           }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-secondary)", marginBottom: 10, textTransform: "uppercase", letterSpacing: 1 }}>
-              新增條件
+              {t("guardianAddSection")}
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
-              {CONDITION_TEMPLATES.map((t, i) => (
+              {CONDITION_TEMPLATES.map((tmpl, i) => (
                 <button
                   key={i}
                   onClick={() => { setSelectedTemplate(i); setCustomThreshold(""); }}
                   style={{
                     padding: "4px 10px", borderRadius: 6, fontSize: 11, cursor: "pointer",
-                    background: selectedTemplate === i ? `${t.color}18` : "var(--bg-card)",
-                    color: selectedTemplate === i ? t.color : "var(--text-secondary)",
-                    border: `1px solid ${selectedTemplate === i ? t.color + "40" : "var(--border)"}`,
+                    background: selectedTemplate === i ? `${tmpl.color}18` : "var(--bg-card)",
+                    color: selectedTemplate === i ? tmpl.color : "var(--text-secondary)",
+                    border: `1px solid ${selectedTemplate === i ? tmpl.color + "40" : "var(--border)"}`,
                     transition: "all 0.15s",
                   } as React.CSSProperties}
                 >
-                  {t.label}
+                  {t(tmpl.labelKey as Parameters<typeof t>[0])}
                 </button>
               ))}
             </div>
             <div style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 10 }}>
-              {tpl.description}
+              {t(tpl.descKey as Parameters<typeof t>[0])}
             </div>
             <div style={{ display: "flex", gap: 8 }}>
               <input
                 type="number"
-                placeholder={`閾值（預設 ${tpl.threshold}）`}
+                placeholder={t("guardianThreshold", { default: tpl.threshold })}
                 value={customThreshold}
                 onChange={e => setCustomThreshold(e.target.value)}
                 style={{
@@ -1254,13 +1231,13 @@ function GuardianConditionsPanel({ walletAddress }: { walletAddress: string }) {
                   position: "relative", zIndex: 10,
                 }}
               >
-                {adding ? "處理中…" : "✚ 新增條件"}
+                {adding ? t("guardianProcessing") : t("guardianAddBtn")}
               </button>
             </div>
           </div>
 
           <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 8, textAlign: "center" }}>
-            Guardian 每小時自動評估條件，觸發時通過 AI 顧問通知
+            {t("guardianFooterNote")}
           </div>
         </div>
       )}
@@ -1284,6 +1261,7 @@ function StrategyBacktestChart({
   defs: StrategyDef[];
   isDayMode?: boolean;
 }) {
+  const { t } = useLang();
   const containerRef = useRef<HTMLDivElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const chartRef     = useRef<any>(null);
@@ -1376,7 +1354,7 @@ function StrategyBacktestChart({
             return (
               <span key={d.id} style={{ fontSize: 9, color: d.id === mode ? d.badgeColor : "var(--text-muted)", display: "flex", alignItems: "center", gap: 4 }}>
                 <span style={{ display: "inline-block", width: 12, height: 2, background: d.id === mode ? d.badgeColor : th.dimLine, borderRadius: 1 }} />
-                {d.name}
+                {t(d.nameKey as Parameters<typeof t>[0])}
                 {ret !== undefined && ret !== 0 && (
                   <span style={{ color: ret >= 0 ? "#3D7A5C" : "#A8293A" }}>
                     {ret >= 0 ? "+" : ""}{ret.toFixed(1)}%
