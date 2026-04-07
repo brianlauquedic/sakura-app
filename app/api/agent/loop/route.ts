@@ -370,7 +370,7 @@ Use symbol='SOL' for Solana, or provide mint address for SPL tokens.`,
   },
   {
     name: "get_weekly_report",
-    description: "Get the latest Solana ecosystem weekly report — includes SOL price, total DeFi TVL, DEX volume breakdown, pump.fun data, top protocols, Fear & Greed Index, smart money flow, and AI-generated narrative analysis. ALWAYS call this when user asks for a weekly report, ecosystem overview, 生態週報, 週報, or 'what happened this week on Solana'.",
+    description: "⚠️ MANDATORY for weekly/ecosystem requests. Get the latest Solana ecosystem weekly report in ONE call — SOL price, total DeFi TVL, DEX volume breakdown (Raydium/Orca/Jupiter), pump.fun data, top protocols, Fear & Greed Index, smart money flow, AI-generated narrative. Use this INSTEAD OF calling get_defi_llama + get_fear_greed + get_crypto_news separately. Trigger keywords: 週報, 生態週報, weekly report, ecosystem overview, TVL+DEX+pump.fun together.",
     input_schema: {
       type: "object" as const,
       properties: {},
@@ -1186,7 +1186,7 @@ export async function POST(req: NextRequest) {
 5. For market sentiment questions: call get_fear_greed + get_technical_analysis together.
 6. For "what's happening with [token]": call get_crypto_news + get_social_sentiment together.
 7. For comprehensive research: call get_messari_research + get_defi_llama + get_technical_analysis.
-8. For weekly/ecosystem reports (生態週報, 週報, ecosystem overview): call get_weekly_report — it returns pre-built comprehensive data in ONE call. Do NOT call individual tools separately for this.
+8. ⚠️ CRITICAL: If user mentions 週報, 生態週報, weekly report, ecosystem report, or asks for TVL+DEX+pump.fun together — call get_weekly_report FIRST and ONLY. NEVER call get_defi_llama, get_fear_greed, get_crypto_news, or any other tool for this request. get_weekly_report returns everything in one call.
 
 ━━ TOOL CAPABILITIES ━━
 PRICING: get_token_price (Jupiter), get_pyth_price (Pyth oracle 400ms), get_token_metadata (full info)
