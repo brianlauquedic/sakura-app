@@ -1695,21 +1695,25 @@ function SmartMoneyPanel({ walletAddress }: { walletAddress: string | null }) {
   };
 
   useEffect(() => {
-    fetch("/api/wallet/smart-money?type=consensus_24h")
+    const headers: Record<string, string> = {};
+    if (walletAddress) headers["X-Wallet-Address"] = walletAddress;
+    fetch("/api/wallet/smart-money?type=consensus_24h", { headers })
       .then(r => r.json())
       .then(d => { setData(d as SmartMoneyData); setLoading(false); })
       .catch(() => setLoading(false));
-  }, []);
+  }, [walletAddress]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      fetch("/api/wallet/smart-money?type=discover")
+      const headers: Record<string, string> = {};
+      if (walletAddress) headers["X-Wallet-Address"] = walletAddress;
+      fetch("/api/wallet/smart-money?type=discover", { headers })
         .then(r => r.json())
         .then((d: { total?: number }) => { if (d.total) setDiscoveredCount(d.total); })
         .catch(() => {});
     }, 1500);
     return () => clearTimeout(timer);
-  }, []);
+  }, [walletAddress]);
 
   function Stars({ n }: { n: number }) {
     return (
