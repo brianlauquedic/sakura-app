@@ -369,6 +369,15 @@ Use symbol='SOL' for Solana, or provide mint address for SPL tokens.`,
     },
   },
   {
+    name: "get_weekly_report",
+    description: "Get the latest Solana ecosystem weekly report — includes SOL price, total DeFi TVL, DEX volume breakdown, pump.fun data, top protocols, Fear & Greed Index, smart money flow, and AI-generated narrative analysis. ALWAYS call this when user asks for a weekly report, ecosystem overview, 生態週報, 週報, or 'what happened this week on Solana'.",
+    input_schema: {
+      type: "object" as const,
+      properties: {},
+      required: [],
+    },
+  },
+  {
     name: "get_fear_greed",
     description: "Get the Crypto Fear & Greed Index (0=Extreme Fear, 100=Extreme Greed) with 7-day trend. ALWAYS call this when user asks about market sentiment, whether it's a good time to buy/sell, market mood, or macro outlook. Pair with technical analysis for complete picture.",
     input_schema: {
@@ -859,6 +868,34 @@ async function executeTool(name: string, input: Record<string, unknown>): Promis
       const rates = await sakGetDriftBorrowAPY();
       return { rates, count: rates.length };
     }
+    case "get_weekly_report": {
+      try {
+        const base = process.env.VERCEL_URL
+          ? `https://${process.env.VERCEL_URL}`
+          : "http://localhost:3000";
+        const res = await fetch(`${base}/api/weekly-report`, { headers: { "Accept": "application/json" } });
+        if (!res.ok) return { error: `Weekly report unavailable (${res.status})` };
+        const report = await res.json() as Record<string, unknown>;
+        // Return a compact summary to avoid token bloat
+        return {
+          issue: report.issue,
+          issueDate: report.issueDate,
+          solPrice: report.solPrice,
+          solChange: report.solChange,
+          totalTVL: report.totalTVL,
+          tvlChange: report.tvlChange,
+          dexVolume: report.dexVolume,
+          fearGreed: report.fearGreed,
+          narrative: report.narrative,
+          topProtocols: Array.isArray(report.topProtocols) ? (report.topProtocols as unknown[]).slice(0, 5) : [],
+          dexShares: report.dexShares,
+          pumpFun: report.pumpFun,
+          dataSource: "Sakura Weekly Report",
+        };
+      } catch {
+        return { error: "Weekly report fetch failed" };
+      }
+    }
     case "get_defi_llama": {
       const data = await sakGetDefiLlamaData();
       return {
@@ -1149,6 +1186,7 @@ export async function POST(req: NextRequest) {
 5. For market sentiment questions: call get_fear_greed + get_technical_analysis together.
 6. For "what's happening with [token]": call get_crypto_news + get_social_sentiment together.
 7. For comprehensive research: call get_messari_research + get_defi_llama + get_technical_analysis.
+8. For weekly/ecosystem reports (生態週報, 週報, ecosystem overview): call get_weekly_report — it returns pre-built comprehensive data in ONE call. Do NOT call individual tools separately for this.
 
 ━━ TOOL CAPABILITIES ━━
 PRICING: get_token_price (Jupiter), get_pyth_price (Pyth oracle 400ms), get_token_metadata (full info)
@@ -1162,6 +1200,7 @@ SEARCH:  search_social_mentions (keyword search on crypto social), get_crypto_ne
 ALLORA:  get_price_prediction (SOL), get_allora_topics (all ML topics), get_allora_inference_by_topic
 WALLET:  get_wallet_balance, get_wallet_assets (NFTs+tokens via Helius DAS), estimate_close_empty_accounts
 UTILITY: parse_transaction (explain any tx hash), get_network_status (TPS), resolve_token_ticker
+REPORT:  get_weekly_report (full Solana ecosystem weekly report — TVL, DEX volume, pump.fun, smart money, narrative)
 
 ━━ DATA PRECISION ━━
 - Use Pyth oracle (get_pyth_price) for time-sensitive trades — updates every 400ms
