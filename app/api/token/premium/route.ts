@@ -9,13 +9,19 @@ const SOLIS_FEE_WALLET   = process.env.SOLIS_FEE_WALLET ?? "";   // Solana addre
 const REQUIRED_USDC_AMOUNT = 1_000_000; // 1.00 USDC (6 decimals)
 const USDC_MINT          = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
 
-// Compute ATA once — USDC transferChecked sends to ATA, not raw wallet address
-const SOLIS_FEE_ATA = SOLIS_FEE_WALLET
-  ? getAssociatedTokenAddressSync(
+// Compute ATA lazily — avoid build-time crash when env var is unavailable
+let _premiumFeeAta = "";
+function getSolisFeeAta(): string {
+  if (_premiumFeeAta) return _premiumFeeAta;
+  if (!SOLIS_FEE_WALLET) return "";
+  try {
+    _premiumFeeAta = getAssociatedTokenAddressSync(
       new PublicKey(USDC_MINT),
       new PublicKey(SOLIS_FEE_WALLET)
-    ).toString()
-  : "";
+    ).toString();
+  } catch { /* env var missing at build time */ }
+  return _premiumFeeAta;
+}
 
 const DEMO_MODE = !SOLIS_FEE_WALLET; // No fee wallet = demo: skip payment check
 
@@ -35,7 +41,7 @@ async function verifyUSDCPayment(txSig: string): Promise<boolean> {
         const info = ix.parsed.info;
         if (
           info?.mint === USDC_MINT &&
-          info?.destination === SOLIS_FEE_ATA &&
+          info?.destination === getSolisFeeAta() &&
           Number(info?.tokenAmount?.amount ?? 0) >= REQUIRED_USDC_AMOUNT
         ) {
           return true;

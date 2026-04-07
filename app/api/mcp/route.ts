@@ -10,12 +10,18 @@ const SOLIS_FEE_WALLET = process.env.SOLIS_FEE_WALLET ?? "";
 const USDC_MINT        = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
 const MCP_CALL_FEE     = 10_000; // 0.01 USDC (6 decimals) per tool call
 
-const SOLIS_FEE_ATA = SOLIS_FEE_WALLET
-  ? getAssociatedTokenAddressSync(
+let _mcpFeeAta = "";
+function getSolisFeeAta(): string {
+  if (_mcpFeeAta) return _mcpFeeAta;
+  if (!SOLIS_FEE_WALLET) return "";
+  try {
+    _mcpFeeAta = getAssociatedTokenAddressSync(
       new PublicKey(USDC_MINT),
       new PublicKey(SOLIS_FEE_WALLET)
-    ).toString()
-  : "";
+    ).toString();
+  } catch { /* env var missing at build time */ }
+  return _mcpFeeAta;
+}
 
 async function verifyMCPPayment(txSig: string, requiredAmount: number): Promise<boolean> {
   if (!SOLIS_FEE_WALLET) return true; // demo mode: no fee wallet configured
@@ -28,7 +34,7 @@ async function verifyMCPPayment(txSig: string, requiredAmount: number): Promise<
         const info = ix.parsed.info;
         if (
           info?.mint === USDC_MINT &&
-          info?.destination === SOLIS_FEE_ATA &&
+          info?.destination === getSolisFeeAta() &&
           Number(info?.tokenAmount?.amount ?? 0) >= requiredAmount
         ) {
           return true;
