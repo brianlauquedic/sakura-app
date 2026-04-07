@@ -68,7 +68,7 @@ const SIDEBAR_JA = {
   advisor: "AIアドバイザー",
   agent: "自律リバランスエージェント",
   smartmoney: "スマートマネー追跡",
-  guardian: "Guardian 自動監視",
+  guardian: "Guardian 自動監控",
   gmgn: "GMGNリアルタイムチャート",
   copytrade: "コピートレード",
   techLabel: "テクノロジー",
@@ -499,7 +499,7 @@ function DocsContent() {
       "各アドレスに対応する公開Twitter（@ハンドル）を表示——匿名の文字列ではなく、公開された身元のある人物をフォローしています",
       "シグナルがどれほど強くても、安全ゲートを通過させます——GoPlus スコアがすべてのコンセンサストークンに自動トリガー",
     ],
-    guardianTitle: "Guardian 自動監視",
+    guardianTitle: "Guardian 自動監控",
     guardianDesc: "チャートをずっと見続けることはできません。でも市場はあなたがいつ眠るかを知りません。Guardianはシンプルな前提で動きます：あなたは自分のリスク境界を誰よりもよく知っています。ヘッジが必要な価格。リバランスが必要なAPYのフロア。追加担保が必要な健康係数。一度言えばいい。Guardianがそれを覚えて、その瞬間が来たときに、あなたが行うべきことを代わりに実行します。",
     guardianBullets: [
       "SOLがあなたのストップロスに達したとき——アラートが即座に届くか、あなたが設定したヘッジが自動実行、あなたが寝ていても",

@@ -388,7 +388,7 @@ export const translations = {
   mandateSignedNote:  { zh: "最大質押 {maxStakePct}% · 單協議上限 {maxSingleProtocolPct}% · 已用 Phantom 簽名", en: "Max stake {maxStakePct}% · Per-protocol cap {maxSingleProtocolPct}% · Signed by Phantom", ja: "最大ステーク {maxStakePct}% · 1プロトコル上限 {maxSingleProtocolPct}% · Phantom署名済み" },
 
   // ── Agent Panel — Guardian Conditions ───────────────────────────
-  guardianTitle:          { zh: "🔰 Guardian 自動條件", en: "🔰 Guardian Watchlist", ja: "🔰 Guardian自動監視" },
+  guardianTitle:          { zh: "🔰 Guardian 自動條件", en: "🔰 Guardian Watchlist", ja: "🔰 Guardian 自動監控" },
   guardianSetup:          { zh: "設置 ▼", en: "Configure ▼", ja: "設定 ▼" },
   guardianCollapse:       { zh: "收起 ▲", en: "Collapse ▲", ja: "閉じる ▲" },
   guardianActive:         { zh: "{n} 個活躍", en: "{n} active", ja: "{n}件アクティブ" },
