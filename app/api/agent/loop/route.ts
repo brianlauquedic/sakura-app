@@ -1200,14 +1200,12 @@ Rules:
         let loopMessages = [...messages];
 
         while (continueLoop) {
-          const response = await (client.messages.create as (params: unknown) => Promise<Anthropic.Message>)({
+          const response = await client.messages.create({
             model: "claude-sonnet-4-6",
             max_tokens: 16000,
             tools: TOOLS,
             messages: loopMessages,
             system: systemPrompt,
-            thinking: { type: "enabled", budget_tokens: 8000 },
-            betas: ["interleaved-thinking-2025-05-14"],
           });
 
           // Process content blocks (thinking + text + tool_use interleaved)
