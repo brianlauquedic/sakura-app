@@ -2034,15 +2034,21 @@ function smFormatTimeAgo(ts: number): string {
 
 // ── Simple Markdown ──────────────────────────────────────────────
 function MarkdownText({ text }: { text: string }) {
+  function renderInline(line: string) {
+    return line.split(/(\*\*[^*]+\*\*|https?:\/\/[^\s]+)/g).map((part, j) => {
+      if (part.startsWith("**") && part.endsWith("**"))
+        return <strong key={j} style={{ color: "#fff" }}>{part.slice(2, -2)}</strong>;
+      if (part.startsWith("http://") || part.startsWith("https://"))
+        return <a key={j} href={part} target="_blank" rel="noopener noreferrer"
+          style={{ color: "#C0392B", textDecoration: "underline" }}>{part}</a>;
+      return part;
+    });
+  }
   return (
     <>
       {text.split("\n").map((line, i) => (
         <div key={i} style={{ minHeight: line === "" ? 8 : undefined }}>
-          {line.split(/(\*\*[^*]+\*\*)/g).map((part, j) =>
-            part.startsWith("**") && part.endsWith("**")
-              ? <strong key={j} style={{ color: "#fff" }}>{part.slice(2, -2)}</strong>
-              : part
-          )}
+          {renderInline(line)}
         </div>
       ))}
     </>
