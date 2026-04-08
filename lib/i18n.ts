@@ -371,7 +371,7 @@ export const translations = {
   strategyClickSelect:  { zh: "點擊選擇",    en: "Click to Select",    ja: "クリックして選択" },
   viewBacktest:         { zh: "▼ 查看 30 日回測走勢圖", en: "▼ View 30-day backtest chart", ja: "▼ 30日バックテストグラフ" },
   hideBacktest:         { zh: "▲ 收起回測圖表",         en: "▲ Hide backtest chart",       ja: "▲ バックテストを閉じる" },
-  agentFreeRemaining:   { zh: "🆓 {n}/3 次免費剩餘",    en: "🆓 {n}/3 free runs left",     ja: "🆓 {n}/3 無料残り" },
+  agentFreeRemaining:   { zh: "🆓 {n} 次免費剩餘",      en: "🆓 {n} free runs left",       ja: "🆓 {n} 無料残り" },
   agentFreeExhausted:   { zh: "💰 免費次數已用完 · $0.10 USDC/次", en: "💰 Free quota used · $0.10 USDC/run", ja: "💰 無料枠終了 · $0.10 USDC/回" },
 
   // ── Agent Panel — On-Chain Mandate ───────────────────────────────

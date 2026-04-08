@@ -25,15 +25,15 @@ const WalletContext = createContext<WalletCtx>({
 });
 
 export function WalletProvider({ children }: { children: ReactNode }) {
-  const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  // Read wallet from localStorage synchronously on first render to avoid
+  // a null→value transition that causes a stale quota fetch without wallet header.
+  const [walletAddress, setWalletAddress] = useState<string | null>(() => {
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem("sakura_wallet");
+  });
   const [phantomLoading, setPhantomLoading] = useState(false);
   const [phantomAvailable, setPhantomAvailable] = useState(false);
   const [showLanding, setShowLanding] = useState(false);
-
-  useEffect(() => {
-    const saved = localStorage.getItem("sakura_wallet");
-    if (saved) setWalletAddress(saved);
-  }, []);
 
   useEffect(() => {
     // Check immediately, then retry at 300ms and 1500ms (slow extension load)
