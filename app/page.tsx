@@ -3,19 +3,19 @@
 import { useState } from "react";
 import WalletConnect from "@/components/WalletConnect";
 import NonceGuardian from "@/components/NonceGuardian";
-import StrategyCompiler from "@/components/StrategyCompiler";
-import SafetyRules from "@/components/SafetyRules";
+import GhostRun from "@/components/GhostRun";
+import LiquidationShield from "@/components/LiquidationShield";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { useWallet } from "@/contexts/WalletContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import Footer from "@/components/Footer";
 
-type Tab = "nonce" | "strategy" | "safety";
+type Tab = "nonce" | "ghost" | "shield";
 
 const TABS: { id: Tab; icon: string; label: string }[] = [
-  { id: "nonce",    icon: "🛡️", label: "Nonce Guardian" },
-  { id: "strategy", icon: "⚙️", label: "策略編譯器" },
-  { id: "safety",   icon: "🔒", label: "安全規則" },
+  { id: "nonce",  icon: "🛡️", label: "Nonce Guardian" },
+  { id: "ghost",  icon: "👻", label: "Ghost Run" },
+  { id: "shield", icon: "⚡", label: "Liquidation Shield" },
 ];
 
 function AppContent() {
@@ -122,14 +122,14 @@ function AppContent() {
                 <NonceGuardian />
               </ErrorBoundary>
             </div>
-            <div style={{ display: activeTab === "strategy" ? "block" : "none" }}>
-              <ErrorBoundary fallbackLabel="策略編譯器">
-                <StrategyCompiler />
+            <div style={{ display: activeTab === "ghost" ? "block" : "none" }}>
+              <ErrorBoundary fallbackLabel="Ghost Run">
+                <GhostRun />
               </ErrorBoundary>
             </div>
-            <div style={{ display: activeTab === "safety" ? "block" : "none" }}>
-              <ErrorBoundary fallbackLabel="安全規則">
-                <SafetyRules />
+            <div style={{ display: activeTab === "shield" ? "block" : "none" }}>
+              <ErrorBoundary fallbackLabel="Liquidation Shield">
+                <LiquidationShield />
               </ErrorBoundary>
             </div>
           </>
