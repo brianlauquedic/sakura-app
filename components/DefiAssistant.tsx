@@ -784,32 +784,46 @@ export default function DefiAssistant({ walletAddress, walletSnapshot }: Props) 
         method: "POST", headers: loopHeaders, body: loopBody,
       });
 
-      // Quota exhausted — trigger $0.50 USDC payment then retry
+      // 402: subscription limit OR x402 device payment
       if (res.status === 402 && !advisorPaymentSig) {
         const challenge = await res.json();
-        const payResult = await payWithPhantom({
-          recipient: challenge.recipient ?? SOLIS_FEE_WALLET_ADDR,
-          amount: challenge.amount ?? 0.50,
-          currency: "USDC",
-          network: "solana-mainnet",
-          description: "Sakura AI 顾问会話 0.50 USDC",
-        });
-        if ("error" in payResult) {
+        if (challenge.tier) {
+          // Subscription user hit quota/credit limit → show upgrade prompt, do NOT pay
           setMessages(prev => prev.map(m =>
             m.id === assistantId
-              ? { ...m, text: `❌ 支付失败: ${payResult.error}`, isTyping: false }
+              ? { ...m, text: `🔒 ${challenge.message || "免費次數已用完，請升級訂閱方案"}`, isTyping: false }
               : m
           ));
+          setAdvisorQuota(q => q ? { ...q, remaining: 0 } : null);
           setLoading(false);
           return;
         }
-        setAdvisorPaymentSig(payResult.sig);
-        setAdvisorQuota(q => q ? { ...q, remaining: 0, used: 3 } : null);
-        res = await fetch("/api/agent/loop", {
-          method: "POST",
-          headers: { ...loopHeaders, "X-PAYMENT": payResult.sig },
-          body: loopBody,
-        });
+        // No-wallet x402 device quota → trigger $0.50 USDC payment then retry
+        if (challenge.recipient) {
+          const payResult = await payWithPhantom({
+            recipient: challenge.recipient,
+            amount: challenge.amount ?? 0.50,
+            currency: "USDC",
+            network: "solana-mainnet",
+            description: "Sakura AI 顧問會話 0.50 USDC",
+          });
+          if ("error" in payResult) {
+            setMessages(prev => prev.map(m =>
+              m.id === assistantId
+                ? { ...m, text: `❌ 支付失敗: ${payResult.error}`, isTyping: false }
+                : m
+            ));
+            setLoading(false);
+            return;
+          }
+          setAdvisorPaymentSig(payResult.sig);
+          setAdvisorQuota(q => q ? { ...q, remaining: 0, used: 3 } : null);
+          res = await fetch("/api/agent/loop", {
+            method: "POST",
+            headers: { ...loopHeaders, "X-PAYMENT": payResult.sig },
+            body: loopBody,
+          });
+        }
       }
 
       // Update quota display after free use

@@ -546,10 +546,18 @@ export default function TokenAnalysis({ walletAddress, isDayMode = false }: Prop
 
       let res = await fetch("/api/analyze", { method: "POST", headers, body: analyzeBody });
 
-      // Quota exhausted — trigger $0.10 USDC payment then retry
+      // 402: subscription limit OR x402 device payment
       if (res.status === 402 && !analyzePaymentSig) {
         const challenge = await res.json();
-        if (challenge.error === "free_quota_exhausted") {
+        if (challenge.tier) {
+          // Subscription user hit quota/credit limit → show upgrade prompt, do NOT pay
+          setError(challenge.message || t("agentFreeExhausted"));
+          setAnalyzeQuota(q => q ? { ...q, remaining: 0 } : null);
+          setLoadingToken(false);
+          return;
+        }
+        // No-wallet x402 device quota → trigger $0.10 USDC payment then retry
+        if (challenge.error === "free_quota_exhausted" && challenge.recipient) {
           const payResult = await payWithPhantom({
             recipient: challenge.recipient,
             amount: challenge.amount,
@@ -568,8 +576,10 @@ export default function TokenAnalysis({ walletAddress, isDayMode = false }: Prop
         }
       }
 
-      // Update local quota display
-      setAnalyzeQuota(q => q ? { ...q, remaining: Math.max(0, (q.remaining ?? 1) - 1), used: (q.used ?? 0) + 1 } : null);
+      // Update local quota display (only on successful non-payment use)
+      if (!analyzePaymentSig) {
+        setAnalyzeQuota(q => q ? { ...q, remaining: Math.max(0, (q.remaining ?? 1) - 1), used: (q.used ?? 0) + 1 } : null);
+      }
 
       const json = await res.json();
       if (!json.error) {

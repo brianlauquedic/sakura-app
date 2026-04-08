@@ -360,11 +360,20 @@ export default function AgentPanel({ walletAddress, walletSnapshot, isDayMode = 
         body: reqBody,
       });
 
-      // Handle quota exhaustion — pay then retry
+      // 402: subscription limit OR x402 device payment
       if (res.status === 402) {
-        const body402 = await res.json() as { recipient?: string; amount?: number; description?: string };
+        const body402 = await res.json() as {
+          tier?: string; message?: string;
+          recipient?: string; amount?: number; description?: string;
+        };
+        if (body402.tier) {
+          // Subscription user hit quota/credit limit → show upgrade prompt, do NOT pay
+          throw new Error(body402.message || "免費次數已用完，請升級訂閱方案");
+        }
+        // No-wallet x402 device quota → trigger $0.10 USDC payment then retry
+        if (!body402.recipient) throw new Error("quota exhausted");
         const payResult = await payWithPhantom({
-          recipient: body402.recipient ?? SOLIS_FEE_WALLET,
+          recipient: body402.recipient,
           amount: body402.amount ?? 0.10,
           currency: "USDC",
           network: "solana-mainnet",
