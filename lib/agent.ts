@@ -672,9 +672,9 @@ export interface FearGreedResult {
 }
 
 /**
- * CryptoPanic — 加密新聞聚合
- * 免費 tier (無 API key) 支持公開新聞，有 key 可解鎖更多
- * 按代幣過濾最新重要新聞
+ * CoinGecko News — 加密新聞聚合（免費，無需 API key）
+ * CryptoPanic 免費 tier 已於 2026/4/1 終止，改用 CoinGecko /news
+ * 按代幣關鍵字過濾，使用關鍵字情緒分類
  */
 export interface CryptoNewsResult {
   items: Array<{
@@ -688,38 +688,47 @@ export interface CryptoNewsResult {
   currency: string;
 }
 
+const _BULLISH_RE = /\b(surge|rally|soar|pump|breakout|ath|bull|gain|rise|recover|growth|adoption|launch|partnership|milestone|record|high|above|up|positive|optimis)\b/i;
+const _BEARISH_RE = /\b(crash|dump|drop|fall|bear|down|plunge|collapse|hack|exploit|ban|sell|fear|loss|decline|low|below|warning|risk|concern|negative|pessim|liquidat)\b/i;
+
+function _classifyNews(title: string): "bullish" | "bearish" | "neutral" {
+  const b = _BULLISH_RE.test(title), be = _BEARISH_RE.test(title);
+  if (b && !be) return "bullish";
+  if (be && !b) return "bearish";
+  return "neutral";
+}
+
 export async function sakGetCryptoNews(currency = "SOL"): Promise<CryptoNewsResult> {
   const empty: CryptoNewsResult = { items: [], currency };
   try {
-    const key = process.env.CRYPTOPANIC_API_KEY ?? "free";
-    const url = key === "free"
-      ? `https://cryptopanic.com/api/free/v1/posts/?auth_token=free&currencies=${currency}&kind=news&public=true`
-      : `https://cryptopanic.com/api/v1/posts/?auth_token=${key}&currencies=${currency}&kind=news&public=true`;
+    const cgKey = process.env.COINGECKO_API_KEY ?? "";
+    const cgBase = cgKey ? "https://pro-api.coingecko.com/api/v3" : "https://api.coingecko.com/api/v3";
+    const headers: Record<string, string> = cgKey ? { "x-cg-pro-api-key": cgKey } : {};
 
-    const res = await fetch(url, { next: { revalidate: 900 } });  // 15分鐘緩存
+    const res = await fetch(`${cgBase}/news?per_page=20`, {
+      headers,
+      next: { revalidate: 900 },  // 15分鐘緩存
+    });
     if (!res.ok) return empty;
 
-    const json = await res.json() as {
-      results?: Array<{
-        title: string;
-        url: string;
-        source: { title: string };
-        published_at: string;
-        votes: { positive?: number; negative?: number };
-      }>;
-    };
+    type CGNewsItem = { title?: string; url?: string; author?: string; updated_at?: number };
+    const json = await res.json() as { data?: CGNewsItem[] };
+    const articles = json?.data ?? [];
 
-    const items = (json.results ?? []).slice(0, 8).map(item => {
-      const pos = item.votes?.positive ?? 0;
-      const neg = item.votes?.negative ?? 0;
-      const sentiment: CryptoNewsResult["items"][0]["sentiment"] =
-        pos > neg * 1.5 ? "bullish" : neg > pos * 1.5 ? "bearish" : "neutral";
+    // Filter by currency keyword (SOL → solana/sol, others by symbol)
+    const keyword = currency === "SOL" ? /solana|sol\b|\$sol/i : new RegExp(currency, "i");
+    const filtered = articles.filter(a => keyword.test(a.title ?? ""));
+    const posts = filtered.length >= 2 ? filtered : articles; // fallback to all news
+
+    const items = posts.slice(0, 8).map(item => {
+      const title = item.title ?? "";
+      const sentiment = _classifyNews(title);
       return {
-        title:       item.title,
-        url:         item.url,
-        source:      item.source.title,
-        publishedAt: item.published_at.slice(0, 10),
-        votes:       { positive: pos, negative: neg },
+        title,
+        url:         item.url ?? "",
+        source:      item.author ?? "CoinGecko",
+        publishedAt: item.updated_at ? new Date(item.updated_at * 1000).toISOString().slice(0, 10) : "",
+        votes:       { positive: 0, negative: 0 },
         sentiment,
       };
     });

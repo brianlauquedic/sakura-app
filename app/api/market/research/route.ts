@@ -23,7 +23,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { runQuotaGate } from "@/lib/rate-limit";
 
 const ANTHROPIC_API_KEY    = process.env.ANTHROPIC_API_KEY ?? "";
-const CRYPTOPANIC_TOKEN    = process.env.CRYPTOPANIC_API_TOKEN ?? "";
 const COINGECKO_API_KEY    = process.env.COINGECKO_API_KEY ?? "";  // optional Pro key
 
 function fetchWithTimeout(url: string, opts: RequestInit = {}, ms = 8000): Promise<Response> {
@@ -205,7 +204,7 @@ async function fetchTVLSignal(): Promise<TVLSignal> {
   }
 }
 
-// ── 5. News Sentiment (CryptoPanic) ──────────────────────────────
+// ── 5. News Sentiment (CoinGecko News — free, no key needed) ─────
 
 interface NewsSentiment {
   bullishCount: number;
@@ -213,7 +212,18 @@ interface NewsSentiment {
   neutralCount: number;
   score: number;      // 0-100
   topHeadlines: string[];
-  source: "cryptopanic" | "unavailable";
+  source: "coingecko" | "unavailable";
+}
+
+const BULLISH_RE = /\b(surge|rally|soar|pump|breakout|ath|bull|gain|rise|recover|growth|adoption|launch|partnership|milestone|record|high|above|up|positive|optimis)\b/i;
+const BEARISH_RE = /\b(crash|dump|drop|fall|bear|down|plunge|collapse|hack|exploit|ban|sell|fear|loss|decline|low|below|warning|risk|concern|negative|pessim|liquidat)\b/i;
+
+function classifyNewsSentiment(title: string): "bullish" | "bearish" | "neutral" {
+  const b = BULLISH_RE.test(title);
+  const be = BEARISH_RE.test(title);
+  if (b && !be) return "bullish";
+  if (be && !b) return "bearish";
+  return "neutral";
 }
 
 async function fetchNewsSentiment(): Promise<NewsSentiment> {
@@ -222,35 +232,41 @@ async function fetchNewsSentiment(): Promise<NewsSentiment> {
     score: 50, topHeadlines: [], source: "unavailable",
   };
 
-  if (!CRYPTOPANIC_TOKEN) return fallback;
-
   try {
+    const cgBase = COINGECKO_API_KEY
+      ? "https://pro-api.coingecko.com/api/v3"
+      : "https://api.coingecko.com/api/v3";
+    const headers: Record<string, string> = COINGECKO_API_KEY
+      ? { "x-cg-pro-api-key": COINGECKO_API_KEY }
+      : {};
+
     const res = await fetchWithTimeout(
-      `https://cryptopanic.com/api/free/v1/posts/?auth_token=${CRYPTOPANIC_TOKEN}` +
-      `&currencies=SOL&kind=news&public=true&filter=hot`
+      `${cgBase}/news?per_page=20`,
+      { headers }
     );
     if (!res.ok) return fallback;
 
-    type CPPost = {
-      title: string;
-      votes?: { positive?: number; negative?: number; important?: number };
-      kind: string;
-    };
-    const data = await res.json() as { results?: CPPost[] };
-    const posts = data.results ?? [];
+    type CGNewsItem = { title?: string; description?: string };
+    const data = await res.json() as { data?: CGNewsItem[] };
+    const articles = data?.data ?? [];
 
-    let bullishCount = 0;
-    let bearishCount = 0;
-    let neutralCount = 0;
+    // Filter Solana-relevant news
+    const solanaArticles = articles.filter(a =>
+      /solana|sol\b|\$sol/i.test(`${a.title ?? ""} ${a.description ?? ""}`)
+    );
+    // Use all articles if no Solana-specific ones found
+    const posts = solanaArticles.length >= 3 ? solanaArticles : articles;
+
+    let bullishCount = 0, bearishCount = 0, neutralCount = 0;
     const headlines: string[] = [];
 
     for (const post of posts.slice(0, 20)) {
-      const pos = post.votes?.positive ?? 0;
-      const neg = post.votes?.negative ?? 0;
-      if (pos > neg + 2)       { bullishCount++; }
-      else if (neg > pos + 2)  { bearishCount++; }
-      else                     { neutralCount++; }
-      if (headlines.length < 5) headlines.push(post.title);
+      const title = post.title ?? "";
+      const s = classifyNewsSentiment(title);
+      if (s === "bullish") bullishCount++;
+      else if (s === "bearish") bearishCount++;
+      else neutralCount++;
+      if (headlines.length < 5 && title) headlines.push(title);
     }
 
     const total = bullishCount + bearishCount + neutralCount;
@@ -258,10 +274,7 @@ async function fetchNewsSentiment(): Promise<NewsSentiment> {
       ? Math.max(0, Math.min(100, 50 + ((bullishCount - bearishCount) / total) * 100))
       : 50;
 
-    return {
-      bullishCount, bearishCount, neutralCount,
-      score, topHeadlines: headlines, source: "cryptopanic",
-    };
+    return { bullishCount, bearishCount, neutralCount, score, topHeadlines: headlines, source: "coingecko" };
   } catch {
     return fallback;
   }
@@ -339,10 +352,10 @@ async function computeFearGreed(): Promise<FearGreedIndex> {
       score:        news.score,
       weight:       0.15,
       contribution: news.score * 0.15,
-      detail:       news.source === "cryptopanic"
+      detail:       news.source === "coingecko"
         ? `正面 ${news.bullishCount}，负面 ${news.bearishCount}，中性 ${news.neutralCount}`
-        : "暂无数据（配置 CRYPTOPANIC_API_TOKEN 启用）",
-      source:       news.source === "cryptopanic" ? "CryptoPanic" : "N/A",
+        : "暂无数据",
+      source:       news.source === "coingecko" ? "CoinGecko News" : "N/A",
     },
   ];
 
