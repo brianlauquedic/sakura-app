@@ -24,20 +24,32 @@ export interface X402PaymentResult {
 
 const USDC_MINT = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
 const USDC_DECIMALS = 6;
+const PAYMENT_TIMEOUT_MS = 45_000; // 45 seconds max for entire payment flow
 
 /**
  * Create and send a Solana USDC transfer transaction via Phantom.
  * Returns the tx signature on success.
+ * Includes a 45-second timeout to prevent UI from being stuck in "支付中...".
  */
 export async function payWithPhantom(
   challenge: PaymentChallenge
 ): Promise<{ sig: string } | { error: string }> {
   if (!window.solana?.isPhantom) return { error: "no_wallet" };
 
+  // Race against a 45-second timeout — prevents infinite "支付中..." stuck state
+  const timeoutPromise = new Promise<{ error: string }>(resolve =>
+    setTimeout(() => resolve({ error: "支付超時，請重試 (45s timeout)" }), PAYMENT_TIMEOUT_MS)
+  );
+
+  return Promise.race([timeoutPromise, _doPayment(challenge)]);
+}
+
+async function _doPayment(
+  challenge: PaymentChallenge
+): Promise<{ sig: string } | { error: string }> {
   try {
     const {
       Connection, PublicKey, Transaction,
-      SystemProgram,
     } = await import("@solana/web3.js");
 
     // Lazy-load token program for USDC transfers
@@ -53,13 +65,27 @@ export async function payWithPhantom(
       : `https://mainnet.helius-rpc.com/?api-key=${process.env.HELIUS_API_KEY ?? ""}`;
     const conn = new Connection(RPC, "confirmed");
 
-    await window.solana.connect({ onlyIfTrusted: true });
-    const senderPubkey = new PublicKey(window.solana.publicKey!.toString());
+    await window.solana!.connect({ onlyIfTrusted: true });
+    const senderPubkey = new PublicKey(window.solana!.publicKey!.toString());
     const recipientPubkey = new PublicKey(challenge.recipient);
     const usdcMint = new PublicKey(USDC_MINT);
 
     const senderATA  = await getAssociatedTokenAddress(usdcMint, senderPubkey);
     const receiverATA = await getAssociatedTokenAddress(usdcMint, recipientPubkey);
+
+    // Check sender has enough USDC
+    try {
+      const { getAccount: _getAccount } = await import("@solana/spl-token");
+      const senderAccount = await _getAccount(conn, senderATA).catch(() => null);
+      if (senderAccount) {
+        const usdcBalance = Number(senderAccount.amount) / 10 ** USDC_DECIMALS;
+        if (usdcBalance < challenge.amount) {
+          return { error: `USDC 餘額不足：需要 ${challenge.amount} USDC，目前只有 ${usdcBalance.toFixed(2)} USDC` };
+        }
+      }
+    } catch {
+      // Non-fatal: proceed anyway
+    }
 
     const { blockhash, lastValidBlockHeight } = await conn.getLatestBlockhash("confirmed");
     const tx = new Transaction({ recentBlockhash: blockhash, feePayer: senderPubkey });
@@ -74,11 +100,22 @@ export async function payWithPhantom(
     const amountLamports = BigInt(Math.round(challenge.amount * 10 ** USDC_DECIMALS));
     tx.add(createTransferCheckedInstruction(senderATA, usdcMint, receiverATA, senderPubkey, amountLamports, USDC_DECIMALS));
 
-    const { signature } = await window.solana.signAndSendTransaction(tx);
+    const { signature } = await window.solana!.signAndSendTransaction(tx);
     await conn.confirmTransaction({ signature, blockhash, lastValidBlockHeight }, "confirmed");
     return { sig: signature };
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : "payment failed";
+
+    // Friendly error messages
+    if (msg.includes("User rejected") || msg.includes("user_rejected") || msg.includes("rejected the request")) {
+      return { error: "user_rejected" };
+    }
+    if (msg.includes("insufficient lamports") || msg.includes("0x1") || msg.includes("Insufficient funds for fee")) {
+      return { error: "SOL 不足支付 Gas 費，請確保錢包有至少 0.002 SOL" };
+    }
+    if (msg.includes("insufficient funds") || msg.includes("Insufficient")) {
+      return { error: "餘額不足，請檢查 USDC 和 SOL 餘額" };
+    }
     return { error: msg };
   }
 }

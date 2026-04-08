@@ -6,6 +6,8 @@ const KAMINO_API = "https://api.kamino.finance";
 // Kamino USDC market addresses (main market)
 const KAMINO_MAIN_MARKET  = "7u3HeHxYDLhnCoErrtycNokbQYbWGzLs6JSDqGAv5PfF";
 const USDC_MINT           = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
+// Fallback USDC reserve pubkey for main market (used if reserves API doesn't return address)
+const USDC_RESERVE_FALLBACK = "ApQkX32ULJUzszZDe986aobLDLMNDoGQK8tRm6oD6SsA";
 
 function fetchWithTimeout(url: string, opts: RequestInit = {}, ms = 8000): Promise<Response> {
   const ctrl = new AbortController();
@@ -13,8 +15,8 @@ function fetchWithTimeout(url: string, opts: RequestInit = {}, ms = 8000): Promi
   return fetch(url, { ...opts, signal: ctrl.signal }).finally(() => clearTimeout(timer));
 }
 
-// ── Get Kamino USDC supply APY ────────────────────────────────────
-async function getKaminoUSDCRate(): Promise<{ supplyApy: number; utilizationRate: number }> {
+// ── Get Kamino USDC supply APY + reserve pubkey ───────────────────
+async function getKaminoUSDCRate(): Promise<{ supplyApy: number; utilizationRate: number; reservePubkey: string }> {
   try {
     const res = await fetchWithTimeout(
       `${KAMINO_API}/v2/lending-market/${KAMINO_MAIN_MARKET}/reserves`,
@@ -36,11 +38,19 @@ async function getKaminoUSDCRate(): Promise<{ supplyApy: number; utilizationRate
         parseFloat(usdcReserve.supplyInterestAPY ?? usdcReserve.supplyApy ?? usdcReserve.supply_apy ?? 8.2);
       const utilization =
         parseFloat(usdcReserve.utilizationRatio ?? usdcReserve.utilization ?? 0.7);
-      return { supplyApy: supplyApy * 100 > 1 ? supplyApy : supplyApy * 100, utilizationRate: utilization };
+      // Extract reserve pubkey from whichever field Kamino uses
+      const reservePubkey: string =
+        usdcReserve.address ?? usdcReserve.pubkey ?? usdcReserve.reserveAddress ??
+        usdcReserve.reserve ?? usdcReserve.reservePubkey ?? USDC_RESERVE_FALLBACK;
+      return {
+        supplyApy: supplyApy * 100 > 1 ? supplyApy : supplyApy * 100,
+        utilizationRate: utilization,
+        reservePubkey,
+      };
     }
-    return { supplyApy: 8.2, utilizationRate: 0.72 };
+    return { supplyApy: 8.2, utilizationRate: 0.72, reservePubkey: USDC_RESERVE_FALLBACK };
   } catch {
-    return { supplyApy: 8.2, utilizationRate: 0.72 };
+    return { supplyApy: 8.2, utilizationRate: 0.72, reservePubkey: USDC_RESERVE_FALLBACK };
   }
 }
 
@@ -94,18 +104,20 @@ export async function POST(req: NextRequest) {
       }, { status: 400 });
     }
 
-    const usdcLamports = Math.round(amountUSDC * 1e6); // USDC = 6 decimals
+    // Get USDC reserve pubkey for the new Kamino API
+    const { reservePubkey } = await getKaminoUSDCRate();
 
-    // Kamino deposit transaction via their API
+    // Kamino deposit transaction via new /ktx/klend/deposit endpoint
     const res = await fetchWithTimeout(
-      `${KAMINO_API}/v2/lending-market/${KAMINO_MAIN_MARKET}/deposit`,
+      `${KAMINO_API}/ktx/klend/deposit`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           wallet: userPublicKey,
-          mint: USDC_MINT,
-          amount: usdcLamports,
+          market: KAMINO_MAIN_MARKET,
+          reserve: reservePubkey,
+          amount: amountUSDC.toFixed(6),  // decimal string, not lamports
         }),
       },
       10000,
@@ -117,7 +129,8 @@ export async function POST(req: NextRequest) {
     }
 
     const data = await res.json();
-    const tx = data.transaction ?? data.tx ?? data.data?.transaction;
+    // New API returns encodedTransaction (base64); fall back to old field names for safety
+    const tx = data.encodedTransaction ?? data.transaction ?? data.tx ?? data.data?.transaction;
     if (!tx) throw new Error("No transaction in Kamino response");
 
     return NextResponse.json({
