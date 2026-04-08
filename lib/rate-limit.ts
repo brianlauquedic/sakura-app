@@ -21,7 +21,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { getAssociatedTokenAddressSync } from "@solana/spl-token";
-import { getOrCreateFreeRecord, atomicDeductCredits } from "@/lib/subscription";
+import { getOrCreateFreeRecord, atomicDeductCredits, FREE_TIER_FEATURE_LIMIT } from "@/lib/subscription";
 import type { Feature as SubFeature } from "@/lib/subscription";
 
 // ── Constants ─────────────────────────────────────────────────────
@@ -144,6 +144,69 @@ function memGet(key: string): number {
 
 function memIncr(key: string): void {
   memStore.set(key, (memStore.get(key) ?? 0) + 1);
+}
+
+// ── Free-tier per-feature INCR counter ───────────────────────────
+// Key: solis:fc:<wallet>:<feature>  TTL: 30 days rolling
+// Uses plain Redis INCR — no cjson, no Lua, 100% reliable.
+
+const FC_TTL_SEC = 2_592_000; // 30 days
+
+/**
+ * Atomically increment the free-tier feature counter and check against limit.
+ * Returns true = allowed (within limit), false = blocked (limit exceeded).
+ */
+async function checkAndIncrFreeFeature(wallet: string, feature: Feature): Promise<boolean> {
+  const limit = FREE_TIER_FEATURE_LIMIT[feature as SubFeature];
+  if (!limit || limit <= 0) return true; // feature has no per-use limit
+
+  const key = `solis:fc:${wallet}:${feature}`;
+
+  if (redisAvailable) {
+    try {
+      const results = await redisPipeline([
+        ["INCR", key],
+        ["EXPIRE", key, String(FC_TTL_SEC)],
+      ]);
+      const count = Number(results[0]?.result ?? 0);
+      return count <= limit;
+    } catch {
+      return true; // Redis error → fail open (credit gate still provides secondary protection)
+    }
+  }
+
+  // In-memory fallback (dev)
+  const memKey = `fc:${wallet}:${feature}`;
+  const count = (memStore.get(memKey) ?? 0) + 1;
+  memStore.set(memKey, count);
+  return count <= limit;
+}
+
+/**
+ * Read the current free-tier feature counter (non-mutating).
+ * Used by /api/quota to display accurate remaining counts.
+ */
+export async function getFreeTierFeatureCounts(
+  wallet: string,
+  features: Feature[]
+): Promise<Partial<Record<Feature, number>>> {
+  const result: Partial<Record<Feature, number>> = {};
+
+  if (redisAvailable) {
+    try {
+      const cmds: PipelineCommand[] = features.map(f => ["GET", `solis:fc:${wallet}:${f}`]);
+      const results = await redisPipeline(cmds);
+      features.forEach((f, i) => {
+        result[f] = Number(results[i]?.result ?? 0);
+      });
+      return result;
+    } catch { /* fall through to zero */ }
+  }
+
+  for (const f of features) {
+    result[f] = memStore.get(`fc:${wallet}:${f}`) ?? 0;
+  }
+  return result;
 }
 
 // ── Identity extraction ───────────────────────────────────────────
@@ -363,7 +426,17 @@ export async function runQuotaGate(
   }
 
   // ── Wallet credit gate (free 100pt/month + Basic/Pro subscriptions) ──
-  await getOrCreateFreeRecord(wallet); // ensure record exists before atomic op
+  const freeRecord = await getOrCreateFreeRecord(wallet); // ensure record exists
+
+  // Free tier: INCR counter gate (simple Redis INCR — no cjson, no Lua, 100% reliable)
+  // Runs BEFORE credit deduction so 4th+ use triggers x402 payment immediately.
+  if (freeRecord.tier === "free") {
+    const allowed = await checkAndIncrFreeFeature(wallet, feature);
+    if (!allowed) {
+      return { proceed: false, response: quotaExhaustedResponse(feature, 3) };
+    }
+  }
+
   const result = await atomicDeductCredits(wallet, feature as SubFeature);
 
   if (result.success) {

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { extractIdentifiers, peekQuota, FREE_QUOTA, FEATURE_FEE, isAdminWallet, isValidSolanaAddress, Feature } from "@/lib/rate-limit";
+import { extractIdentifiers, peekQuota, FREE_QUOTA, FEATURE_FEE, isAdminWallet, isValidSolanaAddress, Feature, getFreeTierFeatureCounts } from "@/lib/rate-limit";
 import { getOrCreateFreeRecord, FEATURE_CREDIT_COST, TIER_MONTHLY_CREDITS, Feature as SubFeature } from "@/lib/subscription";
 
 const ALL_FEATURES: Feature[] = ["analyze", "advisor", "agent", "verify", "portfolio"];
@@ -44,9 +44,11 @@ export async function GET(req: NextRequest) {
       let freeQuota: number;
 
       if (record.tier === "free") {
-        // Free tier: show per-feature use counter (3 per feature, consistent with pricing page)
+        // Free tier: read from INCR counter keys (solis:fc:<wallet>:<feature>)
+        // Much more reliable than featureUsage in cjson-manipulated Redis object.
         const FREE_PER_FEATURE = 3;
-        const usedCount = record.featureUsage?.[feature as SubFeature] ?? 0;
+        const counters = await getFreeTierFeatureCounts(wallet, [feature as Feature]);
+        const usedCount = Math.min(FREE_PER_FEATURE, counters[feature as Feature] ?? 0);
         remaining = Math.max(0, FREE_PER_FEATURE - usedCount);
         freeQuota = FREE_PER_FEATURE;
       } else {
