@@ -500,7 +500,7 @@ export default function TokenAnalysis({ walletAddress, isDayMode = false }: Prop
     setPremiumStatus("idle");
     setPremiumError("");
 
-    // ── Step 1: Fetch on-chain data ──────────────────────────────
+    // ── Step 1: Fetch on-chain data (hold display until gate passes) ──
     setLoadingToken(true);
     let td: TokenData;
     try {
@@ -508,15 +508,8 @@ export default function TokenAnalysis({ walletAddress, isDayMode = false }: Prop
       const json = await res.json();
       if (json.error) throw new Error(json.error);
       td = json;
-      setTokenData(td);
-      // Auto-save to watchlist
-      addToWatchlist({
-        mint: td.mint, symbol: td.symbol, name: td.name,
-        logoURI: td.logoURI, securityScore: td.securityScore,
-        verdict: td.decision.verdict, price: td.price,
-        checkedAt: Date.now(),
-      });
-      setWatchlist(getWatchlist());
+      // ⚠️ Do NOT call setTokenData(td) here yet — wait until AI gate passes.
+      // This prevents showing security scan results before the quota/payment check.
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : t("scanning"));
       setLoadingToken(false);
@@ -525,7 +518,7 @@ export default function TokenAnalysis({ walletAddress, isDayMode = false }: Prop
       setLoadingToken(false);
     }
 
-    // ── Step 2: Fetch AI analysis (non-blocking) ─────────────────
+    // ── Step 2: AI analysis gate (quota / payment) ────────────────
     setLoadingAI(true);
     try {
       const deviceId = getDeviceId();
@@ -551,13 +544,12 @@ export default function TokenAnalysis({ walletAddress, isDayMode = false }: Prop
       if (res.status === 402 && !analyzePaymentSig) {
         const challenge = await res.json();
         if (challenge.tier) {
-          // Basic/Pro subscription credits exhausted → show upgrade prompt, do NOT pay
+          // Basic/Pro subscription credits exhausted → show upgrade prompt, do NOT show results
           setError(challenge.message || t("agentFreeExhausted"));
           setAnalyzeQuota(q => q ? { ...q, remaining: 0 } : null);
-          setLoadingToken(false);
           return;
         }
-        // Free tier quota hit OR no credits → trigger $0.10 USDC per-use payment
+        // Free tier quota hit → trigger $0.10 USDC per-use payment via Phantom
         if (challenge.recipient) {
           if (challenge.recipient === "not-configured") {
             setError("支付功能尚未配置，請聯繫管理員");
@@ -585,7 +577,17 @@ export default function TokenAnalysis({ walletAddress, isDayMode = false }: Prop
         }
       }
 
-      // Update local quota display (only on successful non-payment use)
+      // Gate passed — now reveal the security scan results
+      setTokenData(td);
+      addToWatchlist({
+        mint: td.mint, symbol: td.symbol, name: td.name,
+        logoURI: td.logoURI, securityScore: td.securityScore,
+        verdict: td.decision.verdict, price: td.price,
+        checkedAt: Date.now(),
+      });
+      setWatchlist(getWatchlist());
+
+      // Update local quota display (only on free-path use, not payment path)
       if (!analyzePaymentSig) {
         setAnalyzeQuota(q => q ? { ...q, remaining: Math.max(0, (q.remaining ?? 1) - 1), used: (q.used ?? 0) + 1 } : null);
       }
@@ -593,7 +595,6 @@ export default function TokenAnalysis({ walletAddress, isDayMode = false }: Prop
       const json = await res.json();
       if (!json.error) {
         setAiData(json);
-        // Persist proof to localStorage for /verify page
         saveProof({
           hash: json.reasoningHash,
           memoPayload: json.memoPayload,
