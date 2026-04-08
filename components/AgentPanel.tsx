@@ -602,13 +602,13 @@ export default function AgentPanel({ walletAddress, walletSnapshot, isDayMode = 
         </div>
         <button
           onClick={runAgent}
-          disabled={isRunning}
+          disabled={isRunning || (agentQuota?.remaining === 0 && !agentPaymentSig)}
           style={{
             padding: "12px 24px",
-            background: isRunning ? "var(--border)" : "var(--accent)",
+            background: (isRunning || (agentQuota?.remaining === 0 && !agentPaymentSig)) ? "var(--border)" : "var(--accent)",
             border: "none", borderRadius: 12,
-            fontSize: 14, fontWeight: 700, color: isRunning ? "var(--text-secondary)" : "#fff",
-            cursor: isRunning ? "not-allowed" : "pointer",
+            fontSize: 14, fontWeight: 700, color: (isRunning || (agentQuota?.remaining === 0 && !agentPaymentSig)) ? "var(--text-secondary)" : "#fff",
+            cursor: (isRunning || (agentQuota?.remaining === 0 && !agentPaymentSig)) ? "not-allowed" : "pointer",
             whiteSpace: "nowrap", minWidth: 120,
           }}
         >
