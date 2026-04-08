@@ -696,15 +696,15 @@ export default function TokenAnalysis({ walletAddress, isDayMode = false }: Prop
           />
           <button
             onClick={handleAnalyze}
-            disabled={loadingToken || (analyzeQuota?.remaining === 0 && !analyzePaymentSig)}
+            disabled={loadingToken}
             style={{
               padding: "12px 24px",
-              background: loadingToken || (analyzeQuota?.remaining === 0 && !analyzePaymentSig)
+              background: loadingToken
                 ? `var(--border)`
                 : "var(--accent)",
               border: "none", borderRadius: 10, fontSize: 14,
               fontWeight: 700, color: "#fff",
-              cursor: loadingToken || (analyzeQuota?.remaining === 0 && !analyzePaymentSig) ? "not-allowed" : "pointer",
+              cursor: loadingToken ? "not-allowed" : "pointer",
               whiteSpace: "nowrap",
             }}
           >
