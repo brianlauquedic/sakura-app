@@ -1299,7 +1299,7 @@ export default function DefiAssistant({ walletAddress, walletSnapshot }: Props) 
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === "Enter" && sendMessage(input)}
           placeholder={t("messagePlaceholder")}
-          disabled={loading}
+          disabled={loading || (advisorQuota?.remaining === 0 && !advisorPaymentSig)}
           style={{
             flex: 1, padding: "12px 16px",
             background: "var(--bg-card)", border: "1px solid var(--border)",
@@ -1308,12 +1308,12 @@ export default function DefiAssistant({ walletAddress, walletSnapshot }: Props) 
         />
         <button
           onClick={() => sendMessage(input)}
-          disabled={loading || !input.trim()}
+          disabled={loading || !input.trim() || (advisorQuota?.remaining === 0 && !advisorPaymentSig)}
           style={{
             padding: "12px 20px",
-            background: loading || !input.trim() ? "var(--border)" : "var(--accent)",
+            background: loading || !input.trim() || (advisorQuota?.remaining === 0 && !advisorPaymentSig) ? "var(--border)" : "var(--accent)",
             border: "none", borderRadius: 12, fontSize: 18,
-            cursor: loading ? "not-allowed" : "pointer", color: "#fff",
+            cursor: loading || (advisorQuota?.remaining === 0 && !advisorPaymentSig) ? "not-allowed" : "pointer", color: "#fff",
           }}
         >↑</button>
       </div>

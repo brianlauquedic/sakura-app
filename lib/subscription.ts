@@ -419,11 +419,17 @@ export async function atomicDeductCredits(
     }
     const newBalance = record.creditBalance - cost;
     const prevUsage = record.featureUsage ?? {};
-    memSubs.set(walletAddress, {
+    const updatedRecord: SubscriptionRecord = {
       ...record,
       creditBalance: newBalance,
       featureUsage: { ...prevUsage, [feature]: (prevUsage[feature] ?? 0) + 1 },
-    });
+    };
+    memSubs.set(walletAddress, updatedRecord);
+    // Persist featureUsage back to Redis so it survives the next serverless invocation
+    if (redisAvailable) {
+      const ttlSec = Math.max(1, Math.ceil((record.expiresAt - Date.now()) / 1000));
+      redisSetJson(key, updatedRecord, ttlSec).catch(() => { /* best-effort */ });
+    }
     return { success: true, newBalance, tier: record.tier };
   };
 
