@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { extractIdentifiers, peekQuota, FREE_QUOTA, FEATURE_FEE, isAdminWallet, isValidSolanaAddress, Feature } from "@/lib/rate-limit";
+import { getOrCreateFreeRecord, FEATURE_CREDIT_COST, TIER_MONTHLY_CREDITS, Feature as SubFeature } from "@/lib/subscription";
 
 const ALL_FEATURES: Feature[] = ["analyze", "advisor", "agent", "verify", "portfolio"];
 
@@ -34,7 +35,22 @@ export async function GET(req: NextRequest) {
   for (const feature of requestedFeatures) {
     if (admin) {
       result[feature] = { used: 0, remaining: FREE_QUOTA, freeQuota: FREE_QUOTA, feePriceDollars: 0, admin: true };
+    } else if (wallet) {
+      // Wallet connected (non-admin) → show subscription credit-based quota
+      const record = await getOrCreateFreeRecord(wallet);
+      const cost = FEATURE_CREDIT_COST[feature as SubFeature] ?? 10;
+      const monthlyMax = TIER_MONTHLY_CREDITS[record.tier];
+      const remaining = Math.floor(record.creditBalance / cost);
+      const freeQuota = Math.floor(monthlyMax / cost);
+      result[feature] = {
+        used: Math.max(0, freeQuota - remaining),
+        remaining,
+        freeQuota,
+        feePriceDollars: 0,
+        admin: false,
+      };
     } else {
+      // No wallet → device/IP quota (3 per month)
       const { used, remaining } = await peekQuota(feature, ids);
       result[feature] = {
         used,
