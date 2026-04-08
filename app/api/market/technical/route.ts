@@ -6,7 +6,7 @@
  *
  * Data Sources:
  *   - SOL + 主流代币: CoinGecko 免费 API（日线 OHLC + 成交量）
- *   - Solana SPL 代币: Birdeye API（需 BIRDEYE_API_KEY 环境变量）
+ *   - Solana SPL 代币: GMGN API（免費）+ DexScreener token info（免費）
  *
  * Returns:
  *   ConfluenceResult — 六维技术分析合流结论（MACD/RSI/BB/OBV/Fib/Elliott）
@@ -15,8 +15,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { analyzeConfluence, type OHLCV, type ConfluenceResult } from "@/lib/technical-analysis";
 
-const BIRDEYE_KEY   = process.env.BIRDEYE_API_KEY ?? "";
 const COINGECKO_KEY = process.env.COINGECKO_API_KEY ?? "";  // optional Pro key
+const GMGN_BASE    = process.env.GMGN_HOST ?? "https://openapi.gmgn.ai";
+const GMGN_API_KEY = process.env.GMGN_API_KEY ?? "gmgn_solbscbaseethmonadtron";
 
 // ── CoinGecko ID mapping for common Solana tokens ────────────────────────────
 const COINGECKO_IDS: Record<string, string> = {
@@ -97,74 +98,69 @@ async function fetchCoinGeckoOHLCV(coinId: string): Promise<OHLCV[]> {
   return candles;
 }
 
-// ── Fetch OHLCV from Birdeye (hourly candles, last 200 candles) ──────────────
+// ── Fetch OHLCV from GMGN (hourly candles, last 200) — free, no key needed ───
 
-async function fetchBirdeyeOHLCV(mint: string): Promise<OHLCV[]> {
-  if (!BIRDEYE_KEY) {
-    throw new Error("BIRDEYE_API_KEY not configured — cannot fetch SPL token OHLCV");
-  }
+async function fetchGmgnOHLCV(mint: string): Promise<OHLCV[]> {
+  const limit = 200;
+  const nowS  = Math.floor(Date.now() / 1000);
+  const fromMs = (nowS - limit * 3600) * 1000;
+  const toMs   = nowS * 1000;
 
-  // Birdeye OHLCV endpoint: /defi/ohlcv
-  // type: 1H (1 hour), limit: 200 candles
-  const now    = Math.floor(Date.now() / 1000);
-  const from   = now - 200 * 3600;   // 200 hours back
-  const url    = `https://public-api.birdeye.so/defi/ohlcv?address=${mint}&type=1H&time_from=${from}&time_to=${now}`;
+  const url = new URL(`${GMGN_BASE}/v1/market/token_kline`);
+  url.searchParams.set("chain",      "sol");
+  url.searchParams.set("address",    mint);
+  url.searchParams.set("resolution", "1h");
+  url.searchParams.set("from",       String(fromMs));
+  url.searchParams.set("to",         String(toMs));
+  url.searchParams.set("timestamp",  String(nowS));
+  url.searchParams.set("client_id",  crypto.randomUUID());
 
-  const res = await fetch(url, {
-    headers: {
-      "X-API-KEY": BIRDEYE_KEY,
-      "x-chain":   "solana",
-    },
+  const res = await fetch(url.toString(), {
+    headers: { "X-APIKEY": GMGN_API_KEY, "Accept": "application/json" },
+    signal: AbortSignal.timeout(8000),
     next: { revalidate: 300 },
   });
 
-  if (!res.ok) {
-    throw new Error(`Birdeye OHLCV error: ${res.status} for ${mint}`);
-  }
+  if (!res.ok) throw new Error(`GMGN OHLCV error: ${res.status} for ${mint}`);
 
-  type BirdeyeItem = {
-    unixTime: number;
-    o: number;
-    h: number;
-    l: number;
-    c: number;
-    v: number;
-  };
+  const raw = await res.json();
+  const list: unknown[] = Array.isArray(raw?.data?.list)
+    ? raw.data.list : Array.isArray(raw?.data) ? raw.data : [];
 
-  const data = await res.json() as { data?: { items?: BirdeyeItem[] } };
-  const items = data?.data?.items ?? [];
-
-  const candles: OHLCV[] = items.map((item) => ({
-    timestamp: item.unixTime * 1000,
-    open:   item.o,
-    high:   item.h,
-    low:    item.l,
-    close:  item.c,
-    volume: item.v,
-  }));
+  const candles: OHLCV[] = list.map((c: unknown) => {
+    const item = c as Record<string, number>;
+    const ts = Number(item.time ?? item.t ?? item.timestamp);
+    return {
+      timestamp: ts > 1e12 ? ts : ts * 1000,
+      open:   Number(item.open  ?? item.o),
+      high:   Number(item.high  ?? item.h),
+      low:    Number(item.low   ?? item.l),
+      close:  Number(item.close ?? item.c),
+      volume: Number(item.volume ?? item.v ?? 0),
+    };
+  }).filter(c => c.timestamp && c.open && c.close);
 
   candles.sort((a, b) => a.timestamp - b.timestamp);
   return candles;
 }
 
-// ── Fetch token info from Birdeye (symbol lookup by mint) ────────────────────
+// ── Fetch token info from DexScreener (free, no key needed) ──────────────────
 
-async function fetchBirdeyeTokenInfo(mint: string): Promise<{ symbol: string; name: string; price: number } | null> {
-  if (!BIRDEYE_KEY) return null;
-
-  const url = `https://public-api.birdeye.so/defi/token_overview?address=${mint}`;
-  const res = await fetch(url, {
-    headers: { "X-API-KEY": BIRDEYE_KEY, "x-chain": "solana" },
-    next: { revalidate: 300 },
-  });
-
+async function fetchDexScreenerTokenInfo(mint: string): Promise<{ symbol: string; name: string; price: number } | null> {
+  const url = `https://api.dexscreener.com/latest/dex/tokens/${mint}`;
+  const res = await fetch(url, { next: { revalidate: 300 }, signal: AbortSignal.timeout(5000) });
   if (!res.ok) return null;
 
-  type TokenOverview = { data?: { symbol?: string; name?: string; price?: number } };
-  const json = await res.json() as TokenOverview;
-  const d = json?.data;
-  if (!d) return null;
-  return { symbol: d.symbol ?? "UNKNOWN", name: d.name ?? "", price: d.price ?? 0 };
+  type DexPair = { baseToken?: { symbol?: string; name?: string }; priceUsd?: string };
+  const json = await res.json() as { pairs?: DexPair[] };
+  const pair = json?.pairs?.[0];
+  if (!pair) return null;
+
+  return {
+    symbol: pair.baseToken?.symbol ?? "UNKNOWN",
+    name:   pair.baseToken?.name ?? "",
+    price:  parseFloat(pair.priceUsd ?? "0") || 0,
+  };
 }
 
 // ── Demo OHLCV generator (when no API keys, for development) ────────────────
@@ -200,7 +196,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   let ohlcv: OHLCV[];
   let tokenName = symbol;
   let currentPrice = 0;
-  let source: "coingecko" | "birdeye" | "demo" = "coingecko";
+  let source: "coingecko" | "gmgn" | "demo" = "coingecko";
 
   try {
     // ── Path 1: Known token with CoinGecko ID ───────────────────────
@@ -210,14 +206,14 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       source = "coingecko";
       currentPrice = ohlcv[ohlcv.length - 1]?.close ?? 0;
 
-    // ── Path 2: Unknown Solana SPL token (by mint) ──────────────────
+    // ── Path 2: Unknown Solana SPL token (by mint) — use GMGN + DexScreener ──
     } else if (/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(mint)) {
       const [candles, info] = await Promise.all([
-        fetchBirdeyeOHLCV(mint),
-        fetchBirdeyeTokenInfo(mint),
+        fetchGmgnOHLCV(mint),
+        fetchDexScreenerTokenInfo(mint),
       ]);
       ohlcv = candles;
-      source = "birdeye";
+      source = "gmgn";
       if (info) {
         tokenName    = info.symbol || symbol;
         currentPrice = info.price;
@@ -262,7 +258,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     const msg = err instanceof Error ? err.message : "Technical analysis failed";
 
     // Graceful fallback: if API key missing, return demo analysis
-    if (msg.includes("not configured") || msg.includes("BIRDEYE_API_KEY")) {
+    if (msg.includes("GMGN") || msg.includes("upstream")) {
       const demoPrice = 1;
       ohlcv = generateDemoOHLCV(demoPrice, 90);
       const result = analyzeConfluence(ohlcv);
@@ -274,7 +270,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
         candleCount:  ohlcv.length,
         analysis:     result,
         generatedAt:  Date.now(),
-        warning:      "Demo data used — set BIRDEYE_API_KEY for real SPL token analysis",
+        warning:      "Demo data used — GMGN unavailable",
       });
     }
 
