@@ -1260,25 +1260,31 @@ Rules:
             system: systemPrompt,
           });
 
-          // Stream text tokens to client in real-time as they're generated
-          streamInstance.on("text", (textDelta: string) => {
-            finalText += textDelta;
-            send("token", { text: textDelta });
-          });
+          // Stream text/thinking deltas in real-time via async iterator
+          for await (const chunk of streamInstance) {
+            if (chunk.type === "content_block_delta") {
+              if (chunk.delta.type === "text_delta") {
+                finalText += chunk.delta.text;
+                send("token", { text: chunk.delta.text });
+              } else if (chunk.delta.type === "thinking_delta") {
+                allThinkingText += chunk.delta.thinking;
+                send("thinking_delta", { text: chunk.delta.thinking });
+              }
+            }
+          }
 
-          // Wait for full response (needed for tool call handling)
+          // Get the fully assembled message for tool call handling
           const response = await streamInstance.finalMessage();
 
-          // Process content blocks (thinking + tool_use only — text already streamed above)
+          // Process tool_use blocks (text/thinking already streamed above)
           // Collect all tool results first, then append once (prevents duplicate assistant messages)
           const toolResults: Array<{ type: "tool_result"; tool_use_id: string; content: string }> = [];
 
           for (const block of response.content) {
             if (block.type === "thinking") {
-              allThinkingText += block.thinking + "\n";
-              send("thinking_delta", { text: block.thinking });
+              // Already streamed above — skip to avoid duplicates
             } else if (block.type === "text") {
-              // Already streamed via streamInstance.on("text") — skip to avoid duplicates
+              // Already streamed above — skip to avoid duplicates
             } else if (block.type === "tool_use") {
               send("tool_call", { name: block.name, args: block.input });
 
