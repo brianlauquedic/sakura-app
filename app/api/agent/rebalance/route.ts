@@ -9,6 +9,7 @@ interface RebalanceRequest {
   totalUSD: number;
   idleUSDC: number;
   lang?: "zh" | "en" | "ja";
+  strategyMode?: "yield" | "defensive" | "smart_money";
   liveYield?: {
     opportunities: Array<{
       protocol: string;
@@ -43,8 +44,16 @@ interface RebalancePlan {
   summary: string;
 }
 
+// Strategy-based allocation ratios
+const STRATEGY_RATIOS: Record<string, { stakeRatio: number; lendRatio: number }> = {
+  yield:       { stakeRatio: 0.9, lendRatio: 1.0 }, // Autopilot I: max yield, all-in
+  defensive:   { stakeRatio: 0.3, lendRatio: 0.5 }, // Autopilot II: conservative, keep stable
+  smart_money: { stakeRatio: 0.6, lendRatio: 0.8 }, // Autopilot III: KOL/Whale balanced
+};
+
 function deterministicPlan(req: RebalanceRequest): RebalancePlan {
-  const { solBalance, totalUSD, idleUSDC, liveYield } = req;
+  const { solBalance, totalUSD, idleUSDC, liveYield, strategyMode } = req;
+  const { stakeRatio, lendRatio } = STRATEGY_RATIOS[strategyMode ?? "defensive"];
 
   const getAPY = (protocol: string, fallback: number) => {
     const found = liveYield?.opportunities.find(o => o.protocol === protocol);
@@ -54,61 +63,60 @@ function deterministicPlan(req: RebalanceRequest): RebalancePlan {
   const marinadeAPY = getAPY("Marinade Finance", 7.2);
   const kaminoAPY = getAPY("Kamino Finance", 8.2);
   const solPrice = solBalance > 0 && totalUSD > 0 ? totalUSD / solBalance : 180;
+  const safeTotal = totalUSD > 0 ? totalUSD : 1;
 
   const actions: RebalanceAction[] = [];
   let projectedYield = 0;
 
-  // Stake 70% of SOL
   if (solBalance > 0.1) {
-    const stakeAmt = solBalance * 0.7;
+    const stakeAmt = solBalance * stakeRatio;
     const yearlyEarn = stakeAmt * marinadeAPY / 100 * solPrice;
     projectedYield += yearlyEarn;
+    const stakeReasonMap: Record<string, string> = {
+      yield:       `全力出擊！将 ${stakeAmt.toFixed(2)} SOL (90%) 质押 Marinade ${marinadeAPY.toFixed(1)}% 年化，追求最高收益 $${yearlyEarn.toFixed(0)}/年`,
+      defensive:   `保守配置：仅将 ${stakeAmt.toFixed(2)} SOL (30%) 质押 Marinade，保留 70% 流动性以应对波动`,
+      smart_money: `跟随 KOL/Whale 信号：将 ${stakeAmt.toFixed(2)} SOL (60%) 质押 Marinade ${marinadeAPY.toFixed(1)}% 年化，预计年收益 $${yearlyEarn.toFixed(0)}`,
+    };
     actions.push({
-      type: "stake",
-      protocol: "Marinade Finance",
-      icon: "🫙",
-      amount: stakeAmt,
-      amountDisplay: `${stakeAmt.toFixed(2)} SOL`,
-      expectedAPY: marinadeAPY,
-      riskLevel: "低",
-      reasoning: `将 ${stakeAmt.toFixed(2)} SOL 质押获取 ${marinadeAPY.toFixed(1)}% 年化，mSOL 保留流动性，预计年收益 $${yearlyEarn.toFixed(0)}`,
-      url: "https://marinade.finance/",
-      color: "#8B5CF6",
+      type: "stake", protocol: "Marinade Finance", icon: "🫙",
+      amount: stakeAmt, amountDisplay: `${stakeAmt.toFixed(2)} SOL`,
+      expectedAPY: marinadeAPY, riskLevel: strategyMode === "yield" ? "中" : "低",
+      reasoning: stakeReasonMap[strategyMode ?? "defensive"],
+      url: "https://marinade.finance/", color: "#8B5CF6",
     });
   }
 
-  // Lend 100% of idle USDC
   if (idleUSDC > 5) {
-    const yearlyEarn = idleUSDC * kaminoAPY / 100;
+    const lendAmt = idleUSDC * lendRatio;
+    const yearlyEarn = lendAmt * kaminoAPY / 100;
     projectedYield += yearlyEarn;
+    const lendReasonMap: Record<string, string> = {
+      yield:       `$${lendAmt.toFixed(0)} USDC 全部存入 Kamino ${kaminoAPY.toFixed(1)}% 自动复利，预计年收益 $${yearlyEarn.toFixed(0)}`,
+      defensive:   `$${lendAmt.toFixed(0)} USDC (50%) 存入 Kamino 低风险生息，保留 50% 应急流动性`,
+      smart_money: `$${lendAmt.toFixed(0)} USDC (80%) 存入 Kamino ${kaminoAPY.toFixed(1)}%，跟随机构配置比例`,
+    };
     actions.push({
-      type: "lend",
-      protocol: "Kamino Finance",
-      icon: "🌿",
-      amount: idleUSDC,
-      amountDisplay: `$${idleUSDC.toFixed(0)} USDC`,
-      expectedAPY: kaminoAPY,
-      riskLevel: "低",
-      reasoning: `$${idleUSDC.toFixed(0)} USDC 闲置零收益，存入 Kamino 自动复利 ${kaminoAPY.toFixed(1)}%，预计年收益 $${yearlyEarn.toFixed(0)}`,
-      url: "https://app.kamino.finance/",
-      color: "#10B981",
+      type: "lend", protocol: "Kamino Finance", icon: "🌿",
+      amount: lendAmt, amountDisplay: `$${lendAmt.toFixed(0)} USDC`,
+      expectedAPY: kaminoAPY, riskLevel: "低",
+      reasoning: lendReasonMap[strategyMode ?? "defensive"],
+      url: "https://app.kamino.finance/", color: "#10B981",
     });
   }
 
-  const currentAllocation = {
-    sol: Math.round((solBalance * solPrice / totalUSD) * 100) || 0,
-    usdc: Math.round((idleUSDC / totalUSD) * 100) || 0,
-    staked: 0,
-    lent: 0,
-  };
   const stakedSOLValue = actions.filter(a => a.type === "stake").reduce((s, a) => s + a.amount * solPrice, 0);
   const lentValue = actions.filter(a => a.type === "lend").reduce((s, a) => s + a.amount, 0);
 
+  const currentAllocation = {
+    sol:    Math.round((solBalance * solPrice / safeTotal) * 100) || 0,
+    usdc:   Math.round((idleUSDC / safeTotal) * 100) || 0,
+    staked: 0, lent: 0,
+  };
   const recommendedAllocation = {
-    sol: Math.max(0, Math.round(((solBalance * solPrice - stakedSOLValue) / totalUSD) * 100)),
-    usdc: Math.max(0, Math.round(((idleUSDC - lentValue) / totalUSD) * 100)),
-    staked: Math.round((stakedSOLValue / totalUSD) * 100) || 0,
-    lent: Math.round((lentValue / totalUSD) * 100) || 0,
+    sol:    Math.max(0, Math.round(((solBalance * solPrice - stakedSOLValue) / safeTotal) * 100)),
+    usdc:   Math.max(0, Math.round(((idleUSDC - lentValue) / safeTotal) * 100)),
+    staked: Math.round((stakedSOLValue / safeTotal) * 100) || 0,
+    lent:   Math.round((lentValue / safeTotal) * 100) || 0,
   };
 
   return {
@@ -157,6 +165,19 @@ async function callClaudeForPlan(
   const lang = req.lang ?? "en";
   const isZh = lang === "zh";
   const isJa = lang === "ja";
+  const { stakeRatio: sr, lendRatio: lr } = STRATEGY_RATIOS[req.strategyMode ?? "defensive"];
+
+  const strategyInstruction = isZh
+    ? req.strategyMode === "yield"
+      ? `\n\n策略模式：Autopilot I 收益最化。請激進配置：質押 ${Math.round(sr*100)}% SOL，存入 ${Math.round(lr*100)}% USDC，追求最高年化收益。`
+      : req.strategyMode === "defensive"
+      ? `\n\n策略模式：Autopilot II 防禦模式。請保守配置：僅質押 ${Math.round(sr*100)}% SOL，存入 ${Math.round(lr*100)}% USDC，保留充足流動性。`
+      : `\n\n策略模式：Autopilot III 聰明錢跟隨。根據 KOL/Whale 共識：質押 ${Math.round(sr*100)}% SOL，存入 ${Math.round(lr*100)}% USDC，平衡配置。`
+    : req.strategyMode === "yield"
+    ? `\n\nStrategy: Autopilot I (Max Yield). Aggressive: stake ${Math.round(sr*100)}% SOL, lend ${Math.round(lr*100)}% USDC. Maximize APY.`
+    : req.strategyMode === "defensive"
+    ? `\n\nStrategy: Autopilot II (Defensive). Conservative: stake only ${Math.round(sr*100)}% SOL, lend ${Math.round(lr*100)}% USDC. Preserve liquidity.`
+    : `\n\nStrategy: Autopilot III (Smart Money). KOL/Whale-aligned: stake ${Math.round(sr*100)}% SOL, lend ${Math.round(lr*100)}% USDC.`;
 
   const systemPrompt = isZh
     ? `你是 Sakura AI Agent。根據用戶錢包，生成最優再平衡方案，輸出嚴格的 JSON。
@@ -166,7 +187,7 @@ async function callClaudeForPlan(
 - 閒置 USDC: $${req.idleUSDC.toFixed(0)}
 - 總資產: $${req.totalUSD.toFixed(0)}
 
-實時 APY 數據：${yieldCtx}
+實時 APY 數據：${yieldCtx}${strategyInstruction}
 
 輸出 JSON（不要有其他文字）：
 {"currentAllocation":{"sol":數字,"usdc":數字,"staked":0,"lent":0},"recommendedAllocation":{"sol":數字,"usdc":數字,"staked":數字,"lent":數字},"actions":[{"type":"stake"|"lend"|"swap"|"lp","protocol":"協議名","icon":"emoji","amount":數字,"amountDisplay":"顯示文字","expectedAPY":數字,"riskLevel":"低"|"中"|"高","reasoning":"一句話理由","url":"https://...","color":"#hex"}],"projectedAnnualYield":數字,"currentAnnualYield":0,"confidenceScore":數字,"summary":"一句話總結"}`
@@ -178,7 +199,7 @@ async function callClaudeForPlan(
 - 遊休 USDC: $${req.idleUSDC.toFixed(0)}
 - 総資産: $${req.totalUSD.toFixed(0)}
 
-リアルタイムAPYデータ：${yieldCtx}
+リアルタイムAPYデータ：${yieldCtx}${strategyInstruction}
 
 JSON形式で出力（他のテキスト不要）：
 {"currentAllocation":{"sol":number,"usdc":number,"staked":0,"lent":0},"recommendedAllocation":{"sol":number,"usdc":number,"staked":number,"lent":number},"actions":[{"type":"stake"|"lend"|"swap"|"lp","protocol":"protocol name","icon":"emoji","amount":number,"amountDisplay":"display text","expectedAPY":number,"riskLevel":"低"|"中"|"高","reasoning":"one sentence reason","url":"https://...","color":"#hex"}],"projectedAnnualYield":number,"currentAnnualYield":0,"confidenceScore":number,"summary":"one sentence summary"}`
@@ -189,7 +210,7 @@ Wallet:
 - Idle USDC: $${req.idleUSDC.toFixed(0)}
 - Total: $${req.totalUSD.toFixed(0)}
 
-Live APY data: ${yieldCtx}
+Live APY data: ${yieldCtx}${strategyInstruction}
 
 Output JSON only (no other text):
 {"currentAllocation":{"sol":number,"usdc":number,"staked":0,"lent":0},"recommendedAllocation":{"sol":number,"usdc":number,"staked":number,"lent":number},"actions":[{"type":"stake"|"lend"|"swap"|"lp","protocol":"protocol name","icon":"emoji","amount":number,"amountDisplay":"display text","expectedAPY":number,"riskLevel":"low"|"medium"|"high","reasoning":"one sentence reason","url":"https://...","color":"#hex"}],"projectedAnnualYield":number,"currentAnnualYield":0,"confidenceScore":number,"summary":"one sentence summary"}`;

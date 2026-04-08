@@ -211,62 +211,80 @@ function localizeRiskLevel(level: string, tFn: (k: string) => string): string {
   return level;
 }
 
+// Client-side strategy ratios (mirrors server STRATEGY_RATIOS)
+const CLIENT_STRATEGY_RATIOS: Record<StrategyMode, { stakeRatio: number; lendRatio: number }> = {
+  yield:       { stakeRatio: 0.9, lendRatio: 1.0 },
+  defensive:   { stakeRatio: 0.3, lendRatio: 0.5 },
+  smart_money: { stakeRatio: 0.6, lendRatio: 0.8 },
+};
+
 // ── Client-side instant plan (mirrors server deterministicPlan, no API call) ──
 // Shown immediately after animation; silently replaced when Sonnet result arrives.
 function clientDeterministicPlan(
-  solBalance: number, totalUSD: number, idleUSDC: number, lang: string
+  solBalance: number, totalUSD: number, idleUSDC: number, lang: string, strategyMode: StrategyMode
 ): RebalancePlan {
   const MARINADE_APY = 7.2;
   const KAMINO_APY   = 8.2;
+  const { stakeRatio, lendRatio } = CLIENT_STRATEGY_RATIOS[strategyMode];
   const solPrice = solBalance > 0 && totalUSD > 0 ? totalUSD / solBalance : 180;
+  const safeTotal = totalUSD > 0 ? totalUSD : 1;
   const actions: RebalancePlan["actions"] = [];
   let projectedYield = 0;
 
   if (solBalance > 0.1) {
-    const stakeAmt = solBalance * 0.7;
+    const stakeAmt = solBalance * stakeRatio;
     const yearlyEarn = stakeAmt * MARINADE_APY / 100 * solPrice;
     projectedYield += yearlyEarn;
+    const stakeReasonZh: Record<StrategyMode, string> = {
+      yield:       `全力出擊！将 ${stakeAmt.toFixed(2)} SOL (90%) 质押 Marinade ${MARINADE_APY}%，追求最高收益 $${yearlyEarn.toFixed(0)}/年`,
+      defensive:   `保守配置：仅将 ${stakeAmt.toFixed(2)} SOL (30%) 质押 Marinade，保留 70% 流动性以应对波动`,
+      smart_money: `跟随 KOL/Whale 信号：将 ${stakeAmt.toFixed(2)} SOL (60%) 质押 Marinade，预计年收益 $${yearlyEarn.toFixed(0)}`,
+    };
     actions.push({
       type: "stake", protocol: "Marinade Finance", icon: "🫙",
       amount: stakeAmt, amountDisplay: `${stakeAmt.toFixed(2)} SOL`,
-      expectedAPY: MARINADE_APY, riskLevel: "低",
-      reasoning: lang === "zh"
-        ? `将 ${stakeAmt.toFixed(2)} SOL 质押获取 ${MARINADE_APY}% 年化，mSOL 保留流动性，预计年收益 $${yearlyEarn.toFixed(0)}`
-        : `Stake ${stakeAmt.toFixed(2)} SOL at ${MARINADE_APY}% APY via Marinade, earning ~$${yearlyEarn.toFixed(0)}/yr`,
+      expectedAPY: MARINADE_APY, riskLevel: strategyMode === "yield" ? "中" : "低",
+      reasoning: lang === "zh" ? stakeReasonZh[strategyMode]
+        : `Stake ${stakeAmt.toFixed(2)} SOL (${Math.round(stakeRatio*100)}%) at ${MARINADE_APY}% APY, earning ~$${yearlyEarn.toFixed(0)}/yr`,
       url: "https://marinade.finance/", color: "#8B5CF6",
     });
   }
   if (idleUSDC > 5) {
-    const yearlyEarn = idleUSDC * KAMINO_APY / 100;
+    const lendAmt = idleUSDC * lendRatio;
+    const yearlyEarn = lendAmt * KAMINO_APY / 100;
     projectedYield += yearlyEarn;
+    const lendReasonZh: Record<StrategyMode, string> = {
+      yield:       `$${lendAmt.toFixed(0)} USDC 全部存入 Kamino ${KAMINO_APY}% 自动复利，年收益 $${yearlyEarn.toFixed(0)}`,
+      defensive:   `$${lendAmt.toFixed(0)} USDC (50%) 存入 Kamino 低风险生息，保留 50% 应急流动性`,
+      smart_money: `$${lendAmt.toFixed(0)} USDC (80%) 存入 Kamino ${KAMINO_APY}%，跟随机构配置比例`,
+    };
     actions.push({
       type: "lend", protocol: "Kamino Finance", icon: "🌿",
-      amount: idleUSDC, amountDisplay: `$${idleUSDC.toFixed(0)} USDC`,
+      amount: lendAmt, amountDisplay: `$${lendAmt.toFixed(0)} USDC`,
       expectedAPY: KAMINO_APY, riskLevel: "低",
-      reasoning: lang === "zh"
-        ? `$${idleUSDC.toFixed(0)} USDC 闲置零收益，存入 Kamino 自动复利 ${KAMINO_APY}%，预计年收益 $${yearlyEarn.toFixed(0)}`
-        : `Deposit $${idleUSDC.toFixed(0)} idle USDC into Kamino at ${KAMINO_APY}% APY, earning ~$${yearlyEarn.toFixed(0)}/yr`,
+      reasoning: lang === "zh" ? lendReasonZh[strategyMode]
+        : `Deposit $${lendAmt.toFixed(0)} USDC (${Math.round(lendRatio*100)}%) into Kamino at ${KAMINO_APY}% APY`,
       url: "https://app.kamino.finance/", color: "#10B981",
     });
   }
 
-  const stakedUSD = actions.filter(a => a.type === "stake").reduce((s, a) => s + a.amount * solPrice, 0);
-  const lentUSD   = actions.filter(a => a.type === "lend").reduce((s, a) => s + a.amount, 0);
   const summary = lang === "zh"
     ? actions.length > 0 ? `發現 ${actions.length} 個優化機會，可將年化收益提升至 +$${projectedYield.toFixed(0)}` : "當前餘額較少，建議先積累更多 SOL/USDC"
     : actions.length > 0 ? `Found ${actions.length} optimization opportunit${actions.length > 1 ? "ies" : "y"} — projected yield +$${projectedYield.toFixed(0)}/yr` : "Low balance — consider building up more SOL/USDC first";
 
+  const stakedUSD = actions.filter(a => a.type === "stake").reduce((s, a) => s + a.amount * solPrice, 0);
+  const lentUSD   = actions.filter(a => a.type === "lend").reduce((s, a) => s + a.amount, 0);
   return {
     currentAllocation: {
-      sol:    Math.round((solBalance * solPrice / totalUSD) * 100) || 0,
-      usdc:   Math.round((idleUSDC / totalUSD) * 100) || 0,
+      sol:    Math.round((solBalance * solPrice / safeTotal) * 100) || 0,
+      usdc:   Math.round((idleUSDC / safeTotal) * 100) || 0,
       staked: 0, lent: 0,
     },
     recommendedAllocation: {
-      sol:    Math.max(0, Math.round(((solBalance * solPrice - stakedUSD) / totalUSD) * 100)),
-      usdc:   Math.max(0, Math.round(((idleUSDC - lentUSD) / totalUSD) * 100)),
-      staked: Math.round((stakedUSD / totalUSD) * 100) || 0,
-      lent:   Math.round((lentUSD / totalUSD) * 100) || 0,
+      sol:    Math.max(0, Math.round(((solBalance * solPrice - stakedUSD) / safeTotal) * 100)),
+      usdc:   Math.max(0, Math.round(((idleUSDC - lentUSD) / safeTotal) * 100)),
+      staked: Math.round((stakedUSD / safeTotal) * 100) || 0,
+      lent:   Math.round((lentUSD / safeTotal) * 100) || 0,
     },
     actions,
     projectedAnnualYield: projectedYield,
@@ -284,6 +302,7 @@ export default function AgentPanel({ walletAddress, walletSnapshot, isDayMode = 
   const [agentState, setAgentState] = useState<AgentState>("idle");
   const [stepLabel, setStepLabel] = useState("");
   const [plan, setPlan] = useState<RebalancePlan | null>(null);
+  const [isAiUpgrading, setIsAiUpgrading] = useState(false); // true while Sonnet is still computing
   const [error, setError] = useState("");
   const [memoStatus, setMemoStatus] = useState<"idle" | "sending" | "done">("idle");
   const [memoTx, setMemoTx] = useState("");
@@ -408,6 +427,7 @@ export default function AgentPanel({ walletAddress, walletSnapshot, isDayMode = 
       totalUSD: wallet.totalUSD,
       idleUSDC: wallet.idleUSDC,
       lang,
+      strategyMode,
       liveYield,
     });
 
@@ -432,9 +452,10 @@ export default function AgentPanel({ walletAddress, walletSnapshot, isDayMode = 
 
     // ⚡ Show instant plan right after animation — no more waiting on Sonnet!
     // Sonnet result will silently upgrade this below.
-    const instantPlan = clientDeterministicPlan(wallet.solBalance, wallet.totalUSD, wallet.idleUSDC, lang);
+    const instantPlan = clientDeterministicPlan(wallet.solBalance, wallet.totalUSD, wallet.idleUSDC, lang, strategyMode);
     setPlan(instantPlan);
     setAgentState("done");
+    setIsAiUpgrading(true); // Sonnet still running in background
 
     try {
       // Background: await Sonnet and upgrade plan if it returned successfully
@@ -480,9 +501,10 @@ export default function AgentPanel({ walletAddress, walletSnapshot, isDayMode = 
         setComplianceResult(checkMandateCompliance(data, signedMandate.mandate, t as (key: string, vars?: Record<string, string | number>) => string));
       }
       setAgentState("done");
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : t("analyzingPortfolio"));
-      setAgentState("error");
+      setIsAiUpgrading(false);
+    } catch {
+      // Sonnet failed — instant plan stays, no error shown (it's background upgrade)
+      setIsAiUpgrading(false);
     }
   }
 
@@ -948,7 +970,7 @@ export default function AgentPanel({ walletAddress, walletSnapshot, isDayMode = 
             )}
           </div>
 
-          {!plan.aiAvailable && (
+          {!plan.aiAvailable && !isAiUpgrading && (
             <div style={{ fontSize: 10, color: "var(--text-muted)", textAlign: "center" }}>
               ℹ️ {t("deterministicNote")}
             </div>
