@@ -196,7 +196,7 @@ Output JSON only (no other text):
 
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 12000);
+    const timeout = setTimeout(() => controller.abort(), 8000);
 
     const res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
@@ -303,6 +303,8 @@ function validateMandateServerSide(
 
   return { valid: violations.length === 0, violations };
 }
+
+export const maxDuration = 30;
 
 export async function POST(req: NextRequest) {
   // Anti-Sybil quota gate: 3 free agent plans per wallet/device/IP

@@ -317,7 +317,40 @@ export default function AgentPanel({ walletAddress, walletSnapshot, isDayMode = 
       if (d.opportunities) liveYield = d;
     } catch { /* non-fatal */ }
 
-    // Animate thinking steps
+    // Build request headers + body before animation so we can fire immediately
+    const deviceId = getDeviceId();
+    const reqHeaders: Record<string, string> = {
+      "Content-Type": "application/json",
+      "X-Device-ID": deviceId,
+      "X-Wallet-Address": walletAddress ?? "",
+    };
+    if (agentPaymentSig) reqHeaders["X-PAYMENT"] = agentPaymentSig;
+
+    // [SECURITY FIX] Send signed mandate to backend for server-side validation
+    const currentMandate = loadMandate(walletAddress);
+    if (currentMandate) {
+      reqHeaders["X-Mandate"] = Buffer.from(
+        JSON.stringify(currentMandate.mandate)
+      ).toString("base64");
+    }
+
+    const reqBody = JSON.stringify({
+      walletAddress,
+      solBalance: wallet.solBalance,
+      totalUSD: wallet.totalUSD,
+      idleUSDC: wallet.idleUSDC,
+      lang,
+      liveYield,
+    });
+
+    // 🚀 Fire API call BEFORE animation so both run concurrently
+    const rebalancePromise = fetch("/api/agent/rebalance", {
+      method: "POST",
+      headers: reqHeaders,
+      body: reqBody,
+    });
+
+    // Animate thinking steps (concurrently with the API call above)
     const thinkingSteps: { state: AgentState; label: string; duration: number }[] = [
       { state: "scanning",   label: t("scanningWallet"),    duration: 900 },
       { state: "analyzing",  label: t("analyzingPortfolio"), duration: 1100 },
@@ -330,36 +363,8 @@ export default function AgentPanel({ walletAddress, walletSnapshot, isDayMode = 
     }
 
     try {
-      const deviceId = getDeviceId();
-      const reqHeaders: Record<string, string> = {
-        "Content-Type": "application/json",
-        "X-Device-ID": deviceId,
-        "X-Wallet-Address": walletAddress ?? "",
-      };
-      if (agentPaymentSig) reqHeaders["X-PAYMENT"] = agentPaymentSig;
-
-      // [SECURITY FIX] Send signed mandate to backend for server-side validation
-      const currentMandate = loadMandate(walletAddress);
-      if (currentMandate) {
-        reqHeaders["X-Mandate"] = Buffer.from(
-          JSON.stringify(currentMandate.mandate)
-        ).toString("base64");
-      }
-
-      const reqBody = JSON.stringify({
-        walletAddress,
-        solBalance: wallet.solBalance,
-        totalUSD: wallet.totalUSD,
-        idleUSDC: wallet.idleUSDC,
-        lang,
-        liveYield,
-      });
-
-      let res = await fetch("/api/agent/rebalance", {
-        method: "POST",
-        headers: reqHeaders,
-        body: reqBody,
-      });
+      // Await the result — likely already done if Haiku responded during animation
+      let res = await rebalancePromise;
 
       // 402: Basic/Pro subscription exhausted (tier field) OR x402 per-use payment
       if (res.status === 402) {
