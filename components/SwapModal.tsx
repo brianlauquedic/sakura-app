@@ -78,11 +78,22 @@ export default function SwapModal({ from, to, amount, onClose }: SwapModalProps)
       if (buildData.error) throw new Error(buildData.error);
 
       // Deserialize and sign with Phantom
-      const { VersionedTransaction } = await import("@solana/web3.js");
+      const { VersionedTransaction, Connection } = await import("@solana/web3.js");
       const swapTxBuf = Buffer.from(buildData.swapTransaction, "base64");
       const transaction = VersionedTransaction.deserialize(swapTxBuf);
 
       const { signature } = await window.solana.signAndSendTransaction(transaction);
+
+      // Wait for on-chain confirmation (30s timeout)
+      const conn = new Connection("https://api.mainnet-beta.solana.com", "confirmed");
+      const { blockhash, lastValidBlockHeight } = await conn.getLatestBlockhash("finalized");
+      const confirmation = await conn.confirmTransaction(
+        { signature, blockhash, lastValidBlockHeight },
+        "confirmed",
+      );
+      if (confirmation.value.err) {
+        throw new Error(`交易上鏈失敗: ${JSON.stringify(confirmation.value.err)}`);
+      }
 
       setTxSig(signature);
       setStep("success");

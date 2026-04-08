@@ -77,7 +77,8 @@ export default function LendModal({ protocol, amount, onClose }: LendModalProps)
       const buildData = await buildRes.json();
       if (buildData.error) throw new Error(buildData.error);
 
-      const { VersionedTransaction, Transaction } = await import("@solana/web3.js");
+      const { VersionedTransaction, Transaction, Connection } = await import("@solana/web3.js");
+      const RPC = "https://api.mainnet-beta.solana.com";
 
       // Try VersionedTransaction first, fall back to legacy Transaction
       let signature: string;
@@ -92,6 +93,17 @@ export default function LendModal({ protocol, amount, onClose }: LendModalProps)
         const transaction = Transaction.from(txBuf);
         const result = await window.solana.signAndSendTransaction(transaction);
         signature = result.signature;
+      }
+
+      // Wait for on-chain confirmation (30s timeout)
+      const conn = new Connection(RPC, "confirmed");
+      const { blockhash, lastValidBlockHeight } = await conn.getLatestBlockhash("finalized");
+      const confirmation = await conn.confirmTransaction(
+        { signature, blockhash, lastValidBlockHeight },
+        "confirmed",
+      );
+      if (confirmation.value.err) {
+        throw new Error(`交易上鏈失敗: ${JSON.stringify(confirmation.value.err)}`);
       }
 
       setTxSig(signature);
