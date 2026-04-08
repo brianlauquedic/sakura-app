@@ -562,9 +562,41 @@ export async function getOrCreateFreeRecord(
 
   // Check if a paid (or existing free) record already exists
   const existing = await getSubscription(walletAddress);
-  if (existing) return existing;
+  if (existing) {
+    // ── Migration: old records have no featureUsage field ────────────
+    // Records created before the featureUsage feature was deployed lack
+    // this field, so the gate and display both see usedCount=0 and
+    // incorrectly grant 3 extra free uses. Fix by estimating per-feature
+    // usage from creditBalance (conservative: assume spent credits went
+    // to the most-favorable feature for the user).
+    if (!existing.featureUsage) {
+      const creditsSpent = Math.max(0, TIER_MONTHLY_CREDITS.free - existing.creditBalance);
+      const featureUsage: Partial<Record<Feature, number>> = {};
+      const trackedFeatures: Feature[] = ["analyze", "portfolio", "agent", "advisor"];
+      for (const f of trackedFeatures) {
+        const limit = FREE_TIER_FEATURE_LIMIT[f];
+        if (limit > 0) {
+          // Estimate: at most floor(creditsSpent / featureCost) uses of this feature
+          featureUsage[f] = Math.min(
+            Math.floor(creditsSpent / FEATURE_CREDIT_COST[f]),
+            limit
+          );
+        }
+      }
+      const migrated: SubscriptionRecord = { ...existing, featureUsage };
+      const key = `solis:sub:${walletAddress}`;
+      const ttlSec = Math.max(1, Math.ceil((existing.expiresAt - Date.now()) / 1000));
+      if (redisAvailable) {
+        await redisSetJson(key, migrated, ttlSec);
+      } else {
+        memSubs.set(walletAddress, migrated);
+      }
+      return migrated;
+    }
+    return existing;
+  }
 
-  // No record — create fresh free-tier record
+  // No record — create fresh free-tier record (featureUsage starts empty = all limits fresh)
   const now = Date.now();
   const record: SubscriptionRecord = {
     tier: "free",
@@ -576,6 +608,7 @@ export async function getOrCreateFreeRecord(
     creditBalance: TIER_MONTHLY_CREDITS.free, // 100
     creditGrantedAt: now,
     rolloverCredits: 0,
+    featureUsage: {},  // Start with empty usage tracking
   };
 
   const key = `solis:sub:${walletAddress}`;
