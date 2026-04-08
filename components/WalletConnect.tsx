@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import AnimatedNumber from "@/components/AnimatedNumber";
 import { useLang } from "@/contexts/LanguageContext";
 import WaBijinSVG from "@/components/WaBijinSVG";
+import { useWallet } from "@/contexts/WalletContext";
 
 interface MarketStats {
   solanaTvl:  string | null;
@@ -41,6 +42,7 @@ interface Props {
 
 export default function WalletConnect({ walletAddress, onEnterApp }: Props = {}) {
   const { t, lang } = useLang();
+  const { connect, phantomAvailable, phantomLoading } = useWallet();
   const [stats, setStats] = useState<MarketStats | null>(null);
 
   useEffect(() => {
@@ -138,7 +140,7 @@ export default function WalletConnect({ walletAddress, onEnterApp }: Props = {})
                   fontFamily: "var(--font-body)",
                 }}
               >
-                進入 App →
+                {t("enterApp")}
               </button>
             </>
           ) : (
@@ -162,15 +164,22 @@ export default function WalletConnect({ walletAddress, onEnterApp }: Props = {})
                   }}>✓ {t(key)}</span>
                 ))}
               </div>
-              <div style={{
-                background: "var(--accent)",
-                borderRadius: 8, padding: "11px 24px",
-                fontSize: 13, fontWeight: 500, color: "#fff",
-                cursor: "default", letterSpacing: "0.06em",
-                fontFamily: "var(--font-body)",
-              }}>
-                {t("ctaFreeBtn")}
-              </div>
+              <button
+                onClick={connect}
+                disabled={phantomLoading || !phantomAvailable}
+                style={{
+                  width: "100%",
+                  background: phantomAvailable ? "var(--accent)" : "var(--text-muted)",
+                  borderRadius: 8, padding: "11px 24px", border: "none",
+                  fontSize: 13, fontWeight: 500, color: "#fff",
+                  cursor: phantomAvailable ? "pointer" : "not-allowed",
+                  letterSpacing: "0.06em",
+                  fontFamily: "var(--font-body)",
+                  opacity: phantomLoading ? 0.7 : 1,
+                }}
+              >
+                {phantomLoading ? "…" : !phantomAvailable ? "Install Phantom" : t("ctaFreeBtn")}
+              </button>
               <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 10, letterSpacing: "0.03em" }}>
                 {t("ctaSubNote")}
               </div>

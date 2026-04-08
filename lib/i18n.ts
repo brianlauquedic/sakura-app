@@ -676,6 +676,7 @@ export const translations = {
   smTimeAgoMin:        { zh: "{n}m 前", en: "{n}m ago", ja: "{n}分前" },
   smTimeAgoHour:       { zh: "{n}h 前", en: "{n}h ago", ja: "{n}時間前" },
   smTimeAgoDay:        { zh: "{n}d 前", en: "{n}d ago", ja: "{n}日前" },
+  enterApp:            { zh: "進入 App →", en: "Enter App →", ja: "アプリへ →" },
   // ── TokenAnalysis — chart labels ────────────────────────────────
   klineGmgn:   { zh: "K 線圖 · GMGN", en: "Chart · GMGN", ja: "チャート · GMGN" },
   loadingGmgn: { zh: "載入 GMGN 數據…", en: "Loading GMGN data…", ja: "GMGNデータを読み込み中…" },
