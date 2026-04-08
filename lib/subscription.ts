@@ -4,25 +4,25 @@
  * 设计原则（洞察人性）：
  *   1. 免费层给 100 点 — 每个主功能各 3 次（安全分析/持倉健檢/Agent/顧問各消耗8-9点），
  *      深度分析需 150 点（付費專屬）→ 用戶能均衡體驗所有功能，自然產生升級動機；每月自動重置
- *   2. Basic $8/月，1,500 点 + 500 点结转 — 比 Netflix 便宜，有结转减少焦虑
+ *   2. Basic $15/月，1,350 点 + 450 点结转 — 低于 ChatGPT Plus $20，专业 DeFi 工具更有价值
  *      命名"Basic"而非"Standard"→ 让 Pro 看起来不贵
- *   3. Pro $28/月，6,000 点 + 未用点数结转（上限 2,000）
- *      结转机制 = 用户不愿意取消 → 月末冲动使用 → 粘性最高
- *   4. 年付省 30%：Basic $67/年($5.6/月)，Pro $235/年($19.6/月)
+ *   3. Pro $30/月，3,500 点 + 1,000 点结转
+ *      Basic→Pro 多付 $15 得 2.6× 点数，升级划算；结转机制提高黏性
+ *   4. 年付省 30%：Basic $126/年($10.5/月)，Pro $252/年($21/月)
  *      心理："反正我会用的" → 一次性收入
  *
- * 点数成本对应 AI API 真实成本（Claude Sonnet 4.6 ~ 30× Haiku）：
+ * 点数成本对应 AI API 真实成本（Claude Sonnet 4.6）：
  *   verify        =  1 点  (RPC 调用，几乎零成本)
- *   analyze       = 10 点  (Haiku, ~$0.003/次)
- *   portfolio     = 15 点  (Haiku + 计算, ~$0.005/次)
- *   agent         = 15 点  (Haiku rebalance, ~$0.005/次)
- *   advisor       = 30 点  (Haiku 简单对话, ~$0.01/次)   ← 心理门槛低
- *   advisor_deep  = 80 点  (Sonnet 4.6 + extended thinking, ~$0.05–0.15/次)
+ *   analyze       =  8 点  (~$0.003/次, free: 3次)
+ *   portfolio     =  8 点  (~$0.005/次, free: 3次)
+ *   agent         =  8 点  (~$0.005/次, free: 3次)
+ *   advisor       =  9 点  (~$0.01/次,  free: 3次)
+ *   advisor_deep  = 150 点 (~$0.05–0.15/次, 付費專屬)
  *
- * 收支健康检查（Pro $28/月，6,000 点）：
- *   最坏：全用 advisor_deep → 75次 × $0.10 = $7.5 成本 → 利润 $20.5 (73%)
- *   常见：30% advisor_deep + 70% advisor → 成本 ~$3–4 → 利润 $24+ (86%)
- *   最好：全用 analyze → 600次 × $0.003 = $1.8 → 利润 $26.2 (94%)
+ * 收支健康检查（典型用户 30% advisor + 70% 其他）：
+ *   Basic $15 最坏：全用 advisor → 150次 × $0.01 = $1.50 成本 → 利润 $13.50 (90%)
+ *   Pro   $30 最坏：全用 advisor → 388次 × $0.01 = $3.88 成本 → 利润 $26.12 (87%)
+ *   典型用户：利润 93-94%
  */
 
 import { Connection, PublicKey } from "@solana/web3.js";
@@ -62,27 +62,27 @@ export const FEATURE_CREDIT_COST: Record<Feature, number> = {
 // ── Tier credit allocations ───────────────────────────────────────
 
 export const TIER_MONTHLY_CREDITS: Record<SubscriptionTier, number> = {
-  free:  100,    // 1× advisor OR 10× analyze — 够体验，不够依赖
-  basic: 1_500,  // ~18× advisor OR 150× analyze
-  pro:   6_000,  // ~75× advisor OR 600× analyze
+  free:  100,    // 每月 3× 各主功能体验
+  basic: 1_350,  // ~150× advisor OR ~168× analyze
+  pro:   3_500,  // ~388× advisor OR ~437× analyze
 };
 
 export const TIER_ROLLOVER_MAX: Record<SubscriptionTier, number> = {
   free:  0,      // no rollover
-  basic: 500,    // 最多结转 500 点 — 减少月末焦虑，提高续费意愿（≈16次分析）
-  pro:   2_000,  // 最多结转 2,000 点 — Pro 专属钩子，让用户不舍得取消
+  basic: 450,    // 最多结转 450 点（~33% of 1350）— 减少月末焦虑，提高续费意愿
+  pro:   1_000,  // 最多结转 1,000 点 — Pro 专属钩子，让用户不舍得取消
 };
 
 // ── Pricing (USDC, 6 decimals) ────────────────────────────────────
 
 export const SUBSCRIPTION_PRICE_MONTHLY: Record<Exclude<SubscriptionTier, "free">, number> = {
-  basic:  8_000_000,   // $8.00 USDC/月
-  pro:   28_000_000,   // $28.00 USDC/月
+  basic:  15_000_000,  // $15.00 USDC/月
+  pro:    30_000_000,  // $30.00 USDC/月
 };
 
 export const SUBSCRIPTION_PRICE_ANNUAL: Record<Exclude<SubscriptionTier, "free">, number> = {
-  basic:  67_000_000,  // $67.00 USDC/年 (原价$96，省$29，省30%)
-  pro:   235_000_000,  // $235.00 USDC/年 (原价$336，省$101，省30%)
+  basic:  126_000_000, // $126.00 USDC/年 (原价$180，省$54，省30%)
+  pro:    252_000_000, // $252.00 USDC/年 (原价$360，省$108，省30%)
 };
 
 // ── Display info ──────────────────────────────────────────────────
@@ -90,36 +90,35 @@ export const SUBSCRIPTION_PRICE_ANNUAL: Record<Exclude<SubscriptionTier, "free">
 export const SUBSCRIPTION_FEATURES: Record<SubscriptionTier, string[]> = {
   free: [
     "100 点/月（每月自动重置）",
-    "1 次深度 AI 分析（80点）",
-    "3 次简单对话（30点×3）",
-    "10 次安全分析（10点×10）",
+    "每项功能各 3 次体验",
+    "深度分析为付費專屬",
     "体验全部功能",
   ],
   basic: [
-    "1,500 点/月 + 最多结转 500 点",
-    "~50 次 AI 对话 / ~18 次深度分析",
-    "~150 次安全分析",
+    "1,350 点/月 + 最多结转 450 点",
+    "~150 次 AI 顧問 / ~9 次深度分析",
+    "~168 次安全分析",
     "Guardian 借贷健康监控",
     "智能钱包追踪（聪明钱）",
     "MCP 工具调用",
   ],
   pro: [
-    "6,000 点/月 + 最多结转 2,000 点",
-    "~200 次 AI 对话 / ~75 次深度分析",
+    "3,500 点/月 + 最多结转 1,000 点",
+    "~388 次 AI 顧問 / ~23 次深度分析",
+    "~437 次安全分析",
     "自动化条件交易触发",
     "机构级实时数据可视化",
-    "无限 MCP API 访问",
     "最高优先级响应 + 链上证明",
   ],
 };
 
 export const FEATURE_CREDIT_LABELS: Record<Feature, string> = {
   verify:       "1 点",
-  analyze:      "10 点",
-  portfolio:    "15 点",
-  agent:        "15 点",
-  advisor:      "30 点",
-  advisor_deep: "80 点",
+  analyze:      "8 点",
+  portfolio:    "8 点",
+  agent:        "8 点",
+  advisor:      "9 点",
+  advisor_deep: "150 点",
 };
 
 // ── TTL constants ─────────────────────────────────────────────────
