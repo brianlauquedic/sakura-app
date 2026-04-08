@@ -462,9 +462,9 @@ export const translations = {
   liveAPYLabel:    { zh: "● 實時 APY", en: "● Live APY", ja: "● ライブAPY" },
   exportReport:    { zh: "導出分析報告", en: "Export Analysis Report", ja: "分析レポート出力" },
   exportBtn:       { zh: "📄 導出", en: "📄 Export", ja: "📄 出力" },
-  advisorQuotaRemaining: { zh: "🆓 {n}/3 次免費剩餘 · 超出後每次 0.50 USDC", en: "🆓 {n}/3 free sessions left · $0.50 USDC after", ja: "🆓 あと{n}/3回無料 · 超過後は$0.50 USDC/回" },
+  advisorQuotaRemaining: { zh: "🆓 {n} 次免費剩餘 · 超出後每次 0.50 USDC", en: "🆓 {n} free sessions left · $0.50 USDC after", ja: "🆓 あと{n}回無料 · 超過後は$0.50 USDC/回" },
   advisorQuotaExhausted: { zh: "免費次數已用完 · 發送時自動支付 0.50 USDC", en: "Free quota used — $0.50 USDC auto-charged per message", ja: "無料枠終了 · メッセージごとに$0.50 USDCが自動請求" },
-  advisorFreeBadge:      { zh: "🆓 {n}/3 次免費", en: "🆓 {n}/3 Free", ja: "🆓 {n}/3回無料" },
+  advisorFreeBadge:      { zh: "🆓 {n} 次免費", en: "🆓 {n} Free", ja: "🆓 {n}回無料" },
   paymentConfirmedMsg:   { zh: "✅ 已支付", en: "✅ Paid", ja: "✅ 支払い済み" },
   // ── CopyTradeModal ───────────────────────────────────────────────
   safeCopyTrade:          { zh: "🛡 安全跟單", en: "🛡 Safe Copy Trade", ja: "🛡 安全コピートレード" },
