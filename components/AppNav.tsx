@@ -103,8 +103,8 @@ export default function AppNav() {
           ))}
         </div>
 
-        {/* Wallet button */}
-        {walletAddress ? (
+        {/* Wallet button — only shown when connected */}
+        {walletAddress && (
           <button
             onClick={disconnect}
             style={{
@@ -117,23 +117,6 @@ export default function AppNav() {
           >
             <span style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--green)", display: "inline-block" }} />
             {shortAddr}
-          </button>
-        ) : (
-          <button
-            onClick={() => connect()}
-            disabled={walletLoading || (!phantomAvailable && !okxAvailable)}
-            style={{
-              padding: "5px 14px", borderRadius: 6,
-              border: "1px solid var(--accent)",
-              background: (phantomAvailable || okxAvailable) ? "var(--accent)" : "var(--bg-card)",
-              fontSize: 12, fontWeight: 500,
-              color: (phantomAvailable || okxAvailable) ? "#fff" : "var(--text-muted)",
-              cursor: (phantomAvailable || okxAvailable) ? "pointer" : "not-allowed",
-              whiteSpace: "nowrap",
-              letterSpacing: "0.03em",
-            }}
-          >
-            {walletLoading ? "…" : !phantomAvailable && !okxAvailable ? "Install Wallet" : `👻 ${t("connectBtn")}`}
           </button>
         )}
 
