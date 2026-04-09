@@ -188,7 +188,7 @@ export default function NonceGuardian() {
           <input
             value={inputAddr}
             onChange={e => setInputAddr(e.target.value)}
-            placeholder="Solana 錢包地址 (base58)"
+            placeholder={t("noncePHPlaceholder")}
             style={{
               flex: 1, background: "var(--bg-base)", border: "1px solid var(--border)",
               borderRadius: 8, padding: "10px 14px", fontSize: 13,

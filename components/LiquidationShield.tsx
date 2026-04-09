@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useWallet } from "@/contexts/WalletContext";
 import { useLang } from "@/contexts/LanguageContext";
+import type { TranslationKey } from "@/lib/i18n";
 import type { LendingPosition, RescueSimulation, MonitorResult, ShieldConfig } from "@/lib/liquidation-shield";
 
 interface MonitorResponse extends MonitorResult {
@@ -33,12 +34,20 @@ function healthColor(hf: number): string {
   return "var(--green)";
 }
 
-function healthLabel(hf: number): string {
-  if (hf < 1.0) return "🚨 清算中";
-  if (hf < 1.05) return "🔴 極危";
-  if (hf < 1.2) return "⚠️ 警告";
-  if (hf < 1.5) return "⚡ 注意";
-  return "✅ 安全";
+function healthLabelKey(hf: number): string {
+  if (hf < 1.0) return "shieldHLiquidating";
+  if (hf < 1.05) return "shieldHCritical";
+  if (hf < 1.2) return "shieldHWarning";
+  if (hf < 1.5) return "shieldHCaution";
+  return "shieldHSafe";
+}
+
+function healthLabelIcon(hf: number): string {
+  if (hf < 1.0) return "🚨";
+  if (hf < 1.05) return "🔴";
+  if (hf < 1.2) return "⚠️";
+  if (hf < 1.5) return "⚡";
+  return "✅";
 }
 
 export default function LiquidationShield() {
@@ -55,7 +64,7 @@ export default function LiquidationShield() {
 
   async function scan() {
     const addr = inputAddr.trim();
-    if (!addr || addr.length < 32) { setError("請輸入有效的 Solana 錢包地址"); return; }
+    if (!addr || addr.length < 32) { setError(t("shieldInvalidAddr")); return; }
     setLoading(true);
     setError(null);
     setResult(null);
@@ -80,7 +89,7 @@ export default function LiquidationShield() {
       const data: MonitorResponse = await res.json();
       setResult(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "掃描失敗");
+      setError(err instanceof Error ? err.message : t("shieldScanFailed"));
     } finally {
       setLoading(false);
     }
@@ -108,7 +117,7 @@ export default function LiquidationShield() {
         [idx]: {
           success: false,
           rescueSig: null, memoSig: null, auditChain: null,
-          error: err instanceof Error ? err.message : "救援失敗",
+          error: err instanceof Error ? err.message : t("shieldRescueFailed2"),
         },
       }));
     } finally {
@@ -418,6 +427,7 @@ export default function LiquidationShield() {
 }
 
 function HealthBadge({ hf }: { hf: number }) {
+  const { t } = useLang();
   return (
     <div style={{
       background: `${healthColor(hf)}18`,
@@ -426,7 +436,7 @@ function HealthBadge({ hf }: { hf: number }) {
       fontSize: 13, fontWeight: 700, color: healthColor(hf),
       display: "flex", alignItems: "center", gap: 6,
     }}>
-      <span>{healthLabel(hf)}</span>
+      <span>{healthLabelIcon(hf)} {t(healthLabelKey(hf) as TranslationKey)}</span>
       <span style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}>{hf.toFixed(3)}</span>
     </div>
   );

@@ -17,15 +17,15 @@ interface ExecuteResponse {
   errors: string[];
 }
 
-const EXAMPLE_STRATEGIES = [
-  "質押 1 SOL 到 Marinade，獲得 mSOL",
-  "把 50 USDC 存入 Kamino 賺取收益",
-  "質押 2 SOL 到 Jito，並把 100 USDC 存入 Kamino",
-];
-
 export default function GhostRun() {
   const { walletAddress } = useWallet();
   const { t } = useLang();
+
+  const EXAMPLE_STRATEGIES = [
+    t("ghostExample1"),
+    t("ghostExample2"),
+    t("ghostExample3"),
+  ];
   const [strategy, setStrategy] = useState("");
   const [loading, setLoading] = useState(false);
   const [executing, setExecuting] = useState(false);
@@ -129,7 +129,7 @@ export default function GhostRun() {
         <textarea
           value={strategy}
           onChange={e => setStrategy(e.target.value)}
-          placeholder="例：質押 3 SOL 到 Marinade，並把 50 USDC 存入 Kamino"
+          placeholder={t("ghostPlaceholder")}
           rows={3}
           style={{
             width: "100%", background: "var(--bg-base)", border: "1px solid var(--border)",
