@@ -3,7 +3,7 @@
  *
  * Two agent types:
  *  - createReadOnlyAgent()  — ephemeral keypair, signOnly: true — safe for on-chain data reads
- *  - createSigningAgent()   — platform keypair (SOLIS_AGENT_PRIVATE_KEY) — for Memo on-chain writes
+ *  - createSigningAgent()   — platform keypair (SAKURA_AGENT_PRIVATE_KEY) — for Memo on-chain writes
  */
 
 import { SolanaAgentKit, KeypairWallet } from "solana-agent-kit";
@@ -44,7 +44,7 @@ export function createReadOnlyAgent() {
  * Returns null if key is not configured.
  */
 export function createSigningAgent() {
-  const raw = process.env.SOLIS_AGENT_PRIVATE_KEY;
+  const raw = process.env.SAKURA_AGENT_PRIVATE_KEY;
   if (!raw) return null;
   try {
     const arr = JSON.parse(raw) as number[];

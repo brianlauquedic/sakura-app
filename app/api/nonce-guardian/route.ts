@@ -1,10 +1,47 @@
 import { NextRequest, NextResponse } from "next/server";
 import { scanNonceAccounts } from "@/lib/nonce-scanner";
+import { Connection, PublicKey } from "@solana/web3.js";
 import Anthropic from "@anthropic-ai/sdk";
 
 const HELIUS_RPC = `https://mainnet.helius-rpc.com/?api-key=${process.env.HELIUS_API_KEY ?? ""}`;
+const SAKURA_FEE_WALLET = process.env.SAKURA_FEE_WALLET ?? "";
+const USDC_MINT = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
+const AI_REPORT_FEE_USDC = 0.5; // $0.50 per AI analysis report
+const AI_REPORT_FEE_MICRO = 500_000; // 0.50 USDC in micro-USDC (6 decimals)
 
 export const maxDuration = 60;
+
+// Verify x402 USDC payment on-chain
+async function verifyPayment(txSig: string): Promise<boolean> {
+  if (!SAKURA_FEE_WALLET) return true; // demo mode: skip if no fee wallet configured
+  try {
+    const { getAssociatedTokenAddressSync } = await import("@solana/spl-token");
+    const conn = new Connection(HELIUS_RPC, "confirmed");
+    const feeWalletAta = getAssociatedTokenAddressSync(
+      new PublicKey(USDC_MINT),
+      new PublicKey(SAKURA_FEE_WALLET)
+    ).toString();
+
+    const tx = await conn.getParsedTransaction(txSig, { maxSupportedTransactionVersion: 0 });
+    if (!tx) return false;
+
+    for (const ix of tx.transaction.message.instructions) {
+      if ("parsed" in ix && ix.parsed?.type === "transferChecked") {
+        const info = ix.parsed.info;
+        if (
+          info?.mint === USDC_MINT &&
+          info?.destination === feeWalletAta &&
+          Number(info?.tokenAmount?.amount ?? 0) >= AI_REPORT_FEE_MICRO
+        ) {
+          return true;
+        }
+      }
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
 
 export async function GET(req: NextRequest) {
   const wallet = req.nextUrl.searchParams.get("wallet");
@@ -31,7 +68,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid wallet address" }, { status: 400 });
   }
 
-  // Scan first
+  // ── Scan (always free) ────────────────────────────────────────────
   let scanResult;
   try {
     scanResult = await scanNonceAccounts(wallet, HELIUS_RPC);
@@ -41,9 +78,48 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: `Scan failed: ${msg}` }, { status: 500 });
   }
 
-  const { accounts, riskSignals } = scanResult;
+  // ── x402 Gate — AI report costs $0.50 USDC ───────────────────────
+  const paymentSig = req.headers.get("x-payment") ?? req.headers.get("X-PAYMENT");
 
-  // AI analysis with Claude
+  if (!paymentSig && SAKURA_FEE_WALLET) {
+    // Return 402 with payment challenge — scan result included so UI can show it
+    return NextResponse.json(
+      {
+        // Payment challenge
+        recipient: SAKURA_FEE_WALLET,
+        amount: AI_REPORT_FEE_USDC,
+        currency: "USDC" as const,
+        network: "solana-mainnet" as const,
+        description: "Sakura Nonce Guardian — AI Security Analysis Report",
+        // Include free scan data so UI can show basic results while prompting for payment
+        scanResult,
+      },
+      {
+        status: 402,
+        headers: {
+          "X-Payment-Required":  "true",
+          "X-Payment-Amount":    String(AI_REPORT_FEE_USDC),
+          "X-Payment-Currency":  "USDC",
+          "X-Payment-Recipient": SAKURA_FEE_WALLET,
+          "X-Payment-Network":   "solana-mainnet",
+        },
+      }
+    );
+  }
+
+  // Verify payment if x-payment header present
+  if (paymentSig && SAKURA_FEE_WALLET) {
+    const valid = await verifyPayment(paymentSig);
+    if (!valid) {
+      return NextResponse.json(
+        { error: "Payment verification failed — send 0.50 USDC to Sakura fee wallet" },
+        { status: 402 }
+      );
+    }
+  }
+
+  // ── AI analysis (paid) ────────────────────────────────────────────
+  const { accounts, riskSignals } = scanResult;
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     return NextResponse.json({ ...scanResult, aiAnalysis: null });

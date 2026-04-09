@@ -5,8 +5,8 @@
  * Body: { strategy: string, wallet: string }
  *
  * 1. Claude parses NL strategy → StrategyStep[]
- * 2. simulateStrategy() runs each step against real Solana state
- * 3. Returns precise token deltas, gas costs, APY estimates
+ * 2. simulateStrategy() — Jupiter Quote API + simulateTransaction (real Solana state)
+ * 3. Returns precise token deltas, gas costs, APY from live APIs
  */
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
@@ -44,7 +44,9 @@ export async function POST(req: NextRequest) {
   // Step 1: Parse NL strategy with Claude
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
-    return NextResponse.json({ error: "ANTHROPIC_API_KEY not configured" }, { status: 500 });
+    return NextResponse.json({
+      error: "未配置 ANTHROPIC_API_KEY — 請在 Vercel 環境變數中添加此 key",
+    }, { status: 500 });
   }
 
   const client = new Anthropic({ apiKey });
@@ -59,24 +61,27 @@ export async function POST(req: NextRequest) {
     });
 
     const text = msg.content[0].type === "text" ? msg.content[0].text.trim() : "[]";
-    // Extract JSON array from response (may have trailing text)
     const jsonMatch = text.match(/\[[\s\S]*\]/);
-    steps = jsonMatch ? JSON.parse(jsonMatch[0]) : [];
+    steps = jsonMatch ? (JSON.parse(jsonMatch[0]) as StrategyStep[]) : [];
   } catch (err) {
-    console.error("[ghost-run/simulate] parse error:", err);
-    return NextResponse.json({ error: "Strategy parse failed" }, { status: 500 });
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("[ghost-run/simulate] Claude error:", err);
+    return NextResponse.json({ error: `Claude API 錯誤: ${msg}` }, { status: 500 });
   }
 
   if (steps.length === 0) {
-    return NextResponse.json({ error: "無法解析策略，請用中文或英文描述您的 DeFi 操作" }, { status: 400 });
+    return NextResponse.json({
+      error: "無法解析策略。請描述如：「質押 2 SOL 到 Marinade」或「把 50 USDC 存入 Kamino」",
+    }, { status: 400 });
   }
 
-  // Step 2: Simulate each step with native Solana RPC
+  // Step 2: Simulate — Jupiter Quote API + simulateTransaction (real Solana state)
   try {
     const result = await simulateStrategy(steps, wallet);
     return NextResponse.json({ steps, result });
   } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
     console.error("[ghost-run/simulate] simulation error:", err);
-    return NextResponse.json({ error: "Simulation failed" }, { status: 500 });
+    return NextResponse.json({ error: `Simulation failed: ${msg}` }, { status: 500 });
   }
 }

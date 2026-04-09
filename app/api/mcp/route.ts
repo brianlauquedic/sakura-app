@@ -5,7 +5,7 @@ import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 // ── Payment config ───────────────────────────────────────────────
 const HELIUS_API_KEY  = process.env.HELIUS_API_KEY ?? "";
 const HELIUS_RPC      = `https://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}`;
-const SOLIS_FEE_WALLET = process.env.SOLIS_FEE_WALLET ?? "";
+const SAKURA_FEE_WALLET = process.env.SAKURA_FEE_WALLET ?? "";
 const USDC_MINT        = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
 const MCP_CALL_FEE     = 10_000; // 0.01 USDC (6 decimals) per tool call
 
@@ -13,20 +13,20 @@ const MCP_CALL_FEE     = 10_000; // 0.01 USDC (6 decimals) per tool call
 const usedSigs = new Set<string>();
 
 let _mcpFeeAta = "";
-function getSolisFeeAta(): string {
+function getSakuraFeeAta(): string {
   if (_mcpFeeAta) return _mcpFeeAta;
-  if (!SOLIS_FEE_WALLET) return "";
+  if (!SAKURA_FEE_WALLET) return "";
   try {
     _mcpFeeAta = getAssociatedTokenAddressSync(
       new PublicKey(USDC_MINT),
-      new PublicKey(SOLIS_FEE_WALLET)
+      new PublicKey(SAKURA_FEE_WALLET)
     ).toString();
   } catch { /* env var missing at build time */ }
   return _mcpFeeAta;
 }
 
 async function verifyMCPPayment(txSig: string, requiredAmount: number): Promise<boolean> {
-  if (!SOLIS_FEE_WALLET) return true; // demo mode: no fee wallet configured
+  if (!SAKURA_FEE_WALLET) return true; // demo mode: no fee wallet configured
   try {
     const conn = new Connection(HELIUS_RPC, "confirmed");
     const tx = await conn.getParsedTransaction(txSig, { maxSupportedTransactionVersion: 0 });
@@ -36,7 +36,7 @@ async function verifyMCPPayment(txSig: string, requiredAmount: number): Promise<
         const info = ix.parsed.info;
         if (
           info?.mint === USDC_MINT &&
-          info?.destination === getSolisFeeAta() &&
+          info?.destination === getSakuraFeeAta() &&
           Number(info?.tokenAmount?.amount ?? 0) >= requiredAmount
         ) {
           return true;
@@ -148,7 +148,7 @@ export async function POST(req: NextRequest) {
             "X-Payment-Required": "true",
             "X-Payment-Amount": "0.01",
             "X-Payment-Currency": "USDC",
-            "X-Payment-Recipient": SOLIS_FEE_WALLET || "not-configured",
+            "X-Payment-Recipient": SAKURA_FEE_WALLET || "not-configured",
             "X-Payment-Network": "solana-mainnet",
           },
         }

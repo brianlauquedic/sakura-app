@@ -4,13 +4,13 @@
  *
  * Flow:
  *   1. Client calls /api/token/premium?mint=xxx  → 402 with payment info
- *   2. Client creates a Solana USDC transfer tx to SOLIS_FEE_WALLET
+ *   2. Client creates a Solana USDC transfer tx to SAKURA_FEE_WALLET
  *   3. Client retries with X-PAYMENT: <txSignature> header
  *   4. Server verifies tx on-chain → returns full analysis
  */
 
 export interface PaymentChallenge {
-  recipient: string;   // SOLIS_FEE_WALLET
+  recipient: string;   // SAKURA_FEE_WALLET
   amount: number;      // in USDC (e.g. 0.1)
   currency: "USDC";
   network: "solana-mainnet";

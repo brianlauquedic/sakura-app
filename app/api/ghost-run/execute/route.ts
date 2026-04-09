@@ -3,16 +3,20 @@
  *
  * POST /api/ghost-run/execute
  * Body: { steps: StrategyStep[], wallet: string }
- * Headers: X-Wallet-Signature (wallet signed the strategy hash)
  *
- * Executes confirmed strategy steps via SAK, then writes
- * an on-chain execution proof via Solana Memo Program.
+ * Executes confirmed strategy steps via SAK + Jupiter.
+ * Ghost Run charges 0.3% platform fee (platformFeeBps: 30) on every swap
+ * via Jupiter's native integrator fee — embedded in the transaction, zero friction.
+ * Writes on-chain execution proof via Solana Memo Program.
  */
 import { NextRequest, NextResponse } from "next/server";
 import { createSigningAgent } from "@/lib/agent";
 import type { StrategyStep } from "@/lib/ghost-run";
 
 export const maxDuration = 120;
+
+const SAKURA_FEE_WALLET = process.env.SAKURA_FEE_WALLET ?? "";
+const PLATFORM_FEE_BPS = 30; // 0.3% — competitive vs Phantom (0.85%)
 
 export async function POST(req: NextRequest) {
   let body: { steps?: StrategyStep[]; wallet?: string } = {};
@@ -25,7 +29,7 @@ export async function POST(req: NextRequest) {
 
   const agent = createSigningAgent();
   if (!agent) {
-    return NextResponse.json({ error: "Agent not configured (SOLIS_AGENT_PRIVATE_KEY missing)" }, { status: 500 });
+    return NextResponse.json({ error: "Agent not configured (SAKURA_AGENT_PRIVATE_KEY missing)" }, { status: 500 });
   }
 
   const signatures: string[] = [];
@@ -58,7 +62,7 @@ export async function POST(req: NextRequest) {
         );
         sig = result;
       } else if (step.type === "swap") {
-        const { Connection, PublicKey } = await import("@solana/web3.js");
+        const { Connection, PublicKey, VersionedTransaction } = await import("@solana/web3.js");
         const { RPC_URL } = await import("@/lib/agent");
         const conn = new Connection(RPC_URL, "confirmed");
         const { TOKEN_MINTS, TOKEN_DECIMALS } = await import("@/lib/ghost-run");
@@ -75,20 +79,39 @@ export async function POST(req: NextRequest) {
         if (!quoteRes.ok) throw new Error("Jupiter quote failed");
         const quote = await quoteRes.json();
 
-        // Get swap transaction
+        // Compute feeAccount = Sakura fee wallet's ATA for output token
+        // Jupiter will collect 0.3% of output amount into this account
+        let feeAccount: string | undefined;
+        if (SAKURA_FEE_WALLET) {
+          try {
+            const { getAssociatedTokenAddressSync } = await import("@solana/spl-token");
+            feeAccount = getAssociatedTokenAddressSync(
+              new PublicKey(outputMint),
+              new PublicKey(SAKURA_FEE_WALLET)
+            ).toString();
+          } catch { /* skip fee if ATA computation fails */ }
+        }
+
+        // Get swap transaction — inject 0.3% platform fee
+        const swapBody: Record<string, unknown> = {
+          quoteResponse: quote,
+          userPublicKey: wallet,
+          wrapAndUnwrapSol: true,
+        };
+
+        if (feeAccount && SAKURA_FEE_WALLET) {
+          swapBody.platformFeeBps = PLATFORM_FEE_BPS; // 0.3%
+          swapBody.feeAccount = feeAccount;
+        }
+
         const swapRes = await fetch("https://quote-api.jup.ag/v6/swap", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            quoteResponse: quote,
-            userPublicKey: wallet,
-            wrapAndUnwrapSol: true,
-          }),
+          body: JSON.stringify(swapBody),
         });
         if (!swapRes.ok) throw new Error("Jupiter swap build failed");
         const { swapTransaction } = await swapRes.json();
 
-        const { VersionedTransaction } = await import("@solana/web3.js");
         const txBuf = Buffer.from(swapTransaction, "base64");
         const tx = VersionedTransaction.deserialize(txBuf);
         sig = await conn.sendRawTransaction(tx.serialize(), { skipPreflight: false });
@@ -107,9 +130,10 @@ export async function POST(req: NextRequest) {
   if (signatures.length > 0) {
     try {
       const proofText = JSON.stringify({
-        event: "ghost_run_executed",
+        event: "sakura_ghost_run_executed",
         wallet: wallet.slice(0, 8),
         steps: steps.length,
+        platformFeeBps: PLATFORM_FEE_BPS,
         signatures: signatures.map(s => s.slice(0, 12)),
         ts: new Date().toISOString(),
       });
@@ -131,6 +155,7 @@ export async function POST(req: NextRequest) {
     success: errors.length === 0,
     signatures,
     memoSig,
+    platformFee: `${PLATFORM_FEE_BPS / 100}% collected to Sakura fee wallet`,
     errors,
   });
 }

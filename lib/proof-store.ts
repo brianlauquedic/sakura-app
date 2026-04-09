@@ -1,4 +1,4 @@
-const KEY = "solis_proofs";
+const KEY = "sakura_proofs";
 
 export interface ProofRecord {
   hash: string;
@@ -32,8 +32,8 @@ export function lookupProof(hash: string): ProofRecord | null {
   try {
     const all: Record<string, ProofRecord> = JSON.parse(localStorage.getItem(KEY) ?? "{}");
     // Support both full hash and memo payload prefix (solis:xxxx)
-    if (hash.startsWith("solis:")) {
-      const prefix = hash.slice(6);
+    if (hash.startsWith("sakura:")) {
+      const prefix = hash.slice(7);
       const found = Object.values(all).find(r => r.hash.startsWith(prefix));
       return found ?? null;
     }

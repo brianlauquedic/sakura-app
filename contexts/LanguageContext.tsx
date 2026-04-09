@@ -3,7 +3,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { Lang, translations, TranslationKey, tpl } from "@/lib/i18n";
 
-const LANG_STORAGE_KEY = "solis_lang";
+const LANG_STORAGE_KEY = "sakura_lang";
 
 interface LanguageContextValue {
   lang: Lang;
