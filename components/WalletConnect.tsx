@@ -6,10 +6,10 @@ import WaBijinSVG from "@/components/WaBijinSVG";
 import { useWallet } from "@/contexts/WalletContext";
 
 const AGENT_KEYS = [
-  { tag: "Security Agent",  titleKey: "agent1Title" as const, descKey: "agent1Desc" as const, icon: "護", color: "var(--green)" },
-  { tag: "Portfolio Agent", titleKey: "agent2Title" as const, descKey: "agent2Desc" as const, icon: "覧", color: "var(--gold)" },
-  { tag: "Advisor Agent",   titleKey: "agent3Title" as const, descKey: "agent3Desc" as const, icon: "智", color: "var(--accent)" },
-  { tag: "Rebalance Agent", titleKey: "agent4Title" as const, descKey: "agent4Desc" as const, icon: "衡", color: "var(--orange)" },
+  { tag: "Nonce Guardian",       titleKey: "agent1Title" as const, descKey: "agent1Desc" as const, icon: "護", color: "#FF4444" },
+  { tag: "Ghost Run",            titleKey: "agent2Title" as const, descKey: "agent2Desc" as const, icon: "幽", color: "var(--accent)" },
+  { tag: "Liquidation Shield",   titleKey: "agent3Title" as const, descKey: "agent3Desc" as const, icon: "盾", color: "var(--gold)" },
+  { tag: "Verifiable AI",        titleKey: "agent4Title" as const, descKey: "agent4Desc" as const, icon: "証", color: "var(--green)" },
 ];
 
 const PROTOCOLS = [
@@ -18,9 +18,9 @@ const PROTOCOLS = [
 ];
 
 const STATS = [
-  { numValue: 5,   suffix: "",  labelKey: "statLabel1" as const },
-  { numValue: 4,   suffix: "",  labelKey: "statLabel2" as const },
-  { numValue: 8.2, suffix: "%", labelKey: "statLabel3" as const },
+  { numValue: 3,   suffix: "",  labelKey: "statLabel1" as const },
+  { numValue: 285, suffix: "M", labelKey: "statLabel2" as const },
+  { numValue: 99,  suffix: "%", labelKey: "statLabel3" as const },
   { numValue: 100, suffix: "%", labelKey: "statLabel4" as const },
 ];
 

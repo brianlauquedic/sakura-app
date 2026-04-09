@@ -33,35 +33,35 @@ export const translations = {
     ja: "4つの専門AIエージェントがセキュリティ分析、ポートフォリオ診断、DeFi実行、自律リバランスをカバー。すべてのAI判断はSHA-256ハッシュでSolanaに永久記録され、独立して検証可能。",
   },
 
-  // ── Agents ────────────────────────────────────────────────────────
+  // ── Features (3 core) ─────────────────────────────────────────────
   agentsTitle: {
-    zh: "4 個協作智能體",
-    en: "4 Collaborative Agents",
-    ja: "4つの協調エージェント",
+    zh: "3 個史無前例的核心功能",
+    en: "3 Unprecedented Core Features",
+    ja: "3つの前例なきコア機能",
   },
-  agent1Title: { zh: "鏈上安全衛士", en: "Security Guardian", ja: "セキュリティガーディアン" },
+  agent1Title: { zh: "🛡️ Nonce Guardian", en: "🛡️ Nonce Guardian", ja: "🛡️ Nonce Guardian" },
   agent1Desc: {
-    zh: "GoPlus 5 維度掃描 · 蜜罐檢測 · 增發/凍結權限分析 · 持幣集中度 · AI 倉位建議",
-    en: "GoPlus 5-dimension scan · Honeypot detection · Mint/freeze authority · Concentration risk · AI position sizing",
-    ja: "GoPlus 5次元スキャン・ハニーポット検出・発行/凍結権限・集中リスク・AIポジション提案",
+    zh: "掃描免費 · AI 安全報告 $1 USDC · SHA-256 永久鏈上存證。偵測 Durable Nonce 隱形攻擊向量——2026年4月 $2.85億 Drift 攻擊同款手法，業界首個跨協議防護工具。",
+    en: "Free scan · AI security report $1 USDC · SHA-256 permanent on-chain proof. Detects Durable Nonce attack vectors — same exploit behind the April 2026 $285M Drift hack. First cross-protocol defense tool of its kind.",
+    ja: "スキャン無料 · AIセキュリティレポート $1 USDC · SHA-256永久オンチェーン証明。Durable Nonce攻撃ベクターを検出——2026年4月の2.85億ドルDriftハックと同じ手法。業界初のクロスプロトコル防御ツール。",
   },
-  agent2Title: { zh: "持倉健康分析", en: "Portfolio Health Scan", ja: "ポートフォリオ診断" },
+  agent2Title: { zh: "👻 Ghost Run", en: "👻 Ghost Run", ja: "👻 Ghost Run" },
   agent2Desc: {
-    zh: "資產結構評分 · 閒置 USDC 識別 · 高風險代幣預警 · 實時 APY 對比 · 收益機會提示",
-    en: "Asset score · Idle USDC detection · High-risk token alerts · Live APY comparison · Yield opportunities",
-    ja: "資産スコア・遊休USDC検出・高リスクトークン警告・リアルタイムAPY比較・利回り機会",
+    zh: "模擬免費 · 執行收 0.3%（比 Phantom 便宜 65%）。自然語言輸入 DeFi 策略，Claude AI 解析，Solana 原生 simulateTransaction 預覽精確結果，SAK 一鍵執行。",
+    en: "Simulation free · 0.3% execution fee (65% cheaper than Phantom). Input DeFi strategy in natural language, Claude AI parses it, Solana native simulateTransaction previews exact results, SAK executes in one click.",
+    ja: "シミュレーション無料 · 実行手数料0.3%（Phantomより65%安い）。自然言語でDeFi戦略を入力、Claude AIが解析、SolanaネイティブsimulateTransactionで正確な結果をプレビュー、SAKがワンクリックで実行。",
   },
-  agent3Title: { zh: "自然語言 DeFi 顧問", en: "Natural Language DeFi Advisor", ja: "自然言語DeFiアドバイザー" },
+  agent3Title: { zh: "⚡ Liquidation Shield", en: "⚡ Liquidation Shield", ja: "⚡ Liquidation Shield" },
   agent3Desc: {
-    zh: "多輪對話記憶 · 主動 APY 變化提醒 · Jupiter Swap · Marinade/Jito 質押 · Kamino 借貸",
-    en: "Multi-turn memory · Proactive APY alerts · Jupiter Swap · Marinade/Jito staking · Kamino lending",
-    ja: "多ターン記憶・プロアクティブAPY通知・Jupiterスワップ・Marinade/Jitoステーキング・Kaminoレンディング",
+    zh: "監控免費 · 救援成功收 1%（清算損失 5-10%，淨省 4-9%）。跨協議掃描 Kamino/MarginFi 借貸倉位，SPL approve 硬性授權上限，AI 自動觸發救援。業界唯一跨協議方案。",
+    en: "Monitoring free · 1% rescue fee (liquidation penalty 5-10%, you net save 4-9%). Cross-protocol scan of Kamino/MarginFi positions, SPL approve hard spending cap, AI auto-triggers rescue. Industry's only cross-protocol solution.",
+    ja: "監視無料 · 救済成功時1%手数料（清算ペナルティ5-10%、実質4-9%節約）。Kamino/MarginFiポジションをクロスプロトコルスキャン、SPL approve厳格な承認上限、AI自動救済トリガー。業界唯一のクロスプロトコルソリューション。",
   },
-  agent4Title: { zh: "自主再平衡 Agent", en: "Autonomous Rebalance Agent", ja: "自律リバランスエージェント" },
+  agent4Title: { zh: "🔒 鏈上可驗證 AI", en: "🔒 Onchain-Verifiable AI", ja: "🔒 オンチェーン検証可能AI" },
   agent4Desc: {
-    zh: "無需提問，自主掃描持倉 · 量化年化收益方案 · Before/After 對比 · 每個決策 SHA-256 上鏈",
-    en: "No prompting needed — autonomously scans portfolio · Quantifies annual yield gain · Before/After comparison · Every decision SHA-256 onchain",
-    ja: "自律的にポートフォリオをスキャン・年利益を定量化・Before/After比較・すべての判断をSHA-256でオンチェーン記録",
+    zh: "每個 AI 決策生成 SHA-256 哈希，透過 Solana Memo Program 永久上鏈。任何人可獨立驗證——不是黑箱，是透明可信的 AI。Colosseum 2026 評審三大焦點之一：Verifiable Compute。",
+    en: "Every AI decision generates a SHA-256 hash permanently recorded via Solana Memo Program. Anyone can independently verify — not a black box, but transparent trustworthy AI. One of Colosseum 2026's three focus areas: Verifiable Compute.",
+    ja: "すべてのAI判断がSHA-256ハッシュを生成し、Solana Memo Programに永久記録。誰でも独立検証可能——ブラックボックスではなく透明なAI。Colosseum 2026の3大フォーカスの一つ：Verifiable Compute。",
   },
 
   // ── Differentiator ────────────────────────────────────────────────
@@ -73,9 +73,9 @@ export const translations = {
   },
 
   // ── Stats ────────────────────────────────────────────────────────
-  statLabel1: { zh: "GoPlus 安全維度", en: "GoPlus Security Dimensions", ja: "GoPlus セキュリティ次元" },
-  statLabel2: { zh: "協作智能體", en: "Collaborative Agents", ja: "協調エージェント" },
-  statLabel3: { zh: "最高穩定幣 APY", en: "Top Stablecoin APY", ja: "最高ステーブルコインAPY" },
+  statLabel1: { zh: "核心創新功能", en: "Core Features", ja: "コア機能" },
+  statLabel2: { zh: "億 Drift 攻擊防護", en: "M Drift Hack Protected", ja: "億Driftハック防護" },
+  statLabel3: { zh: "平均利潤率 %", en: "Avg Profit Margin %", ja: "平均利益率 %" },
   statLabel4: { zh: "AI 推理鏈上可驗證", en: "AI Reasoning Onchain", ja: "AI推論オンチェーン検証" },
 
   // ── Trust signals ────────────────────────────────────────────────
@@ -91,22 +91,22 @@ export const translations = {
     ja: "無料で始める — 登録不要",
   },
   ctaFreeDesc: {
-    zh: "連接 Phantom 錢包，立即獲得 3 次免費安全分析 + AI 顧問",
-    en: "Connect Phantom and get 3 free security analyses + AI advisor sessions instantly",
-    ja: "Phantomを接続して、無料でセキュリティ分析3回＋AIアドバイザーを即時利用",
+    zh: "連接 Phantom 或 OKX 錢包，立即免費使用 Nonce Guardian 掃描 + Ghost Run 模擬 + Liquidation Shield 監控",
+    en: "Connect Phantom or OKX wallet — Nonce Guardian scan, Ghost Run simulation, and Liquidation Shield monitoring are all free",
+    ja: "PhantomまたはOKXウォレットを接続 — Nonce Guardianスキャン、Ghost Runシミュレーション、Liquidation Shieldモニタリングはすべて無料",
   },
-  ctaFreeBadge1: { zh: "3× 安全分析", en: "3× Security Analysis", ja: "3× セキュリティ分析" },
-  ctaFreeBadge2: { zh: "3× AI 顧問", en: "3× AI Advisor", ja: "3× AIアドバイザー" },
-  ctaFreeBadge3: { zh: "3× Agent 再平衡", en: "3× Agent Rebalancing", ja: "3× エージェント再平衡" },
+  ctaFreeBadge1: { zh: "🛡️ Nonce 掃描免費", en: "🛡️ Nonce Scan Free", ja: "🛡️ Nonceスキャン無料" },
+  ctaFreeBadge2: { zh: "👻 Ghost Run 模擬免費", en: "👻 Ghost Run Free", ja: "👻 Ghost Run無料" },
+  ctaFreeBadge3: { zh: "⚡ Shield 監控免費", en: "⚡ Shield Monitor Free", ja: "⚡ Shield監視無料" },
   ctaFreeBtn: {
-    zh: "👻 連接 Phantom — 免費",
-    en: "👻 Connect Phantom — Free",
-    ja: "👻 Phantom接続 — 無料",
+    zh: "👻 連接 Phantom — 免費開始",
+    en: "👻 Connect Phantom — Start Free",
+    ja: "👻 Phantom接続 — 無料で開始",
   },
   ctaSubNote: {
-    zh: "升級 Basic $8/月 · Pro $28/月 · 按次 $0.10 USDC",
-    en: "Upgrade: Basic $8/mo · Pro $28/mo · Or pay-per-use $0.10 USDC",
-    ja: "アップグレード: Basic $8/月 · Pro $28/月 · 従量課金 $0.10 USDC",
+    zh: "AI 報告 $1 USDC · Ghost Run 執行 0.3% · 清算救援 1%（僅成功收費）",
+    en: "AI Report $1 USDC · Ghost Run execution 0.3% · Rescue fee 1% (success only)",
+    ja: "AIレポート $1 USDC · Ghost Run実行 0.3% · 救済手数料 1%（成功時のみ）",
   },
 
   // ── Stripe MPP section (new) ────────────────────────────────────────
