@@ -14,8 +14,6 @@ export default function Footer() {
   const resources = [
     { label: t("footerDocs"),     href: "/docs"      },
     { label: t("footerUseCases"), href: "/use-cases" },
-    { label: t("footerMarket"),   href: "/market"    },
-    { label: t("footerPricing"),  href: "/pricing"   },
   ];
 
   const social = [

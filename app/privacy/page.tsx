@@ -30,8 +30,8 @@ const CONTENT = {
           {
             title: "2.2 AI Interaction Data",
             items: [
-              "AI conversation logs – prompts you submit to Sakura's AI advisor (powered by Claude AI) and the AI-generated analysis responses.",
-              "Analysis requests – security scan requests, portfolio health check queries, and DeFi strategy questions you initiate.",
+              "AI analysis logs – wallet addresses submitted to Nonce Guardian, strategy descriptions submitted to Ghost Run, and lending position data queried via Liquidation Shield.",
+              "AI-generated outputs – Claude AI security reports (SHA-256 hashed and recorded on Solana), Ghost Run simulation results, and Liquidation Shield rescue logs. On-chain Memo records are permanently public.",
             ],
           },
           {
@@ -62,9 +62,8 @@ const CONTENT = {
         heading: "3. How We Use Your Information",
         intro: "We use the information we collect for the following purposes:",
         items: [
-          "Deliver AI analysis – generating portfolio health reports, security scans, and DeFi advisory responses based on your wallet data.",
-          "Security analysis – transmitting token contract addresses to GoPlus Security API for risk scoring.",
-          "Blockchain data retrieval – querying Helius RPC to fetch your on-chain portfolio data for analysis.",
+          "Deliver AI analysis – Nonce Guardian security reports, Ghost Run strategy simulations, and Liquidation Shield rescue operations powered by Claude AI.",
+          "Blockchain data retrieval – querying Helius RPC and Solana program accounts to fetch on-chain data required for Nonce Guardian scans, Ghost Run simulations, and Liquidation Shield health factor monitoring.",
           "Platform improvement – improving AI models and platform performance using anonymized, aggregated data only.",
           "Subscription management – managing your plan, credit balance, and billing cycle.",
           "Security and compliance – detecting abuse, fraud, and enforcing our Terms of Service.",
@@ -76,8 +75,8 @@ const CONTENT = {
         heading: "4. Sharing of Information",
         intro: "We do not sell your personal information. We may share your information in the following circumstances:",
         subsections: [
-          { title: "Infrastructure and service providers", body: "We share data with hosting, analytics, and security vendors under strict data processing agreements. This includes Helius (Solana RPC), GoPlus Security (token risk analysis), Claude AI (Anthropic) for AI processing, and Stripe for payment handling." },
-          { title: "Blockchain data", body: "Your public wallet address is used to query the Solana blockchain. Blockchain data is inherently public; Sakura reads but never writes to the blockchain on your behalf." },
+          { title: "Infrastructure and service providers", body: "We share data with hosting, analytics, and security vendors under strict data processing agreements. This includes Helius (Solana RPC for on-chain data), Claude AI (Anthropic) for AI security reports and strategy parsing, Jupiter (DEX aggregator for Ghost Run execution), and Solana Agent Kit (SAK) for on-chain transaction execution." },
+          { title: "Blockchain data", body: "Your public wallet address is used to query the Solana blockchain. Blockchain data is inherently public. Sakura writes to the blockchain on your behalf only during Ghost Run execution (with your explicit confirmation) and Liquidation Shield rescue (within your pre-authorized SPL Token Approve spending cap). SHA-256 hashes of AI reports are permanently recorded via Solana Memo Program and are publicly visible." },
           { title: "Legal and regulatory authorities", body: "We may disclose your information in response to lawful requests from government authorities or where necessary to prevent fraud or comply with applicable law." },
           { title: "Corporate transactions", body: "In connection with a merger, acquisition, or similar transaction, your information may be transferred to the acquiring entity, subject to equivalent privacy protections." },
           { title: "Aggregated or anonymized statistics", body: "We may share aggregated, non-personally identifiable data for analytical or promotional purposes." },
@@ -154,8 +153,8 @@ const CONTENT = {
           {
             title: "2.2 AI 互動資料",
             items: [
-              "AI 對話記錄——您提交給 Sakura AI 顧問（由 Claude AI 驅動）的提示詞及 AI 生成的分析回應。",
-              "分析請求——您發起的安全掃描請求、投資組合健康查詢及 DeFi 策略問題。",
+              "AI 分析日誌——提交給 Nonce Guardian 的錢包地址、提交給 Ghost Run 的策略描述，以及 Liquidation Shield 查詢的借貸倉位資料。",
+              "AI 生成輸出——Claude AI 安全報告（SHA-256 哈希記錄在 Solana 鏈上）、Ghost Run 模擬結果及 Liquidation Shield 救援日誌。鏈上 Memo 記錄永久公開可見。",
             ],
           },
           {
@@ -186,9 +185,8 @@ const CONTENT = {
         heading: "3. 我們如何使用您的資訊",
         intro: "我們將收集的資訊用於以下目的：",
         items: [
-          "提供 AI 分析——根據您的錢包資料生成投資組合健康報告、安全掃描及 DeFi 顧問回應。",
-          "安全分析——將代幣合約地址提交至 GoPlus Security API 進行風險評分。",
-          "區塊鏈資料獲取——查詢 Helius RPC 以獲取您的鏈上投資組合資料。",
+          "提供 AI 分析——包括 Nonce Guardian 安全報告、Ghost Run 策略模擬及 Liquidation Shield 救援操作，均由 Claude AI 驅動。",
+          "區塊鏈資料獲取——查詢 Helius RPC 及 Solana 程序賬戶，獲取 Nonce Guardian 掃描、Ghost Run 模擬及 Liquidation Shield 健康因子監控所需的鏈上資料。",
           "平台改進——僅使用匿名化、彙總資料改進 AI 模型及平台效能。",
           "訂閱管理——管理您的方案、點數餘額及帳單週期。",
           "安全與合規——偵測濫用、詐騙行為並執行我們的服務條款。",
@@ -200,8 +198,8 @@ const CONTENT = {
         heading: "4. 資訊分享",
         intro: "我們不出售您的個人資訊。在以下情況下，我們可能分享您的資訊：",
         subsections: [
-          { title: "基礎設施及服務提供商", body: "我們在嚴格的資料處理協議下與託管、分析及安全供應商共享資料，包括 Helius（Solana RPC）、GoPlus Security（代幣風險分析）、Claude AI（Anthropic）及 Stripe（付款處理）。" },
-          { title: "區塊鏈資料", body: "您的公開錢包地址用於查詢 Solana 區塊鏈。區塊鏈資料本質上是公開的；Sakura 僅讀取但從不代表您寫入區塊鏈。" },
+          { title: "基礎設施及服務提供商", body: "我們在嚴格的資料處理協議下與供應商共享資料，包括 Helius（Solana RPC 鏈上資料）、Claude AI（Anthropic，AI 安全報告與策略解析）、Jupiter（DEX 聚合器，Ghost Run 執行）及 Solana Agent Kit（SAK，鏈上交易執行）。" },
+          { title: "區塊鏈資料", body: "您的公開錢包地址用於查詢 Solana 區塊鏈。區塊鏈資料本質上是公開的。Sakura 僅在以下情況代您寫入區塊鏈：Ghost Run 執行（需您明確確認）及 Liquidation Shield 救援（在您預授權的 SPL Token Approve 支出上限內）。AI 報告的 SHA-256 哈希透過 Solana Memo Program 永久上鏈，永久公開可見。" },
           { title: "法律及監管機關", body: "我們可能根據政府機關、法院或監管機構的合法要求披露您的資訊，或在必要時防止詐騙或遵守法律。" },
           { title: "公司交易", body: "在合併、收購或類似交易中，您的資訊可能轉移給收購方，並受同等隱私保護。" },
           { title: "彙總或匿名統計資料", body: "我們可能出於分析或推廣目的分享彙總的、非個人身份識別資料。" },
