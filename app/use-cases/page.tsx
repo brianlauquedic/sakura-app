@@ -224,15 +224,27 @@ export default function UseCasesPage() {
           <div style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 20, lineHeight: 1.7 }}>
             掃描、模擬、監控均完全免費——僅在執行時收取費用
           </div>
-          <Link href="/" style={{
-            display: "inline-block",
-            background: "var(--accent)", color: "#fff",
-            borderRadius: 8, padding: "10px 28px",
-            fontSize: 13, fontWeight: 500, textDecoration: "none",
-            letterSpacing: "0.06em",
-          }}>
-            連接 Phantom 錢包 →
-          </Link>
+          <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
+            <Link href="/" style={{
+              display: "inline-block",
+              background: "var(--accent)", color: "#fff",
+              borderRadius: 8, padding: "10px 24px",
+              fontSize: 13, fontWeight: 500, textDecoration: "none",
+              letterSpacing: "0.06em",
+            }}>
+              👻 連接 Phantom →
+            </Link>
+            <Link href="/" style={{
+              display: "inline-block",
+              background: "#1a1a2e", color: "#fff",
+              border: "1px solid #4a4aff",
+              borderRadius: 8, padding: "10px 24px",
+              fontSize: 13, fontWeight: 500, textDecoration: "none",
+              letterSpacing: "0.06em",
+            }}>
+              ◈ Connect OKX →
+            </Link>
+          </div>
         </div>
       </div>
       <Footer />
