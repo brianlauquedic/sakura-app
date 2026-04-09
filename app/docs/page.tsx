@@ -121,9 +121,8 @@ export default function DocsPage() {
             ← 返回首頁
           </Link>
           <div style={{
-            display: "inline-flex", alignItems: "center", gap: 8,
             background: "var(--accent-soft)", border: "1px solid var(--accent-mid)",
-            borderRadius: 20, padding: "4px 14px", marginBottom: 20, display: "block",
+            borderRadius: 20, padding: "4px 14px", marginBottom: 20, display: "inline-block",
           }}>
             <span style={{ fontSize: 11, color: "var(--accent)", letterSpacing: "0.15em", fontFamily: "var(--font-mono)" }}>
               DOCUMENTATION
