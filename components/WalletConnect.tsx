@@ -394,7 +394,7 @@ export default function WalletConnect({ walletAddress, onEnterApp }: Props = {})
           border: "1px solid var(--border)", borderRadius: 4, padding: "6px 10px",
           letterSpacing: "0.05em",
         }}>
-          POST /api/mcp · HTTP 402 · x402-payment: USDC · Solana Mainnet
+          POST /api/mcp · HTTP 402 · x402-payment: 1.00 USDC · Solana Mainnet
         </div>
       </div>
 

@@ -150,9 +150,9 @@ export const translations = {
     ja: "インターネットが誕生したとき、HTTPはマシン間の情報交換プロトコルを定義しました。Agentic Economyには新しいプロトコルが必要です：マシン間の価値交換。SakuraはSolana DeFiセキュリティ領域で初めてHTTP 402 Payment Required（x402）——Stripe Machine Payments Protocol——を本番環境で実装したプロジェクトです。Claude Desktop、Cursor、VS Code、その他あらゆる自律AIエージェントを含む任意のMCPクライアントが、Sakuraの Nonce Guardian セキュリティ分析APIを直接呼び出せます。各呼び出しはオンチェーンUSDCで原子的に決済され、1リクエスト$1。アカウント不要。サブスクリプション不要。OAuth不要。人間の承認ゲート不要。これは未来のビジョンではなく——すでにSolanaメインネットで稼働しているインフラです。",
   },
   stripeFeature1: {
-    zh: "🫙 每次 API 調用自動 USDC 微支付",
-    en: "🫙 Automatic USDC micro-payment per API call",
-    ja: "🫙 API呼び出しごとに自動USDC少額決済",
+    zh: "🫙 每次 API 調用自動結算 $1.00 USDC · 鏈上原子確認",
+    en: "🫙 $1.00 USDC auto-settled per API call · atomic on-chain confirmation",
+    ja: "🫙 API呼び出しごとに $1.00 USDC を自動決済 · オンチェーン原子確認",
   },
   stripeFeature2: {
     zh: "⚙️ AI Agent 直接調用，無需人工介入",

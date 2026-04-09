@@ -1,15 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { getAssociatedTokenAddressSync } from "@solana/spl-token";
+import { checkAndMarkUsed } from "@/lib/redis";
 
 // ── Payment config ───────────────────────────────────────────────
 const HELIUS_API_KEY  = process.env.HELIUS_API_KEY ?? "";
 const HELIUS_RPC      = `https://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}`;
 const SAKURA_FEE_WALLET = process.env.SAKURA_FEE_WALLET ?? "";
 const USDC_MINT        = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
-const MCP_CALL_FEE     = 10_000; // 0.01 USDC (6 decimals) per tool call
+const MCP_CALL_FEE     = 1_000_000; // 1.00 USDC (6 decimals) per tool call
 
-// Simple in-memory replay protection (ephemeral; good enough for demo)
+// In-memory fallback for replay protection (used when Redis is not configured).
+// Redis mode: distributed across all Vercel instances via checkAndMarkUsed().
 const usedSigs = new Set<string>();
 
 let _mcpFeeAta = "";
@@ -25,7 +27,11 @@ function getSakuraFeeAta(): string {
   return _mcpFeeAta;
 }
 
-async function verifyMCPPayment(txSig: string, requiredAmount: number): Promise<boolean> {
+async function verifyMCPPayment(
+  txSig: string,
+  requiredAmount: number,
+  callerWallet?: string   // [SECURITY FIX M-1] Sender verification
+): Promise<boolean> {
   if (!SAKURA_FEE_WALLET) return true; // demo mode: no fee wallet configured
   try {
     const conn = new Connection(HELIUS_RPC, "confirmed");
@@ -39,6 +45,12 @@ async function verifyMCPPayment(txSig: string, requiredAmount: number): Promise<
           info?.destination === getSakuraFeeAta() &&
           Number(info?.tokenAmount?.amount ?? 0) >= requiredAmount
         ) {
+          // [SECURITY FIX M-1] Verify sender matches the caller's wallet.
+          // Without this check, any user could share a valid txSig and let
+          // others call MCP tools for free using the same payment transaction.
+          if (callerWallet && info?.authority && info.authority !== callerWallet) {
+            return false; // Payment sent by a different wallet — not valid for this caller
+          }
           return true;
         }
       }
@@ -67,33 +79,37 @@ const TOOLS = [
     },
   },
   {
-    name: "sakura_compile_strategy",
+    name: "sakura_ghost_run",
     description:
-      "Convert a natural language DeFi strategy description into structured JSON. Supports scheduling (cron), APY-threshold triggers, and actions like stake/lend/swap across Kamino, Marinade, and Jito.",
+      "Ghost-execute a multi-step Solana DeFi strategy using simulateTransaction before the user signs anything. Supports stake (SOL→mSOL/jitoSOL), lend (USDC/SOL into Kamino), and swap. Returns precise token deltas, gas costs, APY estimates, price impact, and AI feasibility analysis.",
     inputSchema: {
       type: "object",
       properties: {
-        text: {
+        strategy: {
           type: "string",
-          description: "Natural language strategy, e.g. '每週五把我 50% USDC 存入 Kamino'",
+          description: "Natural language DeFi strategy, e.g. 'Stake 3 SOL to Marinade and deposit 50 USDC into Kamino'",
+        },
+        wallet: {
+          type: "string",
+          description: "Solana wallet address (base58) — used to check balances and simulate transactions",
         },
       },
-      required: ["text"],
+      required: ["strategy", "wallet"],
     },
   },
   {
-    name: "sakura_compile_safety_rules",
+    name: "sakura_liquidation_shield",
     description:
-      "Convert natural language safety constraints into structured AI agent guardrails. Returns rules like max-per-tx limits, protocol whitelists, and approval requirements that gate every DeFi action.",
+      "Monitor Kamino and MarginFi lending positions for liquidation risk. Scans health factors, calculates the collateral price at which liquidation triggers, simulates rescue repayments, and returns a full AI risk analysis with recommended actions.",
     inputSchema: {
       type: "object",
       properties: {
-        text: {
+        wallet: {
           type: "string",
-          description: "Natural language safety rules, e.g. '每次最多動 $100 USDC，只能去 Kamino 和 Marinade'",
+          description: "Solana wallet address (base58) to scan for lending positions",
         },
       },
-      required: ["text"],
+      required: ["wallet"],
     },
   },
 ];
@@ -103,7 +119,7 @@ export async function GET() {
   return NextResponse.json({
     name: "sakura-v2-mcp",
     version: "2.0.0",
-    description: "Sakura v2 — Durable Nonce Guardian + NL Strategy Compiler + NL Safety Rules on Solana",
+    description: "Sakura v2 — Nonce Guardian + Ghost Run DeFi Simulator + Liquidation Shield on Solana",
     tools: TOOLS,
   });
 }
@@ -137,16 +153,16 @@ export async function POST(req: NextRequest) {
       return jsonrpcError(id, -32602, "Invalid params: missing tool name");
     }
 
-    // x402 payment gate — $0.01 USDC per tool call
+    // x402 payment gate — $1.00 USDC per tool call
     const paymentSig = req.headers.get("x-payment") ?? req.headers.get("X-PAYMENT");
     if (!paymentSig) {
       return NextResponse.json(
-        { jsonrpc: "2.0", id, error: { code: -32001, message: "Payment required: 0.01 USDC per tool call" } },
+        { jsonrpc: "2.0", id, error: { code: -32001, message: "Payment required: 1.00 USDC per tool call" } },
         {
           status: 402,
           headers: {
             "X-Payment-Required": "true",
-            "X-Payment-Amount": "0.01",
+            "X-Payment-Amount": "1.00",
             "X-Payment-Currency": "USDC",
             "X-Payment-Recipient": SAKURA_FEE_WALLET || "not-configured",
             "X-Payment-Network": "solana-mainnet",
@@ -155,15 +171,20 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Replay protection
-    if (usedSigs.has(paymentSig)) {
+    // Replay protection — Redis (distributed) or in-memory fallback
+    // checkAndMarkUsed returns false if key was already seen
+    const isFirstUse = await checkAndMarkUsed(`mcp:sig:${paymentSig}`, usedSigs);
+    if (!isFirstUse) {
       return jsonrpcError(id, -32001, "Payment already used — send a new transaction");
     }
-    const paymentValid = await verifyMCPPayment(paymentSig, MCP_CALL_FEE);
+    // Extract caller wallet from tool arguments for sender verification (M-1 fix)
+    const callerWallet = typeof params.arguments?.wallet === "string"
+      ? params.arguments.wallet
+      : undefined;
+    const paymentValid = await verifyMCPPayment(paymentSig, MCP_CALL_FEE, callerWallet);
     if (!paymentValid) {
-      return jsonrpcError(id, -32001, "Payment verification failed. Send 0.01 USDC to Sakura fee wallet.");
+      return jsonrpcError(id, -32001, "Payment verification failed. Send 1.00 USDC from your wallet to Sakura fee wallet.");
     }
-    usedSigs.add(paymentSig);
 
     try {
       const result = await callTool(params.name, params.arguments ?? {});
@@ -171,8 +192,10 @@ export async function POST(req: NextRequest) {
         content: [{ type: "text", text: typeof result === "string" ? result : JSON.stringify(result, null, 2) }],
       });
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Tool execution failed";
-      return jsonrpcError(id, -32603, msg);
+      // [SECURITY FIX N-2] Never expose raw error messages — err.message can
+      // contain Helius RPC URLs (with API key) or Anthropic error details.
+      console.error("[mcp] tool execution error:", err instanceof Error ? err.message : err);
+      return jsonrpcError(id, -32603, "Tool execution failed. Please try again.");
     }
   }
 
@@ -197,27 +220,29 @@ async function callTool(name: string, args: Record<string, unknown>): Promise<un
     return await res.json();
   }
 
-  if (name === "sakura_compile_strategy") {
-    const text = String(args.text ?? "");
-    if (!text) throw new Error("text is required");
-    const res = await fetch(`${base}/api/strategy/compile`, {
+  if (name === "sakura_ghost_run") {
+    const strategy = String(args.strategy ?? "");
+    const wallet   = String(args.wallet ?? "");
+    if (!strategy) throw new Error("strategy is required");
+    if (!wallet || wallet.length < 32) throw new Error("wallet address is required");
+    const res = await fetch(`${base}/api/ghost-run/simulate`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text }),
+      body: JSON.stringify({ strategy, wallet }),
     });
-    if (!res.ok) throw new Error(`Strategy compilation failed: HTTP ${res.status}`);
+    if (!res.ok) throw new Error(`Ghost Run simulation failed: HTTP ${res.status}`);
     return await res.json();
   }
 
-  if (name === "sakura_compile_safety_rules") {
-    const text = String(args.text ?? "");
-    if (!text) throw new Error("text is required");
-    const res = await fetch(`${base}/api/safety-rules/compile`, {
+  if (name === "sakura_liquidation_shield") {
+    const wallet = String(args.wallet ?? "");
+    if (!wallet || wallet.length < 32) throw new Error("wallet address is required");
+    const res = await fetch(`${base}/api/liquidation-shield/monitor`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text }),
+      body: JSON.stringify({ wallet }),
     });
-    if (!res.ok) throw new Error(`Safety rules compilation failed: HTTP ${res.status}`);
+    if (!res.ok) throw new Error(`Liquidation Shield failed: HTTP ${res.status}`);
     return await res.json();
   }
 
