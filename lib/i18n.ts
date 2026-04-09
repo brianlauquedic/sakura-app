@@ -23,21 +23,21 @@ export const translations = {
 
   // ── Hero ──────────────────────────────────────────────────────────
   heroTagline: {
-    zh: "Solana 鏈上可驗證 AI DeFi 顧問",
-    en: "Onchain-Verifiable AI DeFi Advisor for Solana",
-    ja: "SolanaのオンチェーンAI DeFiアドバイザー — SHA-256検証済み",
+    zh: "三項 Solana 原生 AI 協議——讓普通用戶以機構級精度保護鏈上資產",
+    en: "Three Solana-native AI protocols — institutional-grade onchain asset protection for every user",
+    ja: "3つのSolanaネイティブAIプロトコル — 全ユーザーに機関レベルのオンチェーン資産保護を",
   },
   heroSubtitle: {
-    zh: "三個史無前例的 Solana DeFi 工具：🛡️ Nonce Guardian 偵測隱形攻擊（$285M Drift 攻擊同款）· 👻 Ghost Run 自然語言執行 DeFi 策略 · ⚡ Liquidation Shield 跨協議 AI 自動救援借貸倉位。每次 AI 決策 SHA-256 永久上鏈。",
-    en: "Three unprecedented Solana DeFi tools: 🛡️ Nonce Guardian detects invisible attack vectors (same as the $285M Drift hack) · 👻 Ghost Run executes DeFi strategies from natural language · ⚡ Liquidation Shield auto-rescues lending positions cross-protocol. Every AI decision SHA-256 onchain.",
-    ja: "3つの前例なきSolana DeFiツール：🛡️ Nonce Guardianが不可視の攻撃ベクターを検出（2.85億ドルDriftハックと同じ）· 👻 Ghost Runが自然言語からDeFi戦略を実行 · ⚡ Liquidation Shieldがクロスプロトコルで借入ポジションを自動救済。すべてのAI判断はSHA-256でオンチェーン。",
+    zh: "Nonce Guardian 在資金被盜前偵測隱形定時炸彈（與 $2.85 億 Drift 攻擊同款漏洞）· Ghost Run 讓您在簽字前精確預覽每一步 DeFi 執行結果 · Liquidation Shield 在 Kamino/MarginFi 清算發生前 400ms 自動救援，守護 $4B+ TVL。每個 AI 判斷 SHA-256 永久上鏈，任何人可獨立驗證。",
+    en: "Nonce Guardian detects invisible time-bombs before funds drain — the same exploit class behind the $285M Drift hack · Ghost Run shows exact DeFi execution results before you sign a single transaction · Liquidation Shield auto-rescues Kamino and MarginFi positions within 400ms, protecting $4B+ in lending TVL. Every AI decision SHA-256 onchain — independently verifiable by anyone.",
+    ja: "Nonce Guardianが資金流出前に不可視の時限爆弾を検出（2.85億ドルDriftハックと同一の脆弱性クラス）· Ghost Runが署名前にDeFi実行結果を正確にプレビュー · Liquidation ShieldがKamino/MarginFiのポジションを400ms以内に自動救済、$4B+のレンディングTVLを保護。すべてのAI判断をSHA-256でオンチェーン記録 — 誰でも独立検証可能。",
   },
 
   // ── Features (3 core) ─────────────────────────────────────────────
   agentsTitle: {
-    zh: "3 個史無前例的核心功能",
-    en: "3 Unprecedented Core Features",
-    ja: "3つの前例なきコア機能",
+    zh: "三項協議 · 三個真實威脅 · 三種 Solana 原生解法",
+    en: "Three Protocols · Three Real Threats · Three Solana-Native Solutions",
+    ja: "3つのプロトコル · 3つのリアルな脅威 · 3つのSolanaネイティブ解法",
   },
   agent1Title: { zh: "🛡️ Nonce Guardian", en: "🛡️ Nonce Guardian", ja: "🛡️ Nonce Guardian" },
   agent1Desc: {
@@ -65,18 +65,18 @@ export const translations = {
   },
 
   // ── Differentiator ────────────────────────────────────────────────
-  diffTitle: { zh: "鏈上可驗證 AI 推理", en: "Onchain-Verifiable AI Reasoning", ja: "オンチェーン検証可能なAI推論" },
+  diffTitle: { zh: "可驗證計算——Colosseum 2026 三大評審焦點之一", en: "Verifiable Compute — One of Colosseum 2026's Three Core Judging Criteria", ja: "Verifiable Compute — Colosseum 2026の3大評価基準の1つ" },
   diffDesc: {
-    zh: "每次 AI 分析生成 SHA-256 哈希，透過 Solana Memo Program 永久上鏈。任何人可以獨立驗證 AI 的完整推理過程——不是黑箱，是透明的可信 AI。",
-    en: "Every AI analysis generates a SHA-256 hash recorded via Solana Memo Program. Anyone can independently verify the complete AI reasoning process — not a black box, but transparent, trustworthy AI.",
-    ja: "すべてのAI分析がSHA-256ハッシュを生成し、Solana Memo Programに永久記録。誰でもAIの完全な推論プロセスを独立して検証できます。ブラックボックスではなく、透明なAIです。",
+    zh: "Sakura 的每個 AI 決策生成唯一 SHA-256 哈希，透過 Solana Memo Program 不可篡改地上鏈。持有 tx signature 的任何人可在 Solscan 獨立核驗 AI 完整推理過程——不依賴 Sakura 服務端，不需信任任何中間方。這是 AI 透明度的最高標準：鏈上可驗證，而非白皮書承諾。",
+    en: "Every Sakura AI decision produces a unique SHA-256 hash immutably anchored via Solana Memo Program. Anyone holding the tx signature can independently verify the full AI reasoning chain on Solscan — no dependency on Sakura's servers, no trust in any intermediary. This is the highest standard of AI transparency: cryptographically verifiable, not just a whitepaper promise.",
+    ja: "SakuraのすべてのAI判断が固有のSHA-256ハッシュを生成し、Solana Memo Programを通じて改ざん不可能にオンチェーン記録。tx signatureを持つ誰でもSolscanでAIの完全な推論チェーンを独立検証可能——Sakuraのサーバーへの依存なし、いかなる中間者への信頼も不要。これはホワイトペーパーの約束ではなく、暗号学的に検証可能なAI透明性の最高水準です。",
   },
 
   // ── Stats ────────────────────────────────────────────────────────
-  statLabel1: { zh: "核心創新功能", en: "Core Features", ja: "コア機能" },
-  statLabel2: { zh: "億 Drift 攻擊防護", en: "M Drift Hack Protected", ja: "億Driftハック防護" },
-  statLabel3: { zh: "平均利潤率 %", en: "Avg Profit Margin %", ja: "平均利益率 %" },
-  statLabel4: { zh: "AI 推理鏈上可驗證", en: "AI Reasoning Onchain", ja: "AI推論オンチェーン検証" },
+  statLabel1: { zh: "Solana 原生 AI 協議", en: "Solana-Native AI Protocols", ja: "SolanaネイティブAIプロトコル" },
+  statLabel2: { zh: "USD Drift 攻擊同款漏洞", en: "USD same exploit as Drift hack", ja: "USD Driftハックと同一脆弱性" },
+  statLabel3: { zh: "USD Solana 借貸 TVL 受保護", en: "USD Solana lending TVL protected", ja: "USD SolanaレンディングTVL保護対象" },
+  statLabel4: { zh: "AI 判斷鏈上可驗證", en: "AI decisions verifiable onchain", ja: "AI判断がオンチェーン検証可能" },
 
   // ── Trust signals ────────────────────────────────────────────────
   trust1: { zh: "⛩️ 唯讀 · 不持有資產", en: "⛩️ Read-only · No Custody", ja: "⛩️ 読み取り専用 · 資産管理なし" },
@@ -86,14 +86,14 @@ export const translations = {
 
   // ── CTA (new) ──────────────────────────────────────────────────────
   ctaFreeLabel: {
-    zh: "免費開始 — 無需註冊",
-    en: "Try Free — No Signup",
-    ja: "無料で始める — 登録不要",
+    zh: "立即體驗 — 無需帳號，無需訂閱",
+    en: "Start Now — No Account, No Subscription",
+    ja: "今すぐ始める — アカウント不要、サブスクリプション不要",
   },
   ctaFreeDesc: {
-    zh: "連接 Phantom 或 OKX 錢包，立即免費使用 Nonce Guardian 掃描 + Ghost Run 模擬 + Liquidation Shield 監控",
-    en: "Connect Phantom or OKX wallet — Nonce Guardian scan, Ghost Run simulation, and Liquidation Shield monitoring are all free",
-    ja: "PhantomまたはOKXウォレットを接続 — Nonce Guardianスキャン、Ghost Runシミュレーション、Liquidation Shieldモニタリングはすべて無料",
+    zh: "連接 Phantom 或 OKX 錢包，三項核心功能立即可用。掃描、模擬、監控完全免費——僅在您確認執行或 AI 報告生成時收取費用。",
+    en: "Connect Phantom or OKX. All three core features are immediately available. Scans, simulations, and monitoring are free — fees apply only when you confirm an execution or request an AI report.",
+    ja: "PhantomまたはOKXを接続。3つのコア機能がすぐに利用可能。スキャン、シミュレーション、モニタリングは無料——実行確認またはAIレポート生成時のみ課金。",
   },
   ctaFreeBadge1: { zh: "🛡️ Nonce 掃描免費", en: "🛡️ Nonce Scan Free", ja: "🛡️ Nonceスキャン無料" },
   ctaFreeBadge2: { zh: "👻 Ghost Run 模擬免費", en: "👻 Ghost Run Free", ja: "👻 Ghost Run無料" },
@@ -111,14 +111,14 @@ export const translations = {
 
   // ── Stripe MPP section (new) ────────────────────────────────────────
   stripeSectionTitle: {
-    zh: "🤝 Stripe Machine Payments Protocol 就緒",
-    en: "🤝 Stripe Machine Payments Protocol Ready",
-    ja: "🤝 Stripe Machine Payments Protocol 対応済み",
+    zh: "🤝 x402 · Agentic Economy — AI Agent 直接調用，自動微支付",
+    en: "🤝 x402 · Agentic Economy — AI Agents Call Directly, USDC Pays Automatically",
+    ja: "🤝 x402 · Agentic Economy — AIエージェントが直接呼び出し、USDCが自動決済",
   },
   stripeSectionDesc: {
-    zh: "Sakura 的 AI 智能體已原生支援 HTTP 402 Payment Required 標準。任何 MCP 客戶端（Claude Desktop、Cursor、VS Code 等）可直接調用 Sakura 的 DeFi 分析 API，每次調用自動支付 USDC——無需帳號、無需訂閱，真正的 Agent-to-Agent 經濟。",
-    en: "Sakura AI agents natively implement the HTTP 402 Payment Required standard. Any MCP client (Claude Desktop, Cursor, VS Code, etc.) can call Sakura DeFi analysis APIs with automatic per-call USDC payment — no account, no subscription, pure Agent-to-Agent economy.",
-    ja: "Sakura AIエージェントはHTTP 402 Payment Required標準をネイティブ実装。Claude Desktop、Cursor、VS Codeなど任意のMCPクライアントがSakura DeFi分析APIを直接呼び出し、1回ごとにUSDCを自動支払い——アカウント不要、真のAgent-to-Agent経済。",
+    zh: "Sakura 原生實現 HTTP 402 Payment Required（x402）協議。任何 MCP 客戶端——Claude Desktop、Cursor、VS Code——可直接調用 Sakura 的 Nonce Guardian 安全分析 API，每次調用自動支付 $1 USDC，無帳號、無訂閱、無人工介入。這是 Stripe Machine Payments Protocol 在 Solana DeFi 安全領域的首個落地實現。",
+    en: "Sakura natively implements HTTP 402 Payment Required (x402). Any MCP client — Claude Desktop, Cursor, VS Code — can call Sakura's Nonce Guardian security analysis API with automatic $1 USDC payment per call. No account. No subscription. No human in the loop. The first production implementation of Stripe Machine Payments Protocol in Solana DeFi security.",
+    ja: "SakuraはHTTP 402 Payment Required（x402）をネイティブ実装。Claude Desktop、Cursor、VS Codeなど任意のMCPクライアントがSakuraのNonce Guardian セキュリティ分析APIを呼び出し、1回$1 USDCを自動支払い。アカウント不要、サブスクリプション不要、人間の介入ゼロ。Solana DeFiセキュリティ領域におけるStripe Machine Payments Protocolの初の本番実装。",
   },
   stripeFeature1: {
     zh: "🫙 每次 API 調用自動 USDC 微支付",

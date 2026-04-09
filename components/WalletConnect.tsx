@@ -18,10 +18,10 @@ const PROTOCOLS = [
 ];
 
 const STATS = [
-  { numValue: 3,   suffix: "",  labelKey: "statLabel1" as const },
-  { numValue: 285, suffix: "M", labelKey: "statLabel2" as const },
-  { numValue: 99,  suffix: "%", labelKey: "statLabel3" as const },
-  { numValue: 100, suffix: "%", labelKey: "statLabel4" as const },
+  { numValue: 3,   suffix: "",   labelKey: "statLabel1" as const },
+  { numValue: 285, suffix: "M",  labelKey: "statLabel2" as const },
+  { numValue: 4,   suffix: "B+", labelKey: "statLabel3" as const },
+  { numValue: 100, suffix: "%",  labelKey: "statLabel4" as const },
 ];
 
 interface Props {
