@@ -14,6 +14,7 @@ export default function Footer() {
   const resources = [
     { label: t("footerDocs"),     href: "/docs"      },
     { label: t("footerUseCases"), href: "/use-cases" },
+    { label: "MCP API",           href: "/mcp"       },
   ];
 
   const social = [

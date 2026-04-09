@@ -396,6 +396,14 @@ export default function WalletConnect({ walletAddress, onEnterApp }: Props = {})
         }}>
           POST /api/mcp · HTTP 402 · x402-payment: 1.00 USDC · Solana Mainnet
         </div>
+        <div style={{ marginTop: 10, textAlign: "right" }}>
+          <a href="/mcp" style={{
+            fontSize: 11, color: "#8B87FF", textDecoration: "none",
+            letterSpacing: "0.06em", fontFamily: "var(--font-mono)",
+          }}>
+            → MCP API 文檔 / Docs / ドキュメント
+          </a>
+        </div>
       </div>
 
       {/* ── 区切り線 ── */}
