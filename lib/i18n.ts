@@ -28,9 +28,9 @@ export const translations = {
     ja: "SolanaのオンチェーンAI DeFiアドバイザー — SHA-256検証済み",
   },
   heroSubtitle: {
-    zh: "4 個專屬 AI 智能體覆蓋安全分析、持倉體檢、DeFi 執行、自主再平衡。每一個 AI 決策有 SHA-256 哈希，永久記錄在 Solana 鏈上，獨立可驗證。",
-    en: "Four specialized AI agents cover security analysis, portfolio health, DeFi execution, and autonomous rebalancing. Every decision is SHA-256 hashed and recorded on Solana — independently verifiable.",
-    ja: "4つの専門AIエージェントがセキュリティ分析、ポートフォリオ診断、DeFi実行、自律リバランスをカバー。すべてのAI判断はSHA-256ハッシュでSolanaに永久記録され、独立して検証可能。",
+    zh: "三個史無前例的 Solana DeFi 工具：🛡️ Nonce Guardian 偵測隱形攻擊（$285M Drift 攻擊同款）· 👻 Ghost Run 自然語言執行 DeFi 策略 · ⚡ Liquidation Shield 跨協議 AI 自動救援借貸倉位。每次 AI 決策 SHA-256 永久上鏈。",
+    en: "Three unprecedented Solana DeFi tools: 🛡️ Nonce Guardian detects invisible attack vectors (same as the $285M Drift hack) · 👻 Ghost Run executes DeFi strategies from natural language · ⚡ Liquidation Shield auto-rescues lending positions cross-protocol. Every AI decision SHA-256 onchain.",
+    ja: "3つの前例なきSolana DeFiツール：🛡️ Nonce Guardianが不可視の攻撃ベクターを検出（2.85億ドルDriftハックと同じ）· 👻 Ghost Runが自然言語からDeFi戦略を実行 · ⚡ Liquidation Shieldがクロスプロトコルで借入ポジションを自動救済。すべてのAI判断はSHA-256でオンチェーン。",
   },
 
   // ── Features (3 core) ─────────────────────────────────────────────
@@ -81,8 +81,8 @@ export const translations = {
   // ── Trust signals ────────────────────────────────────────────────
   trust1: { zh: "⛩️ 唯讀 · 不持有資產", en: "⛩️ Read-only · No Custody", ja: "⛩️ 読み取り専用 · 資産管理なし" },
   trust2: { zh: "⛓️ AI 推理鏈上存證", en: "⛓️ AI Reasoning Onchain", ja: "⛓️ AI推論オンチェーン記録" },
-  trust3: { zh: "🔰 GoPlus 5 維度安全", en: "🔰 GoPlus 5-Dim Security", ja: "🔰 GoPlus 5次元セキュリティ" },
-  trust4: { zh: "🫙 Helius 實時數據", en: "🫙 Helius Real-time Data", ja: "🫙 Heliusリアルタイムデータ" },
+  trust3: { zh: "🛡️ Nonce Guardian 首發", en: "🛡️ Nonce Guardian First", ja: "🛡️ Nonce Guardian初搭載" },
+  trust4: { zh: "⚡ 跨協議 AI 救援", en: "⚡ Cross-Protocol AI Rescue", ja: "⚡ クロスプロトコルAI救済" },
 
   // ── CTA (new) ──────────────────────────────────────────────────────
   ctaFreeLabel: {
