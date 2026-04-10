@@ -45,9 +45,10 @@ const STATS = [
 interface Props {
   walletAddress?: string | null;
   onEnterApp?: () => void;
+  onTryDemo?: () => void;
 }
 
-export default function WalletConnect({ walletAddress, onEnterApp }: Props = {}) {
+export default function WalletConnect({ walletAddress, onEnterApp, onTryDemo }: Props = {}) {
   const { t, lang } = useLang();
   const { connect, phantomAvailable, okxAvailable, walletLoading } = useWallet();
   const isMobile = useIsMobile();
@@ -282,6 +283,23 @@ export default function WalletConnect({ walletAddress, onEnterApp }: Props = {})
               <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 10, letterSpacing: "0.03em" }}>
                 {t("ctaSubNote")}
               </div>
+
+              {onTryDemo && (
+                <button
+                  onClick={onTryDemo}
+                  style={{
+                    width: "100%", marginTop: 14,
+                    background: "transparent",
+                    border: "1px dashed var(--border)",
+                    borderRadius: 8, padding: "9px 24px",
+                    fontSize: 12, color: "var(--text-muted)",
+                    cursor: "pointer", letterSpacing: "0.06em",
+                    fontFamily: "var(--font-body)",
+                  }}
+                >
+                  🎬 {lang === "zh" ? "無需錢包，體驗 Demo" : lang === "ja" ? "ウォレット不要でデモを体験" : "Try Demo (no wallet needed)"}
+                </button>
+              )}
             </>
           )}
         </div>

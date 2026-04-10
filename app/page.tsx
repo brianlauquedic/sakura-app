@@ -43,6 +43,7 @@ function AppContent() {
           <WalletConnect
             walletAddress={walletAddress}
             onEnterApp={() => setShowLanding(false)}
+            onTryDemo={() => { setIsDemo(true); window.history.pushState({}, "", "/?demo=true"); }}
           />
         ) : (
           <>
