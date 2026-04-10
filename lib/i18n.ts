@@ -14,11 +14,11 @@ export const translations = {
     ja: "⛩️ 証明を検証",
   },
 
-  // ── Hackathon badge ──────────────────────────────────────────────
+  // ── Hero badge ───────────────────────────────────────────────────
   hackathonBadge: {
-    zh: "SAKURA · VERIFIABLE AI · AGENTIC ECONOMY · COLOSSEUM 2026 FRONTIER",
-    en: "SAKURA · VERIFIABLE AI · AGENTIC ECONOMY · COLOSSEUM 2026 FRONTIER",
-    ja: "SAKURA · VERIFIABLE AI · AGENTIC ECONOMY · COLOSSEUM 2026 FRONTIER",
+    zh: "SAKURA · AI SECURITY · VERIFIABLE COMPUTE · SOLANA",
+    en: "SAKURA · AI SECURITY · VERIFIABLE COMPUTE · SOLANA",
+    ja: "SAKURA · AI SECURITY · VERIFIABLE COMPUTE · SOLANA",
   },
 
   // ── Hero ──────────────────────────────────────────────────────────
@@ -59,17 +59,17 @@ export const translations = {
   },
   agent4Title: { zh: "🔒 鏈上可驗證 AI", en: "🔒 Onchain-Verifiable AI", ja: "🔒 オンチェーン検証可能AI" },
   agent4Desc: {
-    zh: "每一條 AI 推理鏈生成唯一 SHA-256 加密哈希，透過 Solana Memo Program 不可篡改地刻入主網。任何人持有 tx signature 即可在 Solscan 獨立核驗 AI 完整推理路徑 — 不依賴 Sakura 服務器，不需信任任何中間方。這是 AI 透明度的最高標準：鏈上可驗證計算，而非白皮書承諾。完全對應 Colosseum 2026 Frontier Hackathon 三大評審核心：Verifiable Compute on Solana。",
-    en: "Every AI reasoning chain generates a unique SHA-256 cryptographic hash, immutably inscribed on Solana mainnet via Memo Program. Anyone holding a tx signature can independently verify the full AI decision path on Solscan — no dependency on Sakura's servers, no trust required in any intermediary. This is the highest standard of AI accountability: cryptographically verifiable compute, not a whitepaper promise. Fully aligned with Colosseum 2026 Frontier Hackathon's core criterion: Verifiable Compute on Solana.",
-    ja: "すべてのAI推論チェーンが固有のSHA-256暗号ハッシュを生成し、Memo Programを通じてSolanaメインネットに不変刻印。tx signatureを持つ誰でもSolscanでAIの完全な決定経路を独立検証可能 — Sakuraのサーバー依存なし、いかなる中間者への信頼も不要。これはAIアカウンタビリティの最高水準：ホワイトペーパーの約束ではなく暗号学的に検証可能な計算。Colosseum 2026 Frontier Hackathonのコア評価基準「Verifiable Compute on Solana」に完全対応。",
+    zh: "每一條 AI 推理鏈生成唯一 SHA-256 加密哈希，透過 Solana Memo Program 不可篡改地刻入主網。任何人持有 tx signature 即可在 Solscan 獨立核驗 AI 完整推理路徑 — 不依賴 Sakura 服務器，不需信任任何中間方。這是 AI 透明度的最高標準：鏈上可驗證計算，而非白皮書承諾。",
+    en: "Every AI reasoning chain generates a unique SHA-256 cryptographic hash, immutably inscribed on Solana mainnet via Memo Program. Anyone holding a tx signature can independently verify the full AI decision path on Solscan — no dependency on Sakura's servers, no trust required in any intermediary. This is the highest standard of AI accountability: cryptographically verifiable compute, not a whitepaper promise.",
+    ja: "すべてのAI推論チェーンが固有のSHA-256暗号ハッシュを生成し、Memo Programを通じてSolanaメインネットに不変刻印。tx signatureを持つ誰でもSolscanでAIの完全な決定経路を独立検証可能 — Sakuraのサーバー依存なし、いかなる中間者への信頼も不要。これはAIアカウンタビリティの最高水準：ホワイトペーパーの約束ではなく暗号学的に検証可能な計算。",
   },
 
   // ── Differentiator ────────────────────────────────────────────────
   diffTitle: { zh: "鏈上可驗證 AI ── 不依賴任何服務器的 AI 透明度最高標準", en: "Onchain-Verifiable AI — The Highest Standard of AI Accountability, Zero Server Trust", ja: "オンチェーン検証可能AI — サーバー信頼ゼロ、AIアカウンタビリティ最高水準" },
   diffDesc: {
-    zh: "市場上每一個 AI DeFi 工具都是黑盒：你只能相信它說的話。Sakura 是唯一的例外。每一條 AI 推理路徑在生成的當下，其 SHA-256 加密指紋即透過 Solana Memo Program 永久、不可篡改地刻入主網。任何人——您的律師、審計師、對手方——持有 tx signature 即可在 Solscan 獨立還原 AI 完整推理過程，無需部署節點，無需信任 Sakura 的服務器，無需任何許可。這是 AI 透明度在技術層面能達到的最高標準，也是 Colosseum 2026 Frontier Hackathon 評審核心指標 Verifiable Compute on Solana 的直接落地。",
-    en: "Every AI DeFi tool on the market is a black box — you have no choice but to trust what it tells you. Sakura is the only exception. The moment each AI reasoning chain is generated, its SHA-256 cryptographic fingerprint is permanently and immutably inscribed on Solana mainnet via Memo Program. Anyone — your lawyer, your auditor, your counterparty — holding a tx signature can independently reconstruct the complete AI reasoning process on Solscan. No node deployment. No trust in Sakura's servers. No permissions. This is the highest standard AI transparency can achieve at a technical level — and the direct on-chain implementation of Colosseum 2026 Frontier Hackathon's core judging criterion: Verifiable Compute on Solana.",
-    ja: "市場に出回るAI DeFiツールはすべてブラックボックスです——その言葉を信じるしかありません。Sakuraだけが例外です。各AI推論チェーンが生成された瞬間、そのSHA-256暗号フィンガープリントがMemo Programを通じてSolanaメインネットに永久かつ不変に刻印されます。誰でも——弁護士、監査人、取引相手——tx signatureさえあればSolscanでAIの完全な推論プロセスを独立して再現できます。ノード構築不要。Sakuraのサーバーへの信頼不要。許可不要。これはAIの透明性が技術的に到達できる最高水準——Colosseum 2026 Frontier Hackathonの核心評価基準「Verifiable Compute on Solana」の直接実装です。",
+    zh: "市場上每一個 AI DeFi 工具都是黑盒：你只能相信它說的話。Sakura 是唯一的例外。每一條 AI 推理路徑在生成的當下，其 SHA-256 加密指紋即透過 Solana Memo Program 永久、不可篡改地刻入主網。任何人——您的律師、審計師、對手方——持有 tx signature 即可在 Solscan 獨立還原 AI 完整推理過程，無需部署節點，無需信任 Sakura 的服務器，無需任何許可。這是 AI 透明度在技術層面能達到的最高標準。",
+    en: "Every AI DeFi tool on the market is a black box — you have no choice but to trust what it tells you. Sakura is the only exception. The moment each AI reasoning chain is generated, its SHA-256 cryptographic fingerprint is permanently and immutably inscribed on Solana mainnet via Memo Program. Anyone — your lawyer, your auditor, your counterparty — holding a tx signature can independently reconstruct the complete AI reasoning process on Solscan. No node deployment. No trust in Sakura's servers. No permissions. This is the highest standard AI transparency can achieve at a technical level.",
+    ja: "市場に出回るAI DeFiツールはすべてブラックボックスです——その言葉を信じるしかありません。Sakuraだけが例外です。各AI推論チェーンが生成された瞬間、そのSHA-256暗号フィンガープリントがMemo Programを通じてSolanaメインネットに永久かつ不変に刻印されます。誰でも——弁護士、監査人、取引相手——tx signatureさえあればSolscanでAIの完全な推論プロセスを独立して再現できます。ノード構築不要。Sakuraのサーバーへの信頼不要。許可不要。これはAIの透明性が技術的に到達できる最高水準です。",
   },
 
   // ── Sakura Character Narrative ───────────────────────────────────
@@ -79,9 +79,9 @@ export const translations = {
     ja: "桜 Sakura — 世界中のオンチェーンユーザーを守るAIガーディアン",
   },
   sakuraOriginBadge: {
-    zh: "🌸 Sakura · AI Guardian · Colosseum 2026 Frontier",
-    en: "🌸 Sakura · AI Guardian · Colosseum 2026 Frontier",
-    ja: "🌸 Sakura · AIガーディアン · Colosseum 2026 Frontier",
+    zh: "🌸 Sakura · AI Guardian · Solana Security",
+    en: "🌸 Sakura · AI Guardian · Solana Security",
+    ja: "🌸 Sakura · AIガーディアン · Solana Security",
   },
   sakuraCharacterDesc: {
     zh: "2026 年 4 月，$2.85 億在一個沒有人注意到的 Solana 原語上消失了。對沖基金有 24 小時監控室；普通用戶沒有。Sakura 正是為了消除這個不平等而生。她以一位可愛 AI 女生的姿態示人，內核是三個 Solana 原生 RPC 原語構成的精密防禦架構：getProgramAccounts 掃描 80 位元組 Nonce 結構體，simulateTransaction 在真實主網狀態下幽靈演練整個策略，SPL Token Approve 在 token program 層面設定硬性救援上限——程式強制執行，非軟性承諾。她永遠在線。每一個 AI 決策的 SHA-256 哈希永久刻入 Solana 主網，任何人在 Solscan 可獨立核驗，不依賴 Sakura 的服務器。備えあれば憂いなし。",

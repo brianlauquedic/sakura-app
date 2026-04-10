@@ -19,7 +19,7 @@ const CONTENT: Record<Lang, {
 }> = {
   zh: {
     back: "← 返回首頁",
-    badge: "🌸 DOCUMENTATION · COLOSSEUM 2026 FRONTIER",
+    badge: "🌸 DOCUMENTATION · SOLANA SECURITY",
     title: "Sakura 使用手冊",
     subtitle: "2026 年 4 月，$2.85 億在一個幾乎無人審計的 Solana 原語上消失——Nonce Guardian 就是對這次攻擊的技術反制。同年，多步 DeFi 執行的隱性滑點損失每日高達數百萬美元——Ghost Run 以 simulateTransaction 在零資本風險下精確預演整個策略。而 $40 億借貸 TVL 的清算損失，正被一個 400ms AI 救援協議守護。三道 Solana 原生防線，每個 AI 決策 SHA-256 永久上鏈，無需信任任何服務器——這是完整的工程文檔。",
     sections: [
@@ -75,7 +75,7 @@ const CONTENT: Record<Lang, {
   },
   en: {
     back: "← Back to Home",
-    badge: "🌸 DOCUMENTATION · COLOSSEUM 2026 FRONTIER",
+    badge: "🌸 DOCUMENTATION · SOLANA SECURITY",
     title: "Sakura Documentation",
     subtitle: "In April 2026, $285 million disappeared through a Solana primitive that almost nobody had audited — Nonce Guardian is the direct technical counter to that attack. Every day, multi-step DeFi execution bleeds millions in hidden slippage — Ghost Run pre-executes entire strategies with simulateTransaction at zero capital risk. And $4B in lending TVL is defended by a 400ms AI rescue protocol. Three Solana-native defense lines. Every AI decision SHA-256 inscribed on-chain, verifiable without trusting any server. This is the complete engineering documentation.",
     sections: [
@@ -131,7 +131,7 @@ const CONTENT: Record<Lang, {
   },
   ja: {
     back: "← ホームへ戻る",
-    badge: "🌸 ドキュメント · COLOSSEUM 2026 FRONTIER",
+    badge: "🌸 ドキュメント · SOLANA SECURITY",
     title: "Sakura 使用マニュアル",
     subtitle: "3つのSolanaネイティブAI防衛プロトコルの完全エンジニアリング文書。備えあれば憂いなし。匠の精神で磨き上げられたSakuraは、機関投資家級のオンチェーンセキュリティをすべてのユーザーへ届けます。getProgramAccounts脅威スキャン、simulateTransactionゴースト実行、SPL Token Approveによる超えられない強制上限。すべて透明。すべてオンチェーンで検証可能。信頼不要。",
     sections: [

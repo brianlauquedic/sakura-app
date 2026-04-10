@@ -493,7 +493,7 @@ export default function VerifyPage() {
           {[
             { label: "Verifiable Compute", color: "#9945FF" },
             { label: "Agentic Economy",    color: "#F59E0B" },
-            { label: "Colosseum 2026",     color: "#60A5FA" },
+            { label: "Solana Security",    color: "#60A5FA" },
           ].map(b => (
             <span key={b.label} style={{
               fontSize: 10, fontWeight: 700, color: b.color,

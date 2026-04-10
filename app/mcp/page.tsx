@@ -28,7 +28,7 @@ const CONTENT: Record<Lang, {
 }> = {
   zh: {
     back: "← 返回首頁",
-    badge: "🤖 MCP AGENT API · AGENTIC ECONOMY · COLOSSEUM 2026 FRONTIER",
+    badge: "🤖 MCP AGENT API · AGENTIC ECONOMY · SOLANA",
     title: "Sakura MCP Agent API",
     tagline: "HTTP 定義信息交換。x402 定義價值交換。",
     subtitle: "任何 MCP 客戶端——Claude Desktop、Cursor、VS Code、或任意自主 AI Agent——均可直接調用 Sakura 三大 Solana DeFi 安全協議。每次調用以鏈上 USDC 原子結算，$1.00 per request，無帳號、無訂閱、無 OAuth、無人工審批門控。",
@@ -81,7 +81,7 @@ const CONTENT: Record<Lang, {
   },
   en: {
     back: "← Back to Home",
-    badge: "🤖 MCP AGENT API · AGENTIC ECONOMY · COLOSSEUM 2026 FRONTIER",
+    badge: "🤖 MCP AGENT API · AGENTIC ECONOMY · SOLANA",
     title: "Sakura MCP Agent API",
     tagline: "HTTP defined information exchange. x402 defines value exchange.",
     subtitle: "Any MCP client — Claude Desktop, Cursor, VS Code, or any autonomous AI agent — can call Sakura's three Solana DeFi security protocols directly. Every call settles atomically in on-chain USDC at $1.00 per request. No account. No subscription. No OAuth. No human approval gate.",
@@ -134,7 +134,7 @@ const CONTENT: Record<Lang, {
   },
   ja: {
     back: "← ホームへ戻る",
-    badge: "🤖 MCP AGENT API · AGENTIC ECONOMY · COLOSSEUM 2026 FRONTIER",
+    badge: "🤖 MCP AGENT API · AGENTIC ECONOMY · SOLANA",
     title: "Sakura MCP Agent API",
     tagline: "HTTPは情報交換を定義した。x402は価値交換を定義する。",
     subtitle: "Claude Desktop・Cursor・VS Code、その他あらゆる自律AIエージェントを含む任意のMCPクライアントが、Sakuraの3つのSolana DeFiセキュリティプロトコルを直接呼び出せます。各呼び出しはオンチェーンUSDCで原子決済、1リクエスト$1.00。アカウント不要。サブスクリプション不要。OAuth不要。人間の承認ゲート不要。",
@@ -435,7 +435,7 @@ export default function McpPage() {
         {/* Why it matters */}
         <div style={{ ...sectionStyle, borderTop: "2px solid var(--gold)" }}>
           <div style={{ fontSize: 10, color: "var(--gold)", letterSpacing: "0.18em", fontFamily: "var(--font-mono)", marginBottom: 12 }}>
-            VERIFIABLE COMPUTE · COLOSSEUM 2026
+            VERIFIABLE COMPUTE · SOLANA
           </div>
           <h2 className="jp-heading" style={{ fontSize: 16, fontWeight: 400, color: "var(--text-primary)", marginBottom: 14, letterSpacing: "0.05em" }}>
             {c.whyTitle}

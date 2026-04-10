@@ -261,7 +261,7 @@ export default function WalletConnect({ walletAddress, onEnterApp }: Props = {})
               fontSize: 9, fontWeight: 400, letterSpacing: "0.22em",
               color: "var(--accent)", fontFamily: "var(--font-mono)",
               marginBottom: 6, textTransform: "uppercase",
-            }}>Sakura AI Guardian · 🌸 備えあれば憂いなし · Colosseum 2026 Frontier</div>
+            }}>Sakura AI Guardian · 🌸 備えあれば憂いなし · Solana Security</div>
 
             <div className="jp-heading" style={{
               fontSize: 15, fontWeight: 400, color: "var(--text-primary)",
