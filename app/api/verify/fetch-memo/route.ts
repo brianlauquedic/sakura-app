@@ -11,6 +11,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Connection } from "@solana/web3.js";
 import { RPC_URL } from "@/lib/agent";
+import { getConnection } from "@/lib/rpc";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -23,7 +24,8 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const conn = new Connection(RPC_URL, "confirmed");
+    // Module 16: multi-RPC failover — auto-selects healthiest endpoint
+    const conn = await getConnection("confirmed");
 
     // Fetch full parsed transaction
     const tx = await conn.getParsedTransaction(sig, {

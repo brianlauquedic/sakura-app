@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import WalletConnect from "@/components/WalletConnect";
 import NonceGuardian from "@/components/NonceGuardian";
 import GhostRun from "@/components/GhostRun";
@@ -24,6 +24,14 @@ function AppContent() {
   const { isDayMode, timeBg } = useTheme();
   const { t } = useLang();
   const [activeTab, setActiveTab] = useState<Tab>("nonce");
+  const [isDemo, setIsDemo] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setIsDemo(params.get("demo") === "true");
+  }, []);
+
+  const showApp = (!!walletAddress && !showLanding) || isDemo;
 
   return (
     <main className="min-h-screen" style={{
@@ -31,13 +39,34 @@ function AppContent() {
       transition: "background 1.5s ease, color 1.5s ease",
     }}>
       <div className="main-container" style={{ maxWidth: 860, margin: "0 auto", padding: "40px 24px" }}>
-        {!walletAddress || showLanding ? (
+        {!showApp ? (
           <WalletConnect
             walletAddress={walletAddress}
             onEnterApp={() => setShowLanding(false)}
           />
         ) : (
           <>
+            {/* ── Demo mode banner ── */}
+            {isDemo && (
+              <div style={{
+                background: "linear-gradient(90deg, rgba(255,60,0,0.15), rgba(255,140,0,0.15))",
+                border: "1px solid rgba(255,100,0,0.4)",
+                borderRadius: 8, padding: "8px 16px", marginBottom: 20,
+                display: "flex", alignItems: "center", gap: 10,
+              }}>
+                <span style={{ fontSize: 14 }}>🎬</span>
+                <span style={{
+                  fontSize: 12, fontWeight: 600, letterSpacing: "0.12em",
+                  color: "#FF6A00", fontFamily: "var(--font-mono)",
+                }}>
+                  DEMO MODE
+                </span>
+                <span style={{ fontSize: 11, color: "var(--text-muted)", letterSpacing: "0.04em" }}>
+                  — preset data, no wallet required
+                </span>
+              </div>
+            )}
+
             {/* ── Header bar ── */}
             <div className="app-header" style={{
               display: "flex", alignItems: "center", justifyContent: "space-between",
@@ -57,11 +86,15 @@ function AppContent() {
                   background: "var(--bg-card)", border: "1px solid var(--border)",
                   borderRadius: 8, padding: "6px 12px",
                 }}>
-                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--green)", display: "inline-block" }} />
+                  <span style={{
+                    width: 6, height: 6, borderRadius: "50%",
+                    background: isDemo ? "#FF6A00" : "var(--green)",
+                    display: "inline-block",
+                  }} />
                   <span style={{ fontSize: 12, color: "var(--text-primary)", fontFamily: "var(--font-mono)", letterSpacing: "0.04em" }}>
-                    {shortAddr}
+                    {isDemo ? "demo...mode" : shortAddr}
                   </span>
-                  {activeProvider && (
+                  {!isDemo && activeProvider && (
                     <span style={{
                       fontSize: 10, color: "var(--text-muted)", letterSpacing: "0.06em",
                     }}>
@@ -69,17 +102,19 @@ function AppContent() {
                     </span>
                   )}
                 </div>
-                <button
-                  onClick={() => disconnect()}
-                  style={{
-                    fontSize: 12, color: "var(--text-muted)",
-                    background: "var(--bg-card)", border: "1px solid var(--border)",
-                    borderRadius: 6, padding: "6px 12px", cursor: "pointer",
-                    letterSpacing: "0.04em",
-                  }}
-                >
-                  {t("appDisconnect")}
-                </button>
+                {!isDemo && (
+                  <button
+                    onClick={() => disconnect()}
+                    style={{
+                      fontSize: 12, color: "var(--text-muted)",
+                      background: "var(--bg-card)", border: "1px solid var(--border)",
+                      borderRadius: 6, padding: "6px 12px", cursor: "pointer",
+                      letterSpacing: "0.04em",
+                    }}
+                  >
+                    {t("appDisconnect")}
+                  </button>
+                )}
                 <a
                   href="/mcp"
                   className="app-header-secondary"
@@ -94,18 +129,20 @@ function AppContent() {
                 >
                   MCP API
                 </a>
-                <button
-                  onClick={() => setShowLanding(true)}
-                  className="app-header-secondary"
-                  style={{
-                    fontSize: 12, color: "var(--text-muted)",
-                    background: "none", border: "none",
-                    cursor: "pointer", padding: "6px 4px",
-                    letterSpacing: "0.04em",
-                  }}
-                >
-                  {t("appHome")}
-                </button>
+                {!isDemo && (
+                  <button
+                    onClick={() => setShowLanding(true)}
+                    className="app-header-secondary"
+                    style={{
+                      fontSize: 12, color: "var(--text-muted)",
+                      background: "none", border: "none",
+                      cursor: "pointer", padding: "6px 4px",
+                      letterSpacing: "0.04em",
+                    }}
+                  >
+                    {t("appHome")}
+                  </button>
+                )}
               </div>
             </div>
 
@@ -128,17 +165,17 @@ function AppContent() {
             {/* ── Tab Content ── */}
             <div style={{ display: activeTab === "nonce" ? "block" : "none" }}>
               <ErrorBoundary fallbackLabel="Nonce Guardian">
-                <NonceGuardian />
+                <NonceGuardian isDemo={isDemo} />
               </ErrorBoundary>
             </div>
             <div style={{ display: activeTab === "ghost" ? "block" : "none" }}>
               <ErrorBoundary fallbackLabel="Ghost Run">
-                <GhostRun />
+                <GhostRun isDemo={isDemo} />
               </ErrorBoundary>
             </div>
             <div style={{ display: activeTab === "shield" ? "block" : "none" }}>
               <ErrorBoundary fallbackLabel="Liquidation Shield">
-                <LiquidationShield />
+                <LiquidationShield isDemo={isDemo} />
               </ErrorBoundary>
             </div>
           </>

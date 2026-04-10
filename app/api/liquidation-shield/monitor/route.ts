@@ -20,7 +20,9 @@ import { monitorPositions, simulateRescue } from "@/lib/liquidation-shield";
 import type { ShieldConfig, MonitorResult } from "@/lib/liquidation-shield";
 import Anthropic from "@anthropic-ai/sdk";
 import { createReadOnlyAgent, RPC_URL } from "@/lib/agent";
+import { getConnection } from "@/lib/rpc";
 import { getWalletLimiter, checkWalletLimitMemory, trackUsage } from "@/lib/redis";
+import { DEMO_SHIELD_RESULT } from "@/lib/demo-data";
 
 /**
  * Sanitize on-chain token symbol for safe insertion into AI prompts.
@@ -37,6 +39,38 @@ function sanitizeForPrompt(value: string | undefined, maxLen = 12): string {
 export const maxDuration = 60;
 
 const USDC_MINT = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
+
+/**
+ * Module 16: Official mainnet mint registry for collateral/debt validation.
+ * Any position with a token symbol NOT in this whitelist gets flagged as suspicious.
+ * Prevents rogue Kamino markets with fake "USDC" or "SOL" symbols from being processed.
+ * Sources: Kamino main market reserve list + MarginFi mainnet bank registry.
+ */
+const OFFICIAL_TOKEN_SYMBOLS = new Set([
+  "SOL", "USDC", "USDT", "ETH", "BTC", "WBTC",
+  "mSOL", "jitoSOL", "bSOL", "stSOL", "jupSOL",
+  "JLP", "JTO", "WIF", "BONK", "PYTH", "RAY",
+  "ORCA", "MNDE", "MSOL", "HXRO",
+]);
+
+/**
+ * Check if a position uses only known official token symbols.
+ * Returns null if valid, warning string if suspicious.
+ */
+function validatePositionMints(collateralToken: string, debtToken: string): string | null {
+  const unknownTokens: string[] = [];
+  if (!OFFICIAL_TOKEN_SYMBOLS.has(collateralToken.toUpperCase()) &&
+      !OFFICIAL_TOKEN_SYMBOLS.has(collateralToken)) {
+    unknownTokens.push(`抵押品: ${collateralToken}`);
+  }
+  if (!OFFICIAL_TOKEN_SYMBOLS.has(debtToken.toUpperCase()) &&
+      !OFFICIAL_TOKEN_SYMBOLS.has(debtToken)) {
+    unknownTokens.push(`借款: ${debtToken}`);
+  }
+  return unknownTokens.length > 0
+    ? `⚠️ 非官方 token 偵測（${unknownTokens.join(", ")}）— 請謹慎確認此倉位來源`
+    : null;
+}
 
 const DEFAULT_CONFIG: ShieldConfig = {
   approvedUsdc: 1000,
@@ -61,8 +95,13 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  let body: { wallet?: string; config?: Partial<ShieldConfig> } = {};
+  let body: { wallet?: string; config?: Partial<ShieldConfig>; demo?: boolean } = {};
   try { body = await req.json(); } catch { /* ok */ }
+
+  // ── Demo mode: return preset data instantly ───────────────────────
+  if (body.demo === true) {
+    return NextResponse.json({ ...DEMO_SHIELD_RESULT, scannedAt: Date.now() });
+  }
 
   const { wallet, config: userConfig } = body;
   if (!wallet || wallet.length < 32) {
@@ -125,6 +164,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Position scan failed" }, { status: 500 });
   }
 
+  // ── Step 1b: Module 16 official mint validation ────────────────────
+  // Flag any position whose collateral/debt token is outside the known official set.
+  // A rogue market could expose fake "USDC" with a different mint — this catches it.
+  const mintWarnings: string[] = [];
+  for (const pos of monitorResult.positions) {
+    const warning = validatePositionMints(pos.collateralToken, pos.debtToken);
+    if (warning) {
+      mintWarnings.push(`[${pos.protocol}/${pos.accountAddress.slice(0, 8)}] ${warning}`);
+    }
+  }
+  if (mintWarnings.length > 0) {
+    console.warn("[liquidation-shield/monitor] Unofficial mint detected:", mintWarnings);
+  }
+
   // ── Step 2: Simulate rescue for at-risk positions ───────────────────
   const rescueSimulations = await Promise.all(
     monitorResult.atRisk.map(pos => simulateRescue(pos, wallet, config))
@@ -136,7 +189,8 @@ export async function POST(req: NextRequest) {
 
   if (apiKey && monitorResult.positions.length > 0) {
     const client = new Anthropic({ apiKey });
-    const conn = new Connection(RPC_URL, "confirmed");
+    // Module 16: multi-RPC failover — auto-selects healthiest endpoint
+    const conn = await getConnection("confirmed");
     const agent = createReadOnlyAgent();
 
     // ── SAK Tool definitions (5 tools — Solana native, no external APIs) ──
@@ -437,5 +491,7 @@ Then write a comprehensive risk analysis in Traditional Chinese (繁體中文):
     config,
     rescueSimulations,
     aiAnalysis,
+    // Module 16: surface any unofficial mint warnings to the frontend
+    mintWarnings: mintWarnings.length > 0 ? mintWarnings : undefined,
   });
 }

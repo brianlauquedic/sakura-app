@@ -21,9 +21,86 @@ import { Connection, PublicKey } from "@solana/web3.js";
 import { simulateStrategy } from "@/lib/ghost-run";
 import type { StrategyStep } from "@/lib/ghost-run";
 import { createReadOnlyAgent, RPC_URL } from "@/lib/agent";
+import { getConnection } from "@/lib/rpc";
 import { getWalletLimiter, checkWalletLimitMemory, trackUsage } from "@/lib/redis";
+import { DEMO_GHOST_RESULT, DEMO_GHOST_STRATEGY } from "@/lib/demo-data";
 
 export const maxDuration = 60;
+
+// ── Module 07: Conditional Order detection (Escrow pattern) ──────────────────
+// Detects trigger conditions in strategy text (e.g. "当SOL跌到$120时执行").
+// Returns a ConditionalOrder describing the on-chain escrow PDA that would
+// hold the strategy until the condition is met (no extra latency — regex only).
+import type { ConditionalOrder } from "@/lib/ghost-run";
+
+function detectConditionalOrder(strategy: string, steps: StrategyStep[]): ConditionalOrder | null {
+  const stepSummary = steps.map(s => `${s.type}:${s.inputToken}→${s.outputToken}`).join("+");
+
+  // Price-below patterns (zh + en)
+  const belowPatterns = [
+    /當\s*([A-Za-z]+)\s*(?:跌|降|低於|跌到|跌破|跌至)\s*\$?(\d+(?:\.\d+)?)/i,
+    /([A-Za-z]+)\s*(?:跌|降|低於|跌到|跌破)\s*\$?(\d+(?:\.\d+)?)\s*時/i,
+    /when\s+([A-Za-z]+)\s+(?:drops?|falls?)\s+(?:to|below)\s+\$?(\d+(?:\.\d+)?)/i,
+    /if\s+([A-Za-z]+)\s+(?:drops?|falls?)\s+(?:to|below)\s+\$?(\d+(?:\.\d+)?)/i,
+    /([A-Za-z]+)\s+price[s]?\s+(?:drops?|falls?)\s+(?:to|below)\s+\$?(\d+(?:\.\d+)?)/i,
+  ];
+  for (const re of belowPatterns) {
+    const m = strategy.match(re);
+    if (m) {
+      const token = m[1].toUpperCase();
+      const price = parseFloat(m[2]);
+      if (!isNaN(price) && price > 0 && ["SOL","USDC","USDT","mSOL","jitoSOL","bSOL"].includes(token)) {
+        return {
+          triggerType: "price_below",
+          watchToken: token,
+          triggerPriceUsd: price,
+          conditionLabel: `當 ${token} 價格跌破 $${price} 時自動執行`,
+          escrowMemoTemplate: JSON.stringify({
+            event: "sakura_conditional_order_set",
+            condition: `${token}_BELOW_${price}`,
+            strategy: stepSummary,
+            oracle: "pyth_sol_usd",
+            module: "07_escrow_pattern",
+          }),
+          pdaSeedDescription: `["sakura_order", wallet_pubkey, "${token}", "${price}"]`,
+        };
+      }
+    }
+  }
+
+  // Price-above patterns (zh + en)
+  const abovePatterns = [
+    /當\s*([A-Za-z]+)\s*(?:漲|升|高於|漲到|突破|漲至)\s*\$?(\d+(?:\.\d+)?)/i,
+    /([A-Za-z]+)\s*(?:漲|升|高於|漲到|突破)\s*\$?(\d+(?:\.\d+)?)\s*時/i,
+    /when\s+([A-Za-z]+)\s+(?:rises?|pumps?|reaches?)\s+(?:to|above)?\s+\$?(\d+(?:\.\d+)?)/i,
+    /([A-Za-z]+)\s+price[s]?\s+(?:rises?|reaches?)\s+\$?(\d+(?:\.\d+)?)/i,
+  ];
+  for (const re of abovePatterns) {
+    const m = strategy.match(re);
+    if (m) {
+      const token = m[1].toUpperCase();
+      const price = parseFloat(m[2]);
+      if (!isNaN(price) && price > 0 && ["SOL","USDC","USDT","mSOL","jitoSOL","bSOL"].includes(token)) {
+        return {
+          triggerType: "price_above",
+          watchToken: token,
+          triggerPriceUsd: price,
+          conditionLabel: `當 ${token} 價格突破 $${price} 時自動執行`,
+          escrowMemoTemplate: JSON.stringify({
+            event: "sakura_conditional_order_set",
+            condition: `${token}_ABOVE_${price}`,
+            strategy: stepSummary,
+            oracle: "pyth_sol_usd",
+            module: "07_escrow_pattern",
+          }),
+          pdaSeedDescription: `["sakura_order", wallet_pubkey, "${token}", "${price}"]`,
+        };
+      }
+    }
+  }
+
+  return null;
+}
 
 const PARSE_SYSTEM = `You are a Solana DeFi strategy parser. Convert the user's natural language strategy into a JSON array of steps.
 
@@ -55,8 +132,17 @@ const TOKEN_PRICE_FALLBACK: Record<string, number> = {
 };
 
 export async function POST(req: NextRequest) {
-  let body: { strategy?: string; wallet?: string } = {};
+  let body: { strategy?: string; wallet?: string; demo?: boolean } = {};
   try { body = await req.json(); } catch { /* ok */ }
+
+  // ── Demo mode: return preset data instantly ───────────────────────
+  if (body.demo === true) {
+    return NextResponse.json({
+      steps: DEMO_GHOST_RESULT.steps,
+      result: DEMO_GHOST_RESULT.result,
+      aiAnalysis: DEMO_GHOST_RESULT.aiAnalysis,
+    });
+  }
 
   const { strategy, wallet } = body;
   if (!strategy || !wallet) {
@@ -171,10 +257,48 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: `Simulation failed: ${msg}` }, { status: 500 });
   }
 
+  // ── Module 07+10: Conditional order detection + live price distance ──
+  // Regex detection (zero latency) + Jupiter price fetch for distance calc.
+  const conditionalOrder = detectConditionalOrder(strategy, steps);
+  if (conditionalOrder) {
+    // Fetch live price to calculate trigger distance (Module 10: use price feed)
+    try {
+      const mint = TOKEN_MINT_MAP[conditionalOrder.watchToken] ?? TOKEN_MINT_MAP.SOL;
+      const priceRes = await fetch(
+        `https://api.jup.ag/price/v2?ids=${mint}`,
+        { signal: AbortSignal.timeout(2_000) }
+      ).catch(() => null);
+      if (priceRes?.ok) {
+        const priceJson = await priceRes.json() as { data?: Record<string, { price?: number }> };
+        const livePrice = priceJson.data?.[mint]?.price;
+        if (livePrice && livePrice > 0) {
+          conditionalOrder.currentPriceUsd = +livePrice.toFixed(2);
+          const dist = conditionalOrder.triggerType === "price_below"
+            ? ((livePrice - conditionalOrder.triggerPriceUsd) / livePrice) * 100
+            : ((conditionalOrder.triggerPriceUsd - livePrice) / livePrice) * 100;
+          conditionalOrder.triggerDistancePct = +dist.toFixed(1);
+        }
+      }
+    } catch { /* skip — display without distance */ }
+    // Fallback: use TOKEN_PRICE_FALLBACK if live fetch failed
+    if (!conditionalOrder.currentPriceUsd) {
+      const fallback = TOKEN_PRICE_FALLBACK[conditionalOrder.watchToken];
+      if (fallback) {
+        conditionalOrder.currentPriceUsd = fallback;
+        const dist = conditionalOrder.triggerType === "price_below"
+          ? ((fallback - conditionalOrder.triggerPriceUsd) / fallback) * 100
+          : ((conditionalOrder.triggerPriceUsd - fallback) / fallback) * 100;
+        conditionalOrder.triggerDistancePct = +dist.toFixed(1);
+      }
+    }
+    result.conditionalOrder = conditionalOrder;
+  }
+
   // ── Step 3: Agentic AI analysis — SAK + Solana native tools ────────
   let aiAnalysis: string | null = null;
   try {
-    const conn = new Connection(RPC_URL, "confirmed");
+    // Module 16: multi-RPC failover — auto-selects healthiest endpoint
+    const conn = await getConnection("confirmed");
     const agent = createReadOnlyAgent();
 
     // ── SAK Tool definitions ──────────────────────────────────────────

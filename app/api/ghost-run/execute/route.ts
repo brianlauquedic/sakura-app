@@ -12,6 +12,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Connection } from "@solana/web3.js";
 import { createSigningAgent, RPC_URL } from "@/lib/agent";
+import { getConnection } from "@/lib/rpc";
 import type { StrategyStep } from "@/lib/ghost-run";
 import { getWalletLimiter, checkWalletLimitMemory } from "@/lib/redis";
 
@@ -73,7 +74,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Agent not configured (SAKURA_AGENT_PRIVATE_KEY missing)" }, { status: 500 });
   }
 
-  const conn = new Connection(RPC_URL, "confirmed");
+  // Module 16: multi-RPC failover — auto-selects healthiest endpoint
+  const conn = await getConnection("confirmed");
   const signatures: string[] = [];
   const errors: string[] = [];
   const unsignedSwapTxs: Array<{ stepIdx: number; token: string; swapTransaction: string }> = [];
@@ -113,9 +115,9 @@ export async function POST(req: NextRequest) {
         sig = result;
         if (sig) await conn.confirmTransaction(sig, "confirmed");
       } else if (step.type === "swap") {
-        const { Connection, PublicKey, VersionedTransaction } = await import("@solana/web3.js");
-        const { RPC_URL } = await import("@/lib/agent");
-        const conn = new Connection(RPC_URL, "confirmed");
+        const { PublicKey, VersionedTransaction } = await import("@solana/web3.js");
+        const { getConnection: getConn } = await import("@/lib/rpc");
+        const conn = await getConn("confirmed");
         const { TOKEN_MINTS, TOKEN_DECIMALS } = await import("@/lib/ghost-run");
 
         const inputMint = TOKEN_MINTS[step.inputToken] ?? step.inputToken;

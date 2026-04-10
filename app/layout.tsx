@@ -3,8 +3,21 @@ import "./globals.css";
 import AppShell from "@/components/AppShell";
 
 export const metadata: Metadata = {
-  title: "Sakura — Solana AI 財務顧問",
-  description: "連接你與 Solana DeFi 生態的智能大腦",
+  title: "Sakura — Solana の AI セキュリティレイヤー",
+  description: "見えない脆弱性を捕捉し、予測できない結果を事前に再現し、逃げ切れない清算を阻止する。",
+  openGraph: {
+    title: "Sakura — Solana の AI セキュリティレイヤー",
+    description: "見えない脆弱性を捕捉し、予測できない結果を事前に再現し、逃げ切れない清算を阻止する。",
+    url: "https://www.sakuraaai.com",
+    siteName: "Sakura",
+    locale: "ja_JP",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Sakura — Solana の AI セキュリティレイヤー",
+    description: "見えない脆弱性を捕捉し、予測できない結果を事前に再現し、逃げ切れない清算を阻止する。",
+  },
   icons: {
     icon: "/icon.png",
     apple: "/icon.png",

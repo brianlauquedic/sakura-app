@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useWallet } from "@/contexts/WalletContext";
 import { useLang } from "@/contexts/LanguageContext";
 import { tpl } from "@/lib/i18n";
 import { payWithWallet } from "@/lib/x402";
 import type { NonceGuardianResult, RiskSignal } from "@/lib/nonce-scanner";
+
+const DEMO_WALLET = "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU";
 
 interface ProofData {
   sha256: string;
@@ -21,7 +23,7 @@ interface ScanResult extends NonceGuardianResult {
 
 type PaymentState = "idle" | "waiting" | "paying" | "verifying" | "done" | "error";
 
-export default function NonceGuardian() {
+export default function NonceGuardian({ isDemo = false }: { isDemo?: boolean }) {
   const { walletAddress } = useWallet();
   const { t } = useLang();
   const [inputAddr, setInputAddr] = useState(walletAddress ?? "");
@@ -34,8 +36,16 @@ export default function NonceGuardian() {
   const [payChallenge, setPayChallenge] = useState<{ recipient: string; amount: number } | null>(null);
   const [payError, setPayError] = useState<string | null>(null);
 
-  async function scan() {
-    const addr = inputAddr.trim();
+  useEffect(() => {
+    if (isDemo) {
+      setInputAddr(DEMO_WALLET);
+      scan(DEMO_WALLET);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDemo]);
+
+  async function scan(overrideAddr?: string) {
+    const addr = (overrideAddr ?? inputAddr).trim();
     if (!addr || addr.length < 32) {
       setError(t("nonceInvalidAddr"));
       return;
@@ -51,7 +61,7 @@ export default function NonceGuardian() {
       const res = await fetch("/api/nonce-guardian", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ wallet: addr }),
+        body: JSON.stringify(isDemo ? { wallet: addr, demo: true } : { wallet: addr }),
       });
 
       // x402: payment required for AI analysis
@@ -206,7 +216,7 @@ export default function NonceGuardian() {
             onKeyDown={e => e.key === "Enter" && scan()}
           />
           <button
-            onClick={scan}
+            onClick={() => scan()}
             disabled={loading}
             className="mobile-btn-full"
             style={{

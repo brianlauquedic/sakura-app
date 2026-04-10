@@ -1,9 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useWallet } from "@/contexts/WalletContext";
 import { useLang } from "@/contexts/LanguageContext";
 import type { StrategyStep, GhostRunResult, StepSimulation } from "@/lib/ghost-run";
+
+const DEMO_STRATEGY = "質押 2 SOL 到 Marinade，把 150 USDC 存入 Kamino，然後用 0.5 SOL 換成 JitoSOL";
+const DEMO_WALLET = "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU";
 
 interface SimulateResponse {
   steps: StrategyStep[];
@@ -52,7 +55,7 @@ function useApiErrorTranslator() {
   };
 }
 
-export default function GhostRun() {
+export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
   const { walletAddress } = useWallet();
   const { t } = useLang();
   const translateApiError = useApiErrorTranslator();
@@ -72,10 +75,19 @@ export default function GhostRun() {
   const [auditChain, setAuditChain] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  async function runSimulation() {
-    const text = strategy.trim();
+  useEffect(() => {
+    if (isDemo) {
+      setStrategy(DEMO_STRATEGY);
+      runSimulation(DEMO_STRATEGY, DEMO_WALLET);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDemo]);
+
+  async function runSimulation(overrideStrategy?: string, overrideWallet?: string) {
+    const text = (overrideStrategy ?? strategy).trim();
+    const wallet = overrideWallet ?? walletAddress;
     if (!text) { setError(t("ghostInputError")); return; }
-    if (!walletAddress) { setError(t("enterAddressError")); return; }
+    if (!wallet) { setError(t("enterAddressError")); return; }
 
     setLoading(true);
     setError(null);
@@ -88,7 +100,9 @@ export default function GhostRun() {
       const res = await fetch("/api/ghost-run/simulate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ strategy: text, wallet: walletAddress }),
+        body: JSON.stringify(isDemo
+          ? { strategy: text, wallet, demo: true }
+          : { strategy: text, wallet }),
       });
       if (!res.ok) {
         const d = await res.json().catch(() => ({}));
@@ -274,7 +288,7 @@ export default function GhostRun() {
           ))}
         </div>
         <button
-          onClick={runSimulation}
+          onClick={() => runSimulation()}
           disabled={loading}
           className="mobile-btn-full"
           style={{
@@ -383,6 +397,27 @@ export default function GhostRun() {
                       color="var(--green)"
                     />
                   )}
+                  {sim.priceImpactPct != null && (
+                    <MetricBox
+                      label="價格衝擊"
+                      value={`${sim.priceImpactPct.toFixed(3)}%`}
+                      color={sim.priceImpactPct >= 2 ? "#FF4444" : sim.priceImpactPct >= 0.5 ? "#FF9F0A" : "var(--green)"}
+                    />
+                  )}
+                </div>
+              )}
+              {/* Module 10: price impact warning from Jupiter quote */}
+              {sim.priceImpactWarning && (
+                <div style={{
+                  fontSize: 11, color: sim.priceImpactPct != null && sim.priceImpactPct >= 2 ? "#FF4444" : "#FF9F0A",
+                  marginTop: 8, padding: "4px 8px",
+                  background: sim.priceImpactPct != null && sim.priceImpactPct >= 2
+                    ? "rgba(255,68,68,0.06)" : "rgba(255,149,0,0.06)",
+                  border: `1px solid ${sim.priceImpactPct != null && sim.priceImpactPct >= 2
+                    ? "rgba(255,68,68,0.2)" : "rgba(255,149,0,0.2)"}`,
+                  borderRadius: 6,
+                }}>
+                  {sim.priceImpactWarning}
                 </div>
               )}
 
@@ -415,6 +450,14 @@ export default function GhostRun() {
                   兌換步驟含 0.3% 平台費（由 Jupiter 自動收取）
                 </div>
               )}
+              {/* Module 16: show dynamic priority fee for transparency */}
+              {simResult.result.priorityFeeUsed != null && (
+                <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 4, fontFamily: "var(--font-mono)" }}>
+                  Priority Fee: {simResult.result.priorityFeeUsed.toLocaleString()} μLamports/CU
+                  {simResult.result.priorityFeeUsed < 5_000 ? " · 🟢 idle" :
+                   simResult.result.priorityFeeUsed < 50_000 ? " · 🟡 normal" : " · 🔴 congested"}
+                </div>
+              )}
               {simResult.result.warnings.map((w, i) => (
                 <div key={i} style={{ fontSize: 12, color: "#FF9F0A", marginTop: 4 }}>{w}</div>
               ))}
@@ -426,6 +469,70 @@ export default function GhostRun() {
               {simResult.result.canExecute ? "✅ 可安全執行" : "⚠️ 請檢查警告"}
             </div>
           </div>
+
+          {/* Conditional Order (Module 07 Escrow) */}
+          {simResult.result.conditionalOrder && (
+            <div style={{
+              background: "rgba(124,111,255,0.06)", border: "1px solid rgba(124,111,255,0.25)",
+              borderLeft: "3px solid #7C6FFF",
+              borderRadius: 10, padding: "14px 18px", marginBottom: 16,
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+                <span style={{
+                  fontSize: 10, fontWeight: 600, letterSpacing: "0.1em",
+                  color: "#7C6FFF", background: "rgba(124,111,255,0.15)",
+                  border: "1px solid rgba(124,111,255,0.3)",
+                  borderRadius: 4, padding: "2px 8px", fontFamily: "var(--font-mono)",
+                }}>
+                  MODULE 07 — ESCROW ORDER
+                </span>
+                <span style={{ fontSize: 12, color: "var(--text-secondary)", fontWeight: 500 }}>
+                  偵測到觸發條件
+                </span>
+              </div>
+              <div style={{ fontSize: 13, color: "var(--text-primary)", fontWeight: 500, marginBottom: 8 }}>
+                ⏳ {simResult.result.conditionalOrder.conditionLabel}
+              </div>
+              {/* Module 10: live price distance to trigger */}
+              {simResult.result.conditionalOrder.currentPriceUsd != null && (
+                <div style={{
+                  display: "flex", gap: 16, marginBottom: 10,
+                  padding: "8px 12px", background: "var(--bg-base)",
+                  borderRadius: 6, fontSize: 12,
+                }}>
+                  <span style={{ color: "var(--text-secondary)" }}>
+                    當前價格：<strong style={{ color: "var(--text-primary)" }}>
+                      ${simResult.result.conditionalOrder.currentPriceUsd}
+                    </strong>
+                  </span>
+                  <span style={{ color: "var(--text-secondary)" }}>
+                    觸發價：<strong style={{ color: "#7C6FFF" }}>
+                      ${simResult.result.conditionalOrder.triggerPriceUsd}
+                    </strong>
+                  </span>
+                  {simResult.result.conditionalOrder.triggerDistancePct != null && (
+                    <span style={{ color: "var(--text-secondary)" }}>
+                      距觸發：<strong style={{
+                        color: simResult.result.conditionalOrder.triggerDistancePct < 0
+                          ? "#FF4444" : simResult.result.conditionalOrder.triggerDistancePct < 10
+                          ? "#FF9F0A" : "var(--text-primary)",
+                      }}>
+                        {simResult.result.conditionalOrder.triggerDistancePct < 0
+                          ? `⚡ 已觸發（價格已越過閾值）`
+                          : `${simResult.result.conditionalOrder.triggerDistancePct.toFixed(1)}%`}
+                      </strong>
+                    </span>
+                  )}
+                </div>
+              )}
+              <div style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: "var(--font-mono)", marginBottom: 4 }}>
+                PDA 種子：{simResult.result.conditionalOrder.pdaSeedDescription}
+              </div>
+              <div style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: "var(--font-mono)", wordBreak: "break-all" }}>
+                Escrow Memo：{simResult.result.conditionalOrder.escrowMemoTemplate}
+              </div>
+            </div>
+          )}
 
           {/* Confirm execution */}
           {simResult.result.canExecute && !execResult && (

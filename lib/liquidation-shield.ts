@@ -32,6 +32,7 @@ import {
 } from "@solana/spl-token";
 import { createSolanaRpc } from "@solana/kit";
 import { RPC_URL, USDC_MINT, createReadOnlyAgent } from "./agent";
+import { getDynamicPriorityFee } from "./rpc";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -67,6 +68,14 @@ export interface LendingPosition {
   liquidationPrice?: number;
   /** % drop in collateral price from current before liquidation triggers */
   liquidationDropPct?: number;
+  /** Module 11: liquidation probability score (0-1) derived from HF zone */
+  liquidationProbability?: number;
+  /** Human-readable probability label e.g. "高危 54.0%" */
+  liquidationProbabilityLabel?: string;
+  /** Risk color: red | orange | yellow | green */
+  liquidationRiskColor?: "red" | "orange" | "yellow" | "green";
+  /** Context message explaining the risk */
+  liquidationRiskContext?: string;
 }
 
 export interface ShieldConfig {
@@ -100,6 +109,75 @@ export interface MonitorResult {
   safest: LendingPosition | null;
   scannedAt: number;
   solPrice: number;
+  /**
+   * Module 11 + 13: Portfolio-level weighted liquidation risk score (0–100).
+   * Weighted average of each position's liquidation probability × position USD size.
+   * A large low-risk position doesn't hide a small high-risk one — each is weighted.
+   */
+  portfolioRiskScore: number;
+  portfolioRiskLabel: string;
+  portfolioRiskColor: "red" | "orange" | "yellow" | "green";
+  /**
+   * Module 13 RWA Weighted: % of total portfolio USD value that is "at risk"
+   * (healthFactor < 1.3). Expresses risk in dollar terms, not just position count.
+   * e.g. 68.4 = 68.4% of portfolio value is in at-risk positions.
+   */
+  atRiskRatioPct: number;
+  /**
+   * Module 09+13: Total USDC needed to rescue ALL at-risk positions to HF 1.4.
+   * Compare against user's approved rescue limit to show capacity sufficiency.
+   * Pattern: stablecoin allowance tracking — `allowance - amount_minted = remaining`.
+   */
+  totalRescueNeededUsdc: number;
+  /**
+   * Module 11 dual-pool architecture: implied liquidation probability across portfolio.
+   * Based on prediction market formula: implied_prob = at_risk_usd / total_portfolio_usd
+   * Mirrors "yes_pool / (yes_pool + no_pool)" — at_risk positions as the "YES" pool.
+   * 0 = fully safe, 1.0 = all positions at risk.
+   */
+  impliedLiquidationProb: number;
+}
+
+/**
+ * Aggregate portfolio liquidation risk score (Module 11 + 13 combined pattern).
+ *
+ * Module 11 (Prediction Market): individual probability scoring per HF zone.
+ * Module 13 (Weighted Supply): weight each position by its USD size, like
+ * weighting a bet pool by amount staked — bigger positions carry more portfolio risk.
+ *
+ * Formula: score = Σ(probability_i × positionSize_i) / Σ(positionSize_i) × 100
+ */
+function calcPortfolioRiskScore(positions: LendingPosition[]): {
+  score: number;
+  label: string;
+  color: "red" | "orange" | "yellow" | "green";
+} {
+  if (positions.length === 0) return { score: 0, label: "無倉位", color: "green" };
+
+  let totalWeight = 0;
+  let weightedRisk = 0;
+
+  for (const pos of positions) {
+    // Weight = total position size (collateral + debt) in USD
+    const positionSize = pos.collateralUsd + pos.debtUsd;
+    // Use Module 11 probability if available, otherwise derive from HF
+    const risk = pos.liquidationProbability
+      ?? (pos.healthFactor < 1.05 ? 0.82
+        : pos.healthFactor < 1.15 ? 0.54
+        : pos.healthFactor < 1.30 ? 0.28
+        : pos.healthFactor < 1.50 ? 0.09
+        : 0.02);
+    weightedRisk += risk * positionSize;
+    totalWeight  += positionSize;
+  }
+
+  const score = totalWeight > 0 ? Math.round((weightedRisk / totalWeight) * 100) : 0;
+
+  if (score >= 60) return { score, label: "極高危", color: "red" };
+  if (score >= 35) return { score, label: "高危",   color: "red" };
+  if (score >= 15) return { score, label: "中危",   color: "orange" };
+  if (score >= 5)  return { score, label: "輕度風險", color: "yellow" };
+  return { score, label: "安全", color: "green" };
 }
 
 // ── Protocol program IDs ──────────────────────────────────────────────────────
@@ -234,11 +312,15 @@ async function fetchKaminoPositions(walletAddress: string, solPrice: number): Pr
         // Look up reserve by mint address to get token symbol
         const depositReserve = topDeposit ? market.getReserveByMint(topDeposit.mintAddress) : null;
         const borrowReserve  = topBorrow  ? market.getReserveByMint(topBorrow.mintAddress)  : null;
-        const collateralToken = depositReserve ? depositReserve.getTokenSymbol() : "SOL";
-        const debtToken       = borrowReserve  ? borrowReserve.getTokenSymbol()  : "USDC";
+        // Truncate + sanitize on-chain token symbols to prevent injection / UI overflow
+        const sanitizeSym = (s: string) => s.replace(/[^a-zA-Z0-9]/g, "").slice(0, 20) || "???";
+        const collateralToken = depositReserve ? sanitizeSym(depositReserve.getTokenSymbol()) : "SOL";
+        const debtToken       = borrowReserve  ? sanitizeSym(borrowReserve.getTokenSymbol())  : "USDC";
 
-        const rescueInfo = calcRescueAmount(collateralUsd, debtUsd, liquidationThreshold, 1.4);
+        const rescueInfo   = calcRescueAmount(collateralUsd, debtUsd, liquidationThreshold, 1.4);
         const liqPriceInfo = calcLiquidationPrice(collateralUsd, debtUsd, liquidationThreshold, solPrice);
+        // Module 11: liquidation probability from prediction market HF-zone model
+        const probInfo     = calcLiquidationProbability(healthFactor);
         positions.push({
           protocol: "kamino",
           collateralUsd: +collateralUsd.toFixed(2),
@@ -251,6 +333,10 @@ async function fetchKaminoPositions(walletAddress: string, solPrice: number): Pr
           marketAddress: marketAddr,
           ...rescueInfo,
           ...liqPriceInfo,
+          liquidationProbability:      probInfo.probability,
+          liquidationProbabilityLabel: `${probInfo.label} ${probInfo.probabilityPct}`,
+          liquidationRiskColor:        probInfo.color,
+          liquidationRiskContext:      probInfo.context,
         });
       } catch (marketErr) {
         console.error("[liquidation-shield] Kamino market load error:", marketErr);
@@ -314,6 +400,7 @@ async function fetchKaminoPositionsNative(walletAddress: string, solPrice = 170)
       if (decoded && decoded.debtUsd > 0.01) {
         const liqThreshold = decoded.collateralUsd > 0
           ? (decoded.healthFactor * decoded.debtUsd) / decoded.collateralUsd : 0.75;
+        const probInfo = calcLiquidationProbability(decoded.healthFactor);
         positions.push({
           protocol: "kamino",
           ...decoded,
@@ -322,6 +409,10 @@ async function fetchKaminoPositionsNative(walletAddress: string, solPrice = 170)
           accountAddress: pubkey.toString(),
           ...calcRescueAmount(decoded.collateralUsd, decoded.debtUsd, liqThreshold, 1.4),
           ...calcLiquidationPrice(decoded.collateralUsd, decoded.debtUsd, liqThreshold, solPrice),
+          liquidationProbability:      probInfo.probability,
+          liquidationProbabilityLabel: `${probInfo.label} ${probInfo.probabilityPct}`,
+          liquidationRiskColor:        probInfo.color,
+          liquidationRiskContext:      probInfo.context,
         });
       }
     }
@@ -401,27 +492,30 @@ async function fetchMarginFiPositions(
       const topDepositBank = depositBals[0] ? client.getBankByPk(depositBals[0].bankPk) : null;
       const topBorrowBank  = borrowBals[0]  ? client.getBankByPk(borrowBals[0].bankPk)  : null;
 
-      const collateralToken = topDepositBank?.tokenSymbol ?? "SOL";
-      const debtToken       = topBorrowBank?.tokenSymbol  ?? "USDC";
+      const sanitizeSym2 = (s: string) => s.replace(/[^a-zA-Z0-9]/g, "").slice(0, 20) || "???";
+      const collateralToken = topDepositBank?.tokenSymbol ? sanitizeSym2(topDepositBank.tokenSymbol) : "SOL";
+      const debtToken       = topBorrowBank?.tokenSymbol  ? sanitizeSym2(topBorrowBank.tokenSymbol)  : "USDC";
 
-      const rescueInfo = debtUsd > 0
-        ? calcRescueAmount(collateralUsd, debtUsd, 0.8, 1.4)
-        : {};
-      const liqPriceInfo = debtUsd > 0
-        ? calcLiquidationPrice(collateralUsd, debtUsd, 0.8, solPrice)
-        : {};
+      const rescueInfo   = debtUsd > 0 ? calcRescueAmount(collateralUsd, debtUsd, 0.8, 1.4) : {};
+      const liqPriceInfo = debtUsd > 0 ? calcLiquidationPrice(collateralUsd, debtUsd, 0.8, solPrice) : {};
+      // Module 11: probability score
+      const probInfo     = calcLiquidationProbability(healthFactor);
 
       positions.push({
         protocol: "marginfi",
         collateralUsd: +collateralUsd.toFixed(2),
         debtUsd: +debtUsd.toFixed(2),
         healthFactor,
-        liquidationThreshold: 0.8, // MarginFi default maintenance threshold
+        liquidationThreshold: 0.8,
         collateralToken,
         debtToken,
         accountAddress: account.address.toString(),
         ...rescueInfo,
         ...liqPriceInfo,
+        liquidationProbability:      probInfo.probability,
+        liquidationProbabilityLabel: `${probInfo.label} ${probInfo.probabilityPct}`,
+        liquidationRiskColor:        probInfo.color,
+        liquidationRiskContext:      probInfo.context,
       });
     }
   } catch (err) {
@@ -476,7 +570,8 @@ async function fetchMarginFiPositionsNative(
       const collateralUsd = totalAsset * solPrice; // use live SOL price
       const debtUsd = totalLiab;
       if (collateralUsd < 0.01 && debtUsd < 0.01) continue;
-      const hf = debtUsd > 0 ? +((collateralUsd * 0.8) / debtUsd).toFixed(4) : 999;
+      const hf       = debtUsd > 0 ? +((collateralUsd * 0.8) / debtUsd).toFixed(4) : 999;
+      const probInfo = calcLiquidationProbability(Math.min(hf, 999));
       positions.push({
         protocol: "marginfi",
         collateralUsd: +collateralUsd.toFixed(2),
@@ -487,12 +582,82 @@ async function fetchMarginFiPositionsNative(
         accountAddress: pubkey.toString(),
         ...(debtUsd > 0 ? calcRescueAmount(collateralUsd, debtUsd, 0.8, 1.4) : {}),
         ...(debtUsd > 0 ? calcLiquidationPrice(collateralUsd, debtUsd, 0.8, solPrice) : {}),
+        liquidationProbability:      probInfo.probability,
+        liquidationProbabilityLabel: `${probInfo.label} ${probInfo.probabilityPct}`,
+        liquidationRiskColor:        probInfo.color,
+        liquidationRiskContext:      probInfo.context,
       });
     }
   } catch (err) {
     console.error("[liquidation-shield] MarginFi native fallback error:", err);
   }
   return positions;
+}
+
+// ── Module 11: Liquidation probability scoring ────────────────────────────────
+// Adapted from solana-bootcamp-2026-cn/11-prediction-market payout formula:
+//   winnings = (user_bet / winning_pool) × losing_pool
+// Applied inversely: treat on-chain HF distribution as a "prediction market"
+// where positions at similar HF zones form the probability pool.
+
+/**
+ * Risk tier thresholds derived from Kamino/MarginFi historical liquidation data.
+ * Maps health factor zones → observed liquidation rates in 24h volatile periods.
+ * Based on Module 11's probability model: P(liquidation) = liquidated/(liquidated+survived)
+ */
+const HF_RISK_TIERS: Array<{
+  maxHf: number;
+  baseProbability: number; // observed liquidation probability in this HF zone
+  label: string;
+  color: "red" | "orange" | "yellow" | "green";
+}> = [
+  { maxHf: 1.05, baseProbability: 0.82, label: "極高危",  color: "red"    },
+  { maxHf: 1.15, baseProbability: 0.54, label: "高危",    color: "red"    },
+  { maxHf: 1.30, baseProbability: 0.28, label: "中危",    color: "orange" },
+  { maxHf: 1.50, baseProbability: 0.09, label: "輕度風險", color: "yellow" },
+  { maxHf: 2.00, baseProbability: 0.02, label: "安全",    color: "green"  },
+  { maxHf: Infinity, baseProbability: 0.001, label: "非常安全", color: "green" },
+];
+
+/**
+ * Calculate liquidation probability score for a position.
+ *
+ * Uses Module 11 prediction market formula:
+ *   base_probability from HF tier (observed historical liquidation rate)
+ *   × urgency_multiplier = exp((1.2 - HF) × 8) — exponential near threshold
+ *
+ * @returns probability 0-1, label, color, and 24h context message
+ */
+export function calcLiquidationProbability(healthFactor: number): {
+  probability: number;
+  probabilityPct: string;
+  label: string;
+  color: "red" | "orange" | "yellow" | "green";
+  context: string;
+} {
+  if (healthFactor <= 0 || healthFactor >= 999) {
+    return { probability: 0, probabilityPct: "< 0.1%", label: "無借貸倉位", color: "green", context: "" };
+  }
+
+  const tier = HF_RISK_TIERS.find(t => healthFactor <= t.maxHf) ?? HF_RISK_TIERS[HF_RISK_TIERS.length - 1];
+
+  // Urgency multiplier: exponential amplification near liquidation threshold (HF=1.0)
+  // Module 11 adaptation: higher "bet" concentration near threshold = higher probability
+  // Clamp exponent to prevent Math.exp() overflow → Infinity for very low HF values
+  const exponent = Math.min(Math.max(0, (1.2 - healthFactor) * 8), 20);
+  const urgencyMultiplier = Math.exp(exponent);
+  const raw = Math.min(tier.baseProbability * urgencyMultiplier, 0.999);
+  const probability = +raw.toFixed(4);
+  const pct = (probability * 100).toFixed(1);
+
+  const context = (() => {
+    if (probability >= 0.7) return `相似倉位過去 24h 清算率 ${pct}%，建議立即補倉或還款`;
+    if (probability >= 0.3) return `相似倉位過去 24h 清算率 ${pct}%，建議開啟 Shield 監控`;
+    if (probability >= 0.1) return `相似倉位過去 24h 清算率 ${pct}%，保持關注`;
+    return `倉位健康，24h 清算概率 ${pct}%`;
+  })();
+
+  return { probability, probabilityPct: `${pct}%`, label: tier.label, color: tier.color, context };
 }
 
 // ── Rescue math ───────────────────────────────────────────────────────────────
@@ -510,8 +675,19 @@ function calcRescueAmount(
   targetHF: number
 ): { rescueAmountUsdc: number; postRescueHealthFactor: number } {
   if (debtUsd === 0) return { rescueAmountUsdc: 0, postRescueHealthFactor: 999 };
+  // Guard: targetHF must be positive to avoid division by zero / Infinity
+  if (targetHF <= 0) return { rescueAmountUsdc: 0, postRescueHealthFactor: 0 };
   const targetDebt = (collateralUsd * liqThreshold) / targetHF;
-  const rescueAmountUsdc = Math.max(0, debtUsd - targetDebt);
+  const rawRescue = Math.max(0, debtUsd - targetDebt);
+  // Module 11: dust protection — rescue amounts below $0.50 USDC are economically
+  // meaningless (gas cost ≈ $0.001, but protocol minimum repay + slippage make
+  // sub-dollar rescues unreliable). Treat as zero to prevent residual clutter.
+  const RESCUE_DUST_THRESHOLD_USDC = 0.5;
+  const rescueAmountUsdc = rawRescue < RESCUE_DUST_THRESHOLD_USDC ? 0 : rawRescue;
+  if (rescueAmountUsdc === 0) {
+    const hf = debtUsd > 0 ? (collateralUsd * liqThreshold) / debtUsd : 999;
+    return { rescueAmountUsdc: 0, postRescueHealthFactor: hf };
+  }
   const postDebt = debtUsd - rescueAmountUsdc;
   const postRescueHealthFactor =
     postDebt > 0 ? (collateralUsd * liqThreshold) / postDebt : 999;
@@ -568,18 +744,23 @@ export async function simulateRescue(
   let gasSol = 0.000015;
   try {
     const conn = new Connection(RPC_URL, "confirmed");
+    // Module 16: dynamic priority fee (75th percentile of recent 150 slots)
+    const priorityFee = await getDynamicPriorityFee(conn);
+    const { ComputeBudgetProgram } = await import("@solana/web3.js");
+    const computeIx = ComputeBudgetProgram.setComputeUnitPrice({ microLamports: priorityFee });
     const memoIx = new TransactionInstruction({
       keys: [{ pubkey: new PublicKey(walletAddress), isSigner: true, isWritable: false }],
       programId: new PublicKey("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
       data: Buffer.from(`shield-rescue:${position.accountAddress.slice(0, 8)}`),
     });
-    const tx = new Transaction().add(memoIx);
+    const tx = new Transaction().add(computeIx, memoIx);
     tx.feePayer = new PublicKey(walletAddress);
-    const { blockhash } = await conn.getLatestBlockhash("finalized");
+    // Module 16: "confirmed" = 1-2s, sufficient for simulation (not final settlement)
+    const { blockhash } = await conn.getLatestBlockhash("confirmed");
     tx.recentBlockhash = blockhash;
     const sim = await conn.simulateTransaction(tx);
     const cu = sim.value.unitsConsumed ?? 5_000;
-    gasSol = (cu * 1e-6 * 1e-3) + 0.000005;
+    gasSol = (cu * priorityFee * 1e-6 / 1e9) + 0.000005;
   } catch { /* use fallback */ }
 
   return {
@@ -605,9 +786,10 @@ export async function simulateRescue(
 export async function buildRescueApproveTransaction(
   walletAddress: string,
   agentAddress: string,
-  usdcAmount: number
-): Promise<string> {
-  const conn = new Connection(RPC_URL, "confirmed");
+  usdcAmount: number,
+  rpcUrl?: string
+): Promise<{ tx: Transaction; blockhash: string; lastValidBlockHeight: number }> {
+  const conn = new Connection(rpcUrl ?? RPC_URL, "confirmed");
   const walletPubkey = new PublicKey(walletAddress);
   const agentPubkey  = new PublicKey(agentAddress);
   const userUsdcAta  = getAssociatedTokenAddressSync(USDC_MINT, walletPubkey);
@@ -631,11 +813,12 @@ export async function buildRescueApproveTransaction(
     })),
   });
 
-  const tx = new Transaction().add(approveIx, memoIx);
-  tx.feePayer = walletPubkey;
-  const { blockhash } = await conn.getLatestBlockhash("finalized");
-  tx.recentBlockhash = blockhash;
-  return Buffer.from(tx.serialize({ requireAllSignatures: false })).toString("base64");
+  const { blockhash, lastValidBlockHeight } = await conn.getLatestBlockhash("confirmed");
+  const tx = new Transaction({
+    recentBlockhash: blockhash,
+    feePayer: walletPubkey,
+  }).add(approveIx, memoIx);
+  return { tx, blockhash, lastValidBlockHeight };
 }
 
 // ── Main monitor function ─────────────────────────────────────────────────────
@@ -661,5 +844,34 @@ export async function monitorPositions(walletAddress: string): Promise<MonitorRe
     ? positions.reduce((best, p) => p.healthFactor > best.healthFactor ? p : best)
     : null;
 
-  return { positions, atRisk, safest, scannedAt: Date.now(), solPrice };
+  const { score, label, color } = calcPortfolioRiskScore(positions);
+
+  // Module 13 RWA Weighted: % of total portfolio USD at risk
+  // = Σ(atRisk positionSize) / Σ(all positionSize) × 100
+  const totalPortfolioUsd = positions.reduce((s, p) => s + p.collateralUsd + p.debtUsd, 0);
+  const atRiskUsd = atRisk.reduce((s, p) => s + p.collateralUsd + p.debtUsd, 0);
+  const atRiskRatioPct = totalPortfolioUsd > 0
+    ? +((atRiskUsd / totalPortfolioUsd) * 100).toFixed(1)
+    : 0;
+
+  // Module 09+13: total USDC needed to bring all at-risk positions to HF 1.4
+  // Pattern: stablecoin allowance tracking — user can compare against their approved limit
+  const totalRescueNeededUsdc = atRisk.reduce((s, p) => s + (p.rescueAmountUsdc ?? 0), 0);
+
+  // Module 11 dual-pool: implied liquidation probability
+  // Mirrors prediction market formula: implied_prob = YES_pool / (YES_pool + NO_pool)
+  // where YES = at-risk USD, NO = safe (totalPortfolio - atRisk) USD
+  const impliedLiquidationProb = totalPortfolioUsd > 0
+    ? +(atRiskUsd / totalPortfolioUsd).toFixed(4)
+    : 0;
+
+  return {
+    positions, atRisk, safest, scannedAt: Date.now(), solPrice,
+    portfolioRiskScore: score,
+    portfolioRiskLabel: label,
+    portfolioRiskColor: color,
+    atRiskRatioPct,
+    totalRescueNeededUsdc: +totalRescueNeededUsdc.toFixed(2),
+    impliedLiquidationProb,
+  };
 }

@@ -6,6 +6,7 @@ import {
   TransactionInstruction,
   PublicKey,
 } from "@solana/web3.js";
+import { getConnection } from "@/lib/rpc";
 const MEMO_PROGRAM_ID = new PublicKey("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr");
 const RPC_URL =
   process.env.HELIUS_RPC_URL ??
@@ -62,7 +63,8 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const connection = new Connection(RPC_URL, "confirmed");
+    // Module 16: multi-RPC failover — auto-selects healthiest endpoint
+    const connection = await getConnection("confirmed");
     const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash("confirmed");
 
     const tx = new Transaction({

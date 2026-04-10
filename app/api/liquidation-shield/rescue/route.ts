@@ -15,8 +15,10 @@
  *  - Liquidation penalty = 5-10%, so user nets 4-9% savings after fee
  */
 import { NextRequest, NextResponse } from "next/server";
-import { Connection, PublicKey, Transaction, Keypair } from "@solana/web3.js";
+import { Connection, PublicKey, Transaction, Keypair, ComputeBudgetProgram } from "@solana/web3.js";
 import { RPC_URL } from "@/lib/agent";
+import { getConnection, getDynamicPriorityFee } from "@/lib/rpc";
+import { buildRescueApproveTransaction } from "@/lib/liquidation-shield";
 import type { LendingPosition } from "@/lib/liquidation-shield";
 
 export const maxDuration = 120;
@@ -38,6 +40,33 @@ export async function GET() {
     return NextResponse.json({ agentPubkey: kp.publicKey.toString(), configured: true });
   } catch {
     return NextResponse.json({ agentPubkey: null, configured: false });
+  }
+}
+
+// ── PUT: build unsigned approve TX for client wallet signing ─────────────────
+// Uses buildRescueApproveTransaction() from lib — single source of truth for
+// approve + Memo mandate TX construction. Returns serialized unsigned TX.
+export async function PUT(req: NextRequest) {
+  let body: { wallet?: string; approveUsdc?: number } = {};
+  try { body = await req.json(); } catch { /* ok */ }
+  const { wallet, approveUsdc } = body;
+  if (!wallet || !approveUsdc || approveUsdc <= 0) {
+    return NextResponse.json({ error: "Missing wallet or approveUsdc" }, { status: 400 });
+  }
+  const rawKey = process.env.SAKURA_AGENT_PRIVATE_KEY;
+  if (!rawKey) {
+    return NextResponse.json({ error: "Agent not configured" }, { status: 500 });
+  }
+  try {
+    const agentKp = Keypair.fromSecretKey(Uint8Array.from(JSON.parse(rawKey)));
+    const { tx, blockhash, lastValidBlockHeight } = await buildRescueApproveTransaction(
+      wallet, agentKp.publicKey.toString(), approveUsdc
+    );
+    const serializedTx = Buffer.from(tx.serialize({ requireAllSignatures: false })).toString("base64");
+    return NextResponse.json({ serializedTx, blockhash, lastValidBlockHeight });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "構建授權交易失敗";
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
 
@@ -104,10 +133,18 @@ export async function POST(req: NextRequest) {
     position?: LendingPosition;
     rescueUsdc?: number;
     mandateTxSig?: string;
+    mandateTs?: string; // Module 06: ISO timestamp of when SPL approve mandate was set
   } = {};
   try { body = await req.json(); } catch { /* ok */ }
 
-  const { wallet, position, rescueUsdc, mandateTxSig } = body;
+  const { wallet, position, rescueUsdc, mandateTxSig, mandateTs } = body;
+
+  // ── CSRF protection: verify Origin matches our app ─────────────────────
+  const origin = req.headers.get("origin");
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+  if (origin && baseUrl && !origin.startsWith(baseUrl)) {
+    return NextResponse.json({ error: "Invalid request origin" }, { status: 403 });
+  }
 
   // ── Input validation ────────────────────────────────────────────────────
   if (!wallet || !position || !rescueUsdc) {
@@ -116,8 +153,15 @@ export async function POST(req: NextRequest) {
   if (!/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(wallet)) {
     return NextResponse.json({ error: "Invalid wallet address format" }, { status: 400 });
   }
-  if (rescueUsdc <= 0 || rescueUsdc > 1_000_000) {
-    return NextResponse.json({ error: "Invalid rescue amount" }, { status: 400 });
+  // Module 10: MINIMUM_LIQUIDITY pattern — enforce minimum rescue amount to prevent
+  // dust attacks and economically meaningless rescues that waste gas.
+  // $1 USDC minimum: rescue TX has ~$0.001 gas cost, below $1 it's irrational.
+  const MINIMUM_RESCUE_USDC = 1.0;
+  if (!Number.isFinite(rescueUsdc) || rescueUsdc < MINIMUM_RESCUE_USDC || rescueUsdc > 1_000_000) {
+    return NextResponse.json(
+      { error: `救援金額必須介於 $${MINIMUM_RESCUE_USDC} 至 $1,000,000 USDC 之間` },
+      { status: 400 }
+    );
   }
 
   const rawKey = process.env.SAKURA_AGENT_PRIVATE_KEY;
@@ -131,9 +175,45 @@ export async function POST(req: NextRequest) {
   const { createTransferCheckedInstruction, getAssociatedTokenAddressSync } =
     await import("@solana/spl-token");
 
-  const conn = new Connection(RPC_URL, "confirmed");
+  // Module 16: select confirmation level by transaction value.
+  // High-value rescues (>$1000 USDC) use "finalized" (~13s) for irreversible safety.
+  // Lower amounts use "confirmed" (~2s) for speed — acceptable risk for small amounts.
+  const HIGH_VALUE_THRESHOLD_USDC = 1_000;
+  const commitment = rescueUsdc >= HIGH_VALUE_THRESHOLD_USDC ? "finalized" : "confirmed";
+
+  // Module 16: multi-RPC failover — auto-selects healthiest endpoint
+  const conn = await getConnection(commitment);
   const agentKp = Keypair.fromSecretKey(Uint8Array.from(JSON.parse(rawKey)));
   const usdcMintPubkey = new PublicKey(USDC_MINT);
+
+  // ── Step 0: Module 09 Token-2022 extension pre-check ──────────────────
+  // Check if USDC mint (or any Token-2022 token) has dangerous extensions like
+  // freeze authority or transfer hooks that could silently fail the rescue TX.
+  // Ported from Module 09: Token-2022 mint authority + pause detection pattern.
+  let tokenExtensionWarning: string | null = null;
+  try {
+    const { getMint, TOKEN_2022_PROGRAM_ID } = await import("@solana/spl-token");
+    // Most tokens are standard SPL — this throws for non-Token-2022 mints (safe)
+    const mint2022Info = await getMint(conn, new PublicKey(USDC_MINT), "confirmed", TOKEN_2022_PROGRAM_ID)
+      .catch(() => null); // null = standard SPL token, not Token-2022
+
+    if (mint2022Info) {
+      // USDC is using Token-2022 — check freeze authority (Module 09 global pause pattern)
+      if (mint2022Info.freezeAuthority) {
+        tokenExtensionWarning = `⚠️ Token-2022 凍結授權偵測：USDC mint 擁有 freezeAuthority (${mint2022Info.freezeAuthority.toString().slice(0, 12)}…)，救援交易可能被凍結。`;
+      }
+      // Check if mint is frozen (supply = 0 after freeze)
+      if (!mint2022Info.isInitialized) {
+        return NextResponse.json({
+          success: false, rescueSig: null, feeSig: null, feeUsdc: 0,
+          feeCollected: false, memoSig: null, auditChain: null,
+          mandateTs: mandateTs ?? null, executionTs: new Date().toISOString(),
+          timeWindowSec: null,
+          error: "Token-2022 程序：USDC mint 未初始化或已暫停，無法執行救援。",
+        }, { status: 503 });
+      }
+    }
+  } catch { /* standard SPL token — no Token-2022 extensions, safe to proceed */ }
 
   // ── Step 1: Verify on-chain rescue authorization (C-2 fix) ─────────────
   // Confirms the user's USDC ATA has delegated authority to this agent.
@@ -159,14 +239,26 @@ export async function POST(req: NextRequest) {
   let rescueSig: string | null = null;
   let error: string | null = null;
 
-  try {
+  // Module 16: dynamic priority fee (75th percentile of recent 150 slots)
+  const priorityFee = await getDynamicPriorityFee(conn);
+
+  const { createAssociatedTokenAccountIdempotentInstruction } = await import("@solana/spl-token");
+
+  const buildRescueTx = async (): Promise<{ tx: Transaction; blockhash: string; lastValidBlockHeight: number }> => {
     const userUsdcAta  = getAssociatedTokenAddressSync(usdcMintPubkey, new PublicKey(wallet));
     const agentUsdcAta = getAssociatedTokenAddressSync(usdcMintPubkey, agentKp.publicKey);
-
-    // Rescue amount in micro-USDC (6 decimals)
     const rescueAmount = BigInt(Math.ceil(rescueUsdc * 1_000_000));
 
-    // Transfer USDC from user's ATA to agent escrow using delegate authority
+    // Module 09: init_if_needed — ensure agent's USDC ATA exists before transfer
+    // createAssociatedTokenAccountIdempotentInstruction: no-op if ATA already exists,
+    // creates it if not. Prevents "account does not exist" failure on first rescue.
+    const initAgentAtaIx = createAssociatedTokenAccountIdempotentInstruction(
+      agentKp.publicKey, // payer
+      agentUsdcAta,      // ATA to create/verify
+      agentKp.publicKey, // owner
+      usdcMintPubkey,    // mint
+    );
+
     const rescueIx = createTransferCheckedInstruction(
       userUsdcAta,       // source: user's USDC ATA
       usdcMintPubkey,    // mint
@@ -176,21 +268,59 @@ export async function POST(req: NextRequest) {
       6                  // USDC decimals
     );
 
-    const rescueTx = new Transaction().add(rescueIx);
-    rescueTx.feePayer = agentKp.publicKey;
-    const { blockhash: rescueBlockhash, lastValidBlockHeight: rescueLVBH } =
-      await conn.getLatestBlockhash("confirmed");
-    rescueTx.recentBlockhash = rescueBlockhash;
-    rescueTx.sign(agentKp);
+    // Module 16: dynamic priority fee for timely inclusion during congestion
+    const computeIx = ComputeBudgetProgram.setComputeUnitPrice({ microLamports: priorityFee });
 
-    rescueSig = await conn.sendRawTransaction(rescueTx.serialize(), { skipPreflight: false });
-    await conn.confirmTransaction(
-      { signature: rescueSig, blockhash: rescueBlockhash, lastValidBlockHeight: rescueLVBH },
-      "confirmed"
-    );
-  } catch (err) {
-    error = err instanceof Error ? err.message : String(err);
-    console.error("[liquidation-shield/rescue] SAK error:", err);
+    // Module 16: use commitment variable — "finalized" for ≥$1000, "confirmed" otherwise
+    const { blockhash, lastValidBlockHeight } = await conn.getLatestBlockhash(commitment);
+    const tx = new Transaction().add(computeIx, initAgentAtaIx, rescueIx);
+    tx.feePayer = agentKp.publicKey;
+    tx.recentBlockhash = blockhash;
+    return { tx, blockhash, lastValidBlockHeight };
+  };
+
+  // Module 16: simulateTransaction pre-check — catch errors before spending gas.
+  // Pattern from Module 16 production guide: "Always simulate first to catch errors."
+  try {
+    const { tx: simTx } = await buildRescueTx();
+    simTx.sign(agentKp);
+    const simResult = await conn.simulateTransaction(simTx);
+    if (simResult.value.err) {
+      const simErrMsg = JSON.stringify(simResult.value.err);
+      console.error("[rescue] simulateTransaction failed:", simErrMsg);
+      return NextResponse.json({
+        success: false, rescueSig: null, feeSig: null, feeUsdc: 0,
+        feeCollected: false, memoSig: null, auditChain: null,
+        mandateTs: mandateTs ?? null, executionTs: new Date().toISOString(),
+        timeWindowSec: null, tokenExtensionWarning,
+        error: `救援模擬失敗：${simErrMsg}。交易未發送，無 gas 消耗。`,
+      }, { status: 422 });
+    }
+  } catch (simErr) {
+    // Simulation itself failed (e.g., RPC down) — proceed with real TX (retry loop will handle)
+    console.warn("[rescue] simulateTransaction pre-check failed, proceeding:", simErr);
+  }
+
+  // Module 16: 3-retry loop with fresh blockhash on each attempt
+  // Handles "Blockhash not found" (expired) and transient RPC errors.
+  for (let attempt = 1; attempt <= 3 && !rescueSig; attempt++) {
+    try {
+      const { tx, blockhash, lastValidBlockHeight } = await buildRescueTx();
+      tx.sign(agentKp);
+      rescueSig = await conn.sendRawTransaction(tx.serialize(), { skipPreflight: false });
+      await conn.confirmTransaction(
+        { signature: rescueSig, blockhash, lastValidBlockHeight },
+        commitment
+      );
+      error = null;
+    } catch (err) {
+      error = err instanceof Error ? err.message : String(err);
+      console.error(`[liquidation-shield/rescue] Attempt ${attempt}/3 failed:`, err);
+      // If blockhash expired, retry with fresh blockhash; otherwise surface error
+      if (attempt === 3 || (error && !error.includes("Blockhash not found") && !error.includes("BlockhashNotFound"))) {
+        break;
+      }
+    }
   }
 
   // ── Step 3: 1% Performance Fee (only on successful rescue) ────────────
@@ -211,13 +341,16 @@ export async function POST(req: NextRequest) {
         feeAmount,
         6
       );
-      const feeTx = new Transaction().add(feeIx);
+      // Module 16: include priority fee so fee TX lands in same block as rescue TX
+      const computeIx = ComputeBudgetProgram.setComputeUnitPrice({ microLamports: priorityFee });
+      const feeTx = new Transaction().add(computeIx, feeIx);
       feeTx.feePayer = agentKp.publicKey;
-      const { blockhash, lastValidBlockHeight } = await conn.getLatestBlockhash("confirmed");
+      // Fresh blockhash per attempt — uses same commitment level as rescue TX
+      const { blockhash, lastValidBlockHeight } = await conn.getLatestBlockhash(commitment);
       feeTx.recentBlockhash = blockhash;
       feeTx.sign(agentKp);
       const sig = await conn.sendRawTransaction(feeTx.serialize(), { skipPreflight: false });
-      await conn.confirmTransaction({ signature: sig, blockhash, lastValidBlockHeight }, "confirmed");
+      await conn.confirmTransaction({ signature: sig, blockhash, lastValidBlockHeight }, commitment);
       return sig;
     };
 
@@ -238,8 +371,15 @@ export async function POST(req: NextRequest) {
   }
   const feeCollected = !!feeSig;
 
-  // ── Step 4: On-chain Memo audit record ────────────────────────────────
+  // ── Step 4: On-chain Memo audit record (Module 06: time-gated PDA pattern) ───
+  // Records mandate timestamp, execution timestamp, and time window between them.
+  // This creates a complete audit trail: when the mandate was set → when rescue fired.
   let memoSig: string | null = null;
+  const executionTs = new Date().toISOString();
+  const timeWindowSec = mandateTs
+    ? Math.round((Date.now() - new Date(mandateTs).getTime()) / 1000)
+    : null;
+
   const auditData = JSON.stringify({
     event: "sakura_rescue_executed",
     protocol: position.protocol,
@@ -251,7 +391,11 @@ export async function POST(req: NextRequest) {
     postHealthFactor: position.postRescueHealthFactor?.toFixed(3),
     mandateRef: mandateTxSig?.slice(0, 20) ?? "none",
     rescueSig: rescueSig?.slice(0, 20) ?? "failed",
-    ts: new Date().toISOString(),
+    // Module 06: time-gated audit fields
+    mandateTs: mandateTs ?? null,    // when user set the SPL approve mandate
+    executionTs,                     // when rescue was executed
+    timeWindowSec,                   // seconds between mandate and rescue (audit trail)
+    module: "06_time_gated_audit",
   });
 
   try {
@@ -287,6 +431,12 @@ export async function POST(req: NextRequest) {
     auditChain: mandateTxSig
       ? `${mandateTxSig.slice(0, 12)}… → ${memoSig?.slice(0, 12) ?? "?"}…`
       : null,
+    // Module 06: time-gated audit metadata
+    mandateTs: mandateTs ?? null,
+    executionTs,
+    timeWindowSec,
+    // Module 09: Token-2022 extension warning (null = standard SPL, safe)
+    tokenExtensionWarning,
     error,
   });
 }

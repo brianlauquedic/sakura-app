@@ -1,15 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useWallet } from "@/contexts/WalletContext";
 import { useLang } from "@/contexts/LanguageContext";
 import type { TranslationKey } from "@/lib/i18n";
 import type { LendingPosition, RescueSimulation, MonitorResult, ShieldConfig } from "@/lib/liquidation-shield";
 
+const DEMO_WALLET = "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU";
+
 interface MonitorResponse extends MonitorResult {
   config: ShieldConfig;
   rescueSimulations: RescueSimulation[];
   aiAnalysis: string | null;
+  /** Module 16: unofficial mint warnings (undefined = all mints verified) */
+  mintWarnings?: string[];
+  /** Module 09+13: total USDC needed to rescue all at-risk positions */
+  totalRescueNeededUsdc: number;
+  /** Module 11 dual-pool: implied liquidation prob from at-risk/total USD ratio */
+  impliedLiquidationProb: number;
 }
 
 interface RescueResponse {
@@ -20,6 +28,12 @@ interface RescueResponse {
   feeCollected: boolean;
   memoSig: string | null;
   auditChain: string | null;
+  // Module 06: time-gated audit fields
+  mandateTs: string | null;
+  executionTs: string;
+  timeWindowSec: number | null;
+  // Module 09: Token-2022 extension warning
+  tokenExtensionWarning: string | null;
   error: string | null;
 }
 
@@ -62,7 +76,7 @@ function healthLabelIcon(hf: number): string {
   return "✅";
 }
 
-export default function LiquidationShield() {
+export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean }) {
   const { walletAddress } = useWallet();
   const { t } = useLang();
   const [inputAddr, setInputAddr] = useState(walletAddress ?? "");
@@ -78,9 +92,18 @@ export default function LiquidationShield() {
   const [approveState, setApproveState] = useState<"idle" | "approving" | "approved" | "error">("idle");
   const [approveError, setApproveError] = useState<string | null>(null);
   const [approveSig, setApproveSig] = useState<string | null>(null);
+  const [approveTs, setApproveTs] = useState<string | null>(null); // Module 06: mandate timestamp
 
-  async function scan() {
-    const addr = inputAddr.trim();
+  useEffect(() => {
+    if (isDemo) {
+      setInputAddr(DEMO_WALLET);
+      scan(DEMO_WALLET);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDemo]);
+
+  async function scan(overrideAddr?: string) {
+    const addr = (overrideAddr ?? inputAddr).trim();
     if (!addr || addr.length < 32) { setError(t("shieldInvalidAddr")); return; }
     setLoading(true);
     setError(null);
@@ -90,18 +113,21 @@ export default function LiquidationShield() {
     setApproveState("idle");
     setApproveError(null);
     setApproveSig(null);
+    setApproveTs(null);
     try {
       const res = await fetch("/api/liquidation-shield/monitor", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          wallet: addr,
-          config: {
-            approvedUsdc: parseFloat(maxUsdc) || 1000,
-            triggerThreshold: parseFloat(triggerHF) || 1.05,
-            targetHealthFactor: 1.4,
-          },
-        }),
+        body: JSON.stringify(isDemo
+          ? { wallet: addr, demo: true }
+          : {
+              wallet: addr,
+              config: {
+                approvedUsdc: parseFloat(maxUsdc) || 1000,
+                triggerThreshold: parseFloat(triggerHF) || 1.05,
+                targetHealthFactor: 1.4,
+              },
+            }),
       });
       if (!res.ok) {
         const d = await res.json().catch(() => ({}));
@@ -133,34 +159,25 @@ export default function LiquidationShield() {
         throw new Error("平台救援代理尚未配置 (SAKURA_AGENT_PRIVATE_KEY 未設置)");
       }
 
-      // 2. Build SPL Token approve instruction
-      const { Connection, PublicKey, Transaction } = await import("@solana/web3.js");
-      const { createApproveInstruction, getAssociatedTokenAddressSync } =
-        await import("@solana/spl-token");
+      // 2. Build SPL Token approve + Memo mandate TX via server API
+      //    Server calls buildRescueApproveTransaction() from lib/liquidation-shield.ts
+      //    (includes rescue_mandate Memo for on-chain audit trail)
+      const approveUsdc = parseFloat(maxUsdc) || 1000;
+      const buildRes = await fetch("/api/liquidation-shield/rescue", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ wallet: walletAddress, approveUsdc }),
+      });
+      if (!buildRes.ok) throw new Error("無法構建授權交易");
+      const { serializedTx, blockhash, lastValidBlockHeight } = await buildRes.json() as {
+        serializedTx: string; blockhash: string; lastValidBlockHeight: number;
+      };
 
-      const USDC_MINT = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
+      const { Transaction } = await import("@solana/web3.js");
+      const tx = Transaction.from(Buffer.from(serializedTx, "base64"));
+
+      const { Connection } = await import("@solana/web3.js");
       const conn = new Connection(`${window.location.origin}/api/rpc`, "confirmed");
-
-      const walletPubkey  = new PublicKey(walletAddress);
-      const agentPubkeyObj = new PublicKey(agentPubkey);
-      const usdcMintPubkey = new PublicKey(USDC_MINT);
-      const userUsdcAta   = getAssociatedTokenAddressSync(usdcMintPubkey, walletPubkey);
-
-      // Approve = pre-authorized max rescue amount in micro-USDC (6 decimals)
-      const approveAmount = BigInt(Math.ceil((parseFloat(maxUsdc) || 1000) * 1_000_000));
-
-      const approveIx = createApproveInstruction(
-        userUsdcAta,      // token account to delegate
-        agentPubkeyObj,   // delegate (Sakura rescue agent)
-        walletPubkey,     // owner (user)
-        approveAmount     // max USDC in micro-USDC
-      );
-
-      const { blockhash, lastValidBlockHeight } = await conn.getLatestBlockhash("confirmed");
-      const tx = new Transaction({
-        recentBlockhash: blockhash,
-        feePayer: walletPubkey,
-      }).add(approveIx);
 
       // 3. Sign and send via Phantom / OKX
       const provider = getWalletProvider();
@@ -173,6 +190,7 @@ export default function LiquidationShield() {
       );
 
       setApproveSig(signature);
+      setApproveTs(new Date().toISOString()); // Module 06: record mandate timestamp for audit trail
       setApproveState("approved");
     } catch (err) {
       setApproveState("error");
@@ -199,6 +217,7 @@ export default function LiquidationShield() {
           position: sim.position,
           rescueUsdc: sim.rescueUsdc,
           mandateTxSig: approveSig ?? undefined,
+          mandateTs: approveTs ?? undefined, // Module 06: mandate timestamp for time-window audit
         }),
       });
       const data: RescueResponse = await res.json();
@@ -210,6 +229,8 @@ export default function LiquidationShield() {
           success: false,
           rescueSig: null, feeSig: null, feeUsdc: 0, feeCollected: false,
           memoSig: null, auditChain: null,
+          mandateTs: null, executionTs: new Date().toISOString(), timeWindowSec: null,
+          tokenExtensionWarning: null,
           error: err instanceof Error ? err.message : t("shieldRescueFailed2"),
         },
       }));
@@ -299,7 +320,7 @@ export default function LiquidationShield() {
             onKeyDown={e => e.key === "Enter" && scan()}
           />
           <button
-            onClick={scan}
+            onClick={() => scan()}
             disabled={loading}
             style={{
               background: loading ? "var(--border)" : "#FF4444",
@@ -364,6 +385,125 @@ export default function LiquidationShield() {
               </div>
             )}
           </div>
+
+          {/* ── Module 11+13: Portfolio Risk Score ── */}
+          {result.positions.length > 0 && (
+            <div style={{
+              background: "var(--bg-card)", border: "1px solid var(--border)",
+              borderLeft: `3px solid ${
+                result.portfolioRiskColor === "red" ? "#FF4444"
+                : result.portfolioRiskColor === "orange" ? "#FF9F0A"
+                : result.portfolioRiskColor === "yellow" ? "#FFD60A"
+                : "var(--green)"
+              }`,
+              borderRadius: 10, padding: "14px 18px", marginBottom: 16,
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+            }}>
+              <div>
+                <div style={{ fontSize: 10, color: "var(--text-muted)", letterSpacing: "0.12em", fontFamily: "var(--font-mono)", marginBottom: 4 }}>
+                  PORTFOLIO RISK SCORE · MODULE 11+13
+                </div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)" }}>
+                  投資組合加權風險：{result.portfolioRiskLabel}
+                </div>
+                <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>
+                  {result.positions.length} 個倉位 · 按倉位規模加權清算概率
+                  {result.atRiskRatioPct > 0 && (
+                    <span style={{
+                      marginLeft: 8,
+                      color: result.atRiskRatioPct >= 50 ? "#FF4444"
+                        : result.atRiskRatioPct >= 20 ? "#FF9F0A"
+                        : "var(--text-muted)",
+                    }}>
+                      · 風險倉位佔比 {result.atRiskRatioPct}%
+                    </span>
+                  )}
+                </div>
+                {/* Module 09+13: rescue capacity sufficiency check */}
+                {result.totalRescueNeededUsdc > 0 && (
+                  <div style={{ fontSize: 11, marginTop: 6, display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ color: "var(--text-muted)" }}>
+                      救援需求：<strong style={{
+                        color: result.totalRescueNeededUsdc > Number(maxUsdc)
+                          ? "#FF4444" : "var(--green)",
+                      }}>
+                        ${result.totalRescueNeededUsdc.toFixed(0)} USDC
+                      </strong>
+                    </span>
+                    <span style={{ color: "var(--text-muted)" }}>
+                      預授權額度：<strong style={{ color: "var(--text-primary)" }}>${maxUsdc} USDC</strong>
+                    </span>
+                    {result.totalRescueNeededUsdc > Number(maxUsdc) && (
+                      <span style={{
+                        fontSize: 10, color: "#FF4444",
+                        background: "rgba(255,68,68,0.08)", padding: "1px 6px", borderRadius: 4,
+                      }}>
+                        額度不足 · Module 09 allowance check
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+              <div style={{
+                fontSize: 28, fontWeight: 700,
+                color: result.portfolioRiskColor === "red" ? "#FF4444"
+                  : result.portfolioRiskColor === "orange" ? "#FF9F0A"
+                  : result.portfolioRiskColor === "yellow" ? "#FFD60A"
+                  : "var(--green)",
+              }}>
+                {result.portfolioRiskScore}
+                <span style={{ fontSize: 14, fontWeight: 400, color: "var(--text-muted)" }}>/100</span>
+              </div>
+            </div>
+          )}
+
+          {/* ── Module 11 Dual-Pool Distribution Bar ── */}
+          {result.positions.length > 0 && (
+            <div style={{
+              background: "var(--bg-card)", border: "1px solid var(--border)",
+              borderRadius: 10, padding: "14px 18px", marginBottom: 12,
+            }}>
+              <div style={{ fontSize: 10, color: "var(--text-muted)", letterSpacing: "0.1em", fontFamily: "var(--font-mono)", marginBottom: 8 }}>
+                MODULE 11 · 倉位分布（雙池模型）
+              </div>
+              {/* Distribution bar: safe pool (green) vs at-risk pool (red) */}
+              <div style={{ height: 8, borderRadius: 4, overflow: "hidden", background: "var(--bg-secondary)", marginBottom: 8 }}>
+                <div style={{
+                  height: "100%",
+                  width: `${Math.min(100, result.atRiskRatioPct)}%`,
+                  background: result.atRiskRatioPct >= 50 ? "#FF4444" : result.atRiskRatioPct >= 20 ? "#FF9F0A" : "var(--green)",
+                  transition: "width 0.5s ease",
+                }} />
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11 }}>
+                <span style={{ color: "var(--green)" }}>
+                  ✅ 安全池：{(100 - result.atRiskRatioPct).toFixed(1)}%
+                </span>
+                <span style={{ color: result.atRiskRatioPct > 0 ? "#FF4444" : "var(--text-muted)" }}>
+                  ⚠️ 風險池：{result.atRiskRatioPct.toFixed(1)}%
+                </span>
+                <span style={{ color: "var(--text-muted)" }}>
+                  隱含清算概率：{(result.impliedLiquidationProb * 100).toFixed(1)}%
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* ── Module 16: Official Mint Warnings ── */}
+          {result.mintWarnings && result.mintWarnings.length > 0 && (
+            <div style={{
+              background: "rgba(255,68,68,0.06)", border: "1px solid rgba(255,68,68,0.3)",
+              borderLeft: "3px solid #FF4444",
+              borderRadius: 8, padding: "10px 14px", marginBottom: 12,
+            }}>
+              <div style={{ fontSize: 10, color: "#FF4444", letterSpacing: "0.1em", fontFamily: "var(--font-mono)", marginBottom: 6 }}>
+                ⚠ MODULE 16 · UNOFFICIAL MINT DETECTED
+              </div>
+              {result.mintWarnings.map((w, i) => (
+                <div key={i} style={{ fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.6 }}>{w}</div>
+              ))}
+            </div>
+          )}
 
           {/* ── SPL Approve Authorization Panel (shown when at-risk positions exist) ── */}
           {result.atRisk.length > 0 && (
@@ -456,6 +596,45 @@ export default function LiquidationShield() {
                   <MetricBox label={t("shieldLiqThreshold")} value={`${(pos.liquidationThreshold * 100).toFixed(0)}%`} />
                 </div>
 
+                {/* Module 11: Liquidation probability score */}
+                {pos.liquidationProbabilityLabel && (
+                  <div style={{
+                    display: "flex", alignItems: "center", gap: 10,
+                    background: pos.liquidationRiskColor === "red"   ? "rgba(255,68,68,0.08)"
+                              : pos.liquidationRiskColor === "orange" ? "rgba(255,149,0,0.08)"
+                              : pos.liquidationRiskColor === "yellow" ? "rgba(255,214,10,0.08)"
+                              : "rgba(52,199,89,0.08)",
+                    border: `1px solid ${
+                      pos.liquidationRiskColor === "red"   ? "rgba(255,68,68,0.25)"
+                    : pos.liquidationRiskColor === "orange" ? "rgba(255,149,0,0.25)"
+                    : pos.liquidationRiskColor === "yellow" ? "rgba(255,214,10,0.25)"
+                    : "rgba(52,199,89,0.25)"}`,
+                    borderRadius: 8, padding: "8px 14px", marginBottom: 12, fontSize: 12,
+                  }}>
+                    <span style={{ fontWeight: 700, fontSize: 13,
+                      color: pos.liquidationRiskColor === "red"   ? "#FF4444"
+                           : pos.liquidationRiskColor === "orange" ? "#FF8C00"
+                           : pos.liquidationRiskColor === "yellow" ? "#CCAA00"
+                           : "var(--green)",
+                    }}>
+                      {pos.liquidationProbabilityLabel}
+                    </span>
+                    <span style={{ color: "var(--text-secondary)", flex: 1 }}>
+                      {pos.liquidationRiskContext}
+                    </span>
+                  </div>
+                )}
+
+                {/* Liquidation price */}
+                {pos.liquidationPrice != null && pos.liquidationPrice > 0 && (
+                  <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 10 }}>
+                    清算價格：<strong style={{ color: "var(--text-secondary)" }}>${pos.liquidationPrice.toFixed(2)}</strong>
+                    {pos.liquidationDropPct != null && (
+                      <span> · 距清算還需下跌 <strong style={{ color: healthColor(pos.healthFactor) }}>{pos.liquidationDropPct.toFixed(1)}%</strong></span>
+                    )}
+                  </div>
+                )}
+
                 {/* Rescue simulation (for at-risk positions) */}
                 {sim && pos.healthFactor < parseFloat(triggerHF) + 0.1 && (
                   <div style={{
@@ -531,6 +710,18 @@ export default function LiquidationShield() {
                         {rescueRes.auditChain && (
                           <div style={{ fontSize: 11, color: "var(--accent)", marginTop: 4, fontFamily: "var(--font-mono)" }}>
                             {t("shieldAuditChain")}: {rescueRes.auditChain}
+                          </div>
+                        )}
+                        {/* Module 09: Token-2022 extension warning */}
+                        {rescueRes.tokenExtensionWarning && (
+                          <div style={{ fontSize: 11, color: "#FF9F0A", marginTop: 4 }}>
+                            {rescueRes.tokenExtensionWarning}
+                          </div>
+                        )}
+                        {/* Module 06: time-gated audit record */}
+                        {rescueRes.timeWindowSec != null && (
+                          <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 4, fontFamily: "var(--font-mono)" }}>
+                            ⏱ 授權→救援時窗：{rescueRes.timeWindowSec}s · Module 06 時間審計
                           </div>
                         )}
                         {rescueRes.error && (

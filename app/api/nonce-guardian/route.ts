@@ -4,7 +4,9 @@ import { Connection, PublicKey, Transaction, TransactionInstruction, Keypair } f
 import Anthropic from "@anthropic-ai/sdk";
 import { createHash } from "crypto";
 import { createReadOnlyAgent } from "@/lib/agent";
+import { getConnection } from "@/lib/rpc";
 import { checkAndMarkUsed, trackUsage } from "@/lib/redis";
+import { DEMO_NONCE_RESULT } from "@/lib/demo-data";
 
 const HELIUS_RPC = `https://mainnet.helius-rpc.com/?api-key=${process.env.HELIUS_API_KEY ?? ""}`;
 const SAKURA_FEE_WALLET = process.env.SAKURA_FEE_WALLET ?? "";
@@ -29,7 +31,8 @@ async function verifyPayment(txSig: string, requestingWallet: string): Promise<b
   if (!isFirstUse) return false;
   try {
     const { getAssociatedTokenAddressSync } = await import("@solana/spl-token");
-    const conn = new Connection(HELIUS_RPC, "confirmed");
+    // Module 16: multi-RPC failover for payment verification
+    const conn = await getConnection("confirmed");
     const feeWalletAta = getAssociatedTokenAddressSync(
       new PublicKey(USDC_MINT),
       new PublicKey(SAKURA_FEE_WALLET)
@@ -72,7 +75,8 @@ async function writeReportHashOnChain(
     const rawKey = process.env.SAKURA_AGENT_PRIVATE_KEY;
     if (!rawKey) return null;
 
-    const conn = new Connection(HELIUS_RPC, "confirmed");
+    // Module 16: multi-RPC failover for on-chain hash write
+    const conn = await getConnection("confirmed");
     const agentKp = Keypair.fromSecretKey(Uint8Array.from(JSON.parse(rawKey)));
 
     // Memo payload: permanently records report hash, wallet, payment proof
@@ -126,8 +130,13 @@ export async function GET(req: NextRequest) {
 // ── POST: AI report (x402 — $1.00 USDC + SHA-256 on-chain) ───────────────────
 
 export async function POST(req: NextRequest) {
-  let body: { wallet?: string } = {};
+  let body: { wallet?: string; demo?: boolean } = {};
   try { body = await req.json(); } catch { /* ok */ }
+
+  // ── Demo mode: return preset data instantly ───────────────────────
+  if (body.demo === true) {
+    return NextResponse.json({ ...DEMO_NONCE_RESULT, scannedAt: Date.now() });
+  }
 
   const wallet = body.wallet;
   if (!wallet || !/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(wallet)) {
@@ -188,7 +197,8 @@ export async function POST(req: NextRequest) {
   }
 
   const client = new Anthropic({ apiKey });
-  const conn = new Connection(HELIUS_RPC, "confirmed");
+  // Module 16: multi-RPC failover for AI agentic tool calls
+  const conn = await getConnection("confirmed");
   const agent = createReadOnlyAgent();
 
   // ── SAK Tool definitions (Solana native, no external APIs) ──────────
@@ -291,7 +301,7 @@ export async function POST(req: NextRequest) {
 
         case "get_nonce_account_activity": {
           const addr = input.nonce_address as string;
-          const limit = (input.limit as number) ?? 10;
+          const limit = Math.max(1, Math.min(100, (input.limit as number) ?? 10));
           const sigs = await conn.getSignaturesForAddress(new PublicKey(addr), { limit });
           const now = Date.now() / 1000;
           const activities = sigs.map(s => ({

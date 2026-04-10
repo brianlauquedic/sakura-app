@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 import { checkAndMarkUsed } from "@/lib/redis";
+import { getConnection } from "@/lib/rpc";
 
 // ── Payment config ───────────────────────────────────────────────
 const HELIUS_API_KEY  = process.env.HELIUS_API_KEY ?? "";
@@ -34,7 +35,8 @@ async function verifyMCPPayment(
 ): Promise<boolean> {
   if (!SAKURA_FEE_WALLET) return true; // demo mode: no fee wallet configured
   try {
-    const conn = new Connection(HELIUS_RPC, "confirmed");
+    // Module 16: multi-RPC failover for payment verification
+    const conn = await getConnection("confirmed");
     const tx = await conn.getParsedTransaction(txSig, { maxSupportedTransactionVersion: 0 });
     if (!tx) return false;
     for (const ix of tx.transaction.message.instructions) {
