@@ -16,9 +16,9 @@
   --border-light: #3D3530;   /* 焦茶 Kogecha */
 
   /* 文字 Text */
-  --text-primary:   #EDE8DF; /* 白磁 Hakuji — porcelain white */
-  --text-secondary: #8B7D72; /* 白茶 Shiracha */
-  --text-muted:     #4A4038; /* 利休鼠 Rikyu-nezumi */
+  --text-primary:   #F0EBE2; /* 白磁 Hakuji — porcelain white (brighter) */
+  --text-secondary: #A89880; /* 白茶 Shiracha (brighter for readability) */
+  --text-muted:     #6B5E52; /* 利休鼠 Rikyu-nezumi (brighter for readability) */
 
   /* 朱色 Shu-iro — vermillion seal red (唯一の強調色) */
   --accent:       #C94030;  /* 朱色 — brighter vermillion, matches reference */

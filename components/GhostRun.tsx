@@ -37,9 +37,25 @@ function getWalletProvider(): SolanaWalletProvider | null {
   return null;
 }
 
+// Translate API error codes into current language
+function useApiErrorTranslator() {
+  const { t } = useLang();
+  return (msg: string): string => {
+    const map: Record<string, () => string> = {
+      "GHOST_ERR_UNAVAILABLE":    () => t("ghostErrUnavailable"),
+      "GHOST_ERR_PARSE_FAILED":   () => t("ghostErrParseFailed"),
+      "GHOST_ERR_TOO_LONG":       () => t("ghostErrTooLong"),
+      "GHOST_ERR_RATE_LIMIT":     () => t("ghostErrRateLimit"),
+      "GHOST_ERR_INVALID_WALLET": () => t("ghostErrInvalidWallet"),
+    };
+    return map[msg]?.() ?? msg;
+  };
+}
+
 export default function GhostRun() {
   const { walletAddress } = useWallet();
   const { t } = useLang();
+  const translateApiError = useApiErrorTranslator();
 
   const EXAMPLE_STRATEGIES = [
     t("ghostExample1"),
@@ -81,7 +97,7 @@ export default function GhostRun() {
       const data: SimulateResponse = await res.json();
       setSimResult(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "模擬失敗");
+      setError(translateApiError(err instanceof Error ? err.message : "模擬失敗"));
     } finally {
       setLoading(false);
     }

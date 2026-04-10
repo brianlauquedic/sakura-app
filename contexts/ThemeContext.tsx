@@ -53,11 +53,14 @@ const ThemeContext = createContext<ThemeCtx>({
 });
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [isDayMode, setIsDayMode] = useState(false);
+  // Default: day mode (light). User preference is saved to localStorage.
+  const [isDayMode, setIsDayMode] = useState(true);
   const [timeBg, setTimeBg] = useState<TimeBg>(getTimeColor());
 
   useEffect(() => {
     const saved = localStorage.getItem("sakura_day_mode");
+    // Only override if user has explicitly chosen before
+    if (saved === "0") setIsDayMode(false);
     if (saved === "1") setIsDayMode(true);
   }, []);
 

@@ -64,11 +64,11 @@ export async function POST(req: NextRequest) {
   }
   // Prevent cost amplification: limit strategy length
   if (strategy.length > 2000) {
-    return NextResponse.json({ error: "策略描述過長（最多 2000 字符）" }, { status: 400 });
+    return NextResponse.json({ error: "GHOST_ERR_TOO_LONG" }, { status: 400 });
   }
   // Validate wallet is a valid base58 Solana address
   if (!/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(wallet)) {
-    return NextResponse.json({ error: "無效的錢包地址格式" }, { status: 400 });
+    return NextResponse.json({ error: "GHOST_ERR_INVALID_WALLET" }, { status: 400 });
   }
 
   void trackUsage("ghost", wallet);
@@ -83,7 +83,7 @@ export async function POST(req: NextRequest) {
       const { success, reset } = await walletLimiter.limit(wallet);
       if (!success) {
         return NextResponse.json(
-          { error: "每個錢包每小時最多 20 次模擬。請稍後再試。" },
+          { error: "GHOST_ERR_RATE_LIMIT" },
           { status: 429, headers: { "Retry-After": String(Math.max(1, Math.ceil((reset - Date.now()) / 1000))), "X-RateLimit-Scope": "wallet", "X-RateLimit-Mode": "distributed" } }
         );
       }
@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
       const { blocked, retryAfter } = checkWalletLimitMemory("ghost-run-simulate", wallet, 20);
       if (blocked) {
         return NextResponse.json(
-          { error: "每個錢包每小時最多 20 次模擬。請稍後再試。" },
+          { error: "GHOST_ERR_RATE_LIMIT" },
           { status: 429, headers: { "Retry-After": String(retryAfter ?? 3600), "X-RateLimit-Scope": "wallet", "X-RateLimit-Mode": "memory" } }
         );
       }
@@ -125,7 +125,7 @@ export async function POST(req: NextRequest) {
     // err.message can contain internal model names, account quota details, or
     // API key hints. Log server-side only, return a generic client message.
     console.error("[ghost-run/simulate] Claude parse error:", err instanceof Error ? err.message : err);
-    return NextResponse.json({ error: "策略分析服務暫時不可用，請稍後再試。" }, { status: 500 });
+    return NextResponse.json({ error: "GHOST_ERR_UNAVAILABLE" }, { status: 500 });
   }
 
   if (steps.length === 0) {
