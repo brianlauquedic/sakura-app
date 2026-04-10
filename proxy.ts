@@ -246,6 +246,14 @@ export async function proxy(req: NextRequest) {
     // Cursor, VS Code, etc.) — skip bot UA and fingerprint checks for this path.
     const isMcpEndpoint = pathname.startsWith("/api/mcp");
 
+    // Demo mode: skip rate limiting for requests originating from ?demo=true pages.
+    // Demo data is served from lib/demo-data.ts and never hits real RPC/AI.
+    const referer = req.headers.get("referer") ?? "";
+    const isDemoRequest = referer.includes("demo=true");
+    if (isDemoRequest) {
+      return NextResponse.next();
+    }
+
     // Layer 4: Known bot UA
     if (!isMcpEndpoint && BOT_UA_PATTERNS.some(p => p.test(ua))) {
       return jsonBlock(403, "Forbidden");
