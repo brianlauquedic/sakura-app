@@ -1,185 +1,251 @@
-# Solis — Solana AI Financial Advisor
+# Sakura — Solana AI Security Layer
 
-> **Colosseum Frontier Hackathon 2026** · DeFi + AI Track · April 6 – May 11
+> Three Solana-native AI protocols protecting your onchain assets.
+> Built for [Colosseum Frontier Hackathon 2026](https://frontier.colosseum.org/) · April 6 – May 11
 
-Solis is a Solana-native AI financial advisor that helps retail users analyze risk, discover yield opportunities, and execute DeFi strategies — all in natural language, with every AI recommendation verifiable on-chain.
-
----
-
-## What It Does
-
-| Feature | Details |
-|---------|---------|
-| **🏥 Wallet Health Report** | Scans holdings, flags high-risk tokens via GoPlus Security, surfaces idle yield opportunities |
-| **🔍 Token Safety Analysis** | Security score (0–100) across 5 risk dimensions: mint authority, holder concentration, liquidity, honeypot detection, LP lock |
-| **💬 AI DeFi Assistant** | Claude-powered natural language advisor — ask in Chinese, get actionable recommendations with live APY |
-| **⛓ One-Click Execution** | In-app swap (Jupiter), stake (Marinade/Jito), and lend (Kamino) — no redirect to external sites |
-| **🔐 Verifiable AI Reasoning** | Every AI recommendation hashed (SHA-256) and writable to Solana Memo — publicly auditable at `/verify` |
+**Live demo (no wallet required):** `https://your-domain.vercel.app/?demo=true`
 
 ---
 
-## Why Solis
+## The Problem
 
-**The problem:** 90%+ of Solana retail users leave yield on the table because DeFi UX is fragmented — checking prices on Birdeye, yields on DeFiLlama, executing on multiple protocol frontends, with no safety net against rug pulls.
+On **April 1, 2026**, Drift Protocol lost **$285 million** in a single exploit using Durable Nonces — pre-signed transactions that never expire. The attacker had silently hijacked nonce account authority months earlier. No alarm went off.
 
-**Solis solves this in one place:**
-1. Connect wallet → instant portfolio health check
-2. Ask "what should I do with my SOL?" → get AI recommendations with live APY data
-3. Execute in one click with Phantom — 0.3% platform fee collected transparently
+Meanwhile, Solana's **$4B DeFi lending market** faces a second crisis: health factors can drop below 1.0 within minutes of a market move. Liquidation penalties are 5–10%. Users lose everything while they sleep.
+
+Sakura uses the exact same Solana primitives attackers use — **turned into user protection**.
 
 ---
 
-## Architecture
+## Three Features
+
+### 🛡️ Nonce Guardian — Invisible Time-Bomb Detection
+
+Scans every Durable Nonce account linked to your wallet using `getProgramAccounts` — the same RPC call behind the Drift exploit. Detects:
+
+- Nonce accounts whose authority was silently transferred to a foreign wallet (**Critical**)
+- Fresh "burner" attacker addresses holding gas money (**High**)
+- Active threat level via recent transaction history on each suspicious account
+
+**Claude Sonnet 4.6** autonomously calls 6 Solana tools — profiling authority wallets, checking asset exposure, estimating total USD at risk — and outputs a security report with immediate action items.
+
+**On-chain proof**: SHA-256 hash of every report is permanently written to Solana via the Memo Program. Independently verifiable.
+
+**x402 payment gate**: AI report costs $1.00 USDC, paid on-chain, with sender verification and Redis-distributed replay protection.
+
+---
+
+### 👻 Ghost Run — DeFi Strategy Ghost Executor
+
+The world's first multi-step DeFi pre-simulator for consumers. Describe a strategy in natural language — Claude parses it into steps, constructs real unsigned transactions, and runs `simulateTransaction` against **live mainnet state** before you sign anything.
+
+**Example input:** *"Stake 2 SOL to Marinade, deposit 150 USDC into Kamino, then swap 0.5 SOL to JitoSOL"*
+
+**Simulation output:**
+- Exact token amounts: `1.9862 mSOL`, `149.87 kUSDC`, `0.4923 JitoSOL`
+- Per-step APY: Marinade `7.24%`, Kamino `8.15%`, JitoSOL `8.92%`
+- Total annual yield: `$43.72 USD`
+- Gas cost: `0.000095 SOL ($0.0148)`
+- Conflict detection across all steps
+- Conditional orders: *"execute when SOL drops below $120"*
+
+Claude then calls 5 more tools — checking wallet balances, live Jupiter prices, Solana inflation rate, and LST market depth — before writing a feasibility analysis.
+
+On confirmation: SAK `stakeWithJup` / `lendAsset` executes the strategy. Jupiter swaps embed a 0.3% platform fee via the native integrator API.
+
+---
+
+### ⚡ Liquidation Shield — AI Rescue for At-Risk Lending Positions
+
+Scans Kamino and MarginFi lending positions via `getProgramAccounts`. When health factor drops below your threshold (default 1.05):
+
+1. Runs `simulateTransaction` to preview exact rescue repayment amounts
+2. Shows health factor before/after, liquidation trigger price, rescue cost
+3. **SPL Token `approve`** — a real on-chain hard constraint — authorizes the rescue agent to move up to your approved USDC limit
+4. Agent executes rescue via delegate transfer, writes Memo audit chain referencing the original mandate transaction
+
+**Example**: Kamino position at HF 1.03 (SOL $156.40, liquidation at $148.20 — only 5.2% downside). Sakura repays $812.40 USDC, restores HF to 1.42, saves $509–764 USDC in liquidation penalties. 1% performance fee only on success.
+
+No other product rescues positions across Kamino + MarginFi with pre-authorized hard constraints and `simulateTransaction` preview.
+
+---
+
+## Technical Architecture
 
 ```
-┌─────────────────────────────────────────────────────┐
-│                   Next.js 16+ App Router             │
-├────────────┬────────────┬────────────┬───────────────┤
-│  Health    │  Token     │  DeFi AI   │   /verify     │
-│  Report    │  Analysis  │  Assistant │   (proof)     │
-└────────────┴────────────┴────────────┴───────────────┘
-                          │
-              ┌───────────┼───────────┐
-              ▼           ▼           ▼
-         /api/wallet  /api/token  /api/defi-chat
-         /api/yield   /api/swap   /api/stake
-                      /api/lend
-                          │
-        ┌─────────────────┼─────────────────┐
-        ▼                 ▼                 ▼
-   Helius RPC        GoPlus Security   Claude API
-   Jupiter Price     Jupiter Token     (haiku-4-5)
-   Marinade API      Kamino API
-   Jito (via Jup)    Raydium API
+Next.js 16 (App Router, Turbopack)
+├── app/api/
+│   ├── nonce-guardian/          ← getProgramAccounts + 6-tool agentic Claude loop
+│   ├── ghost-run/
+│   │   ├── simulate/            ← Jupiter Quote + simulateTransaction engine
+│   │   └── execute/             ← SAK stakeWithJup / lendAsset / Jupiter swap
+│   ├── liquidation-shield/
+│   │   ├── monitor/             ← Kamino + MarginFi health factor scan
+│   │   └── rescue/              ← SPL delegate transfer + 1% performance fee
+│   ├── mcp/                     ← MCP JSON-RPC 2.0 server (x402 gated, $1 USDC/call)
+│   └── agent/memo/              ← Solana Memo Program audit writes
+├── components/
+│   ├── NonceGuardian.tsx
+│   ├── GhostRun.tsx
+│   └── LiquidationShield.tsx
+└── lib/
+    ├── nonce-scanner.ts         ← getProgramAccounts nonce detection
+    ├── ghost-run.ts             ← simulateTransaction + Jupiter integration
+    ├── liquidation-shield.ts    ← health factor scan + SPL approve builder
+    ├── rpc.ts                   ← multi-RPC failover (Helius + fallbacks)
+    ├── x402.ts                  ← on-chain USDC payment verification
+    ├── redis.ts                 ← replay protection + per-wallet rate limiting
+    └── demo-data.ts             ← preset data for ?demo=true recording mode
 ```
 
-**Solana AI Ecosystem integrations:**
-- **Solana Agent Kit** (`solana-agent-kit`) — on-chain action primitives
-- **Solana MCP** (`.mcp.json` → `mcp.solana.com/mcp`) — model context protocol
-- **Solana Memo Program** — on-chain verifiable reasoning proofs
-- **Jupiter v6 API** — optimal swap routing with 0.3% platform fee
-- **Verifiable Compute** — SHA-256 reasoning hash written to chain
+### Solana Primitives
+
+| Primitive | Feature | Purpose |
+|-----------|---------|---------|
+| `getProgramAccounts` | Nonce Guardian, Shield | Scan nonce accounts & lending positions |
+| `simulateTransaction` | Ghost Run, Shield | Pre-execute strategies and rescues |
+| `SPL Token approve` | Shield | Hard-constraint rescue authorization |
+| Solana Memo Program | All three | Immutable on-chain audit trail |
+| `getSignaturesForAddress` | Nonce Guardian | Threat activity + authority profiling |
+| `getInflationRate` | Ghost Run | Real yield vs nominal APY calculation |
+| `getTokenSupply` | Ghost Run | LST protocol market depth |
+| `getEpochInfo` | Shield | Epoch-boundary volatility context |
+| `getAccountInfo` (80-byte decode) | Nonce Guardian | Raw nonce account authority extraction |
+
+### AI Stack
+
+- **Claude Sonnet 4.6** — strategy parsing, agentic tool loops (up to 6 iterations), risk analysis
+- Each request: Claude autonomously selects and calls 5–7 Solana tools in parallel, iterates until confident
+- All AI analysis output in Traditional Chinese (繁體中文)
+- UI fully localized: English / 日本語 / 中文
 
 ---
 
-## Monetization (Implemented)
+## MCP Server
 
-| Stream | Mechanism | Status |
-|--------|-----------|--------|
-| **Execution Fee** | 0.3% on every Jupiter swap via `platformFeeBps=30` | ✅ Live |
-| **Protocol Referral** | Marinade / Kamino referral codes (env config) | ✅ Wired |
-| **Subscription** | Premium AI analysis tier | 🔜 Planned |
+Sakura exposes a **Model Context Protocol (MCP) JSON-RPC 2.0 API** at `/api/mcp` — callable by Claude Desktop, Cursor, and any MCP-compatible client.
+
+```bash
+# Discover tools
+curl https://your-domain.vercel.app/api/mcp
+
+# Call a tool (requires x-payment: 1.00 USDC tx signature)
+curl -X POST https://your-domain.vercel.app/api/mcp \
+  -H "Content-Type: application/json" \
+  -H "x-payment: <solana_tx_signature>" \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "tools/call",
+    "params": {
+      "name": "sakura_nonce_guardian",
+      "arguments": { "wallet": "<base58_address>" }
+    }
+  }'
+```
+
+**Tools**: `sakura_nonce_guardian` · `sakura_ghost_run` · `sakura_liquidation_shield`
+**Payment**: $1.00 USDC per call, verified on-chain with sender authentication.
 
 ---
 
-## Tech Stack
+## Security
 
-- **Frontend:** Next.js 16, React 19, TypeScript, Tailwind CSS v4
-- **Blockchain:** `@solana/web3.js`, Phantom wallet, Solana Agent Kit
-- **AI:** Anthropic Claude API (`claude-haiku-4-5`) + rule-based fallback
-- **Data:** Helius RPC, GoPlus Security, Jupiter Price/Swap API, Marinade API, Kamino API, Raydium API
-- **Verification:** SHA-256 commit-reveal, Solana Memo Program
+| Guard | Description |
+|-------|-------------|
+| x402 sender verification | Payment tx `authority` must match requesting wallet — no replay sharing |
+| Redis replay protection | Distributed across all Vercel instances via `checkAndMarkUsed()` |
+| Error sanitization | Helius URLs and Anthropic errors never reach the client (`console.error` only) |
+| Input validation | All wallet addresses regex-validated; Claude output re-validated before execution |
+| CSRF protection | `Origin` header checked on all rescue endpoints |
+| Prompt injection defense | Token symbols from chain sanitized: `s.replace(/[^a-zA-Z0-9]/g, "").slice(0, 20)` |
+| Official mint registry | Positions with unknown token symbols flagged before AI processing |
+| Multi-RPC failover | `getConnection()` auto-selects healthiest endpoint; zero `new Connection()` in routes |
+| Per-wallet rate limiting | Redis-keyed limits (Ghost Run: 20/hr, Shield: 12/hr) prevent Sybil amplification |
+| `Number.isFinite` guards | All numeric inputs from user/chain validated before math operations |
+
+---
+
+## Revenue Model
+
+| Stream | Mechanism | Rate |
+|--------|-----------|------|
+| AI Security Report | x402 USDC payment, verified on-chain | $1.00 / report |
+| MCP API | x402 USDC payment per tool call | $1.00 / call |
+| Swap execution | Jupiter native integrator fee | 0.3% of output |
+| Liquidation rescue | Performance fee on successful rescue only | 1% of rescued USDC |
+
+---
+
+## Demo Mode
+
+Visit `/?demo=true` — no wallet required. All three features auto-load with preset dramatic data instantly.
+
+```
+https://your-domain.vercel.app/?demo=true
+```
+
+Includes: CRITICAL foreign-authority nonce threat, Ghost Run 3-step simulation ($43.72/yr yield), Kamino position at HF 1.03 near liquidation.
 
 ---
 
 ## Local Development
 
 ```bash
-git clone <repo>
-cd quedic-app
+git clone https://github.com/brianlauquedic/solis-app
+cd solis-app
 npm install
-
-# Configure environment
-cp .env.example .env.local
-# Add: ANTHROPIC_API_KEY, HELIUS_API_KEY, NEXT_PUBLIC_HELIUS_RPC
-# Optional: MARINADE_REFERRAL_CODE, KAMINO_REFERRAL_CODE
-
+cp .env.example .env.local   # fill in your keys
 npm run dev
-# Open http://localhost:3000
+# → http://localhost:3001
+# → http://localhost:3001/?demo=true
 ```
 
 ### Environment Variables
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `ANTHROPIC_API_KEY` | Yes | Claude API key for AI responses |
-| `HELIUS_API_KEY` | Yes | Helius RPC for wallet/token data |
-| `NEXT_PUBLIC_HELIUS_RPC` | Yes | Public RPC URL for frontend |
-| `MARINADE_REFERRAL_CODE` | No | Marinade referral code (~0.1% reward) |
-| `KAMINO_REFERRAL_CODE` | No | Kamino referral code |
+```env
+# Required
+ANTHROPIC_API_KEY=           # Claude Sonnet 4.6
+HELIUS_API_KEY=              # Solana RPC (primary)
 
----
+# Required for execution features
+SAKURA_AGENT_PRIVATE_KEY=    # Agent keypair as JSON number array (64 bytes)
+SAKURA_FEE_WALLET=           # Fee collection wallet (base58)
+NEXT_PUBLIC_BASE_URL=        # https://your-domain.vercel.app
 
-## Key API Routes
+# Optional (Redis for distributed rate limiting + replay protection)
+UPSTASH_REDIS_REST_URL=
+UPSTASH_REDIS_REST_TOKEN=
 
-| Route | Method | Description |
-|-------|--------|-------------|
-| `/api/wallet` | GET | Fetch wallet holdings, prices, total USD |
-| `/api/token` | GET | Token security analysis (GoPlus + Jupiter) |
-| `/api/yield` | GET | Live APY from Marinade, Jito, Kamino, Solend, Raydium |
-| `/api/defi-chat` | POST | AI chat (Claude + rule fallback) with reasoning hash |
-| `/api/swap` | GET/POST | Jupiter swap quote + build VersionedTransaction |
-| `/api/stake` | GET/POST | Marinade/Jito stake preview + transaction |
-| `/api/lend` | GET/POST | Kamino USDC deposit preview + transaction |
-
----
-
-## Verifiable AI Reasoning
-
-Every AI recommendation generates a SHA-256 hash of:
-- User message + AI response
-- Wallet context (total USD)
-- Inference engine used (`claude-haiku-4-5` or `rule-based`)
-- Unix timestamp
-
-Users can write this hash to Solana via a one-click Memo transaction. Anyone can verify the original reasoning at `/verify`.
-
-This implements [Solana's Verifiable Compute](https://solana.com/ai) narrative — transparent, auditable AI reasoning on-chain.
-
----
-
-## Hackathon Alignment
-
-| Criteria | Implementation |
-|----------|---------------|
-| **Most Agentic** | One-click swap/stake/lend via Phantom — no external redirects |
-| **Real Product** | Live APIs, real transactions, 0.3% fee collected on execution |
-| **On-chain Action** | Swap, stake, lend, Memo write — all signed on-chain |
-| **Verifiable Compute** | SHA-256 reasoning hash writable to Solana Memo |
-| **Business Model** | Platform fee + referral revenue, no token dependency |
-| **MVP** | Fully runnable, not a prototype — connect any Solana wallet |
-
----
-
-## Project Structure
-
-```
-app/
-  page.tsx              # Main dashboard (wallet connect + tabs)
-  verify/page.tsx       # Verifiable reasoning proof explorer
-  api/
-    wallet/route.ts     # Portfolio data (Helius + Jupiter prices)
-    token/route.ts      # Token security (GoPlus + DAS)
-    yield/route.ts      # Live APY aggregation
-    defi-chat/route.ts  # AI chat + reasoning hash generation
-    swap/route.ts       # Jupiter swap with platform fee
-    stake/route.ts      # Marinade / Jito staking
-    lend/route.ts       # Kamino USDC lending
-
-components/
-  WalletConnect.tsx     # Phantom + manual address entry
-  HealthReport.tsx      # Portfolio health dashboard
-  TokenAnalysis.tsx     # Security analysis + on-chain proof
-  DefiAssistant.tsx     # AI chat + action cards
-  SwapModal.tsx         # Jupiter swap execution modal
-  StakeModal.tsx        # Marinade/Jito stake modal
-  LendModal.tsx         # Kamino lend modal
-
-lib/
-  proof-store.ts        # Local SHA-256 proof storage
+# Optional
+INTERNAL_API_SECRET=         # Internal API route auth
 ```
 
 ---
 
-Built for **Colosseum Frontier Hackathon 2026** (April 6 – May 11)
-Track: DeFi + AI · Agentic Economy
+## Stack
+
+- **Next.js 16** (App Router, Turbopack) · TypeScript · React 19
+- **@solana/web3.js** · **@solana/spl-token**
+- **@anthropic-ai/sdk** — Claude Sonnet 4.6, agentic loops
+- **Solana Agent Kit (SAK)** — `stakeWithJup`, `lendAsset`
+- **Jupiter Aggregator v6** — swap quotes, price feeds, 0.3% platform fee
+- **Upstash Redis** — distributed rate limiting + replay protection
+- **Vercel** — serverless deployment, `maxDuration: 60/120`
+
+---
+
+## Hackathon
+
+**Colosseum Frontier Hackathon 2026** · Track: AI + Solana DeFi Security
+
+**Core thesis**: Solana has unique primitives — `simulateTransaction`, `getProgramAccounts`, Durable Nonces — that no other chain has. Sakura uses these primitives defensively: turning the exact tools attackers use into user protection.
+
+**Verified competitive gap** (researched April 2026):
+- Nonce Guardian: existing tools only scan transaction history; none detect live authority hijacking
+- Ghost Run: no consumer product does multi-step pre-simulation before signing
+- Liquidation Shield: Apricot Assist only covers its own X-Farm; no cross-protocol (Kamino + MarginFi) rescue with SPL `approve` hard constraints exists
+
+---
+
+*© 2026 Sakura AI · Built on Solana*
