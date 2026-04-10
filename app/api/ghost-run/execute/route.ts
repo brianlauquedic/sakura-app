@@ -18,7 +18,7 @@ import { getWalletLimiter, checkWalletLimitMemory } from "@/lib/redis";
 
 export const maxDuration = 120;
 
-const SAKURA_FEE_WALLET = process.env.SAKURA_FEE_WALLET ?? "";
+const SAKURA_FEE_WALLET = process.env.SAKURA_FEE_WALLET?.trim() || "";
 const PLATFORM_FEE_BPS = 30; // 0.3% — competitive vs Phantom (0.85%)
 
 // Prevent platform wallet drain: cap per-step amounts on server-signed operations.

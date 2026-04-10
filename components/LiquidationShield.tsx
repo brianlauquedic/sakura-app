@@ -150,6 +150,7 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
       await new Promise(r => setTimeout(r, 1500));
       setApproveState("approved");
       setApproveSig("DEMO_TX_" + Math.random().toString(36).slice(2, 10).toUpperCase());
+      setApproveTs(new Date().toISOString());
       return;
     }
     setApproveState("approving");
@@ -227,7 +228,7 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
           feeCollected: true,
           memoSig: "DEMO_MEMO_" + Math.random().toString(36).slice(2, 8).toUpperCase(),
           auditChain: null,
-          mandateTs: approveSig ?? null,
+          mandateTs: approveTs ?? null,
           executionTs: new Date().toISOString(),
           timeWindowSec: 42,
           tokenExtensionWarning: null,

@@ -70,7 +70,7 @@ export async function PUT(req: NextRequest) {
   }
 }
 
-const SAKURA_FEE_WALLET = process.env.SAKURA_FEE_WALLET ?? "";
+const SAKURA_FEE_WALLET = process.env.SAKURA_FEE_WALLET?.trim() || "";
 const USDC_MINT = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
 const RESCUE_FEE_PERCENT = 0.01; // 1% performance fee
 

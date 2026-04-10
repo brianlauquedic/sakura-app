@@ -150,6 +150,10 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ steps: simResult.steps, wallet: walletAddress }),
       });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        throw new Error((d as { error?: string }).error ?? `執行失敗 HTTP ${res.status}`);
+      }
       const data: ExecuteResponse = await res.json();
       setExecResult(data);
 
@@ -157,28 +161,37 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
       // Swap txs are non-custodial — only the user's private key can sign them.
       // Jupiter builds the VersionedTransaction; we pass it to the wallet adapter.
       if (data.unsignedSwapTxs && data.unsignedSwapTxs.length > 0) {
-        setSigningSwap(true);
         const provider = getWalletProvider();
         if (!provider) {
           setError("請連接 Phantom 或 OKX 錢包以簽署兌換交易");
           return;
         }
+        setSigningSwap(true);
 
         const { VersionedTransaction } = await import("@solana/web3.js");
         const collectedSigs: string[] = [];
 
         for (const unsignedTx of data.unsignedSwapTxs) {
-          // Decode base64 → Uint8Array → VersionedTransaction
-          const txBytes = Uint8Array.from(
-            atob(unsignedTx.swapTransaction),
-            c => c.charCodeAt(0)
-          );
-          const vTx = VersionedTransaction.deserialize(txBytes);
+          try {
+            // Decode base64 → Uint8Array → VersionedTransaction
+            const txBytes = Uint8Array.from(
+              atob(unsignedTx.swapTransaction),
+              c => c.charCodeAt(0)
+            );
+            const vTx = VersionedTransaction.deserialize(txBytes);
 
-          // Sign and broadcast — wallet handles gas and submission
-          const result = await provider.signAndSendTransaction(vTx);
-          const sig = typeof result === "string" ? result : result.signature;
-          collectedSigs.push(sig);
+            // Sign and broadcast — wallet handles gas and submission
+            const result = await provider.signAndSendTransaction(vTx);
+            const sig = typeof result === "string" ? result : result?.signature;
+            if (sig) collectedSigs.push(sig);
+          } catch (swapErr) {
+            const swapMsg = swapErr instanceof Error ? swapErr.message : "Swap 簽名失敗";
+            if (swapMsg.includes("rejected") || swapMsg.includes("User rejected")) {
+              setError(`用戶取消了第 ${collectedSigs.length + 1} 筆兌換簽名`);
+              break;
+            }
+            console.error("[GhostRun] Swap signing error:", swapErr);
+          }
         }
 
         setSwapSigs(collectedSigs);
