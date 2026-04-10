@@ -1,9 +1,27 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import AnimatedNumber from "@/components/AnimatedNumber";
 import { useLang } from "@/contexts/LanguageContext";
 import WaBijinSVG from "@/components/WaBijinSVG";
 import { useWallet } from "@/contexts/WalletContext";
+
+const SITE_URL = "https://www.sakuraaai.com";
+const PHANTOM_DEEPLINK = `https://phantom.app/ul/browse/${encodeURIComponent(SITE_URL)}?ref=sakura`;
+const OKX_DEEPLINK = `https://www.okx.com/download?deeplink=${encodeURIComponent(`okx://wallet/dapp/details?dappUrl=${SITE_URL}`)}`;
+
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(
+      /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) && window.innerWidth < 768
+    );
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+  return isMobile;
+}
 
 const AGENT_KEYS = [
   { tag: "Nonce Guardian",       titleKey: "agent1Title" as const, descKey: "agent1Desc" as const, icon: "護", color: "#FF4444" },
@@ -32,6 +50,9 @@ interface Props {
 export default function WalletConnect({ walletAddress, onEnterApp }: Props = {}) {
   const { t, lang } = useLang();
   const { connect, phantomAvailable, okxAvailable, walletLoading } = useWallet();
+  const isMobile = useIsMobile();
+  // On mobile, neither wallet is injected unless already inside the wallet browser
+  const showMobileDeepLinks = isMobile && !phantomAvailable && !okxAvailable;
 
   return (
     <div style={{ maxWidth: 760, margin: "0 auto" }}>
@@ -170,43 +191,93 @@ export default function WalletConnect({ walletAddress, onEnterApp }: Props = {})
                   }}>✓ {t(key)}</span>
                 ))}
               </div>
-              {/* Phantom connect button */}
-              <button
-                onClick={() => connect("phantom")}
-                disabled={walletLoading}
-                style={{
-                  width: "100%",
-                  background: phantomAvailable ? "var(--accent)" : "var(--border)",
-                  borderRadius: 8, padding: "11px 24px", border: "none",
-                  fontSize: 13, fontWeight: 500, color: "#fff",
-                  cursor: walletLoading ? "not-allowed" : "pointer",
-                  letterSpacing: "0.06em",
-                  fontFamily: "var(--font-body)",
-                  opacity: walletLoading ? 0.7 : 1,
-                  marginBottom: 8,
-                }}
-              >
-                {walletLoading ? "…" : !phantomAvailable ? "Install Phantom →" : "🔮 " + t("ctaFreeBtn")}
-              </button>
+              {showMobileDeepLinks ? (
+                /* ── Mobile: deep link into wallet browser ── */
+                <>
+                  <div style={{ fontSize: 11, color: "var(--text-secondary)", marginBottom: 14, lineHeight: 1.7, letterSpacing: "0.02em" }}>
+                    {lang === "zh" ? "在錢包 App 的內置瀏覽器中打開 Sakura，即可連接錢包：" :
+                     lang === "ja" ? "ウォレットアプリの内蔵ブラウザでSakuraを開いて接続：" :
+                     "Open Sakura inside your wallet app's browser to connect:"}
+                  </div>
+                  <a
+                    href={PHANTOM_DEEPLINK}
+                    style={{
+                      display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                      width: "100%", background: "var(--accent)",
+                      borderRadius: 10, padding: "13px 24px",
+                      fontSize: 14, fontWeight: 500, color: "#fff",
+                      textDecoration: "none", letterSpacing: "0.05em",
+                      fontFamily: "var(--font-body)", marginBottom: 10,
+                      boxSizing: "border-box",
+                    }}
+                  >
+                    <span>🔮</span>
+                    <span>{lang === "zh" ? "在 Phantom App 中打開" : lang === "ja" ? "Phantom Appで開く" : "Open in Phantom App"}</span>
+                  </a>
+                  <a
+                    href={OKX_DEEPLINK}
+                    style={{
+                      display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                      width: "100%", background: "#1a1a2e",
+                      border: "1px solid #4a4aff",
+                      borderRadius: 10, padding: "12px 24px",
+                      fontSize: 14, fontWeight: 500, color: "#fff",
+                      textDecoration: "none", letterSpacing: "0.05em",
+                      fontFamily: "var(--font-body)", marginBottom: 10,
+                      boxSizing: "border-box",
+                    }}
+                  >
+                    <span>◈</span>
+                    <span>{lang === "zh" ? "在 OKX App 中打開" : lang === "ja" ? "OKX Appで開く" : "Open in OKX App"}</span>
+                  </a>
+                  <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 6, letterSpacing: "0.02em", lineHeight: 1.7 }}>
+                    {lang === "zh" ? "💡 點擊後將跳轉至對應錢包 App，在 App 內置瀏覽器中繼續操作" :
+                     lang === "ja" ? "💡 タップするとウォレットアプリに移動し、内蔵ブラウザで続けてください" :
+                     "💡 Tap to open your wallet app — continue in its built-in browser"}
+                  </div>
+                </>
+              ) : (
+                /* ── Desktop / wallet browser: standard connect ── */
+                <>
+                  {/* Phantom connect button */}
+                  <button
+                    onClick={() => connect("phantom")}
+                    disabled={walletLoading}
+                    style={{
+                      width: "100%",
+                      background: phantomAvailable ? "var(--accent)" : "var(--border)",
+                      borderRadius: 8, padding: "11px 24px", border: "none",
+                      fontSize: 13, fontWeight: 500, color: "#fff",
+                      cursor: walletLoading ? "not-allowed" : "pointer",
+                      letterSpacing: "0.06em",
+                      fontFamily: "var(--font-body)",
+                      opacity: walletLoading ? 0.7 : 1,
+                      marginBottom: 8,
+                    }}
+                  >
+                    {walletLoading ? "…" : !phantomAvailable ? "Install Phantom →" : "🔮 " + t("ctaFreeBtn")}
+                  </button>
 
-              {/* OKX connect button */}
-              <button
-                onClick={() => connect("okx")}
-                disabled={walletLoading}
-                style={{
-                  width: "100%",
-                  background: okxAvailable ? "#1a1a2e" : "var(--border)",
-                  border: "1px solid " + (okxAvailable ? "#4a4aff" : "var(--border)"),
-                  borderRadius: 8, padding: "10px 24px",
-                  fontSize: 13, fontWeight: 500, color: okxAvailable ? "#fff" : "var(--text-muted)",
-                  cursor: walletLoading ? "not-allowed" : "pointer",
-                  letterSpacing: "0.06em",
-                  fontFamily: "var(--font-body)",
-                  opacity: walletLoading ? 0.7 : 1,
-                }}
-              >
-                {!okxAvailable ? "Install OKX Wallet →" : "◈ Connect OKX Wallet"}
-              </button>
+                  {/* OKX connect button */}
+                  <button
+                    onClick={() => connect("okx")}
+                    disabled={walletLoading}
+                    style={{
+                      width: "100%",
+                      background: okxAvailable ? "#1a1a2e" : "var(--border)",
+                      border: "1px solid " + (okxAvailable ? "#4a4aff" : "var(--border)"),
+                      borderRadius: 8, padding: "10px 24px",
+                      fontSize: 13, fontWeight: 500, color: okxAvailable ? "#fff" : "var(--text-muted)",
+                      cursor: walletLoading ? "not-allowed" : "pointer",
+                      letterSpacing: "0.06em",
+                      fontFamily: "var(--font-body)",
+                      opacity: walletLoading ? 0.7 : 1,
+                    }}
+                  >
+                    {!okxAvailable ? "Install OKX Wallet →" : "◈ Connect OKX Wallet"}
+                  </button>
+                </>
+              )}
 
               <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 10, letterSpacing: "0.03em" }}>
                 {t("ctaSubNote")}
