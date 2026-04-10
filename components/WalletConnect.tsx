@@ -7,8 +7,8 @@ import WaBijinSVG from "@/components/WaBijinSVG";
 import { useWallet } from "@/contexts/WalletContext";
 
 const SITE_URL = "https://www.sakuraaai.com";
-const PHANTOM_DEEPLINK = `https://phantom.app/ul/browse/${encodeURIComponent(SITE_URL)}?ref=sakura`;
-const OKX_DEEPLINK = `https://www.okx.com/download?deeplink=${encodeURIComponent(`okx://wallet/dapp/details?dappUrl=${SITE_URL}`)}`;
+const PHANTOM_DEEPLINK = `https://phantom.app/ul/browse/${encodeURIComponent(SITE_URL)}`;
+const OKX_DEEPLINK = `https://www.okx.com/download?deeplink=${encodeURIComponent(`okx://wallet/dapp/details?dappUrl=${encodeURIComponent(SITE_URL)}`)}`;
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false);
