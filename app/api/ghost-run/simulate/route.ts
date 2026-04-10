@@ -138,14 +138,51 @@ export async function POST(req: NextRequest) {
   // ── Demo mode: return preset data instantly ───────────────────────
   if (body.demo === true) {
     const s = (body.strategy ?? "").toLowerCase();
+
+    // Parse amount from strategy text (e.g. "10 USDC" → 10, "2 SOL" → 2)
+    const usdcMatch = s.match(/(\d+(?:\.\d+)?)\s*usdc/);
+    const solMatch  = s.match(/(\d+(?:\.\d+)?)\s*sol/);
+    const usdcAmt   = usdcMatch ? parseFloat(usdcMatch[1]) : null;
+    const solAmt    = solMatch  ? parseFloat(solMatch[1])  : null;
+
     const demoData =
       s.includes("jito") && s.includes("kamino") ? DEMO_GHOST_RESULT_JITO :
       s.includes("marinade") && !s.includes("usdc") ? DEMO_GHOST_RESULT_MARINADE :
       s.includes("kamino") && !s.includes("sol") ? DEMO_GHOST_RESULT_KAMINO :
       DEMO_GHOST_RESULT;
+
+    // Deep-clone and patch amounts if user specified different values
+    const result = JSON.parse(JSON.stringify(demoData));
+    if (usdcAmt !== null) {
+      for (const step of result.result.steps) {
+        if (step.step.inputToken === "USDC") {
+          const ratio = usdcAmt / step.step.inputAmount;
+          step.step.inputAmount = usdcAmt;
+          step.outputAmount     = parseFloat((step.outputAmount * ratio).toFixed(4));
+          step.annualUsdYield   = parseFloat((step.annualUsdYield * ratio).toFixed(2));
+        }
+      }
+      for (const step of result.steps) {
+        if (step.inputToken === "USDC") step.inputAmount = usdcAmt;
+      }
+    }
+    if (solAmt !== null) {
+      for (const step of result.result.steps) {
+        if (step.step.inputToken === "SOL") {
+          const ratio = solAmt / step.step.inputAmount;
+          step.step.inputAmount = solAmt;
+          step.outputAmount     = parseFloat((step.outputAmount * ratio).toFixed(4));
+          step.annualUsdYield   = parseFloat((step.annualUsdYield * ratio).toFixed(2));
+        }
+      }
+      for (const step of result.steps) {
+        if (step.inputToken === "SOL") step.inputAmount = solAmt;
+      }
+    }
+
     return NextResponse.json({
-      steps: demoData.steps,
-      result: demoData.result,
+      steps: result.steps,
+      result: result.result,
       aiAnalysis: demoData.aiAnalysis,
     });
   }
