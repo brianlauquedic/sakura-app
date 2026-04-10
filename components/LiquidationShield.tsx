@@ -252,7 +252,7 @@ export default function LiquidationShield() {
         <div style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 14 }}>
           {t("shieldConfigLabel")}
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }}>
+        <div className="shield-config-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }}>
           <div>
             <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 6 }}>{t("shieldMaxUsdc")}</div>
             <input
@@ -465,7 +465,7 @@ export default function LiquidationShield() {
                     <div style={{ fontSize: 11, color: "#FF4444", letterSpacing: "0.08em", marginBottom: 8, fontFamily: "var(--font-mono)" }}>
                       RESCUE SIMULATION (simulateTransaction)
                     </div>
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
+                    <div className="shield-rescue-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
                       <MetricBox label={t("shieldRescueNeeded")} value={`$${sim.rescueUsdc.toFixed(2)} USDC`} highlight="#FF9F0A" />
                       <MetricBox label="救援費用 (1%)" value={`$${(sim.rescueUsdc * 0.01).toFixed(4)} USDC`} highlight="var(--text-muted)" />
                       <MetricBox label={t("shieldPostHF")} value={sim.postRescueHealth.toFixed(3)} highlight="var(--green)" />

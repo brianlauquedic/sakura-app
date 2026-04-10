@@ -91,7 +91,7 @@ export default function WalletConnect({ walletAddress, onEnterApp }: Props = {})
           Sakura
         </h1>
 
-        <div className="fade-in-up fade-in-up-1" style={{
+        <div className="fade-in-up fade-in-up-1 hero-tagline" style={{
           fontSize: 13, fontWeight: 400, color: "var(--accent)", marginBottom: 14,
           letterSpacing: "0.25em", fontFamily: "var(--font-heading)",
         }}>
@@ -117,7 +117,7 @@ export default function WalletConnect({ walletAddress, onEnterApp }: Props = {})
         </div>
 
         {/* ── 無料体験 Free CTA ── */}
-        <div style={{
+        <div className="cta-box" style={{
           background: "var(--bg-card)",
           border: "1px solid var(--border)",
           borderTop: "2px solid var(--accent)",
@@ -218,7 +218,7 @@ export default function WalletConnect({ walletAddress, onEnterApp }: Props = {})
 
 
       {/* ── 桜の守護者 Sakura Character Narrative ── */}
-      <div style={{
+      <div className="sakura-card" style={{
         background: "var(--bg-card)",
         border: "1px solid var(--border)",
         borderTop: "2px solid var(--accent)",

@@ -172,6 +172,7 @@ body {
    Mobile 移動端
    ══════════════════════════════════════════════════════════════ */
 @media (max-width: 640px) {
+  /* ── Layout ── */
   .feature-grid   { grid-template-columns: 1fr !important; }
   .stats-grid     { grid-template-columns: repeat(2, 1fr) !important; }
   .token-grid     { grid-template-columns: 1fr !important; }
@@ -188,4 +189,30 @@ body {
   .proof-hash     { font-size: 9px !important; }
   .ecosystem-badges { gap: 6px !important; }
   .quick-actions-grid { grid-template-columns: 1fr !important; }
+
+  /* ── Main container ── */
+  .main-container { padding: 20px 14px !important; }
+
+  /* ── App header (inner app bar) ── */
+  .app-header     { flex-wrap: wrap !important; gap: 6px !important; }
+  .app-header-right { flex-wrap: wrap !important; gap: 6px !important; }
+  .app-header-secondary { display: none !important; }
+
+  /* ── Hero tagline (long one-liner) ── */
+  .hero-tagline   { letter-spacing: 0.04em !important; font-size: 12px !important; line-height: 1.7 !important; }
+
+  /* ── CTA box ── */
+  .cta-box        { padding: 18px 14px !important; }
+
+  /* ── Sakura character card ── */
+  .sakura-card    { padding: 18px 14px 16px !important; }
+
+  /* ── LiquidationShield grids ── */
+  .shield-config-grid  { grid-template-columns: 1fr !important; }
+  .shield-rescue-grid  { grid-template-columns: repeat(2, 1fr) !important; }
+
+  /* ── Footer ── */
+  .footer-root    { padding: 32px 16px 20px !important; }
+  .footer-top-row { gap: 24px !important; }
+  .footer-brand   { min-width: 100% !important; max-width: 100% !important; }
 }

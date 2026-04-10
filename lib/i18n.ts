@@ -23,9 +23,9 @@ export const translations = {
 
   // ── Hero ──────────────────────────────────────────────────────────
   heroTagline: {
-    zh: "防禦 Drift 同款 $2.85億攻擊向量 · 幽靈預執行 DeFi 策略 · 400ms 阻截借貸清算",
-    en: "Defend Against the $285M Drift-Class Attack Vector · Ghost Pre-Execute DeFi Strategies · Block Liquidation in 400ms",
-    ja: "$2.85億規模のDrift型攻撃ベクターを封鎖 · DeFi戦略をゴースト事前実行 · 400msで清算を阻止",
+    zh: "Sakura 是 Solana 的 AI 安全層 — 攔截您看不見的漏洞，模擬您無法預判的結果，阻截您跑不贏的清算。",
+    en: "Sakura is Solana's AI security layer — catching the exploits you can't see, simulating outcomes you can't predict, stopping liquidations you can't outrun.",
+    ja: "Sakura は Solana の AI セキュリティレイヤー — 見えない脆弱性を捕捉し、予測できない結果を事前に再現し、逃げ切れない清算を阻止する。",
   },
   heroSubtitle: {
     zh: "在 $2.85 億 Drift 攻擊中，Durable Nonce 是最被忽視的攻擊面 — Nonce Guardian 主動防禦。在多步 DeFi 執行中，滑點與合約衝突是隱性成本 — Ghost Run 預先消除。在 $40 億借貸市場，毫秒之差決定清算損失 — Liquidation Shield 400ms 閃電響應。三道防線，每項 AI 決策的 SHA-256 哈希永久刻入 Solana 主網，任何人可在 Solscan 獨立核驗，無需信任 Sakura。",

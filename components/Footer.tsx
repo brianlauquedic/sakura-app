@@ -35,20 +35,20 @@ export default function Footer() {
   };
 
   return (
-    <footer style={{
+    <footer className="footer-root" style={{
       borderTop: "1px solid var(--border)",
       background: "var(--bg-card)",
       padding: "48px 40px 28px",
       marginTop: 40,
     }}>
       {/* Top row */}
-      <div style={{
+      <div className="footer-top-row" style={{
         display: "flex", flexWrap: "wrap", gap: 48,
         marginBottom: 40,
         justifyContent: "space-between",
       }}>
         {/* Brand */}
-        <div style={{ minWidth: 200, maxWidth: 260 }}>
+        <div className="footer-brand" style={{ minWidth: 200, maxWidth: 260 }}>
           <Link href="/" onClick={() => { setShowLanding(true); window.scrollTo({ top: 0, behavior: "smooth" }); }} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12, textDecoration: "none" }}>
             <div style={{ width: 28, height: 28, borderRadius: 6, overflow: "hidden", flexShrink: 0 }}>
               <WaBijinSVG size={28} />

@@ -30,7 +30,7 @@ function AppContent() {
       background: isDayMode ? "var(--bg-base)" : timeBg.bg,
       transition: "background 1.5s ease, color 1.5s ease",
     }}>
-      <div style={{ maxWidth: 860, margin: "0 auto", padding: "40px 24px" }}>
+      <div className="main-container" style={{ maxWidth: 860, margin: "0 auto", padding: "40px 24px" }}>
         {!walletAddress || showLanding ? (
           <WalletConnect
             walletAddress={walletAddress}
@@ -39,7 +39,7 @@ function AppContent() {
         ) : (
           <>
             {/* ── Header bar ── */}
-            <div style={{
+            <div className="app-header" style={{
               display: "flex", alignItems: "center", justifyContent: "space-between",
               marginBottom: 28,
             }}>
@@ -51,7 +51,7 @@ function AppContent() {
                   Sakura
                 </span>
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div className="app-header-right" style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <div style={{
                   display: "flex", alignItems: "center", gap: 6,
                   background: "var(--bg-card)", border: "1px solid var(--border)",
@@ -82,6 +82,7 @@ function AppContent() {
                 </button>
                 <a
                   href="/mcp"
+                  className="app-header-secondary"
                   style={{
                     fontSize: 11, fontWeight: 600, color: "var(--accent)",
                     textDecoration: "none", padding: "6px 10px",
@@ -95,6 +96,7 @@ function AppContent() {
                 </a>
                 <button
                   onClick={() => setShowLanding(true)}
+                  className="app-header-secondary"
                   style={{
                     fontSize: 12, color: "var(--text-muted)",
                     background: "none", border: "none",
