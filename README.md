@@ -7,6 +7,14 @@
 
 ---
 
+## Screenshots
+
+| 🛡️ Nonce Guardian | 👻 Ghost Run | ⚡ Liquidation Shield |
+|---|---|---|
+| ![Nonce Guardian](docs/screenshots/nonce-guardian.png) | ![Ghost Run](docs/screenshots/ghost-run.png) | ![Liquidation Shield](docs/screenshots/liquidation-shield.png) |
+
+---
+
 ## The Problem
 
 On **April 1, 2026**, Drift Protocol lost **$285 million** in a single exploit using Durable Nonces — pre-signed transactions that never expire. The attacker had silently hijacked nonce account authority months earlier. No alarm went off.
