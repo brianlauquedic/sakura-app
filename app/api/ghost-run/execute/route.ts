@@ -39,6 +39,19 @@ export async function POST(req: NextRequest) {
   if (steps.length > 10) {
     return NextResponse.json({ error: "Maximum 10 steps per execution" }, { status: 400 });
   }
+  // Validate individual step fields
+  const VALID_STEP_TYPES = new Set(["stake", "lend", "swap"]);
+  for (const step of steps) {
+    if (!VALID_STEP_TYPES.has(step.type)) {
+      return NextResponse.json({ error: `Invalid step type: ${step.type}` }, { status: 400 });
+    }
+    if (typeof step.inputAmount !== "number" || !Number.isFinite(step.inputAmount) || step.inputAmount <= 0) {
+      return NextResponse.json({ error: `Invalid inputAmount: must be a positive number` }, { status: 400 });
+    }
+    if (!step.inputToken || !step.outputToken) {
+      return NextResponse.json({ error: "Missing inputToken or outputToken" }, { status: 400 });
+    }
+  }
   // Validate wallet is valid base58 (44 chars for base58-encoded 32-byte pubkey)
   if (!/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(wallet)) {
     return NextResponse.json({ error: "Invalid wallet address format" }, { status: 400 });

@@ -246,10 +246,13 @@ export async function proxy(req: NextRequest) {
     // Cursor, VS Code, etc.) — skip bot UA and fingerprint checks for this path.
     const isMcpEndpoint = pathname.startsWith("/api/mcp");
 
-    // Demo mode: skip rate limiting for requests originating from ?demo=true pages.
+    // Demo mode: skip rate limiting for demo API calls.
     // Demo data is served from lib/demo-data.ts and never hits real RPC/AI.
+    // Only bypass for our own origin (prevent external spoofing of Referer header).
     const referer = req.headers.get("referer") ?? "";
-    const isDemoRequest = referer.includes("demo=true");
+    const requestHost = req.headers.get("host") ?? "";
+    const isDemoRequest = referer.includes("demo=true") &&
+      requestHost && referer.includes(requestHost);
     if (isDemoRequest) {
       return NextResponse.next();
     }

@@ -98,13 +98,20 @@ export default function NonceGuardian({ isDemo = false }: { isDemo?: boolean }) 
     setPayState("paying");
     setPayError(null);
 
-    const payResult = await payWithWallet({
-      recipient: payChallenge.recipient,
-      amount: payChallenge.amount,
-      currency: "USDC",
-      network: "solana-mainnet",
-      description: "Sakura Nonce Guardian — AI Security Report + SHA-256 鏈上存證",
-    });
+    let payResult: Awaited<ReturnType<typeof payWithWallet>>;
+    try {
+      payResult = await payWithWallet({
+        recipient: payChallenge.recipient,
+        amount: payChallenge.amount,
+        currency: "USDC",
+        network: "solana-mainnet",
+        description: "Sakura Nonce Guardian — AI Security Report + SHA-256 鏈上存證",
+      });
+    } catch (walletErr) {
+      setPayState("error");
+      setPayError(walletErr instanceof Error ? walletErr.message : "錢包支付失敗");
+      return;
+    }
 
     if ("error" in payResult) {
       if (payResult.error === "user_rejected") {

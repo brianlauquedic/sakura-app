@@ -315,7 +315,7 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
             <input
               type="number"
               value={maxUsdc}
-              onChange={e => setMaxUsdc(e.target.value)}
+              onChange={e => setMaxUsdc(e.target.value || "0")}
               min={0}
               style={{
                 width: "100%", background: "var(--bg-base)", border: "1px solid var(--border)",
@@ -330,7 +330,7 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
             <input
               type="number"
               value={triggerHF}
-              onChange={e => setTriggerHF(e.target.value)}
+              onChange={e => setTriggerHF(e.target.value || "1.05")}
               min={1.0} max={2.0} step={0.05}
               style={{
                 width: "100%", background: "var(--bg-base)", border: "1px solid var(--border)",

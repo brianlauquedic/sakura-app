@@ -477,7 +477,7 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
               <div style={{ fontSize: 14, color: "var(--text-primary)", fontWeight: 500 }}>
                 {simResult.result.steps.length} 步策略 ·
                 總 Gas: {(simResult.result.totalGasSol * 1e6).toFixed(1)} μSOL (~$
-                {(simResult.result.totalGasSol * 170 * 1000).toFixed(3)})
+                {(simResult.result.totalGasSol * (simResult.result.solPrice ?? 170) * 1000).toFixed(3)})
               </div>
               {/* Show swap fee note if any swap steps exist */}
               {simResult.steps.some(s => s.type === "swap") && (

@@ -163,6 +163,8 @@ export interface GhostRunResult {
    * Shows network congestion level: idle <5k, normal 5k-50k, congested 50k-500k.
    */
   priorityFeeUsed?: number;
+  /** Live SOL/USD price used in simulation (for accurate gas cost display) */
+  solPrice?: number;
 }
 
 /**
