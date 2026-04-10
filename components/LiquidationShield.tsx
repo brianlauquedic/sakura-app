@@ -144,7 +144,14 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
 
   // ── Step 1 of rescue: user authorizes SPL delegate via Phantom/OKX ──
   async function authorizeRescue() {
-    if (!walletAddress) return;
+    if (!walletAddress) {
+      // Demo mode: simulate a successful authorization
+      setApproveState("approving");
+      await new Promise(r => setTimeout(r, 1500));
+      setApproveState("approved");
+      setApproveSig("DEMO_TX_" + Math.random().toString(36).slice(2, 10).toUpperCase());
+      return;
+    }
     setApproveState("approving");
     setApproveError(null);
 
