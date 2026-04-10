@@ -73,10 +73,14 @@ function AppContent() {
               marginBottom: 28,
             }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <span style={{
-                  fontSize: 18, fontWeight: 300, letterSpacing: "0.1em",
-                  fontFamily: "var(--font-heading)", color: "var(--text-primary)",
-                }}>
+                <span
+                  onClick={() => { setIsDemo(false); setShowLanding(true); window.history.pushState({}, "", "/"); }}
+                  style={{
+                    fontSize: 18, fontWeight: 300, letterSpacing: "0.1em",
+                    fontFamily: "var(--font-heading)", color: "var(--text-primary)",
+                    cursor: "pointer",
+                  }}
+                >
                   Sakura
                 </span>
               </div>
@@ -102,7 +106,19 @@ function AppContent() {
                     </span>
                   )}
                 </div>
-                {!isDemo && (
+                {isDemo ? (
+                  <button
+                    onClick={() => { setIsDemo(false); setShowLanding(true); window.history.pushState({}, "", "/"); }}
+                    style={{
+                      fontSize: 12, color: "#FF9F0A",
+                      background: "rgba(255,159,10,0.1)", border: "1px solid rgba(255,159,10,0.4)",
+                      borderRadius: 6, padding: "6px 12px", cursor: "pointer",
+                      letterSpacing: "0.04em", fontWeight: 600,
+                    }}
+                  >
+                    🔗 連接錢包
+                  </button>
+                ) : (
                   <button
                     onClick={() => disconnect()}
                     style={{
@@ -129,9 +145,9 @@ function AppContent() {
                 >
                   MCP API
                 </a>
-                {!isDemo && (
+                {true && (
                   <button
-                    onClick={() => setShowLanding(true)}
+                    onClick={() => { setIsDemo(false); setShowLanding(true); window.history.pushState({}, "", "/"); }}
                     className="app-header-secondary"
                     style={{
                       fontSize: 12, color: "var(--text-muted)",
