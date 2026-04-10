@@ -21,7 +21,7 @@ import { Connection, PublicKey } from "@solana/web3.js";
 import { simulateStrategy } from "@/lib/ghost-run";
 import type { StrategyStep } from "@/lib/ghost-run";
 import { createReadOnlyAgent, RPC_URL } from "@/lib/agent";
-import { getWalletLimiter, checkWalletLimitMemory } from "@/lib/redis";
+import { getWalletLimiter, checkWalletLimitMemory, trackUsage } from "@/lib/redis";
 
 export const maxDuration = 60;
 
@@ -70,6 +70,8 @@ export async function POST(req: NextRequest) {
   if (!/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(wallet)) {
     return NextResponse.json({ error: "無效的錢包地址格式" }, { status: 400 });
   }
+
+  void trackUsage("ghost", wallet);
 
   // ── Per-wallet hourly rate limit (Sybil defense) ───────────────────────────
   // IP-based middleware limits alone can be bypassed with rotating IPs.

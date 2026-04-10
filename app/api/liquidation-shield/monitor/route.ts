@@ -20,7 +20,7 @@ import { monitorPositions, simulateRescue } from "@/lib/liquidation-shield";
 import type { ShieldConfig, MonitorResult } from "@/lib/liquidation-shield";
 import Anthropic from "@anthropic-ai/sdk";
 import { createReadOnlyAgent, RPC_URL } from "@/lib/agent";
-import { getWalletLimiter, checkWalletLimitMemory } from "@/lib/redis";
+import { getWalletLimiter, checkWalletLimitMemory, trackUsage } from "@/lib/redis";
 
 /**
  * Sanitize on-chain token symbol for safe insertion into AI prompts.
@@ -50,6 +50,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Invalid wallet address" }, { status: 400 });
   }
 
+  void trackUsage("shield", wallet);
   try {
     const result = await monitorPositions(wallet);
     return NextResponse.json(result);

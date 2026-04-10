@@ -4,7 +4,7 @@ import { Connection, PublicKey, Transaction, TransactionInstruction, Keypair } f
 import Anthropic from "@anthropic-ai/sdk";
 import { createHash } from "crypto";
 import { createReadOnlyAgent } from "@/lib/agent";
-import { checkAndMarkUsed } from "@/lib/redis";
+import { checkAndMarkUsed, trackUsage } from "@/lib/redis";
 
 const HELIUS_RPC = `https://mainnet.helius-rpc.com/?api-key=${process.env.HELIUS_API_KEY ?? ""}`;
 const SAKURA_FEE_WALLET = process.env.SAKURA_FEE_WALLET ?? "";
@@ -113,6 +113,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Invalid wallet address" }, { status: 400 });
   }
 
+  void trackUsage("nonce", wallet);
   try {
     const result = await scanNonceAccounts(wallet, HELIUS_RPC);
     return NextResponse.json(result);
