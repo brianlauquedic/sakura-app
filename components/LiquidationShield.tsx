@@ -89,11 +89,18 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
   const [rescueResults, setRescueResults] = useState<Record<number, RescueResponse>>({});
   const [error, setError] = useState<string | null>(null);
 
-  // Fix 3: AbortController for cancelling in-flight fetches on unmount
-  const abortRef = useRef<AbortController | null>(null);
+  // Separate AbortControllers per operation to prevent cross-cancellation
+  // Bug #1/#2 fix: scan, authorize, and rescue each get their own controller
+  const scanAbortRef = useRef<AbortController | null>(null);
+  const authAbortRef = useRef<AbortController | null>(null);
+  const rescueAbortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
-    return () => { abortRef.current?.abort(); };
+    return () => {
+      scanAbortRef.current?.abort();
+      authAbortRef.current?.abort();
+      rescueAbortRef.current?.abort();
+    };
   }, []);
 
   // ── SPL Approve authorization state ──────────────────────────────
@@ -123,9 +130,9 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
     setApproveSig(null);
     setApproveTs(null);
 
-    abortRef.current?.abort();
-    abortRef.current = new AbortController();
-    const signal = abortRef.current.signal;
+    scanAbortRef.current?.abort();
+    scanAbortRef.current = new AbortController();
+    const signal = scanAbortRef.current.signal;
 
     try {
       const res = await fetch("/api/liquidation-shield/monitor", {
@@ -164,7 +171,7 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
       setApproveState("approving");
       await new Promise(r => setTimeout(r, 1500));
       // Bug 8 fix: check abort before setting state
-      if (abortRef.current?.signal.aborted) { setApproveState("idle"); return; }
+      if (authAbortRef.current?.signal.aborted) { setApproveState("idle"); return; }
       setApproveState("approved");
       setApproveSig("DEMO_TX_" + Math.random().toString(36).slice(2, 10).toUpperCase());
       setApproveTs(new Date().toISOString());
@@ -173,9 +180,13 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
     setApproveState("approving");
     setApproveError(null);
 
+    // Bug #2 fix: create dedicated AbortController for authorize flow
+    authAbortRef.current?.abort();
+    authAbortRef.current = new AbortController();
+
     try {
       // 1. Get agent pubkey from server (safe — public key only, no private key)
-      const signal = abortRef.current?.signal;
+      const signal = authAbortRef.current.signal;
       const agentRes = await fetch("/api/liquidation-shield/rescue", { signal });
       if (!agentRes.ok) throw new Error("無法取得代理公鑰");
       const { agentPubkey, configured } = await agentRes.json() as {
@@ -242,9 +253,9 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
     if (!walletAddress) {
       // Demo mode: simulate rescue execution
       setRescuingIdx(idx);
-      if (abortRef.current?.signal.aborted) { setRescuingIdx(null); return; }
+      if (rescueAbortRef.current?.signal.aborted) { setRescuingIdx(null); return; }
       await new Promise(r => setTimeout(r, 2000));
-      if (abortRef.current?.signal.aborted) { setRescuingIdx(null); return; }
+      if (rescueAbortRef.current?.signal.aborted) { setRescuingIdx(null); return; }
       setRescueResults(prev => ({
         ...prev,
         [idx]: {
@@ -267,9 +278,10 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
     }
     setRescuingIdx(idx);
 
-    abortRef.current?.abort();
-    abortRef.current = new AbortController();
-    const signal = abortRef.current.signal;
+    // Bug #1 fix: dedicated controller so rescue doesn't cancel scan
+    rescueAbortRef.current?.abort();
+    rescueAbortRef.current = new AbortController();
+    const signal = rescueAbortRef.current.signal;
 
     try {
       const res = await fetch("/api/liquidation-shield/rescue", {

@@ -243,9 +243,9 @@ export async function POST(req: NextRequest) {
     platformFeeInjected,
     platformFee: hasSwaps
       ? (platformFeeInjected
-          ? `${PLATFORM_FEE_BPS / 100}% 平台費已嵌入 Jupiter 兌換交易`
-          : "⚠️ 平台費未能嵌入（費錢包未配置），本次兌換免費")
-      : "無兌換步驟，不收平台費",
+          ? `GHOST_FEE_INJECTED:${PLATFORM_FEE_BPS / 100}`
+          : "GHOST_FEE_SKIPPED")
+      : "GHOST_FEE_NONE",
     errors,
   });
 }

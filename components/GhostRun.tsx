@@ -80,11 +80,16 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
   const [pendingSwapTxs, setPendingSwapTxs] = useState<UnsignedSwapTx[]>([]);
   const [retryingSwaps, setRetryingSwaps] = useState(false);
 
-  // Fix 3: AbortController for cancelling in-flight fetches on unmount
-  const abortRef = useRef<AbortController | null>(null);
+  // Separate AbortControllers per operation to prevent cross-cancellation
+  // Bug #3 fix: simulate and execute each get their own controller
+  const simAbortRef = useRef<AbortController | null>(null);
+  const execAbortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
-    return () => { abortRef.current?.abort(); };
+    return () => {
+      simAbortRef.current?.abort();
+      execAbortRef.current?.abort();
+    };
   }, []);
 
   useEffect(() => {
@@ -109,9 +114,9 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
     setAuditChain(null);
     setPendingSwapTxs([]);
 
-    abortRef.current?.abort();
-    abortRef.current = new AbortController();
-    const signal = abortRef.current.signal;
+    simAbortRef.current?.abort();
+    simAbortRef.current = new AbortController();
+    const signal = simAbortRef.current.signal;
 
     try {
       const res = await fetch("/api/ghost-run/simulate", {
@@ -142,13 +147,13 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
     if (pendingSwapTxs.length === 0) return;
     const provider = getWalletProvider();
     if (!provider) {
-      setError("請連接 Phantom 或 OKX 錢包以簽署兌換交易");
+      setError(t("ghostConnectWallet"));
       return;
     }
 
-    abortRef.current?.abort();
-    abortRef.current = new AbortController();
-    const signal = abortRef.current.signal;
+    execAbortRef.current?.abort();
+    execAbortRef.current = new AbortController();
+    const signal = execAbortRef.current.signal;
 
     setRetryingSwaps(true);
     setError(null);
@@ -234,9 +239,9 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
       setExecuting(true);
       setExecResult(null);
       setError(null);
-      if (abortRef.current?.signal.aborted) { setExecuting(false); return; }
+      if (execAbortRef.current?.signal.aborted) { setExecuting(false); return; }
       await new Promise(r => setTimeout(r, 2000));
-      if (abortRef.current?.signal.aborted) { setExecuting(false); return; }
+      if (execAbortRef.current?.signal.aborted) { setExecuting(false); return; }
       setExecResult({
         success: true,
         signatures: simResult.steps.map(() => "DEMO_SIG_" + Math.random().toString(36).slice(2, 10).toUpperCase()),
@@ -256,9 +261,10 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
     setError(null);
     setPendingSwapTxs([]);
 
-    abortRef.current?.abort();
-    abortRef.current = new AbortController();
-    const signal = abortRef.current.signal;
+    // Bug #3 fix: dedicated controller so execute doesn't cancel simulation
+    execAbortRef.current?.abort();
+    execAbortRef.current = new AbortController();
+    const signal = execAbortRef.current.signal;
 
     try {
       // ── Step 1: Execute stake/lend steps via platform wallet ───────────────
@@ -281,7 +287,7 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
       if (data.unsignedSwapTxs && data.unsignedSwapTxs.length > 0) {
         const provider = getWalletProvider();
         if (!provider) {
-          setError("請連接 Phantom 或 OKX 錢包以簽署兌換交易");
+          setError(t("ghostConnectWallet"));
           return;
         }
         setSigningSwap(true);
@@ -356,7 +362,7 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
       const msg = err instanceof Error ? err.message : "執行失敗";
       // Friendly messages for wallet rejections
       if (msg.includes("User rejected") || msg.includes("user_rejected") || msg.includes("rejected")) {
-        setError("用戶取消了簽名請求");
+        setError(t("ghostUserCancelled"));
       } else {
         setError(msg);
       }
@@ -367,9 +373,9 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
   }
 
   const stepTypeLabel: Record<string, string> = {
-    swap: "兌換",
-    stake: "質押",
-    lend: "存款",
+    swap: t("ghostStepSwap"),
+    stake: t("ghostStepStake"),
+    lend: t("ghostStepLend"),
   };
   const stepTypeColor: Record<string, string> = {
     swap: "#7C6FFF",
@@ -379,7 +385,7 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
 
   // Determine button label based on execution phase
   function getExecButtonLabel() {
-    if (signingSwap) return "⏳ 等待錢包簽名兌換…";
+    if (signingSwap) return t("ghostWaitingSwapSign");
     if (executing) return t("ghostExecuting");
     return t("ghostConfirmBtn");
   }
@@ -484,7 +490,7 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
             fontSize: 11, color: "var(--text-muted)", letterSpacing: "0.15em",
             textTransform: "uppercase", marginBottom: 12, fontFamily: "var(--font-mono)",
           }}>
-            幽靈執行結果
+            {t("ghostResultTitle")}
           </div>
 
           {simResult.result.steps.map((sim: StepSimulation, i: number) => (
@@ -518,7 +524,7 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
                       background: "rgba(124,111,255,0.1)", border: "1px solid rgba(124,111,255,0.3)",
                       borderRadius: 4, padding: "2px 6px", fontFamily: "var(--font-mono)",
                     }}>
-                      🔑 需要錢包簽名
+                      {t("ghostNeedWalletSign")}
                     </span>
                   )}
                 </div>
@@ -529,39 +535,39 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
                   border: `1px solid ${sim.success ? "rgba(52,199,89,0.3)" : "rgba(255,68,68,0.3)"}`,
                   fontWeight: 600,
                 }}>
-                  {sim.success ? "✓ 可執行" : "✗ 失敗"}
+                  {sim.success ? t("ghostStepOk") : t("ghostStepFail")}
                 </span>
               </div>
 
               {sim.success && (
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 10 }}>
                   <MetricBox
-                    label="預期獲得"
+                    label={t("ghostExpectedOutput")}
                     value={`${sim.outputAmount.toFixed(4)} ${sim.step.outputToken}`}
                     color="var(--green)"
                   />
                   <MetricBox
-                    label="Gas 費用"
+                    label={t("ghostGasCost")}
                     value={`${(sim.gasSol * 1e6).toFixed(1)} μSOL`}
                     color="var(--text-muted)"
                   />
                   {sim.estimatedApy !== undefined && (
                     <MetricBox
-                      label="年化收益率"
+                      label={t("ghostApyLabel")}
                       value={`${sim.estimatedApy.toFixed(1)}%`}
                       color="#FF9F0A"
                     />
                   )}
                   {sim.annualUsdYield !== undefined && (
                     <MetricBox
-                      label="預計年收益"
+                      label={t("ghostAnnualYield")}
                       value={`+$${sim.annualUsdYield.toFixed(2)}`}
                       color="var(--green)"
                     />
                   )}
                   {sim.priceImpactPct != null && (
                     <MetricBox
-                      label="價格衝擊"
+                      label={t("ghostPriceImpact")}
                       value={`${sim.priceImpactPct.toFixed(3)}%`}
                       color={sim.priceImpactPct >= 2 ? "#FF4444" : sim.priceImpactPct >= 0.5 ? "#FF9F0A" : "var(--green)"}
                     />
@@ -609,7 +615,7 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
               {/* Show swap fee note if any swap steps exist */}
               {simResult.steps.some(s => s.type === "swap") && (
                 <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 4 }}>
-                  兌換步驟含 0.3% 平台費（由 Jupiter 自動收取）
+                  {t("ghostSwapFeeNote")}
                 </div>
               )}
               {/* Module 16: show dynamic priority fee for transparency */}
@@ -628,7 +634,7 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
               fontSize: 15, fontWeight: 700,
               color: simResult.result.canExecute ? "var(--green)" : "#FF4444",
             }}>
-              {simResult.result.canExecute ? "✅ 可安全執行" : "⚠️ 請檢查警告"}
+              {simResult.result.canExecute ? t("ghostCanExec") : t("ghostCheckWarnings")}
             </div>
           </div>
 
@@ -741,12 +747,12 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
 
               {execResult.memoSig && (
                 <div style={{ fontSize: 12, color: "var(--accent)", marginTop: 8, fontFamily: "var(--font-mono)" }}>
-                  ✦ 鏈上執行憑證: {execResult.memoSig.slice(0, 20)}…
+                  {t("ghostOnchainProof")}: {execResult.memoSig.slice(0, 20)}…
                 </div>
               )}
               {auditChain && (
                 <div style={{ fontSize: 12, color: "var(--accent)", marginTop: 4, fontFamily: "var(--font-mono)" }}>
-                  ✦ 完整審計鏈: {auditChain}
+                  {t("ghostAuditChain")}: {auditChain}
                 </div>
               )}
               {execResult.platformFee && (
@@ -756,7 +762,13 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
                     ? "#FF9F0A"
                     : "var(--text-muted)",
                 }}>
-                  {execResult.platformFee}
+                  {execResult.platformFee.startsWith("GHOST_FEE_INJECTED:")
+                    ? execResult.platformFee.split(":")[1] + t("ghostFeeInjected")
+                    : execResult.platformFee === "GHOST_FEE_SKIPPED"
+                    ? t("ghostFeeSkipped")
+                    : execResult.platformFee === "GHOST_FEE_NONE"
+                    ? t("ghostFeeNone")
+                    : execResult.platformFee}
                 </div>
               )}
               {execResult.errors.map((e, i) => (
