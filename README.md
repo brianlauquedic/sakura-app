@@ -124,7 +124,7 @@ Next.js 16 (App Router, Turbopack)
 
 - **Claude Sonnet 4.6** — strategy parsing, agentic tool loops (up to 6 iterations), risk analysis
 - Each request: Claude autonomously selects and calls 5–7 Solana tools in parallel, iterates until confident
-- All AI analysis output in Traditional Chinese (繁體中文)
+- All AI analysis output in English / 日本語 / 中文
 - UI fully localized: English / 日本語 / 中文
 
 ---
