@@ -149,6 +149,7 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
       const data: MonitorResponse = await res.json();
       setResult(data);
     } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") return;
       setError(err instanceof Error ? err.message : t("shieldScanFailed"));
     } finally {
       setLoading(false);
@@ -171,7 +172,8 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
 
     try {
       // 1. Get agent pubkey from server (safe — public key only, no private key)
-      const agentRes = await fetch("/api/liquidation-shield/rescue");
+      const signal = abortRef.current?.signal;
+      const agentRes = await fetch("/api/liquidation-shield/rescue", { signal });
       if (!agentRes.ok) throw new Error("無法取得代理公鑰");
       const { agentPubkey, configured } = await agentRes.json() as {
         agentPubkey: string | null; configured: boolean;
@@ -185,7 +187,7 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
       //    (includes rescue_mandate Memo for on-chain audit trail)
       // Include 1% fee buffer so fee TX doesn't exhaust delegate allowance
       const approveUsdc = Math.ceil((parseFloat(maxUsdc) || 1000) * 1.01 * 100) / 100;
-      const buildRes = await fetch("/api/liquidation-shield/rescue", {
+      const buildRes = await fetch("/api/liquidation-shield/rescue", { signal,
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ wallet: walletAddress, approveUsdc }),
@@ -215,6 +217,7 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
       setApproveTs(new Date().toISOString()); // Module 06: record mandate timestamp for audit trail
       setApproveState("approved");
     } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") return;
       setApproveState("error");
       const msg = err instanceof Error ? err.message : "授權失敗";
       // Friendly messages for common wallet rejections
@@ -280,6 +283,7 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
       const data: RescueResponse = await res.json();
       setRescueResults(prev => ({ ...prev, [idx]: data }));
     } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") return;
       setRescueResults(prev => ({
         ...prev,
         [idx]: {

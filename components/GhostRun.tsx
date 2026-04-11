@@ -128,6 +128,7 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
       const data: SimulateResponse = await res.json();
       setSimResult(data);
     } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") return;
       setError(translateApiError(err instanceof Error ? err.message : "模擬失敗"));
     } finally {
       setLoading(false);
@@ -143,6 +144,10 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
       return;
     }
 
+    abortRef.current?.abort();
+    abortRef.current = new AbortController();
+    const signal = abortRef.current.signal;
+
     setRetryingSwaps(true);
     setError(null);
 
@@ -151,6 +156,7 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
     const stillPending: UnsignedSwapTx[] = [];
 
     for (const unsignedTx of pendingSwapTxs) {
+      if (signal.aborted) break;
       try {
         const txBytes = Uint8Array.from(
           atob(unsignedTx.swapTransaction),
@@ -195,8 +201,10 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
       } catch { /* audit is non-critical */ }
     }
 
-    setPendingSwapTxs(stillPending);
-    setRetryingSwaps(false);
+    if (!signal.aborted) {
+      setPendingSwapTxs(stillPending);
+      setRetryingSwaps(false);
+    }
   }
 
   async function executeStrategy() {
@@ -324,6 +332,7 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
         } catch { /* audit is non-critical */ }
       }
     } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") return;
       const msg = err instanceof Error ? err.message : "執行失敗";
       // Friendly messages for wallet rejections
       if (msg.includes("User rejected") || msg.includes("user_rejected") || msg.includes("rejected")) {

@@ -99,6 +99,7 @@ export default function NonceGuardian({ isDemo = false }: { isDemo?: boolean }) 
       setResult(data);
       setPayState("done");
     } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") return;
       setError(err instanceof Error ? err.message : t("nonceScanFailed"));
     } finally {
       setLoading(false);
