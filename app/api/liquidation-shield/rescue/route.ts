@@ -134,10 +134,11 @@ export async function POST(req: NextRequest) {
     rescueUsdc?: number;
     mandateTxSig?: string;
     mandateTs?: string; // Module 06: ISO timestamp of when SPL approve mandate was set
+    triggerHF?: number; // Bug 1 fix: client-specified trigger threshold
   } = {};
   try { body = await req.json(); } catch { /* ok */ }
 
-  const { wallet, position, rescueUsdc, mandateTxSig, mandateTs } = body;
+  const { wallet, position, rescueUsdc, mandateTxSig, mandateTs, triggerHF: clientTriggerHF } = body;
 
   // ── CSRF protection: verify Origin matches our app ─────────────────────
   const origin = req.headers.get("origin");
@@ -247,7 +248,10 @@ export async function POST(req: NextRequest) {
   };
 
   // Verify health factor is not safe — reject rescue if position is healthy
-  const triggerThreshold = 1.5; // default upper bound; real threshold from config
+  // Bug 1 fix: use client's triggerHF (clamped 1.01–2.0) instead of hardcoded 1.5
+  const triggerThreshold = Number.isFinite(clientTriggerHF) && clientTriggerHF! >= 1.01 && clientTriggerHF! <= 2.0
+    ? clientTriggerHF!
+    : 1.5; // fallback if client doesn't send or sends invalid value
   if (sanitizedPosition.healthFactor >= triggerThreshold) {
     return NextResponse.json(
       { error: `倉位健康因子 ${sanitizedPosition.healthFactor.toFixed(3)} 高於觸發閾值 ${triggerThreshold}，無需救援` },

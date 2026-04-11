@@ -111,6 +111,39 @@ export default function NonceGuardian({ isDemo = false }: { isDemo?: boolean }) 
     setPayState("paying");
     setPayError(null);
 
+    // ── Demo mode: simulate x402 payment without real wallet ──────────
+    if (isDemo) {
+      await new Promise(r => setTimeout(r, 1500)); // simulate wallet popup
+      if (abortRef.current?.signal.aborted) { setPayState("idle"); return; }
+      setPayState("verifying");
+      await new Promise(r => setTimeout(r, 1000)); // simulate verification
+      if (abortRef.current?.signal.aborted) { setPayState("idle"); return; }
+
+      try {
+        const signal = abortRef.current?.signal;
+        const res = await fetch("/api/nonce-guardian", {
+          signal,
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-PAYMENT": "DEMO_PAY_" + Math.random().toString(36).slice(2, 10).toUpperCase(),
+          },
+          body: JSON.stringify({ wallet: inputAddr.trim(), demo: true }),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data: ScanResult = await res.json();
+        setResult(data);
+        setPayState("done");
+        setPayChallenge(null);
+      } catch (err) {
+        if (err instanceof DOMException && err.name === "AbortError") return;
+        setPayState("error");
+        setPayError(err instanceof Error ? err.message : t("nonceReportFailed"));
+      }
+      return;
+    }
+
+    // ── Real mode: x402 payment via wallet ───────────────────────────
     let payResult: Awaited<ReturnType<typeof payWithWallet>>;
     try {
       payResult = await payWithWallet({
@@ -139,7 +172,10 @@ export default function NonceGuardian({ isDemo = false }: { isDemo?: boolean }) 
     // Payment done — retry with X-PAYMENT header
     setPayState("verifying");
     try {
+      // Bug 9 fix: attach AbortController signal to payment verification fetch
+      const signal = abortRef.current?.signal;
       const res = await fetch("/api/nonce-guardian", {
+        signal,
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -154,6 +190,7 @@ export default function NonceGuardian({ isDemo = false }: { isDemo?: boolean }) 
       setPayState("done");
       setPayChallenge(null);
     } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") return;
       setPayState("error");
       setPayError(err instanceof Error ? err.message : t("nonceReportFailed"));
     }

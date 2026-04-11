@@ -133,9 +133,38 @@ export async function POST(req: NextRequest) {
   let body: { wallet?: string; demo?: boolean } = {};
   try { body = await req.json(); } catch { /* ok */ }
 
-  // ── Demo mode: return preset data instantly ───────────────────────
+  // ── Demo mode: simulate x402 payment flow ───────────────────────
   if (body.demo === true) {
-    return NextResponse.json({ ...DEMO_NONCE_RESULT, scannedAt: Date.now() });
+    const demoPaymentSig = req.headers.get("x-payment") ?? req.headers.get("X-PAYMENT");
+
+    // Demo Step 1: no payment header → return 402 with scan result (no AI analysis)
+    if (!demoPaymentSig) {
+      const { aiAnalysis, ...scanOnly } = DEMO_NONCE_RESULT;
+      void aiAnalysis; // suppress unused warning
+      return NextResponse.json(
+        {
+          recipient:   "DEMO_FEE_WALLET_Sakura000000000000000000000",
+          amount:      AI_REPORT_FEE_USDC,
+          currency:    "USDC" as const,
+          network:     "solana-mainnet" as const,
+          description: "Sakura Nonce Guardian — AI Security Report + SHA-256 永久鏈上存證",
+          scanResult:  { ...scanOnly, scannedAt: Date.now() },
+        },
+        { status: 402 }
+      );
+    }
+
+    // Demo Step 2: has payment header → return full result with AI analysis + proof
+    return NextResponse.json({
+      ...DEMO_NONCE_RESULT,
+      scannedAt: Date.now(),
+      proof: {
+        sha256: "a1b2c3d4e5f6789012345678abcdef0123456789abcdef0123456789abcdef01",
+        txSig: "DEMO_MEMO_" + Math.random().toString(36).slice(2, 10).toUpperCase(),
+        explorerUrl: null, // demo — no real on-chain tx
+        message: "（Demo 模式）此報告的 SHA-256 雜湊已計算，正式環境中將永久記錄於 Solana 鏈上。",
+      },
+    });
   }
 
   const wallet = body.wallet;

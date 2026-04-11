@@ -162,6 +162,8 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
       // Demo mode: simulate a successful authorization
       setApproveState("approving");
       await new Promise(r => setTimeout(r, 1500));
+      // Bug 8 fix: check abort before setting state
+      if (abortRef.current?.signal.aborted) { setApproveState("idle"); return; }
       setApproveState("approved");
       setApproveSig("DEMO_TX_" + Math.random().toString(36).slice(2, 10).toUpperCase());
       setApproveTs(new Date().toISOString());
@@ -186,7 +188,9 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
       //    Server calls buildRescueApproveTransaction() from lib/liquidation-shield.ts
       //    (includes rescue_mandate Memo for on-chain audit trail)
       // Include 1% fee buffer so fee TX doesn't exhaust delegate allowance
-      const approveUsdc = Math.ceil((parseFloat(maxUsdc) || 1000) * 1.01 * 100) / 100;
+      // Bug 6 fix: clamp maxUsdc to prevent overflow (max $1M matches server limit)
+      const rawApproveUsdc = Math.min(parseFloat(maxUsdc) || 1000, 1_000_000);
+      const approveUsdc = Math.ceil(rawApproveUsdc * 1.01 * 100) / 100;
       const buildRes = await fetch("/api/liquidation-shield/rescue", { signal,
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -207,7 +211,10 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
       const provider = getWalletProvider();
       if (!provider) throw new Error("請連接 Phantom 或 OKX 錢包");
 
-      const { signature } = await provider.signAndSendTransaction(tx);
+      // Bug 3 fix: OKX wallet may return string instead of { signature }
+      const signResult = await provider.signAndSendTransaction(tx);
+      const signature = typeof signResult === "string" ? signResult : signResult?.signature;
+      if (!signature) throw new Error("錢包未返回交易簽名");
       await conn.confirmTransaction(
         { signature, blockhash, lastValidBlockHeight },
         "confirmed"
@@ -274,6 +281,7 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
           rescueUsdc: sim.rescueUsdc,
           mandateTxSig: approveSig ?? undefined,
           mandateTs: approveTs ?? undefined, // Module 06: mandate timestamp for time-window audit
+          triggerHF: parseFloat(triggerHF) || 1.05, // Bug 1 fix: pass client threshold to server
         }),
       });
       if (!res.ok) {

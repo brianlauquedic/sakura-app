@@ -28,7 +28,8 @@ function AppContent() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    setIsDemo(params.get("demo") === "true");
+    // Bug 5 fix: case-insensitive demo param (?demo=TRUE, ?demo=True, etc.)
+    setIsDemo(params.get("demo")?.toLowerCase() === "true");
   }, []);
 
   const showApp = (!!walletAddress && !showLanding) || isDemo;

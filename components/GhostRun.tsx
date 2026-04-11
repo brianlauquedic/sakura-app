@@ -136,6 +136,7 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
   }
 
   // Fix 1: Retry only the remaining unsigned swap transactions
+  // Bug 7 fix: re-fetch fresh swap transactions from Jupiter instead of replaying stale bytes
   async function retryPendingSwaps() {
     if (pendingSwapTxs.length === 0) return;
     const provider = getWalletProvider();
@@ -155,13 +156,32 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
     const newSigs: string[] = [];
     const stillPending: UnsignedSwapTx[] = [];
 
-    for (const unsignedTx of pendingSwapTxs) {
+    for (const pendingTx of pendingSwapTxs) {
       if (signal.aborted) break;
       try {
-        const txBytes = Uint8Array.from(
-          atob(unsignedTx.swapTransaction),
-          c => c.charCodeAt(0)
-        );
+        // Bug 7: Re-fetch fresh swap TX from execute API to get new blockhash
+        // The original swapTransaction has an expired blockhash after ~90 seconds
+        const refreshRes = await fetch("/api/ghost-run/execute", {
+          signal,
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            steps: [{ type: "swap", token: pendingTx.token, inputAmount: 0 }],
+            wallet: walletAddress,
+            refreshSwapOnly: true,      // signal to server to only rebuild this swap TX
+            originalToken: pendingTx.token,
+          }),
+        });
+
+        let txBase64 = pendingTx.swapTransaction; // fallback to original if refresh fails
+        if (refreshRes.ok) {
+          const refreshData = await refreshRes.json() as ExecuteResponse;
+          if (refreshData.unsignedSwapTxs?.[0]?.swapTransaction) {
+            txBase64 = refreshData.unsignedSwapTxs[0].swapTransaction;
+          }
+        }
+
+        const txBytes = Uint8Array.from(atob(txBase64), c => c.charCodeAt(0));
         const vTx = VersionedTransaction.deserialize(txBytes);
         const result = await provider.signAndSendTransaction(vTx);
         const sig = typeof result === "string" ? result : result?.signature;
@@ -170,11 +190,11 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
         const swapMsg = swapErr instanceof Error ? swapErr.message : "Swap 簽名失敗";
         if (swapMsg.includes("rejected") || swapMsg.includes("User rejected")) {
           setError(`用戶取消了兌換簽名`);
-          stillPending.push(unsignedTx, ...pendingSwapTxs.slice(pendingSwapTxs.indexOf(unsignedTx) + 1));
+          stillPending.push(pendingTx, ...pendingSwapTxs.slice(pendingSwapTxs.indexOf(pendingTx) + 1));
           break;
         }
         setError(`兌換交易失敗：${swapMsg}`);
-        stillPending.push(unsignedTx);
+        stillPending.push(pendingTx);
         console.error("[GhostRun] Swap retry error:", swapErr);
       }
     }
@@ -201,10 +221,9 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
       } catch { /* audit is non-critical */ }
     }
 
-    if (!signal.aborted) {
-      setPendingSwapTxs(stillPending);
-      setRetryingSwaps(false);
-    }
+    // Bug 2 fix: always update state in finally block, even on abort
+    setPendingSwapTxs(stillPending);
+    setRetryingSwaps(false);
   }
 
   async function executeStrategy() {
