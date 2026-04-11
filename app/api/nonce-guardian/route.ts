@@ -6,7 +6,8 @@ import { createHash } from "crypto";
 import { createReadOnlyAgent } from "@/lib/agent";
 import { getConnection } from "@/lib/rpc";
 import { checkAndMarkUsed, trackUsage } from "@/lib/redis";
-import { DEMO_NONCE_RESULT } from "@/lib/demo-data";
+import { getDemoNonceResult } from "@/lib/demo-data";
+import type { Lang } from "@/lib/demo-data";
 
 const HELIUS_RPC = `https://mainnet.helius-rpc.com/?api-key=${process.env.HELIUS_API_KEY ?? ""}`;
 const SAKURA_FEE_WALLET = process.env.SAKURA_FEE_WALLET ?? "";
@@ -130,16 +131,18 @@ export async function GET(req: NextRequest) {
 // ── POST: AI report (x402 — $1.00 USDC + SHA-256 on-chain) ───────────────────
 
 export async function POST(req: NextRequest) {
-  let body: { wallet?: string; demo?: boolean } = {};
+  let body: { wallet?: string; demo?: boolean; lang?: string } = {};
   try { body = await req.json(); } catch { /* ok */ }
 
   // ── Demo mode: simulate x402 payment flow ───────────────────────
   if (body.demo === true) {
+    const lang = (["zh", "en", "ja"].includes(body.lang ?? "") ? body.lang : "zh") as Lang;
     const demoPaymentSig = req.headers.get("x-payment") ?? req.headers.get("X-PAYMENT");
 
     // Demo Step 1: no payment header → return 402 with scan result (no AI analysis)
     if (!demoPaymentSig) {
-      const { aiAnalysis, ...scanOnly } = DEMO_NONCE_RESULT;
+      const demoResult = getDemoNonceResult(lang);
+      const { aiAnalysis, ...scanOnly } = demoResult;
       void aiAnalysis; // suppress unused warning
       return NextResponse.json(
         {
@@ -156,7 +159,7 @@ export async function POST(req: NextRequest) {
 
     // Demo Step 2: has payment header → return full result with AI analysis + proof
     return NextResponse.json({
-      ...DEMO_NONCE_RESULT,
+      ...getDemoNonceResult(lang),
       scannedAt: Date.now(),
       proof: {
         sha256: "a1b2c3d4e5f6789012345678abcdef0123456789abcdef0123456789abcdef01",

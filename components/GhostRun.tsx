@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useWallet } from "@/contexts/WalletContext";
 import { useLang } from "@/contexts/LanguageContext";
+import type { Lang } from "@/lib/demo-data";
 import type { StrategyStep, GhostRunResult, StepSimulation } from "@/lib/ghost-run";
 
 const DEMO_STRATEGY = "質押 2 SOL 到 Marinade，把 150 USDC 存入 Kamino，然後用 0.5 SOL 換成 JitoSOL";
@@ -57,7 +58,7 @@ function useApiErrorTranslator() {
 
 export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
   const { walletAddress } = useWallet();
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const translateApiError = useApiErrorTranslator();
 
   const EXAMPLE_STRATEGIES = [
@@ -118,7 +119,7 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(isDemo
-          ? { strategy: text, wallet, demo: true }
+          ? { strategy: text, wallet, demo: true, lang: lang as Lang }
           : { strategy: text, wallet }),
       });
       if (!res.ok) {

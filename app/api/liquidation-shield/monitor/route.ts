@@ -22,7 +22,8 @@ import Anthropic from "@anthropic-ai/sdk";
 import { createReadOnlyAgent, RPC_URL } from "@/lib/agent";
 import { getConnection } from "@/lib/rpc";
 import { getWalletLimiter, checkWalletLimitMemory, trackUsage } from "@/lib/redis";
-import { DEMO_SHIELD_RESULT } from "@/lib/demo-data";
+import { getDemoShieldResult } from "@/lib/demo-data";
+import type { Lang } from "@/lib/demo-data";
 
 /**
  * Sanitize on-chain token symbol for safe insertion into AI prompts.
@@ -95,12 +96,13 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  let body: { wallet?: string; config?: Partial<ShieldConfig>; demo?: boolean } = {};
+  let body: { wallet?: string; config?: Partial<ShieldConfig>; demo?: boolean; lang?: string } = {};
   try { body = await req.json(); } catch { /* ok */ }
 
   // ── Demo mode: return preset data instantly ───────────────────────
   if (body.demo === true) {
-    return NextResponse.json({ ...DEMO_SHIELD_RESULT, scannedAt: Date.now() });
+    const lang = (["zh", "en", "ja"].includes(body.lang ?? "") ? body.lang : "zh") as Lang;
+    return NextResponse.json({ ...getDemoShieldResult(lang), scannedAt: Date.now() });
   }
 
   const { wallet, config: userConfig } = body;

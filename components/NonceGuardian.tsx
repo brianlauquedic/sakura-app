@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useWallet } from "@/contexts/WalletContext";
 import { useLang } from "@/contexts/LanguageContext";
 import { tpl } from "@/lib/i18n";
+import type { Lang } from "@/lib/demo-data";
 import { payWithWallet } from "@/lib/x402";
 import type { NonceGuardianResult, RiskSignal } from "@/lib/nonce-scanner";
 
@@ -25,7 +26,7 @@ type PaymentState = "idle" | "waiting" | "paying" | "verifying" | "done" | "erro
 
 export default function NonceGuardian({ isDemo = false }: { isDemo?: boolean }) {
   const { walletAddress } = useWallet();
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const [inputAddr, setInputAddr] = useState(walletAddress ?? "");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ScanResult | null>(null);
@@ -73,7 +74,7 @@ export default function NonceGuardian({ isDemo = false }: { isDemo?: boolean }) 
         signal,
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(isDemo ? { wallet: addr, demo: true } : { wallet: addr }),
+        body: JSON.stringify(isDemo ? { wallet: addr, demo: true, lang: lang as Lang } : { wallet: addr }),
       });
 
       // x402: payment required for AI analysis
@@ -128,7 +129,7 @@ export default function NonceGuardian({ isDemo = false }: { isDemo?: boolean }) 
             "Content-Type": "application/json",
             "X-PAYMENT": "DEMO_PAY_" + Math.random().toString(36).slice(2, 10).toUpperCase(),
           },
-          body: JSON.stringify({ wallet: inputAddr.trim(), demo: true }),
+          body: JSON.stringify({ wallet: inputAddr.trim(), demo: true, lang: lang as Lang }),
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data: ScanResult = await res.json();

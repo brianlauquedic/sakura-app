@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useWallet } from "@/contexts/WalletContext";
 import { useLang } from "@/contexts/LanguageContext";
 import type { TranslationKey } from "@/lib/i18n";
+import type { Lang } from "@/lib/demo-data";
 import type { LendingPosition, RescueSimulation, MonitorResult, ShieldConfig } from "@/lib/liquidation-shield";
 
 const DEMO_WALLET = "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU";
@@ -78,7 +79,7 @@ function healthLabelIcon(hf: number): string {
 
 export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean }) {
   const { walletAddress } = useWallet();
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const [inputAddr, setInputAddr] = useState(walletAddress ?? "");
   const [maxUsdc, setMaxUsdc] = useState("1000");
   const [triggerHF, setTriggerHF] = useState("1.05");
@@ -132,7 +133,7 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(isDemo
-          ? { wallet: addr, demo: true }
+          ? { wallet: addr, demo: true, lang: lang as Lang }
           : {
               wallet: addr,
               config: {

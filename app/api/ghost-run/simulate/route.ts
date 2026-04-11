@@ -23,7 +23,8 @@ import type { StrategyStep } from "@/lib/ghost-run";
 import { createReadOnlyAgent, RPC_URL } from "@/lib/agent";
 import { getConnection } from "@/lib/rpc";
 import { getWalletLimiter, checkWalletLimitMemory, trackUsage } from "@/lib/redis";
-import { DEMO_GHOST_RESULT, DEMO_GHOST_STRATEGY, DEMO_GHOST_RESULT_MARINADE, DEMO_GHOST_RESULT_KAMINO, DEMO_GHOST_RESULT_JITO } from "@/lib/demo-data";
+import { DEMO_GHOST_STRATEGY, getDemoGhostResult, getDemoGhostResultMarinade, getDemoGhostResultKamino, getDemoGhostResultJito } from "@/lib/demo-data";
+import type { Lang } from "@/lib/demo-data";
 
 export const maxDuration = 60;
 
@@ -132,11 +133,12 @@ const TOKEN_PRICE_FALLBACK: Record<string, number> = {
 };
 
 export async function POST(req: NextRequest) {
-  let body: { strategy?: string; wallet?: string; demo?: boolean } = {};
+  let body: { strategy?: string; wallet?: string; demo?: boolean; lang?: string } = {};
   try { body = await req.json(); } catch { /* ok */ }
 
   // ── Demo mode: return preset data instantly ───────────────────────
   if (body.demo === true) {
+    const lang = (["zh", "en", "ja"].includes(body.lang ?? "") ? body.lang : "zh") as Lang;
     const s = (body.strategy ?? "").toLowerCase();
 
     // Parse amount from strategy text (e.g. "10 USDC" → 10, "2 SOL" → 2)
@@ -146,10 +148,10 @@ export async function POST(req: NextRequest) {
     const solAmt    = solMatch  ? parseFloat(solMatch[1])  : null;
 
     const demoData =
-      s.includes("jito") && s.includes("kamino") ? DEMO_GHOST_RESULT_JITO :
-      s.includes("marinade") && !s.includes("usdc") ? DEMO_GHOST_RESULT_MARINADE :
-      s.includes("kamino") && !s.includes("sol") ? DEMO_GHOST_RESULT_KAMINO :
-      DEMO_GHOST_RESULT;
+      s.includes("jito") && s.includes("kamino") ? getDemoGhostResultJito(lang) :
+      s.includes("marinade") && !s.includes("usdc") ? getDemoGhostResultMarinade(lang) :
+      s.includes("kamino") && !s.includes("sol") ? getDemoGhostResultKamino(lang) :
+      getDemoGhostResult(lang);
 
     // Deep-clone and patch amounts if user specified different values
     const result = JSON.parse(JSON.stringify(demoData));
