@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useWallet } from "@/contexts/WalletContext";
 import { useLang } from "@/contexts/LanguageContext";
-import type { TranslationKey } from "@/lib/i18n";
+import { tpl, type TranslationKey } from "@/lib/i18n";
 import type { Lang } from "@/lib/demo-data";
 import type { LendingPosition, RescueSimulation, MonitorResult, ShieldConfig } from "@/lib/liquidation-shield";
 
@@ -168,10 +168,13 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
   async function authorizeRescue() {
     if (!walletAddress) {
       // Demo mode: simulate a successful authorization
+      // Must create fresh AbortController — stale/aborted ref would silently skip
+      authAbortRef.current?.abort();
+      authAbortRef.current = new AbortController();
+      const demoSignal = authAbortRef.current.signal;
       setApproveState("approving");
       await new Promise(r => setTimeout(r, 1500));
-      // Bug 8 fix: check abort before setting state
-      if (authAbortRef.current?.signal.aborted) { setApproveState("idle"); return; }
+      if (demoSignal.aborted) { setApproveState("idle"); return; }
       setApproveState("approved");
       setApproveSig("DEMO_TX_" + Math.random().toString(36).slice(2, 10).toUpperCase());
       setApproveTs(new Date().toISOString());
@@ -188,12 +191,12 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
       // 1. Get agent pubkey from server (safe — public key only, no private key)
       const signal = authAbortRef.current.signal;
       const agentRes = await fetch("/api/liquidation-shield/rescue", { signal });
-      if (!agentRes.ok) throw new Error("無法取得代理公鑰");
+      if (!agentRes.ok) throw new Error(t("shieldNoAgentKey"));
       const { agentPubkey, configured } = await agentRes.json() as {
         agentPubkey: string | null; configured: boolean;
       };
       if (!configured || !agentPubkey) {
-        throw new Error("平台救援代理尚未配置 (SAKURA_AGENT_PRIVATE_KEY 未設置)");
+        throw new Error(t("shieldAgentNotConfigured"));
       }
 
       // 2. Build SPL Token approve + Memo mandate TX via server API
@@ -208,7 +211,7 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ wallet: walletAddress, approveUsdc }),
       });
-      if (!buildRes.ok) throw new Error("無法構建授權交易");
+      if (!buildRes.ok) throw new Error(t("shieldBuildTxFailed"));
       const { serializedTx, blockhash, lastValidBlockHeight } = await buildRes.json() as {
         serializedTx: string; blockhash: string; lastValidBlockHeight: number;
       };
@@ -221,12 +224,12 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
 
       // 3. Sign and send via Phantom / OKX
       const provider = getWalletProvider();
-      if (!provider) throw new Error("請連接 Phantom 或 OKX 錢包");
+      if (!provider) throw new Error(t("shieldConnectWallet"));
 
       // Bug 3 fix: OKX wallet may return string instead of { signature }
       const signResult = await provider.signAndSendTransaction(tx);
       const signature = typeof signResult === "string" ? signResult : signResult?.signature;
-      if (!signature) throw new Error("錢包未返回交易簽名");
+      if (!signature) throw new Error(t("shieldNoSignature"));
       await conn.confirmTransaction(
         { signature, blockhash, lastValidBlockHeight },
         "confirmed"
@@ -238,10 +241,10 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
     } catch (err) {
       if (err instanceof DOMException && err.name === "AbortError") return;
       setApproveState("error");
-      const msg = err instanceof Error ? err.message : "授權失敗";
+      const msg = err instanceof Error ? err.message : t("shieldAuthFailed");
       // Friendly messages for common wallet rejections
       if (msg.includes("User rejected") || msg.includes("user_rejected") || msg.includes("rejected")) {
-        setApproveError("用戶取消了簽名請求");
+        setApproveError(t("shieldUserCancelled"));
       } else {
         setApproveError(msg);
       }
@@ -252,10 +255,13 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
   async function executeRescue(sim: RescueSimulation, idx: number) {
     if (!walletAddress) {
       // Demo mode: simulate rescue execution
+      // Must create fresh AbortController — stale/aborted ref would silently skip
+      rescueAbortRef.current?.abort();
+      rescueAbortRef.current = new AbortController();
+      const demoSignal = rescueAbortRef.current.signal;
       setRescuingIdx(idx);
-      if (rescueAbortRef.current?.signal.aborted) { setRescuingIdx(null); return; }
       await new Promise(r => setTimeout(r, 2000));
-      if (rescueAbortRef.current?.signal.aborted) { setRescuingIdx(null); return; }
+      if (demoSignal.aborted) { setRescuingIdx(null); return; }
       setRescueResults(prev => ({
         ...prev,
         [idx]: {
@@ -299,7 +305,7 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
       });
       if (!res.ok) {
         const d = await res.json().catch(() => ({}));
-        throw new Error((d as { error?: string }).error ?? `救援失敗 HTTP ${res.status}`);
+        throw new Error((d as { error?: string }).error ?? tpl(t("shieldExecFailedHttp"), { status: String(res.status) }));
       }
       const data: RescueResponse = await res.json();
       setRescueResults(prev => ({ ...prev, [idx]: data }));
@@ -486,10 +492,10 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
                   PORTFOLIO RISK SCORE · MODULE 11+13
                 </div>
                 <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)" }}>
-                  投資組合加權風險：{result.portfolioRiskLabel}
+                  {t("shieldPortfolioRisk")}：{result.portfolioRiskLabel}
                 </div>
                 <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>
-                  {result.positions.length} 個倉位 · 按倉位規模加權清算概率
+                  {tpl(t("shieldPosCount"), { count: String(result.positions.length) })}
                   {result.atRiskRatioPct > 0 && (
                     <span style={{
                       marginLeft: 8,
@@ -497,7 +503,7 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
                         : result.atRiskRatioPct >= 20 ? "#FF9F0A"
                         : "var(--text-muted)",
                     }}>
-                      · 風險倉位佔比 {result.atRiskRatioPct}%
+                      · {tpl(t("shieldRiskRatio"), { pct: String(result.atRiskRatioPct) })}
                     </span>
                   )}
                 </div>
@@ -505,7 +511,7 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
                 {result.totalRescueNeededUsdc > 0 && (
                   <div style={{ fontSize: 11, marginTop: 6, display: "flex", alignItems: "center", gap: 8 }}>
                     <span style={{ color: "var(--text-muted)" }}>
-                      救援需求：<strong style={{
+                      {t("shieldRescueNeededTotal")}：<strong style={{
                         color: result.totalRescueNeededUsdc > Number(maxUsdc)
                           ? "#FF4444" : "var(--green)",
                       }}>
@@ -513,14 +519,14 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
                       </strong>
                     </span>
                     <span style={{ color: "var(--text-muted)" }}>
-                      預授權額度：<strong style={{ color: "var(--text-primary)" }}>${maxUsdc} USDC</strong>
+                      {t("shieldApproveLimit")}：<strong style={{ color: "var(--text-primary)" }}>${maxUsdc} USDC</strong>
                     </span>
                     {result.totalRescueNeededUsdc > Number(maxUsdc) && (
                       <span style={{
                         fontSize: 10, color: "#FF4444",
                         background: "rgba(255,68,68,0.08)", padding: "1px 6px", borderRadius: 4,
                       }}>
-                        額度不足 · Module 09 allowance check
+                        {t("shieldInsufficientAllowance")}
                       </span>
                     )}
                   </div>
@@ -546,7 +552,7 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
               borderRadius: 10, padding: "14px 18px", marginBottom: 12,
             }}>
               <div style={{ fontSize: 10, color: "var(--text-muted)", letterSpacing: "0.1em", fontFamily: "var(--font-mono)", marginBottom: 8 }}>
-                MODULE 11 · 倉位分布（雙池模型）
+                MODULE 11 · {t("shieldDualPoolTitle")}
               </div>
               {/* Distribution bar: safe pool (green) vs at-risk pool (red) */}
               <div style={{ height: 8, borderRadius: 4, overflow: "hidden", background: "var(--bg-secondary)", marginBottom: 8 }}>
@@ -559,13 +565,13 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
               </div>
               <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11 }}>
                 <span style={{ color: "var(--green)" }}>
-                  ✅ 安全池：{(100 - result.atRiskRatioPct).toFixed(1)}%
+                  ✅ {t("shieldSafePool")}：{(100 - result.atRiskRatioPct).toFixed(1)}%
                 </span>
                 <span style={{ color: result.atRiskRatioPct > 0 ? "#FF4444" : "var(--text-muted)" }}>
-                  ⚠️ 風險池：{result.atRiskRatioPct.toFixed(1)}%
+                  ⚠️ {t("shieldRiskPool")}：{result.atRiskRatioPct.toFixed(1)}%
                 </span>
                 <span style={{ color: "var(--text-muted)" }}>
-                  隱含清算概率：{(result.impliedLiquidationProb * 100).toFixed(1)}%
+                  {t("shieldImpliedLiqProb")}：{(result.impliedLiquidationProb * 100).toFixed(1)}%
                 </span>
               </div>
             </div>
@@ -601,8 +607,8 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
                   </div>
                   <div style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.7 }}>
                     {approveState === "approved"
-                      ? `已授權最高 $${maxUsdc} USDC 給 Sakura 救援代理。可執行下方救援操作。`
-                      : `授權 Sakura 代理最高使用 $${maxUsdc} USDC 執行救援。這是 SPL Token 委派授權，不會立即移動資金。`}
+                      ? tpl(t("shieldApprovedDesc"), { amount: maxUsdc })
+                      : tpl(t("shieldApprovePrompt"), { amount: maxUsdc })}
                   </div>
                 </div>
                 {approveState === "approved" && approveSig && (
@@ -625,10 +631,10 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
                   }}
                 >
                   {approveState === "approving"
-                    ? "⏳ 等待錢包簽名…"
+                    ? t("shieldWaitingSign")
                     : approveState === "error"
-                    ? "🔄 重試授權"
-                    : `🔐 授權救援（$${maxUsdc} USDC 上限）`}
+                    ? t("shieldRetryAuth")
+                    : tpl(t("shieldAuthBtn"), { amount: maxUsdc })}
                 </button>
               )}
 
@@ -710,9 +716,9 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
                 {/* Liquidation price */}
                 {pos.liquidationPrice != null && pos.liquidationPrice > 0 && (
                   <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 10 }}>
-                    清算價格：<strong style={{ color: "var(--text-secondary)" }}>${pos.liquidationPrice.toFixed(2)}</strong>
+                    {t("shieldLiqPrice")}：<strong style={{ color: "var(--text-secondary)" }}>${pos.liquidationPrice.toFixed(2)}</strong>
                     {pos.liquidationDropPct != null && (
-                      <span> · 距清算還需下跌 <strong style={{ color: healthColor(pos.healthFactor) }}>{pos.liquidationDropPct.toFixed(1)}%</strong></span>
+                      <span> · {t("shieldDropToLiq")} <strong style={{ color: healthColor(pos.healthFactor) }}>{pos.liquidationDropPct.toFixed(1)}%</strong></span>
                     )}
                   </div>
                 )}
@@ -728,7 +734,7 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
                     </div>
                     <div className="shield-rescue-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
                       <MetricBox label={t("shieldRescueNeeded")} value={`$${sim.rescueUsdc.toFixed(2)} USDC`} highlight="#FF9F0A" />
-                      <MetricBox label="救援費用 (1%)" value={`$${(sim.rescueUsdc * 0.01).toFixed(4)} USDC`} highlight="var(--text-muted)" />
+                      <MetricBox label={t("shieldRescueFeeLabel")} value={`$${(sim.rescueUsdc * 0.01).toFixed(4)} USDC`} highlight="var(--text-muted)" />
                       <MetricBox label={t("shieldPostHF")} value={sim.postRescueHealth.toFixed(3)} highlight="var(--green)" />
                       <MetricBox label="Gas" value={`${(sim.gasSol * 1e6).toFixed(1)} μSOL`} />
                     </div>
@@ -747,7 +753,7 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
                             background: "rgba(255,159,10,0.08)", border: "1px solid rgba(255,159,10,0.3)",
                             fontSize: 12, color: "#FF9F0A",
                           }}>
-                            ⬆️ 請先完成上方「Step 1 授權救援」後再執行救援
+                            {t("shieldStepOneFirst")}
                           </div>
                         ) : (
                           <button
@@ -786,7 +792,7 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
                           </div>
                         ) : rescueRes.success ? (
                           <div style={{ fontSize: 11, color: "#FF9F0A", marginTop: 2 }}>
-                            ⚠️ 1% 服務費收取失敗（已重試，網路問題所致，救援仍成功）
+                            {t("shieldFeeCollectFailed")}
                           </div>
                         ) : null}
                         {rescueRes.auditChain && (
@@ -803,7 +809,7 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
                         {/* Module 06: time-gated audit record */}
                         {rescueRes.timeWindowSec != null && (
                           <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 4, fontFamily: "var(--font-mono)" }}>
-                            ⏱ 授權→救援時窗：{rescueRes.timeWindowSec}s · Module 06 時間審計
+                            {t("shieldTimeWindow")}：{rescueRes.timeWindowSec}s · Module 06
                           </div>
                         )}
                         {rescueRes.error && (

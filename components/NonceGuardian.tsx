@@ -152,11 +152,11 @@ export default function NonceGuardian({ isDemo = false }: { isDemo?: boolean }) 
         amount: payChallenge.amount,
         currency: "USDC",
         network: "solana-mainnet",
-        description: "Sakura Nonce Guardian — AI Security Report + SHA-256 鏈上存證",
+        description: t("noncePayDesc"),
       });
     } catch (walletErr) {
       setPayState("error");
-      setPayError(walletErr instanceof Error ? walletErr.message : "錢包支付失敗");
+      setPayError(walletErr instanceof Error ? walletErr.message : t("nonceWalletPayFailed"));
       return;
     }
 
@@ -543,7 +543,7 @@ export default function NonceGuardian({ isDemo = false }: { isDemo?: boolean }) 
                   background: "rgba(255,159,10,0.08)", border: "1px solid rgba(255,159,10,0.3)",
                   borderRadius: 6, padding: "5px 12px", display: "inline-block",
                 }}>
-                  ⚠️ SHA-256 雜湊已計算，但本次鏈上寫入失敗（網路問題）。雜湊仍可本地驗證。
+                  ⚠️ {t("nonceProofFallback")}
                 </div>
               )}
               <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 10, lineHeight: 1.7 }}>

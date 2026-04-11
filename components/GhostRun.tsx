@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useWallet } from "@/contexts/WalletContext";
 import { useLang } from "@/contexts/LanguageContext";
+import { tpl } from "@/lib/i18n";
 import type { Lang } from "@/lib/demo-data";
 import type { StrategyStep, GhostRunResult, StepSimulation } from "@/lib/ghost-run";
 
@@ -135,7 +136,7 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
       setSimResult(data);
     } catch (err) {
       if (err instanceof DOMException && err.name === "AbortError") return;
-      setError(translateApiError(err instanceof Error ? err.message : "模擬失敗"));
+      setError(translateApiError(err instanceof Error ? err.message : t("ghostSimFailed")));
     } finally {
       setLoading(false);
     }
@@ -167,15 +168,22 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
       try {
         // Bug 7: Re-fetch fresh swap TX from execute API to get new blockhash
         // The original swapTransaction has an expired blockhash after ~90 seconds
+        // Look up original step data from simResult for correct inputAmount
+        const originalStep = simResult?.steps[pendingTx.stepIdx];
+        const [inToken, outToken] = pendingTx.token.split("→");
         const refreshRes = await fetch("/api/ghost-run/execute", {
           signal,
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            steps: [{ type: "swap", token: pendingTx.token, inputAmount: 0 }],
+            steps: [{
+              type: "swap",
+              inputToken: originalStep?.inputToken ?? inToken,
+              outputToken: originalStep?.outputToken ?? outToken,
+              inputAmount: originalStep?.inputAmount ?? 1,
+              protocol: originalStep?.protocol ?? "Jupiter",
+            }],
             wallet: walletAddress,
-            refreshSwapOnly: true,      // signal to server to only rebuild this swap TX
-            originalToken: pendingTx.token,
           }),
         });
 
@@ -193,13 +201,13 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
         const sig = typeof result === "string" ? result : result?.signature;
         if (sig) newSigs.push(sig);
       } catch (swapErr) {
-        const swapMsg = swapErr instanceof Error ? swapErr.message : "Swap 簽名失敗";
+        const swapMsg = swapErr instanceof Error ? swapErr.message : t("ghostSwapSignFailed");
         if (swapMsg.includes("rejected") || swapMsg.includes("User rejected")) {
-          setError(`用戶取消了兌換簽名`);
+          setError(t("ghostSwapCancelled"));
           stillPending.push(pendingTx, ...pendingSwapTxs.slice(pendingSwapTxs.indexOf(pendingTx) + 1));
           break;
         }
-        setError(`兌換交易失敗：${swapMsg}`);
+        setError(tpl(t("ghostSwapTxFailed"), { msg: swapMsg }));
         stillPending.push(pendingTx);
         console.error("[GhostRun] Swap retry error:", swapErr);
       }
@@ -236,12 +244,16 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
     if (!simResult) return;
     if (!walletAddress) {
       // Demo mode: simulate execution
+      // Must create fresh AbortController — stale/aborted ref from previous run
+      // would cause signal.aborted=true and silently skip execution
+      execAbortRef.current?.abort();
+      execAbortRef.current = new AbortController();
+      const demoSignal = execAbortRef.current.signal;
       setExecuting(true);
       setExecResult(null);
       setError(null);
-      if (execAbortRef.current?.signal.aborted) { setExecuting(false); return; }
       await new Promise(r => setTimeout(r, 2000));
-      if (execAbortRef.current?.signal.aborted) { setExecuting(false); return; }
+      if (demoSignal.aborted) { setExecuting(false); return; }
       setExecResult({
         success: true,
         signatures: simResult.steps.map(() => "DEMO_SIG_" + Math.random().toString(36).slice(2, 10).toUpperCase()),
@@ -250,7 +262,7 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
         unsignedSwapTxs: [],
         requiresUserSignature: false,
         platformFeeInjected: true,
-        platformFee: "0.3% Jupiter fee (included)",
+        platformFee: `GHOST_FEE_INJECTED:${0.3}`,
       });
       setExecuting(false);
       return;
@@ -276,7 +288,7 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
       });
       if (!res.ok) {
         const d = await res.json().catch(() => ({}));
-        throw new Error((d as { error?: string }).error ?? `執行失敗 HTTP ${res.status}`);
+        throw new Error((d as { error?: string }).error ?? tpl(t("ghostExecFailedHttp"), { status: String(res.status) }));
       }
       const data: ExecuteResponse = await res.json();
       setExecResult(data);
@@ -309,13 +321,13 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
             const sig = typeof result === "string" ? result : result?.signature;
             if (sig) collectedSigs.push(sig);
           } catch (swapErr) {
-            const swapMsg = swapErr instanceof Error ? swapErr.message : "Swap 簽名失敗";
+            const swapMsg = swapErr instanceof Error ? swapErr.message : t("ghostSwapSignFailed");
             if (swapMsg.includes("rejected") || swapMsg.includes("User rejected")) {
-              setError(`用戶取消了第 ${collectedSigs.length + 1} 筆兌換簽名`);
+              setError(tpl(t("ghostSwapCancelledN"), { n: String(collectedSigs.length + 1) }));
               break;
             }
             // Show non-rejection errors to user (gas insufficient, blockhash expired, etc.)
-            setError(`兌換交易 ${collectedSigs.length + 1} 失敗：${swapMsg}`);
+            setError(tpl(t("ghostSwapTxFailedN"), { n: String(collectedSigs.length + 1), msg: swapMsg }));
             console.error("[GhostRun] Swap signing error:", swapErr);
             break;
           }
@@ -359,7 +371,7 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
       }
     } catch (err) {
       if (err instanceof DOMException && err.name === "AbortError") return;
-      const msg = err instanceof Error ? err.message : "執行失敗";
+      const msg = err instanceof Error ? err.message : t("ghostExecFailed");
       // Friendly messages for wallet rejections
       if (msg.includes("User rejected") || msg.includes("user_rejected") || msg.includes("rejected")) {
         setError(t("ghostUserCancelled"));
@@ -608,8 +620,8 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
                 SIMULATION SUMMARY
               </div>
               <div style={{ fontSize: 14, color: "var(--text-primary)", fontWeight: 500 }}>
-                {simResult.result.steps.length} 步策略 ·
-                總 Gas: {(simResult.result.totalGasSol * 1e6).toFixed(1)} μSOL (~$
+                {simResult.result.steps.length}{t("ghostSummaryLabel")} ·
+                {t("ghostTotalGas")}: {(simResult.result.totalGasSol * 1e6).toFixed(1)} μSOL (~$
                 {(simResult.result.totalGasSol * (simResult.result.solPrice ?? 170) * 1000).toFixed(3)})
               </div>
               {/* Show swap fee note if any swap steps exist */}
@@ -655,7 +667,7 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
                   MODULE 07 — ESCROW ORDER
                 </span>
                 <span style={{ fontSize: 12, color: "var(--text-secondary)", fontWeight: 500 }}>
-                  偵測到觸發條件
+                  {t("ghostCondDetected")}
                 </span>
               </div>
               <div style={{ fontSize: 13, color: "var(--text-primary)", fontWeight: 500, marginBottom: 8 }}>
@@ -669,24 +681,24 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
                   borderRadius: 6, fontSize: 12,
                 }}>
                   <span style={{ color: "var(--text-secondary)" }}>
-                    當前價格：<strong style={{ color: "var(--text-primary)" }}>
+                    {t("ghostCurrentPrice")}：<strong style={{ color: "var(--text-primary)" }}>
                       ${simResult.result.conditionalOrder.currentPriceUsd}
                     </strong>
                   </span>
                   <span style={{ color: "var(--text-secondary)" }}>
-                    觸發價：<strong style={{ color: "#7C6FFF" }}>
+                    {t("ghostTriggerPriceLabel")}：<strong style={{ color: "#7C6FFF" }}>
                       ${simResult.result.conditionalOrder.triggerPriceUsd}
                     </strong>
                   </span>
                   {simResult.result.conditionalOrder.triggerDistancePct != null && (
                     <span style={{ color: "var(--text-secondary)" }}>
-                      距觸發：<strong style={{
+                      {t("ghostDistToTrigger")}：<strong style={{
                         color: simResult.result.conditionalOrder.triggerDistancePct < 0
                           ? "#FF4444" : simResult.result.conditionalOrder.triggerDistancePct < 10
                           ? "#FF9F0A" : "var(--text-primary)",
                       }}>
                         {simResult.result.conditionalOrder.triggerDistancePct < 0
-                          ? `⚡ 已觸發（價格已越過閾值）`
+                          ? t("ghostTriggered")
                           : `${simResult.result.conditionalOrder.triggerDistancePct.toFixed(1)}%`}
                       </strong>
                     </span>
@@ -694,10 +706,10 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
                 </div>
               )}
               <div style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: "var(--font-mono)", marginBottom: 4 }}>
-                PDA 種子：{simResult.result.conditionalOrder.pdaSeedDescription}
+                {t("ghostPdaSeed")}：{simResult.result.conditionalOrder.pdaSeedDescription}
               </div>
               <div style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: "var(--font-mono)", wordBreak: "break-all" }}>
-                Escrow Memo：{simResult.result.conditionalOrder.escrowMemoTemplate}
+                {t("ghostEscrowMemo")}：{simResult.result.conditionalOrder.escrowMemoTemplate}
               </div>
             </div>
           )}
@@ -741,7 +753,7 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
               {/* User-signed swap txs */}
               {swapSigs.map((sig, i) => (
                 <div key={i} style={{ fontSize: 12, color: "#7C6FFF", fontFamily: "var(--font-mono)", marginBottom: 4 }}>
-                  Swap TX {i + 1} (你簽名): {sig.slice(0, 20)}…
+                  Swap TX {i + 1} ({t("ghostSwapTxUser")}): {sig.slice(0, 20)}…
                 </div>
               ))}
 
@@ -783,7 +795,7 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
                   borderRadius: 8,
                 }}>
                   <div style={{ fontSize: 13, fontWeight: 600, color: "#FF9F0A", marginBottom: 8 }}>
-                    部分完成 — 已完成 {swapSigs.length}/{swapSigs.length + pendingSwapTxs.length} 筆兌換，{pendingSwapTxs.length} 筆待重試
+                    {t("ghostPartialDone")} — {swapSigs.length}/{swapSigs.length + pendingSwapTxs.length}{t("ghostSwapDone")}，{pendingSwapTxs.length}{t("ghostSwapPending")}
                   </div>
                   <button
                     onClick={retryPendingSwaps}
@@ -796,7 +808,7 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
                       letterSpacing: "0.04em",
                     }}
                   >
-                    {retryingSwaps ? "⏳ 重試中…" : `🔄 重試剩餘兌換 (${pendingSwapTxs.length} 筆)`}
+                    {retryingSwaps ? t("ghostRetrying") : tpl(t("ghostRetryBtn"), { n: String(pendingSwapTxs.length) })}
                   </button>
                 </div>
               )}
