@@ -3,893 +3,917 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sakura AI — Solana DeFi Advisor</title>
+<title>Sakura — Solana AI Security Layer</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;600;700&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;600;700&family=Noto+Sans+JP:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
+:root {
+  --cream: #F4EDE4;
+  --cream-dark: #EDE3D8;
+  --ink: #1C1410;
+  --ink-light: #5C4A3A;
+  --rose: #C0392B;
+  --rose-soft: #E8B4A0;
+  --rose-mid: #D4695A;
+  --gold: #B8860B;
+  --moss: #5C7A4E;
+  --border: #D4C4B4;
+  --card-bg: #FFFDF9;
+  --mono: 'JetBrains Mono', monospace;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family:'Noto Sans JP','Helvetica Neue',sans-serif;
+  background:#1C1410;
+  overflow:hidden;
+  height:100vh; width:100vw;
+}
+.deck { width:100%; height:100vh; position:relative; }
 
-  :root {
-    --cream: #F4EDE4;
-    --cream-dark: #EDE3D8;
-    --ink: #1C1410;
-    --ink-light: #5C4A3A;
-    --rose: #C0392B;
-    --rose-soft: #E8B4A0;
-    --gold: #B8860B;
-    --moss: #5C7A4E;
-    --border: #D4C4B4;
-  }
+/* ── Slides ── */
+.slide {
+  display:none;
+  width:100%; height:100vh;
+  background:var(--cream);
+  position:absolute; top:0; left:0;
+  flex-direction:column;
+  justify-content:center; align-items:flex-start;
+  padding:56px 80px;
+  overflow:hidden;
+}
+.slide.active { display:flex; }
+.slide::before {
+  content:'';
+  position:absolute; top:0; left:0; right:0; height:3px;
+  background:linear-gradient(90deg,var(--rose),var(--rose-soft),var(--rose));
+}
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+/* ── Cover ── */
+.cover {
+  background:var(--ink);
+  padding:80px 100px;
+}
+.cover::before { background:linear-gradient(90deg,var(--rose),#8B1A10); }
+.cover::after {
+  content:'桜';
+  position:absolute; right:-30px; bottom:-80px;
+  font-size:460px; color:rgba(255,255,255,0.025);
+  font-family:'Noto Serif JP',serif; line-height:1; pointer-events:none;
+}
+.cover .eyebrow {
+  font-size:11px; letter-spacing:5px; text-transform:uppercase;
+  color:var(--rose-soft); font-family:'Noto Serif JP',serif; margin-bottom:44px;
+}
+.cover h1 {
+  font-family:'Noto Serif JP',serif; font-size:62px; font-weight:300;
+  color:#F4EDE4; line-height:1.1; margin-bottom:22px; letter-spacing:-1px;
+}
+.cover h1 em { color:var(--rose-soft); font-style:normal; font-weight:600; }
+.cover .tagline {
+  font-size:17px; color:rgba(244,237,228,0.58); font-weight:300;
+  letter-spacing:0.5px; margin-bottom:52px; max-width:580px; line-height:1.75;
+}
+.cover .badge {
+  display:inline-flex; align-items:center; gap:8px;
+  padding:8px 20px; border:1px solid rgba(244,237,228,0.18);
+  border-radius:100px; color:rgba(244,237,228,0.42); font-size:11px; letter-spacing:2px;
+}
 
-  body {
-    font-family: 'Noto Sans JP', 'Helvetica Neue', sans-serif;
-    background: #1C1410;
-    overflow: hidden;
-    height: 100vh;
-    width: 100vw;
-  }
+/* ── Common typography ── */
+.section-label {
+  font-size:10px; letter-spacing:4px; text-transform:uppercase;
+  color:var(--rose); margin-bottom:18px; font-family:'Noto Serif JP',serif;
+}
+h2 {
+  font-family:'Noto Serif JP',serif; font-size:40px; font-weight:400;
+  color:var(--ink); line-height:1.2; margin-bottom:14px;
+}
+.subtitle {
+  font-size:15px; color:var(--ink-light); line-height:1.85; max-width:640px;
+}
 
-  .deck {
-    width: 100%;
-    height: 100vh;
-    position: relative;
-  }
+/* ── Cards ── */
+.cards { display:grid; gap:14px; width:100%; margin-top:28px; }
+.cards.col-2 { grid-template-columns:1fr 1fr; }
+.cards.col-3 { grid-template-columns:1fr 1fr 1fr; }
+.card {
+  background:var(--card-bg); border:1px solid var(--border);
+  border-radius:14px; padding:24px;
+}
+.card-icon { font-size:26px; margin-bottom:12px; display:block; }
+.card h3 {
+  font-family:'Noto Serif JP',serif; font-size:16px; font-weight:600;
+  color:var(--ink); margin-bottom:8px;
+}
+.card p { font-size:13px; color:var(--ink-light); line-height:1.7; }
+.card.accent { background:var(--ink); border-color:var(--ink); }
+.card.accent h3, .card.accent p { color:rgba(244,237,228,0.85); }
+.card.rose-border { border-left:3px solid var(--rose); }
 
-  .slide {
-    display: none;
-    width: 100%;
-    height: 100vh;
-    background: var(--cream);
-    position: absolute;
-    top: 0; left: 0;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 60px 80px;
-    overflow: hidden;
-  }
+/* ── Feature hero cards ── */
+.feature-card {
+  background:var(--card-bg); border:1px solid var(--border); border-radius:16px;
+  padding:32px 36px; display:grid; grid-template-columns:1fr 1fr; gap:32px;
+  align-items:center; width:100%; margin-top:24px;
+}
+.feature-card .left h3 {
+  font-family:'Noto Serif JP',serif; font-size:22px; font-weight:600;
+  color:var(--ink); margin-bottom:12px;
+}
+.feature-card .left p { font-size:14px; color:var(--ink-light); line-height:1.8; }
+.feature-card .right { display:flex; flex-direction:column; gap:10px; }
+.feat-pill {
+  display:flex; align-items:center; gap:10px; padding:10px 16px;
+  background:var(--cream); border:1px solid var(--border); border-radius:10px;
+}
+.feat-pill code {
+  font-family:var(--mono); font-size:11px; color:var(--rose);
+  background:rgba(192,57,43,0.08); padding:2px 7px; border-radius:5px;
+}
+.feat-pill span { font-size:12px; color:var(--ink-light); }
 
-  .slide.active { display: flex; }
+/* ── Stat row ── */
+.stat-row { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; width:100%; margin-top:28px; }
+.stat-box {
+  background:var(--card-bg); border:1px solid var(--border); border-radius:12px;
+  padding:20px 18px; text-align:center;
+}
+.stat-num {
+  font-family:'Noto Serif JP',serif; font-size:28px; font-weight:600;
+  color:var(--rose); line-height:1; margin-bottom:6px;
+}
+.stat-lbl { font-size:11px; color:var(--ink-light); line-height:1.5; }
 
-  /* Decorative elements */
-  .slide::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, var(--rose), var(--rose-soft), var(--rose));
-  }
+/* ── Two-col layout ── */
+.two-col { display:grid; grid-template-columns:1fr 1fr; gap:32px; width:100%; margin-top:28px; align-items:start; }
 
-  .slide-number {
-    position: absolute;
-    bottom: 32px;
-    right: 48px;
-    font-size: 12px;
-    color: var(--ink-light);
-    letter-spacing: 2px;
-    font-family: 'Noto Serif JP', serif;
-  }
+/* ── Tech row ── */
+.tech-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:20px; }
+.tech-item {
+  display:flex; align-items:flex-start; gap:10px; padding:14px 16px;
+  background:var(--card-bg); border:1px solid var(--border); border-radius:10px;
+}
+.tech-item .icon { font-size:18px; flex-shrink:0; margin-top:1px; }
+.tech-item .content h4 { font-size:13px; font-weight:600; color:var(--ink); margin-bottom:3px; }
+.tech-item .content p { font-size:11.5px; color:var(--ink-light); line-height:1.5; }
 
-  .watermark {
-    position: absolute;
-    bottom: 28px;
-    left: 48px;
-    font-size: 13px;
-    color: var(--border);
-    letter-spacing: 1px;
-    font-family: 'Noto Serif JP', serif;
-  }
+/* ── Pricing ── */
+.price-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; width:100%; margin-top:28px; }
+.price-card {
+  background:var(--card-bg); border:1px solid var(--border); border-radius:14px;
+  padding:28px 24px;
+}
+.price-card.highlight { background:var(--ink); border-color:var(--ink); }
+.price-card .price-icon { font-size:24px; margin-bottom:14px; display:block; }
+.price-card h3 {
+  font-family:'Noto Serif JP',serif; font-size:15px; font-weight:600;
+  color:var(--ink); margin-bottom:6px;
+}
+.price-card.highlight h3, .price-card.highlight p, .price-card.highlight .price-num { color:rgba(244,237,228,0.85); }
+.price-num {
+  font-family:var(--mono); font-size:22px; font-weight:500; color:var(--rose);
+  margin:12px 0 8px; display:block;
+}
+.price-card p { font-size:12px; color:var(--ink-light); line-height:1.6; }
 
-  /* Navigation */
-  .nav {
-    position: fixed;
-    bottom: 40px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 12px;
-    z-index: 100;
-  }
+/* ── Timeline ── */
+.timeline { display:flex; gap:0; width:100%; margin-top:28px; }
+.tl-item {
+  flex:1; padding:20px 24px; border-top:2px solid var(--border);
+  position:relative;
+}
+.tl-item.active-tl { border-top-color:var(--rose); }
+.tl-item .tl-q { font-family:var(--mono); font-size:10px; color:var(--rose); letter-spacing:2px; margin-bottom:8px; }
+.tl-item h4 { font-size:13px; font-weight:600; color:var(--ink); margin-bottom:6px; }
+.tl-item p { font-size:11.5px; color:var(--ink-light); line-height:1.6; }
 
-  .nav button {
-    width: 44px; height: 44px;
-    border-radius: 50%;
-    border: 1.5px solid var(--border);
-    background: var(--cream);
-    cursor: pointer;
-    font-size: 18px;
-    color: var(--ink);
-    transition: all 0.2s;
-    display: flex; align-items: center; justify-content: center;
-  }
+/* ── Comp table ── */
+.comp-table { width:100%; margin-top:20px; border-collapse:collapse; }
+.comp-table th {
+  font-size:11px; letter-spacing:2px; text-transform:uppercase;
+  color:var(--ink-light); padding:10px 14px; text-align:left;
+  border-bottom:1px solid var(--border); font-weight:500;
+}
+.comp-table td {
+  font-size:12.5px; color:var(--ink-light); padding:12px 14px;
+  border-bottom:1px solid rgba(212,196,180,0.4);
+}
+.comp-table td:first-child { font-weight:600; color:var(--ink); }
+.comp-table tr.highlight-row td { background:rgba(192,57,43,0.05); }
+.comp-table tr.highlight-row td:first-child { color:var(--rose); }
+.check { color:var(--moss); font-weight:700; }
+.cross { color:var(--rose-mid); }
 
-  .nav button:hover { background: var(--ink); color: var(--cream); }
+/* ── Contact ── */
+.contact-slide { justify-content:center; align-items:center; text-align:center; }
+.contact-slide h2 { text-align:center; }
+.contact-links { display:flex; gap:14px; margin-top:28px; flex-wrap:wrap; justify-content:center; }
+.contact-link {
+  display:inline-flex; align-items:center; gap:8px;
+  padding:12px 24px; border:1px solid var(--border); border-radius:100px;
+  font-size:13px; color:var(--ink); text-decoration:none;
+  background:var(--card-bg); transition:all 0.2s;
+}
+.contact-link:hover { background:var(--ink); color:var(--cream); border-color:var(--ink); }
 
-  /* Progress dots */
-  .dots {
-    position: fixed;
-    right: 32px;
-    top: 50%;
-    transform: translateY(-50%);
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    z-index: 100;
-  }
+/* ── Navigation ── */
+.nav {
+  position:fixed; bottom:36px; left:50%; transform:translateX(-50%);
+  display:flex; gap:10px; z-index:200;
+}
+.nav button {
+  width:42px; height:42px; border-radius:50%;
+  border:1.5px solid var(--border); background:var(--cream);
+  cursor:pointer; font-size:16px; color:var(--ink);
+  transition:all 0.2s; display:flex; align-items:center; justify-content:center;
+  box-shadow:0 2px 8px rgba(28,20,16,0.12);
+}
+.nav button:hover { background:var(--ink); color:var(--cream); border-color:var(--ink); }
 
-  .dot {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: var(--border);
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .dot.active { background: var(--rose); height: 18px; border-radius: 3px; }
+/* ── Progress dots ── */
+.dots {
+  position:fixed; right:28px; top:50%; transform:translateY(-50%);
+  display:flex; flex-direction:column; gap:8px; z-index:200;
+}
+.dot { width:5px; height:5px; border-radius:50%; background:var(--border); cursor:pointer; transition:all 0.25s; }
+.dot.active { background:var(--rose); height:16px; border-radius:3px; }
 
-  /* ── SLIDE STYLES ── */
+/* ── Language switcher ── */
+.lang-sw {
+  position:fixed; top:20px; right:32px; z-index:300;
+  display:flex; gap:4px; background:rgba(244,237,228,0.92);
+  border:1px solid var(--border); border-radius:8px; padding:3px;
+  box-shadow:0 2px 8px rgba(28,20,16,0.12);
+}
+.lang-sw button {
+  padding:4px 10px; border:none; border-radius:6px; cursor:pointer;
+  font-size:11px; font-weight:500; font-family:'Noto Sans JP',sans-serif;
+  background:transparent; color:var(--ink-light); transition:all 0.2s;
+  letter-spacing:0.04em;
+}
+.lang-sw button.active { background:var(--ink); color:var(--cream); }
 
-  /* Cover */
-  .cover {
-    background: var(--ink);
-    align-items: flex-start;
-    padding: 80px 100px;
-  }
-  .cover::before { background: linear-gradient(90deg, var(--rose), #8B1A10); }
-  .cover::after {
-    content: '桜';
-    position: absolute;
-    right: -20px; bottom: -60px;
-    font-size: 400px;
-    color: rgba(255,255,255,0.03);
-    font-family: 'Noto Serif JP', serif;
-    line-height: 1;
-    pointer-events: none;
-  }
+/* ── Slide number / watermark ── */
+.slide-num {
+  position:absolute; bottom:28px; right:48px;
+  font-size:11px; color:var(--border); letter-spacing:3px; font-family:'Noto Serif JP',serif;
+}
+.watermark {
+  position:absolute; bottom:28px; left:48px;
+  font-size:11px; color:var(--border); letter-spacing:1.5px; font-family:'Noto Serif JP',serif;
+}
 
-  .cover .logo {
-    font-family: 'Noto Serif JP', serif;
-    font-size: 14px;
-    color: var(--rose-soft);
-    letter-spacing: 6px;
-    text-transform: uppercase;
-    margin-bottom: 48px;
-  }
+/* ── Quote block ── */
+.quote-block {
+  border-left:3px solid var(--rose); padding:16px 20px; margin:18px 0;
+  background:rgba(192,57,43,0.04); border-radius:0 8px 8px 0;
+}
+.quote-block p { font-size:14px; color:var(--ink); line-height:1.75; font-style:italic; }
 
-  .cover h1 {
-    font-family: 'Noto Serif JP', serif;
-    font-size: 64px;
-    font-weight: 300;
-    color: #F4EDE4;
-    line-height: 1.1;
-    margin-bottom: 24px;
-    letter-spacing: -1px;
-  }
+/* ── Inline badge ── */
+.badge-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:16px; }
+.badge-pill {
+  display:inline-flex; align-items:center; gap:5px;
+  padding:5px 12px; border:1px solid var(--border); border-radius:100px;
+  font-size:11px; color:var(--ink-light); background:var(--card-bg);
+}
+.badge-pill.red { border-color:rgba(192,57,43,0.3); color:var(--rose); background:rgba(192,57,43,0.06); }
+.badge-pill.green { border-color:rgba(92,122,78,0.3); color:var(--moss); background:rgba(92,122,78,0.06); }
 
-  .cover h1 span { color: var(--rose-soft); font-weight: 600; }
-
-  .cover .tagline {
-    font-size: 18px;
-    color: rgba(244, 237, 228, 0.6);
-    font-weight: 300;
-    letter-spacing: 1px;
-    margin-bottom: 60px;
-    max-width: 600px;
-    line-height: 1.7;
-  }
-
-  .cover .badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 20px;
-    border: 1px solid rgba(244,237,228,0.2);
-    border-radius: 100px;
-    color: rgba(244,237,228,0.5);
-    font-size: 12px;
-    letter-spacing: 2px;
-  }
-
-  /* Section label */
-  .section-label {
-    font-size: 11px;
-    letter-spacing: 4px;
-    text-transform: uppercase;
-    color: var(--rose);
-    margin-bottom: 20px;
-    font-family: 'Noto Serif JP', serif;
-  }
-
-  /* Headings */
-  h2 {
-    font-family: 'Noto Serif JP', serif;
-    font-size: 42px;
-    font-weight: 400;
-    color: var(--ink);
-    line-height: 1.2;
-    margin-bottom: 16px;
-  }
-
-  .subtitle {
-    font-size: 16px;
-    color: var(--ink-light);
-    line-height: 1.8;
-    max-width: 640px;
-  }
-
-  /* Cards grid */
-  .cards {
-    display: grid;
-    gap: 16px;
-    width: 100%;
-    margin-top: 32px;
-  }
-
-  .cards.col-2 { grid-template-columns: 1fr 1fr; }
-  .cards.col-3 { grid-template-columns: 1fr 1fr 1fr; }
-  .cards.col-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
-
-  .card {
-    background: white;
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 28px;
-  }
-
-  .card-icon {
-    font-size: 28px;
-    margin-bottom: 14px;
-    display: block;
-  }
-
-  .card h3 {
-    font-family: 'Noto Serif JP', serif;
-    font-size: 17px;
-    font-weight: 600;
-    color: var(--ink);
-    margin-bottom: 8px;
-  }
-
-  .card p {
-    font-size: 13px;
-    color: var(--ink-light);
-    line-height: 1.7;
-  }
-
-  .card .stat {
-    font-size: 32px;
-    font-family: 'Noto Serif JP', serif;
-    font-weight: 700;
-    color: var(--rose);
-    margin-top: 12px;
-  }
-
-  .card .stat-label {
-    font-size: 12px;
-    color: var(--ink-light);
-    letter-spacing: 1px;
-  }
-
-  /* Two column layout */
-  .two-col {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 60px;
-    width: 100%;
-    align-items: start;
-    margin-top: 16px;
-  }
-
-  /* Feature list */
-  .feature-list {
-    list-style: none;
-    margin-top: 24px;
-  }
-
-  .feature-list li {
-    display: flex;
-    align-items: flex-start;
-    gap: 14px;
-    padding: 14px 0;
-    border-bottom: 1px solid var(--border);
-    font-size: 15px;
-    color: var(--ink);
-    line-height: 1.5;
-  }
-
-  .feature-list li:last-child { border-bottom: none; }
-
-  .feature-list .icon {
-    font-size: 20px;
-    flex-shrink: 0;
-    margin-top: 1px;
-  }
-
-  /* Tag */
-  .tag {
-    display: inline-block;
-    padding: 4px 12px;
-    border-radius: 100px;
-    font-size: 11px;
-    letter-spacing: 1px;
-    font-weight: 500;
-    margin-top: 8px;
-  }
-
-  .tag-rose { background: #FDE8E4; color: var(--rose); }
-  .tag-moss { background: #E4EDE1; color: var(--moss); }
-  .tag-gold { background: #FDF4DC; color: var(--gold); }
-  .tag-ink { background: #E8E2DC; color: var(--ink); }
-
-  /* Divider line */
-  .divider {
-    width: 48px;
-    height: 2px;
-    background: var(--rose);
-    margin: 20px 0;
-  }
-
-  /* Problem slide */
-  .problem-item {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    padding: 20px 28px;
-    background: white;
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    margin-bottom: 12px;
-  }
-
-  .problem-num {
-    font-family: 'Noto Serif JP', serif;
-    font-size: 36px;
-    font-weight: 700;
-    color: var(--border);
-    flex-shrink: 0;
-    width: 48px;
-  }
-
-  /* Tech stack */
-  .tech-item {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 16px 20px;
-    background: white;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    margin-bottom: 10px;
-  }
-
-  .tech-dot {
-    width: 10px; height: 10px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-
-  /* Pricing */
-  .pricing-card {
-    background: white;
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 32px 28px;
-    text-align: center;
-    position: relative;
-  }
-
-  .pricing-card.featured {
-    border-color: var(--rose);
-    background: var(--ink);
-    color: #F4EDE4;
-  }
-
-  .pricing-card.featured h3 { color: #F4EDE4; }
-  .pricing-card.featured p { color: rgba(244,237,228,0.6); }
-
-  .pricing-badge {
-    position: absolute;
-    top: -12px; left: 50%;
-    transform: translateX(-50%);
-    background: var(--rose);
-    color: white;
-    padding: 4px 16px;
-    border-radius: 100px;
-    font-size: 11px;
-    letter-spacing: 1px;
-    white-space: nowrap;
-  }
-
-  .price {
-    font-family: 'Noto Serif JP', serif;
-    font-size: 40px;
-    font-weight: 700;
-    color: var(--rose);
-    margin: 16px 0 4px;
-  }
-
-  .pricing-card.featured .price { color: var(--rose-soft); }
-
-  /* CTA */
-  .cta-slide {
-    background: var(--ink);
-    text-align: center;
-  }
-
-  .cta-slide h2 { color: #F4EDE4; font-size: 48px; }
-  .cta-slide .subtitle { color: rgba(244,237,228,0.6); max-width: 500px; margin: 0 auto; }
-
-  .cta-links {
-    display: flex;
-    gap: 16px;
-    margin-top: 40px;
-    justify-content: center;
-  }
-
-  .cta-link {
-    padding: 14px 32px;
-    border-radius: 100px;
-    font-size: 14px;
-    font-weight: 500;
-    text-decoration: none;
-    letter-spacing: 0.5px;
-  }
-
-  .cta-link.primary { background: var(--rose); color: white; }
-  .cta-link.secondary { border: 1px solid rgba(244,237,228,0.3); color: rgba(244,237,228,0.8); }
-
-  /* Ecosystem logos */
-  .eco-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-    width: 100%;
-    margin-top: 28px;
-  }
-
-  .eco-item {
-    background: white;
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px 16px;
-    text-align: center;
-  }
-
-  .eco-icon { font-size: 28px; margin-bottom: 8px; display: block; }
-  .eco-name { font-size: 13px; font-weight: 600; color: var(--ink); }
-  .eco-desc { font-size: 11px; color: var(--ink-light); margin-top: 4px; }
-
-  /* Keyboard hint */
-  .keyboard-hint {
-    position: fixed;
-    bottom: 16px;
-    right: 50%;
-    transform: translateX(50%);
-    font-size: 11px;
-    color: rgba(100,80,60,0.4);
-    letter-spacing: 1px;
-  }
-
-  /* Sakura decoration */
-  .sakura-bg {
-    position: absolute;
-    right: -40px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 320px;
-    color: rgba(192,57,43,0.04);
-    font-family: 'Noto Serif JP', serif;
-    pointer-events: none;
-    line-height: 1;
-  }
-
-  .slide-inner {
-    width: 100%;
-    max-width: 1100px;
-    position: relative;
-    z-index: 1;
-  }
+/* ── Dark slide variant ── */
+.slide.dark {
+  background:var(--ink);
+}
+.slide.dark h2 { color:#F4EDE4; }
+.slide.dark .section-label { color:var(--rose-soft); }
+.slide.dark .subtitle { color:rgba(244,237,228,0.6); }
+.slide.dark .card { background:rgba(255,255,255,0.04); border-color:rgba(244,237,228,0.1); }
+.slide.dark .card h3, .slide.dark .card p { color:rgba(244,237,228,0.85); }
+.slide.dark::after {
+  content:'桜';
+  position:absolute; right:-20px; bottom:-60px;
+  font-size:380px; color:rgba(255,255,255,0.02);
+  font-family:'Noto Serif JP',serif; line-height:1; pointer-events:none;
+}
+.slide.dark .slide-num, .slide.dark .watermark { color:rgba(244,237,228,0.12); }
 </style>
 </head>
 <body>
 
-<div class="deck">
-
-  <!-- SLIDE 1: Cover -->
-  <div class="slide cover active" id="slide-1">
-    <div style="position:relative;z-index:1;width:100%;">
-      <div class="logo">🌸 Sakura AI &nbsp;·&nbsp; sakuraaai.com</div>
-      <h1>Solana の<br><span>AI 財務顧問</span></h1>
-      <p class="tagline">讓每個人都能像機構一樣操作 DeFi。<br>由 Claude AI 驅動，可驗證推理，鏈上透明。</p>
-      <div class="badge">⛩ Built on Solana &nbsp;·&nbsp; Colosseum Frontier Hackathon 2026</div>
-    </div>
-    <div class="watermark">sakuraaai.com</div>
-    <div class="slide-number">01 / 09</div>
-  </div>
-
-  <!-- SLIDE 2: Problem -->
-  <div class="slide" id="slide-2">
-    <div class="slide-inner">
-      <div class="section-label">問題</div>
-      <h2>DeFi 的高牆</h2>
-      <p class="subtitle">對大多數用戶而言，Solana DeFi 複雜、危險、門檻極高。</p>
-      <div class="divider"></div>
-      <div style="margin-top:8px;">
-        <div class="problem-item">
-          <div class="problem-num">01</div>
-          <div>
-            <strong style="font-size:15px;color:var(--ink);">看不懂數據</strong>
-            <p style="font-size:13px;color:var(--ink-light);margin-top:4px;">APY、清算率、utilization rate——普通用戶無從判斷何時進、何時出</p>
-          </div>
-        </div>
-        <div class="problem-item">
-          <div class="problem-num">02</div>
-          <div>
-            <strong style="font-size:15px;color:var(--ink);">看不出風險</strong>
-            <p style="font-size:13px;color:var(--ink-light);margin-top:4px;">Rug pull、合約漏洞、惡意鑄幣權——每個月都有用戶因此損失資金</p>
-          </div>
-        </div>
-        <div class="problem-item">
-          <div class="problem-num">03</div>
-          <div>
-            <strong style="font-size:15px;color:var(--ink);">決策沒有依據</strong>
-            <p style="font-size:13px;color:var(--ink-light);margin-top:4px;">缺乏即時數據整合與個人化建議，每個人都在憑感覺做決策</p>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="sakura-bg">問</div>
-    <div class="watermark">sakuraaai.com</div>
-    <div class="slide-number">02 / 09</div>
-  </div>
-
-  <!-- SLIDE 3: Solution -->
-  <div class="slide" id="slide-3">
-    <div class="slide-inner">
-      <div class="section-label">解決方案</div>
-      <h2>你的個人<br>Solana DeFi 顧問</h2>
-      <div class="divider"></div>
-      <div class="two-col">
-        <div>
-          <p class="subtitle">Sakura 將 Claude Sonnet 4.6 AI 與即時鏈上數據結合，為每個用戶提供個人化、可信任的 DeFi 建議。</p>
-          <ul class="feature-list" style="margin-top:28px;">
-            <li><span class="icon">🌿</span><div><strong>即時數據驅動</strong><br><span style="font-size:12px;color:var(--ink-light);">整合 Solana 鏈上數據、APY、價格、安全評分</span></div></li>
-            <li><span class="icon">⛩️</span><div><strong>可驗證 AI 推理</strong><br><span style="font-size:12px;color:var(--ink-light);">每次建議的推理過程雜湊值寫入 Solana 鏈上，永久可驗證</span></div></li>
-            <li><span class="icon">🌸</span><div><strong>自主執行</strong><br><span style="font-size:12px;color:var(--ink-light);">AI Agent 自動生成再平衡方案，一鍵執行</span></div></li>
-          </ul>
-        </div>
-        <div>
-          <div class="card" style="background:var(--ink);border-color:transparent;color:#F4EDE4;margin-bottom:12px;">
-            <span class="card-icon">💬</span>
-            <h3 style="color:#F4EDE4;">用戶問</h3>
-            <p style="color:rgba(244,237,228,0.7);">「我的 SOL 現在應該質押還是放著？」</p>
-          </div>
-          <div class="card">
-            <span class="card-icon">🌸</span>
-            <h3>Sakura 回答</h3>
-            <p>基於當前 8.2% APY、你的倉位比例、市場情緒，建議將 60% SOL 質押至 Marinade，預期年收益 $XXX</p>
-            <span class="tag tag-moss" style="margin-top:12px;">可驗證推理 #a3f2...</span>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="watermark">sakuraaai.com</div>
-    <div class="slide-number">03 / 09</div>
-  </div>
-
-  <!-- SLIDE 4: Core Features -->
-  <div class="slide" id="slide-4">
-    <div class="slide-inner">
-      <div class="section-label">核心功能</div>
-      <h2>四大核心模組</h2>
-      <div class="cards col-2" style="margin-top:28px;">
-        <div class="card">
-          <span class="card-icon">🌸</span>
-          <h3>AI 顧問</h3>
-          <p>Claude Sonnet 4.6 即時回答 DeFi 問題。整合錢包餘額、SOL 價格、APY 數據，給出個人化建議。</p>
-          <span class="tag tag-rose">40+ 即時工具</span>
-        </div>
-        <div class="card">
-          <span class="card-icon">🛡️</span>
-          <h3>安全分析</h3>
-          <p>輸入任何 token 地址，AI 自動掃描合約風險：鑄幣權、流動性、持倉集中度、Rug pull 指標。</p>
-          <span class="tag tag-moss">5 秒完成掃描</span>
-        </div>
-        <div class="card">
-          <span class="card-icon">📊</span>
-          <h3>持倉體檢</h3>
-          <p>連接錢包即獲得完整持倉報告：資產分配、風險評分、優化建議，並可匯出 CSV。</p>
-          <span class="tag tag-gold">全自動分析</span>
-        </div>
-        <div class="card">
-          <span class="card-icon">⚙️</span>
-          <h3>自主 Agent</h3>
-          <p>三種策略模式（收益最大化 / 防禦 / 聰明錢），AI 生成再平衡方案，用戶一鍵確認執行。</p>
-          <span class="tag tag-ink">Forbes 級分析</span>
-        </div>
-      </div>
-    </div>
-    <div class="watermark">sakuraaai.com</div>
-    <div class="slide-number">04 / 09</div>
-  </div>
-
-  <!-- SLIDE 5: Verifiable AI -->
-  <div class="slide" id="slide-5">
-    <div class="slide-inner">
-      <div class="section-label">技術創新</div>
-      <h2>業界首創：<br>可驗證 AI 推理</h2>
-      <div class="divider"></div>
-      <div class="two-col">
-        <div>
-          <p class="subtitle" style="margin-bottom:24px;">傳統 AI 建議是「黑盒子」——用戶無從驗證 AI 是否真的在做決策前進行了推理。</p>
-          <p class="subtitle">Sakura 在每次 AI 建議前，將推理過程雜湊寫入 Solana 鏈上。這意味著：</p>
-          <ul class="feature-list">
-            <li><span class="icon">✅</span><div>推理在建議之前就完成了，不是事後捏造</div></li>
-            <li><span class="icon">✅</span><div>任何人可以在鏈上驗證 AI 推理的完整性</div></li>
-            <li><span class="icon">✅</span><div>建立 AI 決策的信任基礎</div></li>
-          </ul>
-        </div>
-        <div>
-          <div class="card" style="border-left: 3px solid var(--rose);margin-bottom:12px;">
-            <div style="font-size:11px;letter-spacing:2px;color:var(--rose);margin-bottom:8px;">STEP 01</div>
-            <strong style="font-size:14px;">Claude AI 推理</strong>
-            <p style="margin-top:6px;">AI 分析用戶倉位、市場數據，生成完整推理鏈</p>
-          </div>
-          <div class="card" style="border-left: 3px solid var(--gold);margin-bottom:12px;">
-            <div style="font-size:11px;letter-spacing:2px;color:var(--gold);margin-bottom:8px;">STEP 02</div>
-            <strong style="font-size:14px;">雜湊值計算</strong>
-            <p style="margin-top:6px;">SHA-256 對推理文本計算雜湊，生成唯一指紋</p>
-          </div>
-          <div class="card" style="border-left: 3px solid var(--moss);">
-            <div style="font-size:11px;letter-spacing:2px;color:var(--moss);margin-bottom:8px;">STEP 03</div>
-            <strong style="font-size:14px;">寫入 Solana 鏈</strong>
-            <p style="margin-top:6px;">Memo instruction 將雜湊永久記錄，任何人可驗證</p>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="watermark">sakuraaai.com</div>
-    <div class="slide-number">05 / 09</div>
-  </div>
-
-  <!-- SLIDE 6: Ecosystem -->
-  <div class="slide" id="slide-6">
-    <div class="slide-inner">
-      <div class="section-label">生態整合</div>
-      <h2>深度整合 Solana 生態</h2>
-      <p class="subtitle">Sakura 不只是聊天機器人——直接整合主流協議，AI 建議可以一鍵執行。</p>
-      <div class="eco-grid">
-        <div class="eco-item">
-          <span class="eco-icon">🌿</span>
-          <div class="eco-name">Kamino Finance</div>
-          <div class="eco-desc">USDC 借貸 / 8% APY</div>
-        </div>
-        <div class="eco-item">
-          <span class="eco-icon">🫧</span>
-          <div class="eco-name">Marinade</div>
-          <div class="eco-desc">SOL 流動性質押</div>
-        </div>
-        <div class="eco-item">
-          <span class="eco-icon">⚡</span>
-          <div class="eco-name">Jupiter</div>
-          <div class="eco-desc">最優路徑代幣兌換</div>
-        </div>
-        <div class="eco-item">
-          <span class="eco-icon">🔮</span>
-          <div class="eco-name">Allora AI</div>
-          <div class="eco-desc">鏈上 ML 價格預測</div>
-        </div>
-        <div class="eco-item">
-          <span class="eco-icon">📡</span>
-          <div class="eco-name">Helius RPC</div>
-          <div class="eco-desc">高速 Solana 節點</div>
-        </div>
-        <div class="eco-item">
-          <span class="eco-icon">🤖</span>
-          <div class="eco-name">Claude Sonnet 4.6</div>
-          <div class="eco-desc">Anthropic 最新 AI</div>
-        </div>
-        <div class="eco-item">
-          <span class="eco-icon">💳</span>
-          <div class="eco-name">x402 Protocol</div>
-          <div class="eco-desc">鏈上微支付解鎖</div>
-        </div>
-        <div class="eco-item">
-          <span class="eco-icon">🌐</span>
-          <div class="eco-name">CoinGecko / Pyth</div>
-          <div class="eco-desc">即時市場數據</div>
-        </div>
-      </div>
-    </div>
-    <div class="watermark">sakuraaai.com</div>
-    <div class="slide-number">06 / 09</div>
-  </div>
-
-  <!-- SLIDE 7: Business Model -->
-  <div class="slide" id="slide-7">
-    <div class="slide-inner">
-      <div class="section-label">商業模式</div>
-      <h2>雙軌收益模型</h2>
-      <p class="subtitle" style="margin-bottom:28px;">訂閱制 + x402 鏈上微支付，兩條收益流互補。</p>
-      <div class="cards col-3">
-        <div class="pricing-card">
-          <h3 style="font-family:'Noto Serif JP',serif;font-size:18px;color:var(--ink);">Free</h3>
-          <div class="price" style="font-size:28px;color:var(--ink-light);">$0</div>
-          <p style="font-size:12px;color:var(--ink-light);margin-bottom:16px;">永久免費</p>
-          <div style="font-size:12px;color:var(--ink-light);line-height:2;">
-            每功能 3 次試用<br>
-            安全分析基礎版<br>
-            持倉概覽
-          </div>
-        </div>
-        <div class="pricing-card featured">
-          <div class="pricing-badge">Most Popular</div>
-          <h3>Basic</h3>
-          <div class="price">$15</div>
-          <p style="font-size:12px;margin-bottom:16px;">/ 月</p>
-          <div style="font-size:12px;color:rgba(244,237,228,0.7);line-height:2;">
-            1,350 點 / 月<br>
-            ~150 次 AI 顧問<br>
-            ~168 次安全分析
-          </div>
-        </div>
-        <div class="pricing-card">
-          <h3 style="font-family:'Noto Serif JP',serif;font-size:18px;color:var(--ink);">Pro</h3>
-          <div class="price">$30</div>
-          <p style="font-size:12px;color:var(--ink-light);margin-bottom:16px;">/ 月</p>
-          <div style="font-size:12px;color:var(--ink-light);line-height:2;">
-            3,500 點 / 月<br>
-            ~388 次 AI 顧問<br>
-            ~437 次安全分析
-          </div>
-        </div>
-      </div>
-      <div style="margin-top:20px;padding:16px 24px;background:white;border:1px solid var(--border);border-radius:12px;display:flex;align-items:center;gap:16px;">
-        <span style="font-size:20px;">💳</span>
-        <div>
-          <strong style="font-size:14px;color:var(--ink);">x402 鏈上微支付</strong>
-          <p style="font-size:12px;color:var(--ink-light);margin-top:2px;">免訂閱用戶可按次付費（如 $0.10 USDC 解鎖深度分析），業界首創的 HTTP 402 + Solana 支付流</p>
-        </div>
-        <span class="tag tag-gold" style="white-space:nowrap;margin-left:auto;">業界首創</span>
-      </div>
-    </div>
-    <div class="watermark">sakuraaai.com</div>
-    <div class="slide-number">07 / 09</div>
-  </div>
-
-  <!-- SLIDE 8: Traction & Vision -->
-  <div class="slide" id="slide-8">
-    <div class="slide-inner">
-      <div class="section-label">願景</div>
-      <h2>Solana 上的<br>Bloomberg Terminal</h2>
-      <div class="divider"></div>
-      <div class="two-col">
-        <div>
-          <p class="subtitle" style="margin-bottom:24px;">我們相信 AI × DeFi 的結合將重新定義散戶投資體驗。Sakura 的目標是成為每個 Solana 用戶的預設財務顧問。</p>
-          <div class="cards col-1" style="gap:10px;">
-            <div class="card" style="padding:18px 24px;display:flex;align-items:center;gap:20px;">
-              <div>
-                <div class="stat" style="font-size:28px;">2026 Q2</div>
-                <div class="stat-label">Mobile App（iOS / Android）</div>
-              </div>
-            </div>
-            <div class="card" style="padding:18px 24px;display:flex;align-items:center;gap:20px;">
-              <div>
-                <div class="stat" style="font-size:28px;">2026 Q3</div>
-                <div class="stat-label">Guardian 警報系統 + 自動執行</div>
-              </div>
-            </div>
-            <div class="card" style="padding:18px 24px;display:flex;align-items:center;gap:20px;">
-              <div>
-                <div class="stat" style="font-size:28px;">2026 Q4</div>
-                <div class="stat-label">機構版 API + 多鏈擴展</div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div>
-          <div class="card" style="padding:32px;height:100%;display:flex;flex-direction:column;justify-content:space-between;">
-            <div>
-              <div class="section-label" style="margin-bottom:12px;">為什麼是 Solana？</div>
-              <ul class="feature-list">
-                <li><span class="icon">⚡</span><div>400ms 確認速度，微支付成本極低</div></li>
-                <li><span class="icon">🌊</span><div>最活躍的 DeFi 生態，協議最多</div></li>
-                <li><span class="icon">👥</span><div>Solana 用戶對 DeFi 參與度最高</div></li>
-                <li><span class="icon">🤖</span><div>x402 微支付在 Solana 上才有可能</div></li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="watermark">sakuraaai.com</div>
-    <div class="slide-number">08 / 09</div>
-  </div>
-
-  <!-- SLIDE 9: CTA -->
-  <div class="slide cta-slide" id="slide-9">
-    <div style="position:relative;z-index:1;text-align:center;">
-      <div class="section-label" style="color:var(--rose-soft);text-align:center;justify-content:center;">聯絡</div>
-      <h2 style="margin-bottom:16px;">一起把 Sakura<br>帶給更多 Solana 用戶</h2>
-      <div class="divider" style="margin:20px auto;"></div>
-      <p class="subtitle" style="color:rgba(244,237,228,0.6);margin-bottom:0;">
-        我們正在尋找 Solana 生態的支持與合作——<br>
-        不管是技術整合、資源對接，或是一起把 AI × DeFi 做到極致。
-      </p>
-      <div class="cta-links">
-        <a href="https://sakuraaai.com" class="cta-link primary">🌸 試用 Sakura</a>
-        <a href="mailto:contact@sakuraaai.com" class="cta-link secondary">✉ 聯絡我們</a>
-      </div>
-      <div style="margin-top:48px;display:flex;gap:40px;justify-content:center;opacity:0.5;">
-        <div style="text-align:center;">
-          <div style="font-size:11px;letter-spacing:2px;color:rgba(244,237,228,0.5);margin-bottom:4px;">WEBSITE</div>
-          <div style="font-size:14px;color:rgba(244,237,228,0.8);">sakuraaai.com</div>
-        </div>
-        <div style="text-align:center;">
-          <div style="font-size:11px;letter-spacing:2px;color:rgba(244,237,228,0.5);margin-bottom:4px;">TWITTER</div>
-          <div style="font-size:14px;color:rgba(244,237,228,0.8);">@sakuraaijp</div>
-        </div>
-        <div style="text-align:center;">
-          <div style="font-size:11px;letter-spacing:2px;color:rgba(244,237,228,0.5);margin-bottom:4px;">BUILT FOR</div>
-          <div style="font-size:14px;color:rgba(244,237,228,0.8);">Colosseum Frontier 2026</div>
-        </div>
-      </div>
-    </div>
-    <div style="position:absolute;font-size:300px;opacity:0.03;font-family:'Noto Serif JP',serif;bottom:-60px;right:-20px;line-height:1;color:white;">桜</div>
-    <div class="watermark" style="color:rgba(244,237,228,0.2);">sakuraaai.com</div>
-    <div class="slide-number" style="color:rgba(244,237,228,0.3);">09 / 09</div>
-  </div>
-
+<!-- Language switcher (fixed) -->
+<div class="lang-sw">
+  <button onclick="setLang('zh')" id="btn-zh" class="active">中文</button>
+  <button onclick="setLang('en')" id="btn-en">EN</button>
+  <button onclick="setLang('ja')" id="btn-ja">日本語</button>
 </div>
+
+<div class="deck" id="deck">
+
+  <!-- ══════════════════════════════════════════════════════
+       SLIDE 1  COVER
+       ══════════════════════════════════════════════════════ -->
+  <div class="slide cover active" id="slide-1">
+    <div class="eyebrow">SAKURA · COLOSSEUM FRONTIER HACKATHON 2026</div>
+    <h1>
+      <span data-zh="Solana 的" data-en="Solana's" data-ja="Solana の">Solana 的</span><br>
+      <em><span data-zh="AI 安全層" data-en="AI Security Layer" data-ja="AI セキュリティレイヤー">AI 安全層</span></em>
+    </h1>
+    <p class="tagline" data-zh="攔截您看不見的漏洞，模擬您無法預判的結果，阻截您跑不贏的清算。三道鏈上原生防線，每個 AI 決策 SHA-256 永久刻入 Solana 主網。" data-en="Catching the exploits you can't see. Simulating outcomes you can't predict. Stopping liquidations you can't outrun. Three Solana-native defense layers — every AI decision SHA-256 inscribed on mainnet." data-ja="見えない脆弱性を捕捉し、予測できない結果を事前に再現し、逃げ切れない清算を阻止する。3つのSolanaネイティブ防衛レイヤー — すべてのAI判断はSHA-256でメインネットに永久刻印。">
+      攔截您看不見的漏洞，模擬您無法預判的結果，阻截您跑不贏的清算。三道鏈上原生防線，每個 AI 決策 SHA-256 永久刻入 Solana 主網。
+    </p>
+    <div class="badge">Built on Solana · Claude Sonnet 4.6 · x402 Protocol · Colosseum Frontier 2026</div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       SLIDE 2  PROBLEM
+       ══════════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-2">
+    <div class="section-label" data-zh="問題" data-en="PROBLEM" data-ja="問題">問題</div>
+    <h2 data-zh="$2.85 億消失了。沒有人注意到。" data-en="$285M Vanished. Nobody Noticed." data-ja="2.85億ドルが消えた。誰も気づかなかった。">$2.85 億消失了。沒有人注意到。</h2>
+    <p class="subtitle" data-zh="2026 年 4 月，Drift Protocol 遭到 Durable Nonce 攻擊。攻擊者利用一個所有人都知道但沒有人監控的 Solana 原語——永久有效的預簽名交易——悄無聲息地抽乾資金池。對沖基金有 24 小時監控室。普通用戶沒有。" data-en="In April 2026, Drift Protocol was exploited via Durable Nonce. Attackers used a Solana primitive everyone knew about but nobody monitored — permanently valid pre-signed transactions — and silently drained the pool. Hedge funds have 24-hour monitoring rooms. Ordinary users don't." data-ja="2026年4月、Drift ProtocolがDurable Nonce攻撃を受けた。攻撃者は誰もが知りながら誰も監視していなかったSolanaのプリミティブ——永続的に有効な事前署名トランザクション——を悪用し、プールを静かに空にした。ヘッジファンドには24時間監視体制がある。一般ユーザーにはない。">
+      2026 年 4 月，Drift Protocol 遭到 Durable Nonce 攻擊。攻擊者利用一個所有人都知道但沒有人監控的 Solana 原語——永久有效的預簽名交易——悄無聲息地抽乾資金池。對沖基金有 24 小時監控室。普通用戶沒有。
+    </p>
+
+    <div class="cards col-3" style="margin-top:28px">
+      <div class="card rose-border">
+        <span class="card-icon">🔓</span>
+        <h3 data-zh="隱形攻擊面" data-en="Invisible Attack Surface" data-ja="見えない攻撃面">隱形攻擊面</h3>
+        <p data-zh="Durable Nonce 讓預簽名交易永久有效。任何人持有 nonce 賬戶即可在未來任意時刻廣播交易，無需再次授權。" data-en="Durable Nonce makes pre-signed transactions permanently valid. Anyone holding the nonce account can broadcast the tx at any future time without re-authorization." data-ja="Durable Nonceにより事前署名トランザクションが永続的に有効になる。Nonceアカウントを持つ者は将来いつでも再授権なしに取引を広播できる。">Durable Nonce 讓預簽名交易永久有效。任何人持有 nonce 賬戶即可在未來任意時刻廣播交易，無需再次授權。</p>
+      </div>
+      <div class="card rose-border">
+        <span class="card-icon">👻</span>
+        <h3 data-zh="策略黑盒" data-en="Strategy Black Box" data-ja="戦略のブラックボックス">策略黑盒</h3>
+        <p data-zh="跨協議 DeFi 策略執行前無法預知結果：滑點、合約衝突、token 損耗——都是執行後才發現的隱性損失。" data-en="Multi-step DeFi strategies have no preview: slippage, contract conflicts, token friction — all hidden costs discovered only after execution." data-ja="複数ステップのDeFi戦略は事前に結果がわからない：スリッページ、コントラクト競合、トークンロス——すべて実行後に判明する隠れたコスト。">跨協議 DeFi 策略執行前無法預知結果：滑點、合約衝突、token 損耗——都是執行後才發現的隱性損失。</p>
+      </div>
+      <div class="card rose-border">
+        <span class="card-icon">⚡</span>
+        <h3 data-zh="清算毫秒之差" data-en="Milliseconds to Liquidation" data-ja="清算まであと数ミリ秒">清算毫秒之差</h3>
+        <p data-zh="Solana 借貸 TVL 超 $40 億。市場急跌時健康因子數秒內跌破 1.0，清算損失 5–10%，任何人工響應都快不過鏈上機器人。" data-en="Solana lending TVL exceeds $4B. In sharp market moves, health factors breach 1.0 within seconds. Liquidation penalties run 5–10%. No human can react faster than on-chain bots." data-ja="SolanaレンディングのTVLは40億ドル超。急激な市場変動でヘルスファクターが数秒で1.0を割る。清算ペナルティは5〜10%。人間はオンチェーンボットより速く反応できない。">Solana 借貸 TVL 超 $40 億。市場急跌時健康因子數秒內跌破 1.0，清算損失 5–10%，任何人工響應都快不過鏈上機器人。</p>
+      </div>
+    </div>
+
+    <div class="quote-block" style="margin-top:20px">
+      <p data-zh="普通用戶與機構之間的差距不是智識，而是基礎設施——24 小時自動響應的鏈上防護。Sakura 的使命：消除這個差距。" data-en="The gap between ordinary users and institutions isn't intelligence — it's infrastructure. 24/7 automated on-chain protection. Sakura's mission: close that gap." data-ja="一般ユーザーと機関投資家の差は知識ではなく、インフラだ——24時間自動応答するオンチェーン保護。Sakuraのミッション：その差を埋める。">普通用戶與機構之間的差距不是智識，而是基礎設施——24 小時自動響應的鏈上防護。Sakura 的使命：消除這個差距。</p>
+    </div>
+
+    <div class="watermark">SAKURA · 2026</div>
+    <div class="slide-num">02 / 10</div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       SLIDE 3  THREE LAYERS OVERVIEW
+       ══════════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-3">
+    <div class="section-label" data-zh="解決方案" data-en="SOLUTION" data-ja="ソリューション">解決方案</div>
+    <h2 data-zh="三道 Solana 原生防線" data-en="Three Solana-Native Defense Layers" data-ja="3つのSolanaネイティブ防衛レイヤー">三道 Solana 原生防線</h2>
+    <p class="subtitle" data-zh="每道防線都直接對應一個 Solana 真實的攻擊威脅，以 Solana 原生 RPC 原語構建——而非包裝 API 或中間件。每個 AI 決策 SHA-256 哈希永久鏈上存證，任何人可在 Solscan 獨立核驗。" data-en="Each layer directly targets a real Solana threat, built on Solana-native RPC primitives — not wrapped APIs or middleware. Every AI decision is SHA-256 inscribed on-chain, independently verifiable by anyone on Solscan." data-ja="各レイヤーはSolanaの実際の脅威に直接対応し、SolanaネイティブのRPCプリミティブで構築——ラップされたAPIやミドルウェアではない。すべてのAI判断はSHA-256でオンチェーン刻印、誰でもSolscanで独立検証可能。">
+      每道防線都直接對應一個 Solana 真實的攻擊威脅，以 Solana 原生 RPC 原語構建——而非包裝 API 或中間件。每個 AI 決策 SHA-256 哈希永久鏈上存證，任何人可在 Solscan 獨立核驗。
+    </p>
+
+    <div class="cards col-3" style="margin-top:26px">
+      <div class="card">
+        <span class="card-icon">🛡️</span>
+        <h3>Nonce Guardian</h3>
+        <p data-zh="掃描所有 Durable Nonce 賬戶，用攻擊者的 RPC 原語反守為攻。全球首個主動式 nonce 威脅偵測協議。AI 安全報告 SHA-256 刻入 Solana 主網。" data-en="Scans every Durable Nonce account, turning attackers' own RPC primitive against them. World's first proactive nonce threat detection. AI security reports SHA-256 inscribed on Solana mainnet." data-ja="すべてのDurable Nonceアカウントをスキャンし、攻撃者のRPCプリミティブを逆用。世界初の能動的Nonce脅威検出。AIセキュリティレポートはSHA-256でSolanaメインネットに刻印。">掃描所有 Durable Nonce 賬戶，用攻擊者的 RPC 原語反守為攻。全球首個主動式 nonce 威脅偵測協議。AI 安全報告 SHA-256 刻入 Solana 主網。</p>
+        <div class="badge-row">
+          <span class="badge-pill green" data-zh="✓ 掃描免費" data-en="✓ Scan Free" data-ja="✓ スキャン無料">✓ 掃描免費</span>
+          <span class="badge-pill" data-zh="AI 報告 $1 USDC" data-en="AI Report $1 USDC" data-ja="AIレポート $1 USDC">AI 報告 $1 USDC</span>
+        </div>
+      </div>
+      <div class="card">
+        <span class="card-icon">👻</span>
+        <h3>Ghost Run</h3>
+        <p data-zh="全球首個多步跨協議 DeFi 策略預執行引擎。自然語言輸入，simulateTransaction 在真實主網狀態下幽靈演練全程，精確返回 token delta、APY、gas 及衝突。" data-en="World's first multi-step cross-protocol DeFi pre-execution engine. Natural language input, simulateTransaction ghost-executes against live mainnet state, returning exact token deltas, APY, gas, and conflict flags." data-ja="世界初のマルチステップ・クロスプロトコルDeFi事前実行エンジン。自然言語入力、simulateTransactionがメインネットのリアル状態でゴースト実行、正確なトークンデルタ・APY・ガス・コンフリクトを返す。">全球首個多步跨協議 DeFi 策略預執行引擎。自然語言輸入，simulateTransaction 在真實主網狀態下幽靈演練全程，精確返回 token delta、APY、gas 及衝突。</p>
+        <div class="badge-row">
+          <span class="badge-pill green" data-zh="✓ 模擬免費" data-en="✓ Simulation Free" data-ja="✓ シミュレーション無料">✓ 模擬免費</span>
+          <span class="badge-pill" data-zh="執行 0.3%" data-en="Execution 0.3%" data-ja="実行 0.3%">執行 0.3%</span>
+        </div>
+      </div>
+      <div class="card">
+        <span class="card-icon">⚡</span>
+        <h3>Liquidation Shield</h3>
+        <p data-zh="業界首個跨協議 AI 清算主動救援。SPL Token Approve 硬性授權上限，token program 強制執行。Kamino · MarginFi · Solend，健康因子觸閾 400ms 救援。" data-en="Industry's first cross-protocol AI liquidation rescue. SPL Token Approve hard spending cap enforced at token-program level. Kamino · MarginFi · Solend. Health factor breach triggers rescue in 400ms." data-ja="業界初のクロスプロトコルAI清算救済。SPL Token ApproveによるハードキャップをToken Programレベルで強制。Kamino・MarginFi・Solend。ヘルスファクター閾値突破から400msで救済。">業界首個跨協議 AI 清算主動救援。SPL Token Approve 硬性授權上限，token program 強制執行。Kamino · MarginFi · Solend，健康因子觸閾 400ms 救援。</p>
+        <div class="badge-row">
+          <span class="badge-pill green" data-zh="✓ 監控免費" data-en="✓ Monitor Free" data-ja="✓ 監視無料">✓ 監控免費</span>
+          <span class="badge-pill" data-zh="救援成功 1%" data-en="Rescue Success 1%" data-ja="救済成功 1%">救援成功 1%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-row" style="margin-top:18px">
+      <div class="stat-box">
+        <div class="stat-num">$285M</div>
+        <div class="stat-lbl" data-zh="Drift 同款漏洞，已防禦" data-en="Drift-class exploit vector neutralized" data-ja="Driftクラス攻撃ベクター封鎖">Drift 同款漏洞，已防禦</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">$4B+</div>
+        <div class="stat-lbl" data-zh="Solana 借貸 TVL 跨協議防護" data-en="Solana Lending TVL under AI protection" data-ja="SolanaレンディングTVL AI保護対象">Solana 借貸 TVL 跨協議防護</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">400ms</div>
+        <div class="stat-lbl" data-zh="清算救援響應時間" data-en="Liquidation rescue response time" data-ja="清算救済応答時間">清算救援響應時間</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num">100%</div>
+        <div class="stat-lbl" data-zh="AI 推理 SHA-256 鏈上可驗證" data-en="AI reasoning onchain-verifiable" data-ja="AI推論オンチェーン検証可能">AI 推理 SHA-256 鏈上可驗證</div>
+      </div>
+    </div>
+
+    <div class="watermark">SAKURA · 2026</div>
+    <div class="slide-num">03 / 10</div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       SLIDE 4  NONCE GUARDIAN
+       ══════════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-4">
+    <div class="section-label" data-zh="功能一" data-en="FEATURE 01" data-ja="機能 01">功能一</div>
+    <h2>🛡️ Nonce Guardian</h2>
+    <p class="subtitle" data-zh="Solana 首個主動式 Durable Nonce 安全協議。以攻擊者所用 RPC 原語反制攻擊：getProgramAccounts 逐一解析每個 80-byte nonce 結構體的 authority pubkey，精確標記已被劫持的高風險賬戶。" data-en="Solana's first proactive Durable Nonce security protocol. Turns the attacker's own RPC primitive against them: getProgramAccounts parses each 80-byte nonce struct's authority pubkey and flags hijacked accounts before a single cent drains." data-ja="Solana初の能動的Durable Nonceセキュリティプロトコル。攻撃者のRPCプリミティブを逆用：getProgramAccountsが各80バイトnonce構造体のauthority pubkeyを解析し、資金流出前に乗っ取りアカウントを検出・警告。">
+      Solana 首個主動式 Durable Nonce 安全協議。以攻擊者所用 RPC 原語反制攻擊：getProgramAccounts 逐一解析每個 80-byte nonce 結構體的 authority pubkey，精確標記已被劫持的高風險賬戶。
+    </p>
+
+    <div class="two-col" style="margin-top:22px">
+      <div>
+        <div class="tech-row">
+          <div class="tech-item">
+            <div class="icon">⛩️</div>
+            <div class="content">
+              <h4><code style="font-family:var(--mono);font-size:11px;color:var(--rose)">getProgramAccounts</code></h4>
+              <p data-zh="掃描 SystemProgram 下所有 80-byte nonce 賬戶，解析 offset 8 的 authority pubkey" data-en="Scans all 80-byte nonce accounts under SystemProgram, parses authority pubkey at offset 8" data-ja="SystemProgram下のすべての80バイトnonceアカウントをスキャン、offset 8のauthority pubkeyを解析">掃描 SystemProgram 下所有 80-byte nonce 賬戶，解析 offset 8 的 authority pubkey</p>
+            </div>
+          </div>
+          <div class="tech-item">
+            <div class="icon">🚨</div>
+            <div class="content">
+              <h4 data-zh="Authority 劫持偵測" data-en="Authority Hijack Detection" data-ja="Authority乗っ取り検出">Authority 劫持偵測</h4>
+              <p data-zh="authority ≠ walletAddress → 立即觸發 Critical 風險警報" data-en="authority ≠ walletAddress → immediately triggers Critical risk alert" data-ja="authority ≠ walletAddress → 即座にCriticalリスクアラートを発動">authority ≠ walletAddress → 立即觸發 Critical 風險警報</p>
+            </div>
+          </div>
+          <div class="tech-item">
+            <div class="icon">🤖</div>
+            <div class="content">
+              <h4 data-zh="Claude AI 風險報告" data-en="Claude AI Risk Report" data-ja="Claude AIリスクレポート">Claude AI 風險報告</h4>
+              <p data-zh="Claude Sonnet 4.6 生成中文 / 英文 / 日文風險評估報告，SHA-256 哈希鏈上存證" data-en="Claude Sonnet 4.6 generates risk assessment in zh/en/ja, SHA-256 hash inscribed on-chain" data-ja="Claude Sonnet 4.6がzh/en/jaでリスク評価を生成、SHA-256ハッシュをオンチェーンに刻印">Claude Sonnet 4.6 生成中文 / 英文 / 日文風險評估報告，SHA-256 哈希鏈上存證</p>
+            </div>
+          </div>
+          <div class="tech-item">
+            <div class="icon">🔗</div>
+            <div class="content">
+              <h4 data-zh="x402 Machine Payment" data-en="x402 Machine Payment" data-ja="x402 マシン決済">x402 Machine Payment</h4>
+              <p data-zh="任意 AI Agent / MCP 客戶端可直接調用，每次 $1 USDC 鏈上原子結算" data-en="Any AI Agent / MCP client can call directly, $1 USDC atomic on-chain settlement per request" data-ja="任意のAI Agent/MCPクライアントが直接呼び出し可能、毎回 $1 USDC オンチェーン原子決済">任意 AI Agent / MCP 客戶端可直接調用，每次 $1 USDC 鏈上原子結算</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card" style="background:var(--ink);border-color:var(--ink);padding:28px">
+          <div style="font-size:11px;letter-spacing:3px;color:var(--rose-soft);margin-bottom:16px;font-family:'Noto Serif JP',serif;" data-zh="競品分析 — 確認空白" data-en="COMPETITIVE ANALYSIS — CONFIRMED GAP" data-ja="競合分析 — 空白確認">競品分析 — 確認空白</div>
+          <table class="comp-table" style="color:rgba(244,237,228,0.7)">
+            <thead>
+              <tr>
+                <th style="color:rgba(244,237,228,0.4)" data-zh="工具" data-en="TOOL" data-ja="ツール">工具</th>
+                <th style="color:rgba(244,237,228,0.4)" data-zh="主動掃描" data-en="PROACTIVE SCAN" data-ja="能動スキャン">主動掃描</th>
+                <th style="color:rgba(244,237,228,0.4)" data-zh="AI 風險評分" data-en="AI RISK SCORE" data-ja="AIリスクスコア">AI 風險評分</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="color:rgba(244,237,228,0.5)">v0-am-i-safe</td>
+                <td style="color:var(--rose-mid)">✗</td>
+                <td style="color:var(--rose-mid)">✗</td>
+              </tr>
+              <tr>
+                <td style="color:rgba(244,237,228,0.5)">Phantom</td>
+                <td style="color:var(--rose-mid)">✗</td>
+                <td style="color:var(--rose-mid)">✗</td>
+              </tr>
+              <tr>
+                <td style="color:rgba(244,237,228,0.5)">Blowfish</td>
+                <td style="color:var(--rose-mid)">✗</td>
+                <td style="color:var(--rose-mid)">✗</td>
+              </tr>
+              <tr>
+                <td style="color:var(--rose-soft);font-weight:600">Sakura 🌸</td>
+                <td class="check">✓</td>
+                <td class="check">✓</td>
+              </tr>
+            </tbody>
+          </table>
+          <div style="font-size:11.5px;color:rgba(244,237,228,0.45);margin-top:16px;line-height:1.6;" data-zh="現有工具只掃交易歷史，不掃當前 nonce 賬戶所有權風險 — 這是真實的防禦空白。" data-en="Existing tools only scan transaction history, not current nonce account ownership risks — a real defense gap." data-ja="既存ツールはトランザクション履歴をスキャンするだけで、現在のnonceアカウント所有権リスクをスキャンしない——本物の防衛の空白。">現有工具只掃交易歷史，不掃當前 nonce 賬戶所有權風險 — 這是真實的防禦空白。</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="watermark">SAKURA · 2026</div>
+    <div class="slide-num">04 / 10</div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       SLIDE 5  GHOST RUN
+       ══════════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-5">
+    <div class="section-label" data-zh="功能二" data-en="FEATURE 02" data-ja="機能 02">功能二</div>
+    <h2>👻 Ghost Run</h2>
+    <p class="subtitle" data-zh="全球首個多步跨協議 DeFi 策略預執行引擎。Solana 原生 simulateTransaction 在真實主網狀態下幽靈演練整個策略——精確返回每步 token delta、APY 預估、gas 消耗及衝突。確認前零資本風險。" data-en="The world's first multi-step cross-protocol DeFi strategy pre-execution engine. Solana-native simulateTransaction ghost-executes the entire strategy against live mainnet state — returning exact token deltas, APY projections, gas costs, and conflicts. Zero capital at risk until confirmation." data-ja="世界初のマルチステップ・クロスプロトコルDeFi戦略事前実行エンジン。SolanaネイティブのsimulateTransactionがメインネットのリアル状態で戦略全体をゴースト実行——正確なトークンデルタ・APY予測・ガスコスト・コンフリクトを返す。確認まで資本リスクゼロ。">
+      全球首個多步跨協議 DeFi 策略預執行引擎。Solana 原生 simulateTransaction 在真實主網狀態下幽靈演練整個策略——精確返回每步 token delta、APY 預估、gas 消耗及衝突。確認前零資本風險。
+    </p>
+
+    <div class="two-col" style="margin-top:22px;align-items:start">
+      <div>
+        <div style="font-size:11px;letter-spacing:3px;color:var(--rose);margin-bottom:14px;font-family:'Noto Serif JP',serif" data-zh="執行流程" data-en="EXECUTION FLOW" data-ja="実行フロー">執行流程</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--card-bg);border:1px solid var(--border);border-radius:10px">
+            <div style="width:24px;height:24px;border-radius:50%;background:var(--rose);color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">1</div>
+            <div>
+              <div style="font-size:12px;font-weight:600;color:var(--ink);margin-bottom:2px" data-zh="自然語言輸入策略" data-en="Natural Language Strategy Input" data-ja="自然言語で戦略を入力">自然語言輸入策略</div>
+              <div style="font-size:11px;color:var(--ink-light)" data-zh="「質押 3 SOL 到 Marinade，存 50 USDC 進 Kamino」" data-en="&quot;Stake 3 SOL to Marinade, deposit 50 USDC into Kamino&quot;" data-ja="「3 SOL を Marinade にステーク、50 USDC を Kamino に預ける」">「質押 3 SOL 到 Marinade，存 50 USDC 進 Kamino」</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--card-bg);border:1px solid var(--border);border-radius:10px">
+            <div style="width:24px;height:24px;border-radius:50%;background:var(--rose);color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">2</div>
+            <div>
+              <div style="font-size:12px;font-weight:600;color:var(--ink);margin-bottom:2px" data-zh="web3.js 構建未簽名交易序列" data-en="web3.js Builds Unsigned Transaction Sequence" data-ja="web3.js が未署名トランザクション列を構築">web3.js 構建未簽名交易序列</div>
+              <div style="font-size:11px;color:var(--ink-light)" data-zh="Marinade stake tx + Kamino deposit tx，不涉及 SAK" data-en="Marinade stake tx + Kamino deposit tx, bypassing SAK" data-ja="Marinade stake tx + Kamino deposit tx、SAK を経由しない">Marinade stake tx + Kamino deposit tx，不涉及 SAK</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--card-bg);border:1px solid var(--border);border-radius:10px">
+            <div style="width:24px;height:24px;border-radius:50%;background:var(--rose);color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">3</div>
+            <div>
+              <div style="font-size:12px;font-weight:600;color:var(--ink);margin-bottom:2px" data-zh="simulateTransaction × N 步幽靈執行" data-en="simulateTransaction × N Steps Ghost Execution" data-ja="simulateTransaction × N ステップのゴースト実行">simulateTransaction × N 步幽靈執行</div>
+              <div style="font-size:11px;color:var(--ink-light)" data-zh="真實主網狀態，sigVerify: false，解析精確 log" data-en="Live mainnet state, sigVerify: false, parses exact logs" data-ja="ライブメインネット状態、sigVerify: false、正確なログを解析">真實主網狀態，sigVerify: false，解析精確 log</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:rgba(92,122,78,0.08);border:1px solid rgba(92,122,78,0.25);border-radius:10px">
+            <div style="width:24px;height:24px;border-radius:50%;background:var(--moss);color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">4</div>
+            <div>
+              <div style="font-size:12px;font-weight:600;color:var(--ink);margin-bottom:2px" data-zh="確認 → SAK 一鍵執行 + Memo 鏈上存證" data-en="Confirm → SAK Execute + Memo Inscribed On-Chain" data-ja="確認 → SAK 実行 + Memo オンチェーン刻印">確認 → SAK 一鍵執行 + Memo 鏈上存證</div>
+              <div style="font-size:11px;color:var(--ink-light)" data-zh="Solana Agent Kit stakeWithJup + lendAsset，Memo Program 記錄執行憑證" data-en="Solana Agent Kit stakeWithJup + lendAsset, Memo Program records execution proof" data-ja="Solana Agent Kit stakeWithJup + lendAsset、Memo Programが実行証明を記録">Solana Agent Kit stakeWithJup + lendAsset，Memo Program 記錄執行憑證</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:11px;letter-spacing:3px;color:var(--rose);margin-bottom:14px;font-family:'Noto Serif JP',serif" data-zh="模擬結果預覽（示例）" data-en="SIMULATION RESULT PREVIEW (EXAMPLE)" data-ja="シミュレーション結果プレビュー（例）">模擬結果預覽（示例）</div>
+        <div style="background:var(--ink);border-radius:14px;padding:24px;font-family:var(--mono);font-size:12px;color:rgba(244,237,228,0.8);line-height:1.9">
+          <div style="color:var(--rose-soft);margin-bottom:8px;letter-spacing:1px;font-size:10px" data-zh="// 幽靈執行報告" data-en="// GHOST EXECUTION REPORT" data-ja="// ゴースト実行レポート">// 幽靈執行報告</div>
+          <div><span style="color:var(--rose-soft)">Step 1:</span> <span style="color:rgba(244,237,228,0.5)" data-zh="Marinade Stake" data-en="Marinade Stake" data-ja="Marinade Stake">Marinade Stake</span></div>
+          <div style="padding-left:16px;color:rgba(244,237,228,0.6)">→ +2.994 mSOL <span style="color:rgba(92,122,78,0.9)">(APY 7.2%)</span></div>
+          <div style="margin-top:6px"><span style="color:var(--rose-soft)">Step 2:</span> <span style="color:rgba(244,237,228,0.5)" data-zh="Kamino Deposit" data-en="Kamino Deposit" data-ja="Kamino Deposit">Kamino Deposit</span></div>
+          <div style="padding-left:16px;color:rgba(244,237,228,0.6)">→ +kUSDC <span style="color:rgba(92,122,78,0.9)">(APY 8.1%)</span></div>
+          <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(244,237,228,0.08)">
+            <div style="color:rgba(244,237,228,0.4);font-size:10px;letter-spacing:1px;margin-bottom:4px" data-zh="// 成本摘要" data-en="// COST SUMMARY" data-ja="// コストまとめ">// 成本摘要</div>
+            <div style="color:rgba(244,237,228,0.6)">Gas: 0.000025 SOL <span style="color:rgba(244,237,228,0.3)">($0.004)</span></div>
+            <div style="color:rgba(92,122,78,0.9);margin-top:4px" data-zh="✓ 無衝突 · 可安全執行" data-en="✓ No conflict · Safe to execute" data-ja="✓ コンフリクトなし · 安全に実行可能">✓ 無衝突 · 可安全執行</div>
+          </div>
+        </div>
+        <div class="badge-row" style="margin-top:14px">
+          <span class="badge-pill green" data-zh="✓ 全球首創 UX 模式" data-en="✓ World's First UX Pattern" data-ja="✓ 世界初のUXパターン">✓ 全球首創 UX 模式</span>
+          <span class="badge-pill" data-zh="Phantom 費率低 65%" data-en="65% Below Phantom Fee" data-ja="Phantomより65%低コスト">Phantom 費率低 65%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="watermark">SAKURA · 2026</div>
+    <div class="slide-num">05 / 10</div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       SLIDE 6  LIQUIDATION SHIELD
+       ══════════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-6">
+    <div class="section-label" data-zh="功能三" data-en="FEATURE 03" data-ja="機能 03">功能三</div>
+    <h2>⚡ Liquidation Shield</h2>
+    <p class="subtitle" data-zh="業界首個跨協議 AI 清算主動救援協議，覆蓋 Kamino、MarginFi、Solend（合計 TVL $40 億+）。SPL Token Approve 在 token program 合約層面設定硬性授權上限——鏈上強制約束，非軟性承諾。" data-en="The industry's first cross-protocol AI liquidation rescue protocol, covering Kamino, MarginFi, and Solend — $4B+ TVL. SPL Token Approve enforces a hard spending cap at the token-program contract level — an onchain constraint, not a software promise." data-ja="業界初のクロスプロトコルAI清算救済プロトコル。Kamino・MarginFi・Solendをカバー（合計TVL $40億超）。SPL Token ApproveがToken Programのコントラクトレベルでハード支出上限を強制——ソフトウェアの約束ではなく、オンチェーンの強制制約。">
+      業界首個跨協議 AI 清算主動救援協議，覆蓋 Kamino、MarginFi、Solend（合計 TVL $40 億+）。SPL Token Approve 在 token program 合約層面設定硬性授權上限——鏈上強制約束，非軟性承諾。
+    </p>
+
+    <div class="two-col" style="margin-top:20px;align-items:start">
+      <div>
+        <div class="tech-row">
+          <div class="tech-item">
+            <div class="icon">🔐</div>
+            <div class="content">
+              <h4 data-zh="預授權硬約束" data-en="Pre-Authorization Hard Cap" data-ja="事前承認ハードキャップ">預授權硬約束</h4>
+              <p data-zh="SPL Token approve 設定最大救援金額上限，token program 強制執行，Agent 無法超額動用" data-en="SPL Token approve sets max rescue amount, enforced by token program — agent cannot exceed it" data-ja="SPL Token approveで最大救済額を設定、Token Programが強制実行——エージェントは超過不可">SPL Token approve 設定最大救援金額上限，token program 強制執行，Agent 無法超額動用</p>
+            </div>
+          </div>
+          <div class="tech-item">
+            <div class="icon">📡</div>
+            <div class="content">
+              <h4 data-zh="AI 持續監控健康因子" data-en="AI Continuous Health Factor Monitor" data-ja="AIによる継続的ヘルスファクター監視">AI 持續監控健康因子</h4>
+              <p data-zh="getProgramAccounts 掃描 Kamino/MarginFi 借貸倉位，AI 即時計算健康因子，觸閾自動響應" data-en="getProgramAccounts scans Kamino/MarginFi lending positions, AI computes health factor in real time, auto-triggers on breach" data-ja="getProgramAccountsがKamino/MarginFiのポジションをスキャン、AIがリアルタイムでヘルスファクターを計算、閾値突破で自動発動">getProgramAccounts 掃描 Kamino/MarginFi 借貸倉位，AI 即時計算健康因子，觸閾自動響應</p>
+            </div>
+          </div>
+          <div class="tech-item">
+            <div class="icon">🎯</div>
+            <div class="content">
+              <h4 data-zh="simulateTransaction 精確預演" data-en="simulateTransaction Precise Preview" data-ja="simulateTransactionによる精確な事前演算">simulateTransaction 精確預演</h4>
+              <p data-zh="救援前幽靈執行：還款 $800 USDC 可將健康因子恢復至 1.4，精確計算操作成本" data-en="Ghost-executes rescue before spending: repay $800 USDC restores health factor to 1.4, exact cost computed" data-ja="支出前にゴースト実行：$800 USDC返済でヘルスファクターが1.4に回復、正確なコストを計算">救援前幽靈執行：還款 $800 USDC 可將健康因子恢復至 1.4，精確計算操作成本</p>
+            </div>
+          </div>
+          <div class="tech-item">
+            <div class="icon">📝</div>
+            <div class="content">
+              <h4 data-zh="Memo 不可篡改審計鏈" data-en="Memo Tamper-Proof Audit Chain" data-ja="Memo改ざん不可能な監査チェーン">Memo 不可篡改審計鏈</h4>
+              <p data-zh="rescue mandate → 觸發記錄 → 執行憑證，完整鏈上審計，任何人可在 Solscan 核驗" data-en="rescue mandate → trigger log → execution proof, full on-chain audit, verifiable by anyone on Solscan" data-ja="rescue mandate → トリガー記録 → 実行証明、完全なオンチェーン監査、Solscanで誰でも検証可能">rescue mandate → 觸發記錄 → 執行憑證，完整鏈上審計，任何人可在 Solscan 核驗</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:11px;letter-spacing:3px;color:var(--rose);margin-bottom:14px;font-family:'Noto Serif JP',serif" data-zh="競品對比" data-en="VS COMPETITORS" data-ja="競合比較">競品對比</div>
+        <table class="comp-table">
+          <thead>
+            <tr>
+              <th data-zh="協議" data-en="PROTOCOL" data-ja="プロトコル">協議</th>
+              <th data-zh="跨協議" data-en="CROSS-PROTOCOL" data-ja="クロスプロトコル">跨協議</th>
+              <th data-zh="預授權" data-en="PRE-AUTH" data-ja="事前承認">預授權</th>
+              <th data-zh="模擬預覽" data-en="SIM PREVIEW" data-ja="シミュレーション">模擬預覽</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Apricot Assist</td>
+              <td class="cross">✗</td>
+              <td class="cross">✗</td>
+              <td class="cross">✗</td>
+            </tr>
+            <tr>
+              <td>Kamino</td>
+              <td class="cross">✗</td>
+              <td class="cross">✗</td>
+              <td class="cross">✗</td>
+            </tr>
+            <tr>
+              <td>MarginFi</td>
+              <td class="cross">✗</td>
+              <td class="cross">✗</td>
+              <td class="cross">✗</td>
+            </tr>
+            <tr class="highlight-row">
+              <td>Sakura 🌸</td>
+              <td class="check">✓</td>
+              <td class="check">✓</td>
+              <td class="check">✓</td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="margin-top:16px;display:flex;flex-direction:column;gap:8px">
+          <div class="badge-pill green" style="border-radius:8px;padding:10px 14px;display:block">
+            <span style="font-size:12px;font-weight:600" data-zh="清算損失通常 5–10%，Sakura 救援費僅 1%（成功才收）" data-en="Liquidation penalty 5–10%, Sakura rescue fee only 1% (success-only)" data-ja="清算ペナルティ5〜10%、Sakuraの救済手数料は1%（成功時のみ）">清算損失通常 5–10%，Sakura 救援費僅 1%（成功才收）</span>
+          </div>
+          <div class="badge-pill" style="border-radius:8px;padding:10px 14px;display:block">
+            <span style="font-size:12px" data-zh="監控永久免費 · $4B+ TVL 覆蓋 · 400ms 閃電響應" data-en="Monitor free forever · $4B+ TVL coverage · 400ms lightning response" data-ja="監視永久無料 · TVL $40億超カバー · 400ms電光応答">監控永久免費 · $4B+ TVL 覆蓋 · 400ms 閃電響應</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="watermark">SAKURA · 2026</div>
+    <div class="slide-num">06 / 10</div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       SLIDE 7  ONCHAIN-VERIFIABLE AI + x402
+       ══════════════════════════════════════════════════════ -->
+  <div class="slide dark" id="slide-7">
+    <div class="section-label" data-zh="核心差異化" data-en="CORE DIFFERENTIATOR" data-ja="コア差別化">核心差異化</div>
+    <h2 data-zh="鏈上可驗證 AI × x402 機器支付" data-en="Onchain-Verifiable AI × x402 Machine Payment" data-ja="オンチェーン検証可能AI × x402 マシン決済">鏈上可驗證 AI × x402 機器支付</h2>
+
+    <div class="two-col" style="margin-top:24px;align-items:start">
+      <div>
+        <div style="font-size:11px;letter-spacing:3px;color:var(--rose-soft);margin-bottom:14px;font-family:'Noto Serif JP',serif" data-zh="鏈上可驗證 AI 推理" data-en="ONCHAIN-VERIFIABLE AI REASONING" data-ja="オンチェーン検証可能AI推論">鏈上可驗證 AI 推理</div>
+        <p style="font-size:14px;color:rgba(244,237,228,0.65);line-height:1.8;margin-bottom:16px" data-zh="市場上每一個 AI DeFi 工具都是黑盒。Sakura 是唯一的例外：每條 AI 推理路徑的 SHA-256 指紋透過 Memo Program 永久刻入 Solana 主網。任何人持有 tx signature 即可在 Solscan 獨立核驗——無需信任 Sakura 的服務器。這是 AI 透明度在技術層面能達到的最高標準。" data-en="Every AI DeFi tool is a black box. Sakura is the only exception: each AI reasoning chain's SHA-256 fingerprint is permanently inscribed on Solana mainnet via Memo Program. Anyone with a tx signature can verify independently on Solscan — no trust in Sakura's servers required. This is the highest standard of AI accountability at a technical level." data-ja="市場のすべてのAI DeFiツールはブラックボックスです。Sakuraだけが例外：各AI推論チェーンのSHA-256フィンガープリントがMemo Programを通じてSolanaメインネットに永久刻印。tx signatureを持つ誰でもSolscanで独立検証可能——Sakuraのサーバーへの信頼不要。これはAIアカウンタビリティが技術的に到達できる最高水準です。">
+          市場上每一個 AI DeFi 工具都是黑盒。Sakura 是唯一的例外：每條 AI 推理路徑的 SHA-256 指紋透過 Memo Program 永久刻入 Solana 主網。任何人持有 tx signature 即可在 Solscan 獨立核驗——無需信任 Sakura 的服務器。
+        </p>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="padding:10px 14px;background:rgba(255,255,255,0.04);border:1px solid rgba(244,237,228,0.1);border-radius:8px;font-size:12px;color:rgba(244,237,228,0.7)" data-zh="⛩️ SHA-256 哈希 → Solana Memo Program → 主網永久存證" data-en="⛩️ SHA-256 hash → Solana Memo Program → permanent mainnet inscription" data-ja="⛩️ SHA-256ハッシュ → Solana Memo Program → メインネット永久刻印">⛩️ SHA-256 哈希 → Solana Memo Program → 主網永久存證</div>
+          <div style="padding:10px 14px;background:rgba(255,255,255,0.04);border:1px solid rgba(244,237,228,0.1);border-radius:8px;font-size:12px;color:rgba(244,237,228,0.7)" data-zh="🔗 Solscan 公開核驗 · 無許可 · 無服務器依賴" data-en="🔗 Solscan public verification · permissionless · no server dependency" data-ja="🔗 Solscanで公開検証 · 許可不要 · サーバー依存なし">🔗 Solscan 公開核驗 · 無許可 · 無服務器依賴</div>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:11px;letter-spacing:3px;color:var(--rose-soft);margin-bottom:14px;font-family:'Noto Serif JP',serif" data-zh="x402 機器支付協議" data-en="x402 MACHINE PAYMENT PROTOCOL" data-ja="x402 マシン決済プロトコル">x402 機器支付協議</div>
+        <p style="font-size:14px;color:rgba(244,237,228,0.65);line-height:1.8;margin-bottom:16px" data-zh="互聯網誕生時，HTTP 定義了機器間信息交換。Agentic Economy 需要新協議：機器間的價值交換。Sakura 是 Solana DeFi 安全領域首個在生產環境落地 HTTP 402 Payment Required（x402）的項目。" data-en="When the internet was born, HTTP defined machine-to-machine information exchange. The Agentic Economy needs a new protocol: machine-to-machine value exchange. Sakura is the first Solana DeFi security project to ship HTTP 402 Payment Required (x402) in production." data-ja="インターネット誕生時、HTTPはマシン間の情報交換を定義した。Agentic Economyには新しいプロトコルが必要：マシン間の価値交換。SakuraはSolana DeFiセキュリティ分野で初めてHTTP 402 Payment Required（x402）を本番環境で実装したプロジェクト。">
+          互聯網誕生時，HTTP 定義了機器間信息交換。Agentic Economy 需要新協議：機器間的價值交換。Sakura 是 Solana DeFi 安全領域首個在生產環境落地 HTTP 402 (x402) 的項目。
+        </p>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="padding:10px 14px;background:rgba(255,255,255,0.04);border:1px solid rgba(244,237,228,0.1);border-radius:8px;font-size:12px;color:rgba(244,237,228,0.7)" data-zh="🤖 任意 AI Agent / MCP 客戶端直接調用 Nonce Guardian API" data-en="🤖 Any AI Agent / MCP client calls Nonce Guardian API directly" data-ja="🤖 任意のAI Agent/MCPクライアントがNonce Guardian APIを直接呼び出し">🤖 任意 AI Agent / MCP 客戶端直接調用 Nonce Guardian API</div>
+          <div style="padding:10px 14px;background:rgba(255,255,255,0.04);border:1px solid rgba(244,237,228,0.1);border-radius:8px;font-size:12px;color:rgba(244,237,228,0.7)" data-zh="🫙 每次 $1 USDC · 鏈上原子結算 · 無帳號 · 無 OAuth" data-en="🫙 $1 USDC per call · on-chain atomic settlement · no account · no OAuth" data-ja="🫙 1回 $1 USDC · オンチェーン原子決済 · アカウント不要 · OAuth不要">🫙 每次 $1 USDC · 鏈上原子結算 · 無帳號 · 無 OAuth</div>
+          <div style="padding:10px 14px;background:rgba(255,255,255,0.04);border:1px solid rgba(244,237,228,0.1);border-radius:8px;font-size:12px;color:rgba(244,237,228,0.7)" data-zh="🌐 Claude Desktop · Cursor · VS Code · 任意自主 Agent 均可接入" data-en="🌐 Claude Desktop · Cursor · VS Code · any autonomous agent can connect" data-ja="🌐 Claude Desktop · Cursor · VS Code · あらゆる自律Agentが接続可能">🌐 Claude Desktop · Cursor · VS Code · 任意自主 Agent 均可接入</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="watermark" style="color:rgba(244,237,228,0.12)">SAKURA · 2026</div>
+    <div class="slide-num" style="color:rgba(244,237,228,0.12)">07 / 10</div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       SLIDE 8  BUSINESS MODEL
+       ══════════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-8">
+    <div class="section-label" data-zh="商業模式" data-en="BUSINESS MODEL" data-ja="ビジネスモデル">商業模式</div>
+    <h2 data-zh="使用即付費 · 按結果計費 · 零訂閱門檻" data-en="Pay-Per-Use · Success-Based · Zero Subscription Barrier" data-ja="使用課金 · 成果報酬 · サブスク不要">使用即付費 · 按結果計費 · 零訂閱門檻</h2>
+    <p class="subtitle" data-zh="對沖基金的防護標準，現在任何人都能用——核心功能永久免費，進階服務按需付費，救援費用只在成功後收取。" data-en="Hedge-fund-grade protection, democratized — core features permanently free, advanced services pay-per-use, rescue fees charged only on success." data-ja="ヘッジファンド水準の保護を民主化——コア機能は永久無料、高度なサービスは使用課金、救済手数料は成功時のみ。">
+      對沖基金的防護標準，現在任何人都能用——核心功能永久免費，進階服務按需付費，救援費用只在成功後收取。
+    </p>
+
+    <div class="price-grid" style="margin-top:24px">
+      <div class="price-card">
+        <span class="price-icon">🛡️</span>
+        <h3>Nonce Guardian</h3>
+        <span class="price-num">Free</span>
+        <p data-zh="掃描永久免費。AI 安全報告 $1 USDC（x402 機器支付，一鍵鏈上結算）。SHA-256 哈希永久刻入 Solana 主網，Solscan 可核驗。" data-en="Scan permanently free. AI security report $1 USDC (x402 machine payment, one-click on-chain settlement). SHA-256 hash permanently inscribed on Solana mainnet, verifiable on Solscan." data-ja="スキャン永久無料。AIセキュリティレポート $1 USDC（x402マシン決済、ワンクリックオンチェーン決済）。SHA-256ハッシュがSolanaメインネットに永久刻印、Solscanで検証可能。">掃描永久免費。AI 安全報告 $1 USDC（x402 機器支付）。SHA-256 哈希永久刻入 Solana 主網。</p>
+      </div>
+      <div class="price-card">
+        <span class="price-icon">👻</span>
+        <h3>Ghost Run</h3>
+        <span class="price-num">0.3%</span>
+        <p data-zh="策略模擬永久免費。執行費率 0.3%（Phantom 0.85% 的 35%）。Memo Program 記錄執行憑證，鏈上可審計。" data-en="Strategy simulation permanently free. Execution fee 0.3% (35% of Phantom's 0.85%). Memo Program records execution proof, on-chain auditable." data-ja="戦略シミュレーション永久無料。実行手数料0.3%（Phantomの0.85%の35%）。Memo Programが実行証明を記録、オンチェーン監査可能。">策略模擬永久免費。執行費率 0.3%（較 Phantom 低 65%）。Memo 鏈上審計。</p>
+      </div>
+      <div class="price-card highlight">
+        <span class="price-icon">⚡</span>
+        <h3>Liquidation Shield</h3>
+        <span class="price-num" style="color:var(--rose-soft)">1% <span style="font-size:13px;opacity:0.6" data-zh="成功才收" data-en="success only" data-ja="成功時のみ">成功才收</span></span>
+        <p data-zh="健康因子監控永久免費。救援成功收 1%——清算損失通常 5–10%，淨為用戶節省 4–9%。失敗不收費。" data-en="Health factor monitoring permanently free. 1% fee on successful rescue — vs. 5–10% liquidation penalty, net saving 4–9% for the user. Zero fee on failure." data-ja="ヘルスファクター監視永久無料。救済成功時に1%——清算ペナルティ5〜10%に対し、実質4〜9%の節約。失敗時は無料。">監控永久免費。救援成功 1%（清算通常損失 5–10%，淨節省 4–9%）。失敗不收費。</p>
+      </div>
+    </div>
+
+    <div class="cards col-3" style="margin-top:16px">
+      <div class="card" style="padding:16px 20px;border-radius:10px">
+        <div style="font-size:11px;font-weight:600;color:var(--moss);margin-bottom:4px" data-zh="護城河一" data-en="MOAT 1" data-ja="堀 1">護城河一</div>
+        <div style="font-size:12px;color:var(--ink-light)" data-zh="Solana 原生 RPC 直接構建——非 API 包裝，技術深度難以複製" data-en="Solana-native RPC construction — not API wrappers, deep technical moat" data-ja="SolanaネイティブRPC直接構築——APIラッパーではなく、深い技術的堀">Solana 原生 RPC 直接構建——非 API 包裝，技術深度難以複製</div>
+      </div>
+      <div class="card" style="padding:16px 20px;border-radius:10px">
+        <div style="font-size:11px;font-weight:600;color:var(--moss);margin-bottom:4px" data-zh="護城河二" data-en="MOAT 2" data-ja="堀 2">護城河二</div>
+        <div style="font-size:12px;color:var(--ink-light)" data-zh="x402 生產落地，先發 MCP 生態位已佔據" data-en="x402 live in production — first-mover MCP ecosystem position secured" data-ja="x402を本番環境で実装済み——MCP生態系のファーストムーバーポジション確保">x402 生產落地，先發 MCP 生態位已佔據</div>
+      </div>
+      <div class="card" style="padding:16px 20px;border-radius:10px">
+        <div style="font-size:11px;font-weight:600;color:var(--moss);margin-bottom:4px" data-zh="護城河三" data-en="MOAT 3" data-ja="堀 3">護城河三</div>
+        <div style="font-size:12px;color:var(--ink-light)" data-zh="鏈上審計鏈形成數據護城河，Memo 記錄累積後難以遷移" data-en="On-chain audit trail creates data moat — Memo records accumulate and lock in users" data-ja="オンチェーン監査チェーンがデータの堀を形成——Memoレコードの蓄積によりユーザーがロックイン">鏈上審計鏈形成數據護城河，Memo 記錄累積後難以遷移</div>
+      </div>
+    </div>
+
+    <div class="watermark">SAKURA · 2026</div>
+    <div class="slide-num">08 / 10</div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       SLIDE 9  TECH STACK + ROADMAP
+       ══════════════════════════════════════════════════════ -->
+  <div class="slide" id="slide-9">
+    <div class="section-label" data-zh="技術棧與路線圖" data-en="TECH STACK & ROADMAP" data-ja="技術スタック & ロードマップ">技術棧與路線圖</div>
+    <h2 data-zh="由三個 Solana 原生 RPC 原語驅動" data-en="Powered by Three Solana-Native RPC Primitives" data-ja="3つのSolanaネイティブRPCプリミティブが駆動">由三個 Solana 原生 RPC 原語驅動</h2>
+
+    <div class="two-col" style="margin-top:22px;align-items:start">
+      <div>
+        <div style="font-size:11px;letter-spacing:3px;color:var(--rose);margin-bottom:14px;font-family:'Noto Serif JP',serif" data-zh="核心技術棧" data-en="CORE TECH STACK" data-ja="コア技術スタック">核心技術棧</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="padding:12px 16px;background:var(--card-bg);border:1px solid var(--border);border-left:3px solid var(--rose);border-radius:8px">
+            <div style="font-family:var(--mono);font-size:11px;color:var(--rose);margin-bottom:3px">getProgramAccounts</div>
+            <div style="font-size:12px;color:var(--ink-light)" data-zh="掃描 80-byte nonce 結構體（Nonce Guardian）+ 掃描 Kamino/MarginFi 借貸倉位（Liquidation Shield）" data-en="Scans 80-byte nonce structs (Nonce Guardian) + Kamino/MarginFi lending positions (Liquidation Shield)" data-ja="80バイトnonce構造体スキャン（Nonce Guardian）+ Kamino/MarginFiポジションスキャン（Liquidation Shield）">掃描 80-byte nonce 結構體（Nonce Guardian）+ 掃描 Kamino/MarginFi 借貸倉位（Liquidation Shield）</div>
+          </div>
+          <div style="padding:12px 16px;background:var(--card-bg);border:1px solid var(--border);border-left:3px solid var(--rose);border-radius:8px">
+            <div style="font-family:var(--mono);font-size:11px;color:var(--rose);margin-bottom:3px">simulateTransaction</div>
+            <div style="font-size:12px;color:var(--ink-light)" data-zh="Ghost Run 多步策略幽靈執行 + Liquidation Shield 救援方案精確預演" data-en="Ghost Run multi-step strategy ghost execution + Liquidation Shield rescue plan precise preview" data-ja="Ghost Runマルチステップ戦略ゴースト実行 + Liquidation Shield救済プランの精確プレビュー">Ghost Run 多步策略幽靈執行 + Liquidation Shield 救援方案精確預演</div>
+          </div>
+          <div style="padding:12px 16px;background:var(--card-bg);border:1px solid var(--border);border-left:3px solid var(--rose);border-radius:8px">
+            <div style="font-family:var(--mono);font-size:11px;color:var(--rose);margin-bottom:3px">SPL Token Approve</div>
+            <div style="font-size:12px;color:var(--ink-light)" data-zh="Liquidation Shield 預授權硬約束，token program 合約層面強制執行" data-en="Liquidation Shield pre-authorization hard cap, enforced at token-program contract level" data-ja="Liquidation Shield事前承認ハードキャップ、Token Programコントラクトレベルで強制実行">Liquidation Shield 預授權硬約束，token program 合約層面強制執行</div>
+          </div>
+          <div style="padding:12px 16px;background:var(--card-bg);border:1px solid var(--border);border-left:3px solid var(--gold);border-radius:8px">
+            <div style="font-family:var(--mono);font-size:11px;color:var(--gold);margin-bottom:3px">+ Solana Agent Kit · Claude Sonnet 4.6 · x402 · Memo Program</div>
+            <div style="font-size:12px;color:var(--ink-light)" data-zh="SAK 最終執行 · Claude AI 推理 · x402 機器支付 · Memo 鏈上存證" data-en="SAK final execution · Claude AI reasoning · x402 machine payment · Memo on-chain inscription" data-ja="SAK最終実行 · Claude AI推論 · x402マシン決済 · Memoオンチェーン刻印">SAK 最終執行 · Claude AI 推理 · x402 機器支付 · Memo 鏈上存證</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:11px;letter-spacing:3px;color:var(--rose);margin-bottom:14px;font-family:'Noto Serif JP',serif" data-zh="2026 路線圖" data-en="2026 ROADMAP" data-ja="2026 ロードマップ">2026 路線圖</div>
+        <div class="timeline" style="flex-direction:column;gap:0">
+          <div class="tl-item active-tl" style="padding:14px 0 14px 16px;border-left:2px solid var(--rose);border-top:none">
+            <div class="tl-q">Q2 2026</div>
+            <h4 data-zh="移動端 + 推送警報" data-en="Mobile App + Push Alerts" data-ja="モバイルアプリ + プッシュアラート">移動端 + 推送警報</h4>
+            <p data-zh="iOS / Android 原生應用，健康因子觸閾推送通知，移動端一鍵確認救援" data-en="iOS/Android native app, health factor push notifications, one-tap rescue confirmation on mobile" data-ja="iOS/Androidネイティブアプリ、ヘルスファクタープッシュ通知、モバイルでワンタップ救済確認">iOS / Android 原生應用，健康因子觸閾推送通知，移動端一鍵確認救援</p>
+          </div>
+          <div class="tl-item" style="padding:14px 0 14px 16px;border-left:2px solid var(--border);border-top:none">
+            <div class="tl-q">Q3 2026</div>
+            <h4 data-zh="Ghost Run 擴展至 15 個協議" data-en="Ghost Run Expands to 15 Protocols" data-ja="Ghost Run が15プロトコルに拡張">Ghost Run 擴展至 15 個協議</h4>
+            <p data-zh="Drift、Zeta、Mango、Orca、Raydium 等跨協議多步策略預執行覆蓋" data-en="Drift, Zeta, Mango, Orca, Raydium and more covered in multi-step cross-protocol simulation" data-ja="Drift・Zeta・Mango・Orca・Raydiumなど複数プロトコルのマルチステップ戦略シミュレーション">Drift、Zeta、Mango、Orca、Raydium 等跨協議多步策略預執行覆蓋</p>
+          </div>
+          <div class="tl-item" style="padding:14px 0 14px 16px;border-left:2px solid var(--border);border-top:none">
+            <div class="tl-q">Q4 2026</div>
+            <h4 data-zh="機構 API + DAO 治理" data-en="Institutional API + DAO Governance" data-ja="機関投資家API + DAOガバナンス">機構 API + DAO 治理</h4>
+            <p data-zh="企業級 x402 API 接入，SAK 社群治理模組，跨鏈（EVM 側鏈）防護擴展" data-en="Enterprise-grade x402 API access, SAK community governance module, cross-chain (EVM sidechain) protection expansion" data-ja="エンタープライズグレードx402 APIアクセス、SACコミュニティガバナンスモジュール、クロスチェーン（EVMサイドチェーン）保護拡張">企業級 x402 API，SAK 社群治理，跨鏈（EVM）防護擴展</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="watermark">SAKURA · 2026</div>
+    <div class="slide-num">09 / 10</div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       SLIDE 10  CONTACT / CTA
+       ══════════════════════════════════════════════════════ -->
+  <div class="slide cover contact-slide" id="slide-10">
+    <div style="text-align:center;position:relative;z-index:1;width:100%">
+      <div style="font-size:11px;letter-spacing:5px;text-transform:uppercase;color:var(--rose-soft);font-family:'Noto Serif JP',serif;margin-bottom:32px">SAKURA · 2026</div>
+      <h2 style="font-family:'Noto Serif JP',serif;font-size:48px;font-weight:300;color:#F4EDE4;line-height:1.15;margin-bottom:20px">
+        <span data-zh="備えあれば憂いなし" data-en="備えあれば憂いなし" data-ja="備えあれば憂いなし">備えあれば憂いなし</span>
+      </h2>
+      <p style="font-size:15px;color:rgba(244,237,228,0.5);max-width:520px;margin:0 auto 40px;line-height:1.8" data-zh="那些做好準備的人，沒有什麼可憂慮的。連接 Phantom，三道防線即刻就緒——掃描永久免費。" data-en="Those who prepare have nothing to fear. Connect Phantom and all three defense layers activate instantly — scans permanently free." data-ja="準備ある者に憂いなし。Phantomを接続すれば3つの防衛レイヤーが即座に起動——スキャンは永久無料。">
+        那些做好準備的人，沒有什麼可憂慮的。連接 Phantom，三道防線即刻就緒——掃描永久免費。
+      </p>
+
+      <div class="contact-links">
+        <a href="https://www.sakuraaai.com" class="contact-link" target="_blank">🌸 sakuraaai.com</a>
+        <a href="https://x.com/sakuraaijp" class="contact-link" target="_blank">𝕏 @sakuraaijp</a>
+        <a href="https://www.sakuraaai.com/mcp" class="contact-link" target="_blank">⚙️ MCP API</a>
+        <a href="https://www.sakuraaai.com/?demo=true" class="contact-link" target="_blank" data-zh="👻 試用 Demo" data-en="👻 Try Demo" data-ja="👻 デモを試す">👻 試用 Demo</a>
+      </div>
+
+      <div style="margin-top:36px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+        <span class="badge-pill" style="padding:8px 16px;font-size:11.5px" data-zh="🛡️ Nonce Guardian — 掃描免費" data-en="🛡️ Nonce Guardian — Scan Free" data-ja="🛡️ Nonce Guardian — スキャン無料">🛡️ Nonce Guardian — 掃描免費</span>
+        <span class="badge-pill" style="padding:8px 16px;font-size:11.5px" data-zh="👻 Ghost Run — 模擬免費" data-en="👻 Ghost Run — Simulation Free" data-ja="👻 Ghost Run — シミュレーション無料">👻 Ghost Run — 模擬免費</span>
+        <span class="badge-pill" style="padding:8px 16px;font-size:11.5px" data-zh="⚡ Liquidation Shield — 監控免費" data-en="⚡ Liquidation Shield — Monitor Free" data-ja="⚡ Liquidation Shield — 監視無料">⚡ Liquidation Shield — 監控免費</span>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /deck -->
 
 <!-- Navigation -->
 <div class="nav">
-  <button onclick="prevSlide()">←</button>
-  <button onclick="nextSlide()">→</button>
+  <button onclick="prevSlide()" title="prev">←</button>
+  <button onclick="nextSlide()" title="next">→</button>
 </div>
 
 <!-- Progress dots -->
 <div class="dots" id="dots"></div>
 
-<div class="keyboard-hint">← → 鍵盤切換</div>
-
 <script>
-  const totalSlides = 9;
-  let current = 1;
+const TOTAL = 10;
+let current = 1;
+let lang = 'zh';
 
-  // Build dots
-  const dotsEl = document.getElementById('dots');
-  for (let i = 1; i <= totalSlides; i++) {
-    const d = document.createElement('div');
-    d.className = 'dot' + (i === 1 ? ' active' : '');
-    d.onclick = () => goTo(i);
-    dotsEl.appendChild(d);
-  }
+/* ── Build dots ── */
+const dotsEl = document.getElementById('dots');
+for (let i = 1; i <= TOTAL; i++) {
+  const d = document.createElement('div');
+  d.className = 'dot' + (i === 1 ? ' active' : '');
+  d.onclick = () => goTo(i);
+  dotsEl.appendChild(d);
+}
 
-  function goTo(n) {
-    document.getElementById('slide-' + current)?.classList.remove('active');
-    dotsEl.children[current - 1]?.classList.remove('active');
-    current = Math.max(1, Math.min(totalSlides, n));
-    document.getElementById('slide-' + current)?.classList.add('active');
-    dotsEl.children[current - 1]?.classList.add('active');
-  }
-
-  function nextSlide() { goTo(current + 1); }
-  function prevSlide() { goTo(current - 1); }
-
-  document.addEventListener('keydown', e => {
-    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); nextSlide(); }
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); prevSlide(); }
+function goTo(n) {
+  const prev = document.getElementById('slide-' + current);
+  if (prev) { prev.classList.remove('active'); prev.style.display = 'none'; }
+  current = Math.max(1, Math.min(TOTAL, n));
+  const next = document.getElementById('slide-' + current);
+  if (next) { next.classList.add('active'); next.style.display = 'flex'; }
+  document.querySelectorAll('.dot').forEach((d, i) => {
+    d.classList.toggle('active', i + 1 === current);
   });
+}
 
-  // Touch swipe
-  let touchX = 0;
-  document.addEventListener('touchstart', e => touchX = e.touches[0].clientX);
-  document.addEventListener('touchend', e => {
-    const dx = touchX - e.changedTouches[0].clientX;
-    if (Math.abs(dx) > 50) dx > 0 ? nextSlide() : prevSlide();
+function nextSlide() { goTo(current + 1); }
+function prevSlide() { goTo(current - 1); }
+
+/* ── Keyboard ── */
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); prevSlide(); }
+});
+
+/* ── Touch swipe ── */
+let touchStartX = 0;
+document.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; });
+document.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  if (dx < -40) nextSlide();
+  if (dx > 40) prevSlide();
+});
+
+/* ── Language switching ── */
+function setLang(l) {
+  lang = l;
+  ['zh','en','ja'].forEach(code => {
+    document.getElementById('btn-' + code).classList.toggle('active', code === l);
   });
+  document.querySelectorAll('[data-zh]').forEach(el => {
+    const val = el.getAttribute('data-' + l) || el.getAttribute('data-zh');
+    if (el.tagName === 'INPUT') el.value = val;
+    else el.innerHTML = val;
+  });
+  document.documentElement.lang = l === 'zh' ? 'zh-TW' : l;
+}
+
+/* ── Init ── */
+goTo(1);
+setLang('zh');
 </script>
 </body>
 </html>
