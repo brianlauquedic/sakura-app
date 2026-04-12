@@ -117,6 +117,44 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDemo]);
 
+  // Auto re-fetch when language changes — AI analysis + position data from API is language-specific
+  const prevLangRef = useRef(lang);
+  useEffect(() => {
+    if (prevLangRef.current === lang) return;
+    prevLangRef.current = lang;
+    if (!result) return;
+
+    const refreshForLang = async () => {
+      scanAbortRef.current?.abort();
+      scanAbortRef.current = new AbortController();
+      const signal = scanAbortRef.current.signal;
+      try {
+        const addr = inputAddr.trim();
+        if (!addr || addr.length < 32) return;
+        const res = await fetch("/api/liquidation-shield/monitor", {
+          signal,
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(isDemo
+            ? { wallet: addr, demo: true, lang: lang as Lang }
+            : {
+                wallet: addr,
+                config: {
+                  approvedUsdc: parseFloat(maxUsdc) || 1000,
+                  triggerThreshold: parseFloat(triggerHF) || 1.05,
+                  targetHealthFactor: 1.4,
+                },
+              }),
+        });
+        if (signal.aborted || !res.ok) return;
+        const data: MonitorResponse = await res.json();
+        setResult(data);
+      } catch { /* silent refresh */ }
+    };
+    refreshForLang();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lang]);
+
   async function scan(overrideAddr?: string) {
     const addr = (overrideAddr ?? inputAddr).trim();
     if (!addr || addr.length < 32) { setError(t("shieldInvalidAddr")); return; }

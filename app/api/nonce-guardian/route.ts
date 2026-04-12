@@ -9,6 +9,33 @@ import { checkAndMarkUsed, trackUsage } from "@/lib/redis";
 import { getDemoNonceResult } from "@/lib/demo-data";
 import type { Lang } from "@/lib/demo-data";
 
+// ── Server-side i18n for nonce guardian messages ──────────────────────────────
+function pickNonce(key: "payDesc" | "demoProof" | "realProof", lang: Lang): string {
+  const map: Record<typeof key, Record<Lang, string>> = {
+    payDesc: {
+      zh: "Sakura Nonce Guardian — AI Security Report + SHA-256 永久鏈上存證",
+      en: "Sakura Nonce Guardian — AI Security Report + SHA-256 Onchain Proof",
+      ja: "Sakura Nonce Guardian — AIセキュリティレポート + SHA-256オンチェーン証明",
+    },
+    demoProof: {
+      zh: "（Demo 模式）此報告的 SHA-256 雜湊已計算，正式環境中將永久記錄於 Solana 鏈上。",
+      en: "(Demo Mode) The SHA-256 hash of this report has been computed. In production, it will be permanently recorded on-chain.",
+      ja: "（デモモード）本レポートのSHA-256ハッシュは計算済みです。本番環境ではSolanaブロックチェーンに永久記録されます。",
+    },
+    realProof: {
+      zh: "此報告已永久記錄於 Solana 鏈上，SHA-256 哈希獨立可驗證",
+      en: "This report is permanently recorded on Solana. The SHA-256 hash is independently verifiable.",
+      ja: "本レポートはSolanaに永久記録されました。SHA-256ハッシュは独立して検証可能です。",
+    },
+  };
+  return map[key][lang] ?? map[key].zh;
+}
+
+function parseLang(v: unknown): Lang {
+  if (v === "en" || v === "ja" || v === "zh") return v;
+  return "zh";
+}
+
 const HELIUS_RPC = `https://mainnet.helius-rpc.com/?api-key=${process.env.HELIUS_API_KEY ?? ""}`;
 const SAKURA_FEE_WALLET = process.env.SAKURA_FEE_WALLET ?? "";
 const USDC_MINT = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
@@ -150,7 +177,7 @@ export async function POST(req: NextRequest) {
           amount:      AI_REPORT_FEE_USDC,
           currency:    "USDC" as const,
           network:     "solana-mainnet" as const,
-          description: "Sakura Nonce Guardian — AI Security Report + SHA-256 永久鏈上存證",
+          description: pickNonce("payDesc", lang),
           scanResult:  { ...scanOnly, scannedAt: Date.now() },
         },
         { status: 402 }
@@ -165,7 +192,7 @@ export async function POST(req: NextRequest) {
         sha256: "a1b2c3d4e5f6789012345678abcdef0123456789abcdef0123456789abcdef01",
         txSig: "DEMO_MEMO_" + Math.random().toString(36).slice(2, 10).toUpperCase(),
         explorerUrl: null, // demo — no real on-chain tx
-        message: "（Demo 模式）此報告的 SHA-256 雜湊已計算，正式環境中將永久記錄於 Solana 鏈上。",
+        message: pickNonce("demoProof", lang),
       },
     });
   }
@@ -187,6 +214,8 @@ export async function POST(req: NextRequest) {
   // ── Step 2: x402 Gate — $1.00 USDC for AI report ─────────────────
   const paymentSig = req.headers.get("x-payment") ?? req.headers.get("X-PAYMENT");
 
+  const lang = parseLang(body.lang);
+
   if (!paymentSig && SAKURA_FEE_WALLET) {
     return NextResponse.json(
       {
@@ -194,7 +223,7 @@ export async function POST(req: NextRequest) {
         amount:      AI_REPORT_FEE_USDC,
         currency:    "USDC" as const,
         network:     "solana-mainnet" as const,
-        description: "Sakura Nonce Guardian — AI Security Report + SHA-256 永久鏈上存證",
+        description: pickNonce("payDesc", lang),
         scanResult,  // free scan included so UI can show basic results
       },
       {
@@ -604,7 +633,7 @@ Then write a comprehensive security report in Traditional Chinese (繁體中文)
       explorerUrl: proofTxSig
         ? `https://solscan.io/tx/${proofTxSig}`
         : null,
-      message:   "此報告已永久記錄於 Solana 鏈上，SHA-256 哈希獨立可驗證",
+      message:   pickNonce("realProof", lang),
     } : null,
   });
 }

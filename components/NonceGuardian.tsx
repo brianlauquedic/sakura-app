@@ -52,6 +52,49 @@ export default function NonceGuardian({ isDemo = false }: { isDemo?: boolean }) 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDemo]);
 
+  // Auto re-fetch when language changes — API response data (risk descriptions,
+  // AI analysis, proof.message) is language-specific and stored in state.
+  // UI labels via t() update instantly, but API content needs a re-fetch.
+  const prevLangRef = useRef(lang);
+  useEffect(() => {
+    if (prevLangRef.current === lang) return;
+    prevLangRef.current = lang;
+    if (!result) return; // nothing to refresh
+
+    // Silently re-fetch in current language (no loading spinners)
+    const refreshForLang = async () => {
+      abortRef.current?.abort();
+      abortRef.current = new AbortController();
+      const signal = abortRef.current.signal;
+      const hasPaidReport = !!(result.aiAnalysis);
+      try {
+        const res = await fetch("/api/nonce-guardian", {
+          signal,
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(hasPaidReport && isDemo ? { "X-PAYMENT": "DEMO_LANG_REFRESH" } : {}),
+          },
+          body: JSON.stringify(
+            isDemo
+              ? { wallet: inputAddr.trim(), demo: true, lang: lang as Lang }
+              : { wallet: inputAddr.trim(), lang: lang as Lang }
+          ),
+        });
+        if (signal.aborted) return;
+        if (res.status === 402) {
+          const body = await res.json();
+          if (body.scanResult) setResult(prev => ({ ...prev!, ...body.scanResult }));
+        } else if (res.ok) {
+          const data: ScanResult = await res.json();
+          setResult(data);
+        }
+      } catch { /* silent refresh — don't show error on language switch */ }
+    };
+    refreshForLang();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lang]);
+
   async function scan(overrideAddr?: string) {
     const addr = (overrideAddr ?? inputAddr).trim();
     if (!addr || addr.length < 32) {
@@ -74,7 +117,7 @@ export default function NonceGuardian({ isDemo = false }: { isDemo?: boolean }) 
         signal,
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(isDemo ? { wallet: addr, demo: true, lang: lang as Lang } : { wallet: addr }),
+        body: JSON.stringify(isDemo ? { wallet: addr, demo: true, lang: lang as Lang } : { wallet: addr, lang: lang as Lang }),
       });
 
       // x402: payment required for AI analysis
@@ -182,7 +225,7 @@ export default function NonceGuardian({ isDemo = false }: { isDemo?: boolean }) 
           "Content-Type": "application/json",
           "X-PAYMENT": payResult.sig,
         },
-        body: JSON.stringify({ wallet: inputAddr.trim() }),
+        body: JSON.stringify({ wallet: inputAddr.trim(), lang: lang as Lang }),
       });
 
       if (!res.ok) throw new Error(`HTTP ${res.status}`);

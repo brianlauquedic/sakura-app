@@ -101,6 +101,37 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDemo]);
 
+  // Auto re-fetch when language changes — AI analysis from API is language-specific
+  const prevLangRef = useRef(lang);
+  useEffect(() => {
+    if (prevLangRef.current === lang) return;
+    prevLangRef.current = lang;
+    if (!simResult) return;
+
+    const refreshForLang = async () => {
+      simAbortRef.current?.abort();
+      simAbortRef.current = new AbortController();
+      const signal = simAbortRef.current.signal;
+      try {
+        const wallet = isDemo ? DEMO_WALLET : walletAddress;
+        if (!wallet) return;
+        const res = await fetch("/api/ghost-run/simulate", {
+          signal,
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(isDemo
+            ? { strategy: strategy.trim(), wallet, demo: true, lang: lang as Lang }
+            : { strategy: strategy.trim(), wallet }),
+        });
+        if (signal.aborted || !res.ok) return;
+        const data: SimulateResponse = await res.json();
+        setSimResult(data);
+      } catch { /* silent refresh */ }
+    };
+    refreshForLang();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lang]);
+
   async function runSimulation(overrideStrategy?: string, overrideWallet?: string) {
     const text = (overrideStrategy ?? strategy).trim();
     const wallet = overrideWallet ?? (isDemo ? DEMO_WALLET : walletAddress);
