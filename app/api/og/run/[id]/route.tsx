@@ -12,6 +12,7 @@ export async function GET(
 
   return new ImageResponse(
     (
+      // satori rule: every element with >1 child must have display:flex
       <div
         style={{
           width: 1200,
@@ -26,22 +27,11 @@ export async function GET(
           position: "relative",
         }}
       >
-        {/* Subtle grid overlay */}
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            backgroundImage:
-              "linear-gradient(rgba(139,92,246,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(139,92,246,0.04) 1px, transparent 1px)",
-            backgroundSize: "48px 48px",
-          }}
-        />
-
-        {/* Logo top-right */}
+        {/* Logo top-right — single child, no flex needed */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={LOGO_BIJIN_B64}
-          alt="Sakura"
+          alt=""
           width={90}
           height={120}
           style={{
@@ -51,21 +41,22 @@ export async function GET(
             objectFit: "cover",
             objectPosition: "top",
             borderRadius: 12,
-            opacity: 0.9,
+            opacity: 0.92,
           }}
         />
 
-        {/* Badge */}
+        {/* Badge row — flex, two children */}
         <div
           style={{
             display: "flex",
+            flexDirection: "row",
             alignItems: "center",
             gap: 10,
             marginBottom: 28,
           }}
         >
-          <span style={{ fontSize: 36 }}>👻</span>
-          <div
+          <span style={{ fontSize: 34 }}>👻</span>
+          <span
             style={{
               fontSize: 13,
               color: "#8B5CF6",
@@ -74,44 +65,47 @@ export async function GET(
             }}
           >
             SAKURA · GHOST RUN · PROOF-OF-SIMULATION
-          </div>
+          </span>
         </div>
 
-        {/* Main heading */}
+        {/* Heading — two lines as flex column, NO <br/> */}
         <div
           style={{
-            fontSize: 48,
-            fontWeight: 800,
-            color: "#F1F5F9",
+            display: "flex",
+            flexDirection: "column",
             marginBottom: 20,
             maxWidth: 860,
-            lineHeight: 1.2,
           }}
         >
-          Solana DeFi Strategy
-          <br />
-          Pre-Simulated
+          <span style={{ fontSize: 48, fontWeight: 800, color: "#F1F5F9", lineHeight: 1.15 }}>
+            Solana DeFi Strategy
+          </span>
+          <span style={{ fontSize: 48, fontWeight: 800, color: "#F1F5F9", lineHeight: 1.15 }}>
+            Pre-Simulated
+          </span>
         </div>
 
-        {/* Subtext */}
+        {/* Subtext row — flex, two children */}
         <div
           style={{
-            fontSize: 18,
-            color: "#64748B",
-            marginBottom: 36,
             display: "flex",
+            flexDirection: "row",
             alignItems: "center",
             gap: 12,
+            marginBottom: 36,
           }}
         >
-          <span style={{ color: "#10B981" }}>⛩️</span>
-          <span>SHA-256 committed on Solana mainnet · pre-trade</span>
+          <span style={{ fontSize: 18, color: "#10B981" }}>⛩️</span>
+          <span style={{ fontSize: 18, color: "#64748B" }}>
+            SHA-256 committed on Solana mainnet · pre-trade
+          </span>
         </div>
 
-        {/* ID pill */}
+        {/* ID pill — flex row, two children */}
         <div
           style={{
             display: "flex",
+            flexDirection: "row",
             alignItems: "center",
             gap: 12,
             background: "rgba(139,92,246,0.12)",
@@ -134,7 +128,7 @@ export async function GET(
           </span>
         </div>
 
-        {/* Footer */}
+        {/* Footer — single text child */}
         <div
           style={{
             position: "absolute",
@@ -143,9 +137,10 @@ export async function GET(
             fontSize: 13,
             color: "#334155",
             letterSpacing: 2,
+            display: "flex",
           }}
         >
-          sakuraaai.com
+          <span>sakuraaai.com</span>
         </div>
       </div>
     ),
