@@ -413,9 +413,8 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
       }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: pulseLoading ? 0 : 12 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontSize: 14 }}>📡</span>
             <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2, color: "var(--green)", fontFamily: "var(--font-mono)" }}>
-              SOLANA DEFI SAFETY PULSE
+              📡 {t("pulseTitle").toUpperCase()}
             </span>
           </div>
           {pulse && (
@@ -428,16 +427,18 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
                      pulse.marketPressure === "high" ? "#F59E0B" :
                      pulse.marketPressure === "medium" ? "#FBB924" : "var(--green)",
               fontFamily: "var(--font-mono)", fontWeight: 600, letterSpacing: 1,
-              textTransform: "uppercase" as const,
             }}>
-              {pulse.marketPressure} pressure
+              {pulse.marketPressure === "critical" ? t("pulsePressureCritical") :
+               pulse.marketPressure === "high"     ? t("pulsePressureHigh") :
+               pulse.marketPressure === "medium"   ? t("pulsePressureMedium") :
+                                                     t("pulsePressureLow")}
             </span>
           )}
         </div>
 
         {pulseLoading && (
           <div style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: "var(--font-mono)" }}>
-            Scanning Kamino · MarginFi · Solend...
+            {t("pulseScanning")}
           </div>
         )}
 
@@ -454,7 +455,7 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
                     {p.protocol}
                   </div>
                   <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 2 }}>
-                    {p.monitored.toLocaleString()} positions
+                    {p.monitored.toLocaleString()} {t("pulsePositions")}
                   </div>
                   <div style={{
                     fontSize: 11, fontWeight: 600,
@@ -462,10 +463,10 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
                            p.riskLevel === "high" ? "#F59E0B" :
                            p.riskLevel === "medium" ? "#FBB924" : "var(--green)",
                   }}>
-                    {p.below1_2} at-risk
+                    {p.below1_2} {t("pulseAtRisk")}
                     {p.below1_05 > 0 && (
                       <span style={{ color: "#EF4444", marginLeft: 4 }}>
-                        ({p.below1_05} critical)
+                        ({p.below1_05} {t("pulseCritical")})
                       </span>
                     )}
                   </div>
@@ -474,10 +475,10 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
             </div>
             <div style={{ fontSize: 10, color: "var(--text-muted)", display: "flex", justifyContent: "space-between" }}>
               <span>
-                {pulse.totalMonitored.toLocaleString()} total positions · {pulse.totalAtRisk} in warning zone
+                {pulse.totalMonitored.toLocaleString()} {t("pulseTotalPos")} · {pulse.totalAtRisk} {t("pulseWarningZone")}
               </span>
               <span style={{ fontFamily: "var(--font-mono)" }}>
-                {pulse.source === "live" ? "🟢 live" : "🟡 cached"} · {new Date(pulse.lastUpdated).toLocaleTimeString()}
+                {pulse.source === "live" ? `🟢 ${t("pulseLive")}` : `🟡 ${t("pulseCached")}`} · {new Date(pulse.lastUpdated).toLocaleTimeString()}
               </span>
             </div>
           </>

@@ -979,6 +979,20 @@ export const translations = {
   // ── Plan summary (from rebalance API) ────────────────────────────
   summaryOpportunities: { zh: "發現 {n} 個優化機會，可將年化收益提升至 +${yield}", en: "Found {n} optimization {op} — projected annual yield +${yield}", ja: "{n}件の最適化機会を発見 — 年間収益予測 +${yield}" },
   summaryLowBalance:    { zh: "當前餘額較少，建議先積累更多 SOL/USDC", en: "Low balance — consider building up more SOL/USDC first", ja: "残高が少ないです。まずSOL/USDCを積み立てることをお勧めします" },
+  // ── Safety Pulse Panel ───────────────────────────────────────────
+  pulseTitle:         { zh: "Solana DeFi 安全脈衝", en: "Solana DeFi Safety Pulse", ja: "Solana DeFi セーフティパルス" },
+  pulseScanning:      { zh: "掃描 Kamino · MarginFi · Solend 中…", en: "Scanning Kamino · MarginFi · Solend...", ja: "Kamino · MarginFi · Solend をスキャン中…" },
+  pulsePositions:     { zh: "個倉位", en: "positions", ja: "ポジション" },
+  pulseAtRisk:        { zh: "高風險", en: "at-risk", ja: "リスク" },
+  pulseCritical:      { zh: "極危", en: "critical", ja: "極危険" },
+  pulseTotalPos:      { zh: "個監控倉位", en: "total positions", ja: "監視ポジション" },
+  pulseWarningZone:   { zh: "個處於警戒區", en: "in warning zone", ja: "警戒ゾーン" },
+  pulseLive:          { zh: "實時", en: "live", ja: "リアルタイム" },
+  pulseCached:        { zh: "緩存", en: "cached", ja: "キャッシュ" },
+  pulsePressureLow:      { zh: "低壓力", en: "Low Pressure", ja: "低圧力" },
+  pulsePressureMedium:   { zh: "中等壓力", en: "Medium Pressure", ja: "中程度の圧力" },
+  pulsePressureHigh:     { zh: "高壓力", en: "High Pressure", ja: "高圧力" },
+  pulsePressureCritical: { zh: "極高壓力", en: "Critical Pressure", ja: "危機的圧力" },
 } as const;
 
 export type TranslationKey = keyof typeof translations;
