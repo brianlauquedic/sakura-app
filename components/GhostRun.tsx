@@ -873,19 +873,19 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
               borderRadius: 10, padding: "16px 20px", marginBottom: 16,
             }}>
               <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", color: "#8B5CF6", fontFamily: "var(--font-mono)", marginBottom: 12 }}>
-                ⛩️ PROOF-OF-SIMULATION · ONCHAIN COMMITMENT
+                {t("ghostProofTitle")}
               </div>
 
               {simResult.commitmentId && (
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, marginBottom: 6 }}>
-                  <span style={{ color: "var(--text-muted)" }}>Commitment ID</span>
+                  <span style={{ color: "var(--text-muted)" }}>{t("ghostCommitmentId")}</span>
                   <span style={{ color: "#8B5CF6", fontFamily: "var(--font-mono)" }}>{simResult.commitmentId}</span>
                 </div>
               )}
 
               {simResult.commitmentMemoSig && (
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, marginBottom: 10 }}>
-                  <span style={{ color: "var(--text-muted)" }}>Onchain TX</span>
+                  <span style={{ color: "var(--text-muted)" }}>{t("ghostOnchainTx")}</span>
                   <a
                     href={`https://solscan.io/tx/${simResult.commitmentMemoSig}`}
                     target="_blank"
@@ -898,7 +898,7 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
               )}
 
               <div style={{ fontSize: 11, color: "var(--text-muted)", lineHeight: 1.6, marginBottom: 14 }}>
-                SHA-256 committed on Solana BEFORE execution — anyone can verify the outcome was known pre-trade.
+                {t("ghostProofDesc")}
               </div>
 
               {/* Share buttons */}
@@ -916,7 +916,7 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
                       fontSize: 12, fontWeight: 600, letterSpacing: "0.04em",
                     }}
                   >
-                    📄 View Report
+                    {t("ghostViewReport")}
                   </a>
                   <a
                     href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(
@@ -936,7 +936,7 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
                       fontSize: 12, fontWeight: 600, letterSpacing: "0.04em",
                     }}
                   >
-                    𝕏 Share on X
+                    {t("ghostShareX")}
                   </a>
                   <button
                     onClick={() => {
@@ -951,7 +951,7 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
                       fontSize: 12, cursor: "pointer", letterSpacing: "0.04em",
                     }}
                   >
-                    📋 Copy Link
+                    {t("ghostCopyLink")}
                   </button>
                 </div>
               )}

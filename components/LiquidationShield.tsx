@@ -337,6 +337,9 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
       setRescuingIdx(idx);
       await new Promise(r => setTimeout(r, 2000));
       if (demoSignal.aborted) { setRescuingIdx(null); return; }
+      const demoMandateH = "m" + Math.random().toString(16).slice(2, 10);
+      const demoExecH    = "e" + Math.random().toString(16).slice(2, 10);
+      const demoProof    = "p" + Math.random().toString(16).slice(2, 10);
       setRescueResults(prev => ({
         ...prev,
         [idx]: {
@@ -346,7 +349,13 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
           feeUsdc: sim.rescueUsdc * 0.01,
           feeCollected: true,
           memoSig: "DEMO_MEMO_" + Math.random().toString(36).slice(2, 8).toUpperCase(),
-          auditChain: null,
+          auditChain: "DEMO_MANDATE… → DEMO_EXEC…",
+          hashChain: {
+            mandateHash: demoMandateH,
+            executionHash: demoExecH,
+            chainProof: demoProof,
+            description: "mandate_hash → execution_hash → chain_proof (SHA-256, tamper-evident)",
+          },
           mandateTs: approveTs ?? null,
           executionTs: new Date().toISOString(),
           timeWindowSec: 42,
