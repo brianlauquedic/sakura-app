@@ -29,6 +29,12 @@ interface RescueResponse {
   feeCollected: boolean;
   memoSig: string | null;
   auditChain: string | null;
+  hashChain?: {
+    mandateHash: string;
+    executionHash: string;
+    chainProof: string;
+    description: string;
+  };
   // Module 06: time-gated audit fields
   mandateTs: string | null;
   executionTs: string;
@@ -39,6 +45,24 @@ interface RescueResponse {
 }
 
 import type { SolanaWalletProvider } from "@/types/phantom";
+
+interface SafetyPulseData {
+  protocols: Array<{
+    protocol: string;
+    monitored: number;
+    avgHealthFactor: number;
+    below1_2: number;
+    below1_05: number;
+    atRiskPct: number;
+    tvlEstimateUsd: number;
+    riskLevel: "low" | "medium" | "high" | "critical";
+  }>;
+  totalMonitored: number;
+  totalAtRisk: number;
+  marketPressure: "low" | "medium" | "high" | "critical";
+  lastUpdated: string;
+  source: string;
+}
 
 function getWalletProvider(): SolanaWalletProvider | null {
   if (typeof window === "undefined") return null;
@@ -89,6 +113,9 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
   const [rescueResults, setRescueResults] = useState<Record<number, RescueResponse>>({});
   const [error, setError] = useState<string | null>(null);
 
+  const [pulse, setPulse] = useState<SafetyPulseData | null>(null);
+  const [pulseLoading, setPulseLoading] = useState(false);
+
   // Separate AbortControllers per operation to prevent cross-cancellation
   // Bug #1/#2 fix: scan, authorize, and rescue each get their own controller
   const scanAbortRef = useRef<AbortController | null>(null);
@@ -101,6 +128,15 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
       authAbortRef.current?.abort();
       rescueAbortRef.current?.abort();
     };
+  }, []);
+
+  useEffect(() => {
+    setPulseLoading(true);
+    fetch("/api/safety-pulse")
+      .then(r => r.ok ? r.json() : null)
+      .then((data: SafetyPulseData | null) => { if (data) setPulse(data); })
+      .catch(() => {})
+      .finally(() => setPulseLoading(false));
   }, []);
 
   // ── SPL Approve authorization state ──────────────────────────────
@@ -369,6 +405,85 @@ export default function LiquidationShield({ isDemo = false }: { isDemo?: boolean
 
   return (
     <div>
+      {/* Safety Pulse Panel */}
+      <div style={{
+        marginBottom: 20, padding: "14px 18px",
+        background: "linear-gradient(135deg, rgba(16,185,129,0.04), rgba(6,182,212,0.04))",
+        border: "1px solid rgba(16,185,129,0.2)", borderRadius: 12,
+      }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: pulseLoading ? 0 : 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontSize: 14 }}>📡</span>
+            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2, color: "var(--green)", fontFamily: "var(--font-mono)" }}>
+              SOLANA DEFI SAFETY PULSE
+            </span>
+          </div>
+          {pulse && (
+            <span style={{
+              fontSize: 10, padding: "2px 8px", borderRadius: 10,
+              background: pulse.marketPressure === "critical" ? "rgba(239,68,68,0.15)" :
+                          pulse.marketPressure === "high" ? "rgba(245,158,11,0.15)" :
+                          pulse.marketPressure === "medium" ? "rgba(251,191,36,0.1)" : "rgba(16,185,129,0.1)",
+              color: pulse.marketPressure === "critical" ? "#EF4444" :
+                     pulse.marketPressure === "high" ? "#F59E0B" :
+                     pulse.marketPressure === "medium" ? "#FBB924" : "var(--green)",
+              fontFamily: "var(--font-mono)", fontWeight: 600, letterSpacing: 1,
+              textTransform: "uppercase" as const,
+            }}>
+              {pulse.marketPressure} pressure
+            </span>
+          )}
+        </div>
+
+        {pulseLoading && (
+          <div style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: "var(--font-mono)" }}>
+            Scanning Kamino · MarginFi · Solend...
+          </div>
+        )}
+
+        {pulse && !pulseLoading && (
+          <>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginBottom: 10 }}>
+              {pulse.protocols.map(p => (
+                <div key={p.protocol} style={{
+                  padding: "8px 10px",
+                  background: "var(--bg-card)", border: "1px solid var(--border)",
+                  borderRadius: 8,
+                }}>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: "var(--text-primary)", marginBottom: 4 }}>
+                    {p.protocol}
+                  </div>
+                  <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 2 }}>
+                    {p.monitored.toLocaleString()} positions
+                  </div>
+                  <div style={{
+                    fontSize: 11, fontWeight: 600,
+                    color: p.riskLevel === "critical" ? "#EF4444" :
+                           p.riskLevel === "high" ? "#F59E0B" :
+                           p.riskLevel === "medium" ? "#FBB924" : "var(--green)",
+                  }}>
+                    {p.below1_2} at-risk
+                    {p.below1_05 > 0 && (
+                      <span style={{ color: "#EF4444", marginLeft: 4 }}>
+                        ({p.below1_05} critical)
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div style={{ fontSize: 10, color: "var(--text-muted)", display: "flex", justifyContent: "space-between" }}>
+              <span>
+                {pulse.totalMonitored.toLocaleString()} total positions · {pulse.totalAtRisk} in warning zone
+              </span>
+              <span style={{ fontFamily: "var(--font-mono)" }}>
+                {pulse.source === "live" ? "🟢 live" : "🟡 cached"} · {new Date(pulse.lastUpdated).toLocaleTimeString()}
+              </span>
+            </div>
+          </>
+        )}
+      </div>
+
       {/* Header */}
       <div style={{ marginBottom: 24 }}>
         <div style={{

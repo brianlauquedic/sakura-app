@@ -15,6 +15,7 @@
  *  - Liquidation penalty = 5-10%, so user nets 4-9% savings after fee
  */
 import { NextRequest, NextResponse } from "next/server";
+import crypto from "crypto";
 import { Connection, PublicKey, Transaction, Keypair, ComputeBudgetProgram } from "@solana/web3.js";
 import { RPC_URL } from "@/lib/agent";
 import { getConnection, getDynamicPriorityFee } from "@/lib/rpc";
@@ -90,6 +91,10 @@ function rt(key: string, lang: RescueLang, vars?: Record<string, string>): strin
 function parseLang(v: unknown): RescueLang {
   if (v === "en" || v === "ja" || v === "zh") return v;
   return "zh";
+}
+
+function sha256Short(input: string): string {
+  return crypto.createHash("sha256").update(input).digest("hex").slice(0, 16);
 }
 
 // ── GET: return agent pubkey for frontend SPL approve ──────────────────────────
@@ -502,6 +507,21 @@ export async function POST(req: NextRequest) {
     ? Math.round((Date.now() - new Date(mandateTs).getTime()) / 1000)
     : null;
 
+  // Hash chain: each step references the previous step's hash
+  // mandate_hash = sha256(mandateTxSig + mandateTs) → ties to the SPL approve TX
+  // execution_hash = sha256(rescueSig + executionTs) → ties to the rescue TX
+  // chain_proof = sha256(mandate_hash + execution_hash) → ties both together
+  const mandateHash = sha256Short((mandateTxSig ?? "no_mandate") + (mandateTs ?? "no_ts"));
+  const executionContent = [
+    sanitizedPosition.protocol,
+    wallet.slice(0, 8),
+    rescueUsdc.toString(),
+    executionTs,
+    rescueSig ?? "failed",
+  ].join("|");
+  const executionHash = sha256Short(executionContent);
+  const chainProof = sha256Short(mandateHash + executionHash);
+
   const auditData = JSON.stringify({
     event: "sakura_rescue_executed",
     protocol: sanitizedPosition.protocol,
@@ -513,11 +533,15 @@ export async function POST(req: NextRequest) {
     postHealthFactor: sanitizedPosition.postRescueHealthFactor?.toFixed(3),
     mandateRef: mandateTxSig?.slice(0, 20) ?? "none",
     rescueSig: rescueSig?.slice(0, 20) ?? "failed",
+    // Hash chain fields (Plan 4: inspired by zERC20 Hash Chain architecture)
+    mandate_hash: mandateHash,
+    execution_hash: executionHash,
+    chain_proof: chainProof,
     // Module 06: time-gated audit fields
-    mandateTs: mandateTs ?? null,    // when user set the SPL approve mandate
-    executionTs,                     // when rescue was executed
-    timeWindowSec,                   // seconds between mandate and rescue (audit trail)
-    module: "06_time_gated_audit",
+    mandateTs: mandateTs ?? null,
+    executionTs,
+    timeWindowSec,
+    module: "06_hash_chain_audit",
   });
 
   try {
@@ -553,6 +577,12 @@ export async function POST(req: NextRequest) {
     auditChain: mandateTxSig
       ? `${mandateTxSig.slice(0, 12)}… → ${memoSig?.slice(0, 12) ?? "?"}…`
       : null,
+    hashChain: {
+      mandateHash,
+      executionHash,
+      chainProof,
+      description: "mandate_hash → execution_hash → chain_proof (SHA-256, tamper-evident)",
+    },
     // Module 06: time-gated audit metadata
     mandateTs: mandateTs ?? null,
     executionTs,
