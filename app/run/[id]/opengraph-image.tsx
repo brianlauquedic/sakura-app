@@ -1,7 +1,5 @@
 import { ImageResponse } from "next/og";
 import { getRun } from "@/lib/run-store";
-import fs from "fs";
-import path from "path";
 
 export const runtime = "nodejs";
 export const alt = "Ghost Run · Proof-of-Simulation Report";
@@ -14,15 +12,17 @@ export default async function Image({ params }: { params: Promise<{ id: string }
 
   const strategy = run?.strategy?.slice(0, 72) ?? "Solana DeFi Strategy";
   const commitmentId = run?.commitmentId ?? "GR-XXXXXXXX";
-  const ts = run ? new Date(run.ts).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "";
+  const ts = run
+    ? new Date(run.ts).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+    : "";
 
-  // Read WaBijin logo from public folder and encode as base64 data URL
-  let logoDataUrl: string | null = null;
+  // Fetch the logo from public URL (avoids embedding 984KB file as base64)
+  let logoData: ArrayBuffer | null = null;
   try {
-    const logoPath = path.join(process.cwd(), "public", "logo-bijin.png");
-    const logoBuffer = fs.readFileSync(logoPath);
-    logoDataUrl = `data:image/png;base64,${logoBuffer.toString("base64")}`;
-  } catch { /* fallback to emoji */ }
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "https://sakuraaai.com";
+    const res = await fetch(`${baseUrl}/logo-bijin.png`, { signal: AbortSignal.timeout(3000) });
+    if (res.ok) logoData = await res.arrayBuffer();
+  } catch { /* fallback to initials */ }
 
   return new ImageResponse(
     (
@@ -42,10 +42,9 @@ export default async function Image({ params }: { params: Promise<{ id: string }
       >
         {/* Background glow */}
         <div style={{
-          position: "absolute", top: -120, right: -80,
-          width: 480, height: 480,
-          borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(139,92,246,0.12) 0%, transparent 70%)",
+          position: "absolute", top: -100, right: -60,
+          width: 400, height: 400, borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(139,92,246,0.15) 0%, transparent 70%)",
           display: "flex",
         }} />
 
@@ -54,21 +53,25 @@ export default async function Image({ params }: { params: Promise<{ id: string }
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
             {/* WaBijin avatar */}
             <div style={{
-              width: 56, height: 56, borderRadius: 14,
+              width: 58, height: 58, borderRadius: 14,
               overflow: "hidden", flexShrink: 0,
-              border: "2px solid rgba(139,92,246,0.5)",
+              border: "2px solid rgba(139,92,246,0.6)",
               display: "flex", alignItems: "center", justifyContent: "center",
               background: "linear-gradient(135deg, #1E1340, #0F0A1E)",
             }}>
-              {logoDataUrl ? (
+              {logoData ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={logoDataUrl} width={56} height={56} alt="Sakura" style={{ objectFit: "cover" }} />
+                <img
+                  src={`data:image/png;base64,${Buffer.from(logoData).toString("base64")}`}
+                  width={58} height={58} alt="Sakura"
+                  style={{ objectFit: "cover", objectPosition: "top" }}
+                />
               ) : (
-                <span style={{ fontSize: 30 }}>🌸</span>
+                <span style={{ fontSize: 32, lineHeight: 1 }}>🌸</span>
               )}
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              <span style={{ fontSize: 22, fontWeight: 700, color: "#F1F5F9", letterSpacing: 1 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+              <span style={{ fontSize: 24, fontWeight: 700, color: "#F1F5F9", letterSpacing: 1 }}>
                 Sakura
               </span>
               <span style={{ fontSize: 11, color: "#475569", letterSpacing: 3 }}>
@@ -79,35 +82,31 @@ export default async function Image({ params }: { params: Promise<{ id: string }
           <div style={{
             background: "rgba(139,92,246,0.12)",
             border: "1px solid rgba(139,92,246,0.4)",
-            borderRadius: 8, padding: "7px 18px",
-            fontSize: 13, fontWeight: 700, color: "#8B5CF6", letterSpacing: 2,
+            borderRadius: 8, padding: "8px 20px",
+            fontSize: 14, fontWeight: 700, color: "#8B5CF6", letterSpacing: 2,
             display: "flex", alignItems: "center", gap: 8,
           }}>
             👻 GHOST RUN REPORT
           </div>
         </div>
 
-        {/* Middle: Main content */}
+        {/* Middle */}
         <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
           <div style={{
-            fontSize: 12, fontWeight: 700, color: "#8B5CF6",
-            letterSpacing: 3, display: "flex", alignItems: "center", gap: 6,
+            fontSize: 12, fontWeight: 700, color: "#8B5CF6", letterSpacing: 3,
           }}>
             ⛩️ PROOF-OF-SIMULATION · ONCHAIN COMMITMENT
           </div>
-
           <div style={{
-            fontSize: strategy.length > 50 ? 26 : 32,
-            fontWeight: 700, color: "#F1F5F9", lineHeight: 1.35,
-            maxWidth: 860,
+            fontSize: strategy.length > 50 ? 27 : 33,
+            fontWeight: 700, color: "#F1F5F9", lineHeight: 1.35, maxWidth: 860,
           }}>
             {strategy}{run?.strategy && run.strategy.length > 72 ? "…" : ""}
           </div>
-
           <div style={{ display: "flex", gap: 40, alignItems: "center" }}>
             <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
               <span style={{ fontSize: 10, color: "#475569", letterSpacing: 2 }}>COMMITMENT ID</span>
-              <span style={{ fontSize: 19, fontWeight: 700, color: "#A78BFA", fontFamily: "monospace" }}>
+              <span style={{ fontSize: 20, fontWeight: 700, color: "#A78BFA", fontFamily: "monospace" }}>
                 {commitmentId}
               </span>
             </div>
@@ -124,7 +123,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
           </div>
         </div>
 
-        {/* Bottom: Footer */}
+        {/* Bottom */}
         <div style={{
           display: "flex", justifyContent: "space-between", alignItems: "center",
           borderTop: "1px solid #1E293B", paddingTop: 18,
