@@ -246,6 +246,13 @@ export async function proxy(req: NextRequest) {
     // Cursor, VS Code, etc.) — skip bot UA and fingerprint checks for this path.
     const isMcpEndpoint = pathname.startsWith("/api/mcp");
 
+    // /api/og/ generates Open Graph images fetched by social media crawlers
+    // (Twitter, Facebook, Slack, Discord, etc.) — must be publicly accessible.
+    // Skip ALL bot/fingerprint/rate-limit checks for OG image routes.
+    if (pathname.startsWith("/api/og/")) {
+      return NextResponse.next();
+    }
+
     // Demo mode: skip rate limiting for demo API calls.
     // Demo data is served from lib/demo-data.ts and never hits real RPC/AI.
     // Only bypass for our own origin (prevent external spoofing of Referer header).
