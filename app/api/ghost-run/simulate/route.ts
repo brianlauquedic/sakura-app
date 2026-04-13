@@ -254,10 +254,35 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Generate demo commitment + store run (same as real mode, so UI panels always show)
+    const cryptoMod = await import("crypto");
+    const demoStrategy = body.strategy ?? "demo";
+    const demoCommitmentId = "GR-DEMO" + cryptoMod.createHash("sha256")
+      .update(demoStrategy + Date.now()).digest("hex").slice(0, 4).toUpperCase();
+
+    let demoRunId: string | null = null;
+    try {
+      const { storeRun } = await import("@/lib/run-store");
+      demoRunId = await storeRun({
+        strategy: demoStrategy,
+        walletShort: "demo...mode",
+        steps: result.steps,
+        result: result.result,
+        aiAnalysis: demoData.aiAnalysis,
+        commitmentId: demoCommitmentId,
+        commitmentMemoSig: null,
+        lang,
+        ts: Date.now(),
+      });
+    } catch { /* optional */ }
+
     return NextResponse.json({
       steps: result.steps,
       result: result.result,
       aiAnalysis: demoData.aiAnalysis,
+      commitmentId: demoCommitmentId,
+      commitmentMemoSig: null,
+      runId: demoRunId,
     });
   }
 
