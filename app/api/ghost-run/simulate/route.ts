@@ -670,5 +670,58 @@ ${AI_ANALYSIS_TEMPLATE[simLang]}`,
     console.error("[ghost-run/simulate] agentic analysis error:", err);
   }
 
-  return NextResponse.json({ steps, result, aiAnalysis });
+  // ── Proof-of-Simulation: write pre-commitment Memo to Solana chain ───────────
+  // This creates a cryptographic pre-commitment: "I knew the simulation result BEFORE executing."
+  const crypto = await import("crypto");
+  const strategyHash = crypto.createHash("sha256").update(strategy).digest("hex").slice(0, 16);
+  const resultHash = crypto.createHash("sha256").update(JSON.stringify(result)).digest("hex").slice(0, 16);
+  const commitmentId = "GR-" + crypto.createHash("sha256").update(strategy + wallet + Date.now()).digest("hex").slice(0, 8);
+
+  const commitmentPayload = JSON.stringify({
+    event: "ghost_run_commitment",
+    commitment_id: commitmentId,
+    strategy_hash: strategyHash,
+    sim_result_hash: resultHash,
+    wallet: wallet.slice(0, 8),
+    steps: steps.length,
+    can_execute: result.canExecute,
+    ts: new Date().toISOString(),
+  });
+
+  let commitmentMemoSig: string | null = null;
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || (process.env.VERCEL_URL && `https://${process.env.VERCEL_URL}`);
+    if (baseUrl) {
+      const memoHeaders: Record<string, string> = { "Content-Type": "application/json" };
+      if (process.env.INTERNAL_API_SECRET) memoHeaders["x-internal-secret"] = process.env.INTERNAL_API_SECRET;
+      const memoRes = await fetch(`${baseUrl}/api/agent/memo`, {
+        method: "POST",
+        headers: memoHeaders,
+        body: JSON.stringify({ memoPayload: commitmentPayload }),
+      }).catch(() => null);
+      if (memoRes?.ok) {
+        const memoData = await memoRes.json();
+        commitmentMemoSig = memoData.txSignature ?? memoData.signature ?? null;
+      }
+    }
+  } catch { /* commitment memo is optional */ }
+
+  // Store run for shareable report page
+  let runId: string | null = null;
+  try {
+    const { storeRun } = await import("@/lib/run-store");
+    runId = await storeRun({
+      strategy,
+      walletShort: wallet.slice(0, 8),
+      steps,
+      result,
+      aiAnalysis,
+      commitmentId: commitmentId ?? null,
+      commitmentMemoSig,
+      lang: simLang,
+      ts: Date.now(),
+    });
+  } catch { /* store is optional */ }
+
+  return NextResponse.json({ steps, result, aiAnalysis, commitmentId, commitmentMemoSig, runId });
 }

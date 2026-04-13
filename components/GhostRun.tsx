@@ -14,6 +14,9 @@ interface SimulateResponse {
   steps: StrategyStep[];
   result: GhostRunResult;
   aiAnalysis: string | null;
+  commitmentId?: string | null;
+  commitmentMemoSig?: string | null;
+  runId?: string | null;
 }
 
 interface UnsignedSwapTx {
@@ -858,6 +861,100 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
               <div style={{ fontSize: 13, color: "var(--text-primary)", lineHeight: 2.0, whiteSpace: "pre-wrap" }}>
                 {simResult.aiAnalysis}
               </div>
+            </div>
+          )}
+
+          {/* ── Proof-of-Simulation + Share Link (Plan 1 + Plan 2) ─────────────── */}
+          {(simResult.commitmentId || simResult.runId) && (
+            <div style={{
+              background: "rgba(124,111,255,0.05)",
+              border: "1px solid rgba(124,111,255,0.25)",
+              borderLeft: "3px solid #8B5CF6",
+              borderRadius: 10, padding: "16px 20px", marginBottom: 16,
+            }}>
+              <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", color: "#8B5CF6", fontFamily: "var(--font-mono)", marginBottom: 12 }}>
+                ⛩️ PROOF-OF-SIMULATION · ONCHAIN COMMITMENT
+              </div>
+
+              {simResult.commitmentId && (
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, marginBottom: 6 }}>
+                  <span style={{ color: "var(--text-muted)" }}>Commitment ID</span>
+                  <span style={{ color: "#8B5CF6", fontFamily: "var(--font-mono)" }}>{simResult.commitmentId}</span>
+                </div>
+              )}
+
+              {simResult.commitmentMemoSig && (
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, marginBottom: 10 }}>
+                  <span style={{ color: "var(--text-muted)" }}>Onchain TX</span>
+                  <a
+                    href={`https://solscan.io/tx/${simResult.commitmentMemoSig}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: "#60A5FA", fontFamily: "var(--font-mono)", textDecoration: "none" }}
+                  >
+                    {simResult.commitmentMemoSig.slice(0, 20)}… →
+                  </a>
+                </div>
+              )}
+
+              <div style={{ fontSize: 11, color: "var(--text-muted)", lineHeight: 1.6, marginBottom: 14 }}>
+                SHA-256 committed on Solana BEFORE execution — anyone can verify the outcome was known pre-trade.
+              </div>
+
+              {/* Share buttons */}
+              {simResult.runId && (
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <a
+                    href={`/run/${simResult.runId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: "inline-flex", alignItems: "center", gap: 6,
+                      padding: "7px 14px", background: "rgba(124,111,255,0.15)",
+                      border: "1px solid rgba(124,111,255,0.4)",
+                      borderRadius: 7, color: "#8B5CF6", textDecoration: "none",
+                      fontSize: 12, fontWeight: 600, letterSpacing: "0.04em",
+                    }}
+                  >
+                    📄 View Report
+                  </a>
+                  <a
+                    href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(
+                      `👻 Ghost Run Report — Solana DeFi Strategy Pre-Simulated\n` +
+                      `Commitment: ${simResult.commitmentId ?? "N/A"}\n` +
+                      `⛩️ SHA-256 pre-committed on Solana mainnet\n` +
+                      `sakuraaai.com/run/${simResult.runId}\n` +
+                      `@sakuraaijp #GhostRun #Solana`
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: "inline-flex", alignItems: "center", gap: 6,
+                      padding: "7px 14px", background: "rgba(29,161,242,0.1)",
+                      border: "1px solid rgba(29,161,242,0.3)",
+                      borderRadius: 7, color: "#60A5FA", textDecoration: "none",
+                      fontSize: 12, fontWeight: 600, letterSpacing: "0.04em",
+                    }}
+                  >
+                    𝕏 Share on X
+                  </a>
+                  <button
+                    onClick={() => {
+                      const url = `${typeof window !== "undefined" ? window.location.origin : "https://sakuraaai.com"}/run/${simResult.runId}`;
+                      navigator.clipboard.writeText(url).catch(() => {});
+                    }}
+                    style={{
+                      display: "inline-flex", alignItems: "center", gap: 6,
+                      padding: "7px 14px", background: "var(--bg-card)",
+                      border: "1px solid var(--border)",
+                      borderRadius: 7, color: "var(--text-muted)",
+                      fontSize: 12, cursor: "pointer", letterSpacing: "0.04em",
+                    }}
+                  >
+                    📋 Copy Link
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>
