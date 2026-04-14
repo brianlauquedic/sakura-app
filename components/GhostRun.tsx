@@ -923,7 +923,7 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
                       `👻 Ghost Run Report — Solana DeFi Strategy Pre-Simulated\n` +
                       `Commitment: ${simResult.commitmentId ?? "N/A"}\n` +
                       `⛩️ SHA-256 pre-committed on Solana mainnet\n` +
-                      `sakuraaai.com/run/${simResult.runId}\n` +
+                      `www.sakuraaai.com/run/${simResult.runId}\n` +
                       `@sakuraaijp #GhostRun #Solana`
                     )}`}
                     target="_blank"
@@ -940,7 +940,7 @@ export default function GhostRun({ isDemo = false }: { isDemo?: boolean }) {
                   </a>
                   <button
                     onClick={() => {
-                      const url = `${typeof window !== "undefined" ? window.location.origin : "https://sakuraaai.com"}/run/${simResult.runId}`;
+                      const url = `https://www.sakuraaai.com/run/${simResult.runId}`;
                       navigator.clipboard.writeText(url).catch(() => {});
                     }}
                     style={{

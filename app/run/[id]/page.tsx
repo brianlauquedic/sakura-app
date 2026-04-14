@@ -63,12 +63,12 @@ export default function RunPage() {
     return "en";
   })();
 
-  const shareUrl = typeof window !== "undefined" ? window.location.href : `https://sakuraaai.com/run/${id}`;
+  const shareUrl = `https://www.sakuraaai.com/run/${id}`;
   const twitterText = run ? encodeURIComponent(
     `👻 Ghost Run Report — Solana DeFi Strategy Pre-Simulated\n` +
     `Commitment: ${run.commitmentId ?? "N/A"}\n` +
     `⛩️ SHA-256 pre-committed on Solana mainnet\n` +
-    `sakuraaai.com/run/${id}\n` +
+    `www.sakuraaai.com/run/${id}\n` +
     `@sakuraaijp #GhostRun #Solana`
   ) : "";
 
