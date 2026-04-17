@@ -52,7 +52,7 @@ export default function ArchitectureDiagram() {
   return (
     <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-gray-900/90 to-black/70 p-5 space-y-1">
       <h3 className="text-center text-sm font-bold text-white/80 mb-4">
-        🏗️ {i("title")} — Solis DeFi Advisor
+        🏗️ {i("title")} — Sakura Mutual Insurance
       </h3>
 
       {/* AI Layer */}

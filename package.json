@@ -23,10 +23,13 @@
     "@solana/web3.js": "^1.98.4",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.37.0",
+    "circomlib": "^2.0.5",
+    "circomlibjs": "^0.1.7",
     "lightweight-charts": "^5.1.0",
     "next": "16.2.2",
     "react": "19.2.4",
     "react-dom": "19.2.4",
+    "snarkjs": "^0.7.6",
     "solana-agent-kit": "^2.0.10",
     "x402-next": "^1.1.0",
     "x402-solana": "^2.0.4"

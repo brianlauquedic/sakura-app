@@ -24,7 +24,7 @@ import { createReadOnlyAgent, RPC_URL } from "@/lib/agent";
 import { getConnection } from "@/lib/rpc";
 import { getWalletLimiter, checkWalletLimitMemory, trackUsage } from "@/lib/redis";
 import { processGhostRunCommit } from "@/lib/dual-hash";
-import { generateGhostRunProof } from "@/lib/groth16-verify";
+import { generateGhostRunProof } from "@/lib/zk-proof";
 import { DEMO_GHOST_STRATEGY, getDemoGhostResult, getDemoGhostResultMarinade, getDemoGhostResultKamino, getDemoGhostResultJito } from "@/lib/demo-data";
 import type { Lang } from "@/lib/demo-data";
 

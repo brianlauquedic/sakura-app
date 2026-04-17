@@ -1,22 +1,24 @@
 /**
- * Sakura Rescue Insurance Pool — TypeScript Client
+ * Sakura Mutual Insurance Pool — TypeScript Client (v0.2)
  *
- * Interacts with the on-chain Anchor program `sakura_insurance`
- * (see programs/sakura-insurance/src/lib.rs and the whitepaper at
- * docs/INSURANCE-POOL-WHITEPAPER.md).
+ * Interacts with the on-chain Anchor program `sakura_insurance` at
+ * `programs/sakura-insurance/src/lib.rs`.
+ *
+ * v0.2 is the **mutual self-insurance** model:
+ *   - No external LPs. Users buy policies + post refundable stake.
+ *   - Premium splits: `platform_fee_bps → treasury`, rest → pool vault.
+ *   - Claims are gated by on-chain Groth16 pairing (no agent trust).
+ *   - Oracle price + slot are public inputs; chain enforces freshness.
  *
  * This module provides:
- *   1. PDA derivation for Pool / LpPosition / Policy / ClaimRecord
- *   2. Anchor instruction builders (typed, zero-dependency on Anchor CLI)
- *   3. On-chain account deserialization (borsh-compatible)
+ *   1. PDA derivation for Pool / Policy / ClaimRecord
+ *   2. Typed Anchor instruction builders (no @coral-xyz/anchor runtime)
+ *   3. Borsh-compatible account deserializers
  *
  * Design notes:
- *   - We use raw @solana/web3.js + crypto.sha256 for Anchor discriminators
- *     instead of pulling the whole @coral-xyz/anchor runtime (keeps bundle
- *     small, avoids wallet adapter coupling in server routes).
- *   - Rescue flow chooses insurance-path ONLY when a Policy PDA exists,
- *     is active, and covers the rescue amount. Otherwise the existing
- *     sakura_mandate program (SPL-delegate escrow) handles the rescue.
+ *   - Uses raw @solana/web3.js + crypto.sha256 for Anchor discriminators.
+ *   - Policy commitment_hash is `Poseidon(obligation, wallet, nonce)` —
+ *     computed by `computePolicyCommitment` in `lib/zk-proof.ts`.
  */
 
 import {
@@ -29,19 +31,14 @@ import {
 import crypto from "crypto";
 
 // ── Program ID ──────────────────────────────────────────────────────
-// Placeholder pubkey until `anchor deploy` (see declare_id! in lib.rs).
-// Override via NEXT_PUBLIC_INSURANCE_PROGRAM_ID env once deployed.
-// Placeholder pubkey used until the program is deployed. We use the System
-// Program ID (all-ones) as a sentinel — any caller can check equality with
-// SystemProgram.programId to detect "not deployed".
 // .trim() defends against accidental whitespace/newlines in the env
 // value (e.g. when added via `echo "..." | vercel env add`). A stray
 // `\n` in the pubkey turns the base58 parse into a "Non-base58
 // character" crash at module load — which kills every route that
-// imports this file, including /api/liquidation-shield/rescue.
+// imports this file.
 export const SAKURA_INSURANCE_PROGRAM_ID = new PublicKey(
   (process.env.NEXT_PUBLIC_INSURANCE_PROGRAM_ID ?? "").trim() ||
-    "11111111111111111111111111111111"
+    "A91n9X4MxLaeV9NF1K3jC2yet5VhKjTj48wgWQCA7wka"
 );
 
 export const TOKEN_PROGRAM_ID = new PublicKey(
@@ -63,7 +60,7 @@ export function derivePoolPDA(
   programId: PublicKey = SAKURA_INSURANCE_PROGRAM_ID
 ): [PublicKey, number] {
   return PublicKey.findProgramAddressSync(
-    [Buffer.from("sakura_pool"), admin.toBuffer()],
+    [Buffer.from("sakura_pool_v2"), admin.toBuffer()],
     programId
   );
 }
@@ -74,16 +71,6 @@ export function deriveVaultPDA(
 ): [PublicKey, number] {
   return PublicKey.findProgramAddressSync(
     [Buffer.from("sakura_vault"), pool.toBuffer()],
-    programId
-  );
-}
-
-export function deriveLpPositionPDA(
-  lp: PublicKey,
-  programId: PublicKey = SAKURA_INSURANCE_PROGRAM_ID
-): [PublicKey, number] {
-  return PublicKey.findProgramAddressSync(
-    [Buffer.from("sakura_lp"), lp.toBuffer()],
     programId
   );
 }
@@ -132,36 +119,31 @@ function anchorAccountDiscriminator(name: string): Buffer {
 const IX_INIT_POOL = anchorIxDiscriminator("initialize_pool");
 const IX_ROTATE_AGENT = anchorIxDiscriminator("rotate_admin_agent");
 const IX_SET_PAUSED = anchorIxDiscriminator("set_paused");
-const IX_LP_DEPOSIT = anchorIxDiscriminator("lp_deposit");
-const IX_LP_WITHDRAW = anchorIxDiscriminator("lp_withdraw");
 const IX_BUY_POLICY = anchorIxDiscriminator("buy_policy");
 const IX_CLOSE_POLICY = anchorIxDiscriminator("close_policy");
-const IX_CLAIM_PAYOUT = anchorIxDiscriminator("claim_payout");
+const IX_CLAIM_PAYOUT_ZK = anchorIxDiscriminator("claim_payout_with_zk_proof");
 
 const ACCT_POOL = anchorAccountDiscriminator("Pool");
-const ACCT_LP = anchorAccountDiscriminator("LpPosition");
 const ACCT_POLICY = anchorAccountDiscriminator("Policy");
 const ACCT_CLAIM = anchorAccountDiscriminator("ClaimRecord");
 
-// ── Account state types ─────────────────────────────────────────────
+// ── Account state types (v0.2 layout) ───────────────────────────────
 
 export interface PoolState {
   admin: PublicKey;
   adminAgent: PublicKey;
+  platformTreasury: PublicKey;
   usdcMint: PublicKey;
   usdcVault: PublicKey;
-  totalShares: bigint;
-  premiumBps: number;
-  minReserveBps: number;
+  totalStakes: bigint;
   coverageOutstanding: bigint;
+  totalClaimsPaid: bigint;
+  premiumBps: number;
+  platformFeeBps: number;
+  minStakeMultiplier: number;
+  maxCoveragePerUserUsdc: bigint;
+  waitingPeriodSec: bigint;
   paused: boolean;
-  bump: number;
-}
-
-export interface LpPositionState {
-  lp: PublicKey;
-  shares: bigint;
-  depositedAt: bigint;
   bump: number;
 }
 
@@ -169,9 +151,12 @@ export interface PolicyState {
   user: PublicKey;
   coverageCapUsdc: bigint;
   premiumPaidMicro: bigint;
+  stakeUsdc: bigint;
   paidThroughUnix: bigint;
+  boughtAtUnix: bigint;
   totalClaimed: bigint;
   rescueCount: bigint;
+  commitmentHash: Buffer; // 32 bytes
   isActive: boolean;
   bump: number;
 }
@@ -188,57 +173,57 @@ export interface ClaimRecordState {
 // ── Deserializers ───────────────────────────────────────────────────
 
 export function deserializePool(data: Buffer): PoolState | null {
-  if (data.length < 8 + 32 + 32 + 32 + 32 + 8 + 2 + 2 + 8 + 1 + 1) return null;
+  // 8 (disc) + 32*5 + 8*3 + 2*3 + 8 + 8 + 1 + 1 = 196
+  if (data.length < 196) return null;
   if (!data.subarray(0, 8).equals(ACCT_POOL)) return null;
 
   let o = 8;
   const admin = new PublicKey(data.subarray(o, o + 32)); o += 32;
   const adminAgent = new PublicKey(data.subarray(o, o + 32)); o += 32;
+  const platformTreasury = new PublicKey(data.subarray(o, o + 32)); o += 32;
   const usdcMint = new PublicKey(data.subarray(o, o + 32)); o += 32;
   const usdcVault = new PublicKey(data.subarray(o, o + 32)); o += 32;
-  const totalShares = data.readBigUInt64LE(o); o += 8;
-  const premiumBps = data.readUInt16LE(o); o += 2;
-  const minReserveBps = data.readUInt16LE(o); o += 2;
+  const totalStakes = data.readBigUInt64LE(o); o += 8;
   const coverageOutstanding = data.readBigUInt64LE(o); o += 8;
+  const totalClaimsPaid = data.readBigUInt64LE(o); o += 8;
+  const premiumBps = data.readUInt16LE(o); o += 2;
+  const platformFeeBps = data.readUInt16LE(o); o += 2;
+  const minStakeMultiplier = data.readUInt16LE(o); o += 2;
+  const maxCoveragePerUserUsdc = data.readBigUInt64LE(o); o += 8;
+  const waitingPeriodSec = data.readBigInt64LE(o); o += 8;
   const paused = data.readUInt8(o) === 1; o += 1;
   const bump = data.readUInt8(o);
 
   return {
-    admin, adminAgent, usdcMint, usdcVault, totalShares,
-    premiumBps, minReserveBps, coverageOutstanding, paused, bump,
+    admin, adminAgent, platformTreasury, usdcMint, usdcVault,
+    totalStakes, coverageOutstanding, totalClaimsPaid,
+    premiumBps, platformFeeBps, minStakeMultiplier,
+    maxCoveragePerUserUsdc, waitingPeriodSec, paused, bump,
   };
 }
 
-export function deserializeLpPosition(data: Buffer): LpPositionState | null {
-  if (data.length < 8 + 32 + 8 + 8 + 1) return null;
-  if (!data.subarray(0, 8).equals(ACCT_LP)) return null;
-
-  let o = 8;
-  const lp = new PublicKey(data.subarray(o, o + 32)); o += 32;
-  const shares = data.readBigUInt64LE(o); o += 8;
-  const depositedAt = data.readBigInt64LE(o); o += 8;
-  const bump = data.readUInt8(o);
-
-  return { lp, shares, depositedAt, bump };
-}
-
 export function deserializePolicy(data: Buffer): PolicyState | null {
-  if (data.length < 8 + 32 + 8 + 8 + 8 + 8 + 8 + 1 + 1) return null;
+  // 8 (disc) + 32 + 8*7 + 32 + 1 + 1 = 130
+  if (data.length < 130) return null;
   if (!data.subarray(0, 8).equals(ACCT_POLICY)) return null;
 
   let o = 8;
   const user = new PublicKey(data.subarray(o, o + 32)); o += 32;
   const coverageCapUsdc = data.readBigUInt64LE(o); o += 8;
   const premiumPaidMicro = data.readBigUInt64LE(o); o += 8;
+  const stakeUsdc = data.readBigUInt64LE(o); o += 8;
   const paidThroughUnix = data.readBigInt64LE(o); o += 8;
+  const boughtAtUnix = data.readBigInt64LE(o); o += 8;
   const totalClaimed = data.readBigUInt64LE(o); o += 8;
   const rescueCount = data.readBigUInt64LE(o); o += 8;
+  const commitmentHash = Buffer.from(data.subarray(o, o + 32)); o += 32;
   const isActive = data.readUInt8(o) === 1; o += 1;
   const bump = data.readUInt8(o);
 
   return {
-    user, coverageCapUsdc, premiumPaidMicro, paidThroughUnix,
-    totalClaimed, rescueCount, isActive, bump,
+    user, coverageCapUsdc, premiumPaidMicro, stakeUsdc,
+    paidThroughUnix, boughtAtUnix, totalClaimed, rescueCount,
+    commitmentHash, isActive, bump,
   };
 }
 
@@ -279,37 +264,45 @@ export async function fetchPolicy(
   return { pda, state: deserializePolicy(Buffer.from(info.data)) };
 }
 
-export async function fetchLpPosition(
-  connection: Connection,
-  lp: PublicKey
-): Promise<{ pda: PublicKey; state: LpPositionState | null }> {
-  const [pda] = deriveLpPositionPDA(lp);
-  const info = await connection.getAccountInfo(pda);
-  if (!info) return { pda, state: null };
-  return { pda, state: deserializeLpPosition(Buffer.from(info.data)) };
-}
-
-// ── Instruction builders ────────────────────────────────────────────
+// ── Instruction builders (v0.2) ─────────────────────────────────────
 
 /**
  * initialize_pool: admin creates the pool PDA + vault token account.
- *   args: premium_bps (u16), min_reserve_bps (u16)
+ *
+ * Args:
+ *   premium_bps            (u16)   bps/month of coverage_cap (1..=1000)
+ *   platform_fee_bps       (u16)   bps of premium → treasury (0..=3000)
+ *   min_stake_multiplier   (u16)   stake ≥ this/100 × premium (≥100)
+ *   max_coverage_per_user  (u64)   per-user coverage cap (micro-USDC)
+ *   waiting_period_sec     (i64)   seconds before first claim (0..=30d)
  */
 export function buildInitializePoolIx(params: {
   admin: PublicKey;
   adminAgent: PublicKey;
   usdcMint: PublicKey;
+  platformTreasury: PublicKey;
   premiumBps: number;
-  minReserveBps: number;
+  platformFeeBps: number;
+  minStakeMultiplier: number;
+  maxCoveragePerUserUsdc: bigint;
+  waitingPeriodSec: bigint;
 }): TransactionInstruction {
-  const { admin, adminAgent, usdcMint, premiumBps, minReserveBps } = params;
+  const {
+    admin, adminAgent, usdcMint, platformTreasury,
+    premiumBps, platformFeeBps, minStakeMultiplier,
+    maxCoveragePerUserUsdc, waitingPeriodSec,
+  } = params;
   const [pool] = derivePoolPDA(admin);
   const [vault] = deriveVaultPDA(pool);
 
-  const data = Buffer.alloc(8 + 2 + 2);
+  // 8 disc + 2 + 2 + 2 + 8 + 8 = 30 bytes
+  const data = Buffer.alloc(8 + 2 + 2 + 2 + 8 + 8);
   IX_INIT_POOL.copy(data, 0);
   data.writeUInt16LE(premiumBps, 8);
-  data.writeUInt16LE(minReserveBps, 10);
+  data.writeUInt16LE(platformFeeBps, 10);
+  data.writeUInt16LE(minStakeMultiplier, 12);
+  data.writeBigUInt64LE(maxCoveragePerUserUsdc, 14);
+  data.writeBigInt64LE(waitingPeriodSec, 22);
 
   return new TransactionInstruction({
     programId: SAKURA_INSURANCE_PROGRAM_ID,
@@ -319,6 +312,7 @@ export function buildInitializePoolIx(params: {
       { pubkey: adminAgent, isSigner: false, isWritable: false },
       { pubkey: usdcMint, isSigner: false, isWritable: false },
       { pubkey: vault, isSigner: false, isWritable: true },
+      { pubkey: platformTreasury, isSigner: false, isWritable: true },
       { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
       { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
       { pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false },
@@ -327,7 +321,7 @@ export function buildInitializePoolIx(params: {
   });
 }
 
-/** rotate_admin_agent: admin updates who may sign claim_payout. */
+/** rotate_admin_agent: admin updates the legacy-path agent pubkey. */
 export function buildRotateAdminAgentIx(params: {
   admin: PublicKey;
   newAgent: PublicKey;
@@ -347,7 +341,7 @@ export function buildRotateAdminAgentIx(params: {
   });
 }
 
-/** set_paused: admin pauses / unpauses the pool (LP withdraw stays open). */
+/** set_paused: admin pauses / unpauses the pool. */
 export function buildSetPausedIx(params: {
   admin: PublicKey;
   paused: boolean;
@@ -368,83 +362,42 @@ export function buildSetPausedIx(params: {
 }
 
 /**
- * lp_deposit: LP deposits USDC, receives pool shares.
- *   args: amount_usdc (u64 micro-USDC)
+ * buy_policy (v0.2): user pays premium + stake and registers a ZK
+ * commitment. On first call this opens a new Policy PDA; subsequent
+ * calls extend term, top up stake, and (optionally) rotate commitment.
+ *
+ * Args:
+ *   premium_amount_usdc (u64, micro)    — split into treasury fee + pool
+ *   coverage_cap_usdc   (u64, micro)    — max payout over life of policy
+ *   stake_amount_usdc   (u64, micro)    — refundable, last-loss tranche
+ *   commitment_hash     ([u8;32])       — Poseidon(obligation, wallet, nonce)
  */
-export function buildLpDepositIx(params: {
-  poolAdmin: PublicKey;
-  lp: PublicKey;
-  lpUsdcAta: PublicKey;
-  amountMicroUsdc: bigint;
-}): TransactionInstruction {
-  const [pool] = derivePoolPDA(params.poolAdmin);
-  const [vault] = deriveVaultPDA(pool);
-  const [lpPosition] = deriveLpPositionPDA(params.lp);
-
-  const data = Buffer.alloc(8 + 8);
-  IX_LP_DEPOSIT.copy(data, 0);
-  data.writeBigUInt64LE(params.amountMicroUsdc, 8);
-
-  return new TransactionInstruction({
-    programId: SAKURA_INSURANCE_PROGRAM_ID,
-    keys: [
-      { pubkey: pool, isSigner: false, isWritable: true },
-      { pubkey: lpPosition, isSigner: false, isWritable: true },
-      { pubkey: params.lp, isSigner: true, isWritable: true },
-      { pubkey: params.lpUsdcAta, isSigner: false, isWritable: true },
-      { pubkey: vault, isSigner: false, isWritable: true },
-      { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
-      { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
-    ],
-    data,
-  });
-}
-
-/** lp_withdraw: LP burns shares, receives pro-rata USDC. */
-export function buildLpWithdrawIx(params: {
-  poolAdmin: PublicKey;
-  lp: PublicKey;
-  lpUsdcAta: PublicKey;
-  sharesToBurn: bigint;
-}): TransactionInstruction {
-  const [pool] = derivePoolPDA(params.poolAdmin);
-  const [vault] = deriveVaultPDA(pool);
-  const [lpPosition] = deriveLpPositionPDA(params.lp);
-
-  const data = Buffer.alloc(8 + 8);
-  IX_LP_WITHDRAW.copy(data, 0);
-  data.writeBigUInt64LE(params.sharesToBurn, 8);
-
-  return new TransactionInstruction({
-    programId: SAKURA_INSURANCE_PROGRAM_ID,
-    keys: [
-      { pubkey: pool, isSigner: false, isWritable: true },
-      { pubkey: lpPosition, isSigner: false, isWritable: true },
-      { pubkey: params.lp, isSigner: true, isWritable: false },
-      { pubkey: params.lpUsdcAta, isSigner: false, isWritable: true },
-      { pubkey: vault, isSigner: false, isWritable: true },
-      { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
-    ],
-    data,
-  });
-}
-
-/** buy_policy: user pays premium, receives coverage for `coverage_cap`. */
 export function buildBuyPolicyIx(params: {
   poolAdmin: PublicKey;
   user: PublicKey;
   userUsdcAta: PublicKey;
+  platformTreasury: PublicKey;
   premiumMicroUsdc: bigint;
   coverageCapMicroUsdc: bigint;
+  stakeMicroUsdc: bigint;
+  commitmentHash: Buffer; // 32 bytes
 }): TransactionInstruction {
+  if (params.commitmentHash.length !== 32) {
+    throw new Error(
+      `commitmentHash must be 32 bytes, got ${params.commitmentHash.length}`
+    );
+  }
   const [pool] = derivePoolPDA(params.poolAdmin);
   const [vault] = deriveVaultPDA(pool);
   const [policy] = derivePolicyPDA(params.user);
 
-  const data = Buffer.alloc(8 + 8 + 8);
+  // 8 disc + 8 + 8 + 8 + 32 = 64 bytes
+  const data = Buffer.alloc(8 + 8 + 8 + 8 + 32);
   IX_BUY_POLICY.copy(data, 0);
   data.writeBigUInt64LE(params.premiumMicroUsdc, 8);
   data.writeBigUInt64LE(params.coverageCapMicroUsdc, 16);
+  data.writeBigUInt64LE(params.stakeMicroUsdc, 24);
+  params.commitmentHash.copy(data, 32, 0, 32);
 
   return new TransactionInstruction({
     programId: SAKURA_INSURANCE_PROGRAM_ID,
@@ -454,6 +407,7 @@ export function buildBuyPolicyIx(params: {
       { pubkey: params.user, isSigner: true, isWritable: true },
       { pubkey: params.userUsdcAta, isSigner: false, isWritable: true },
       { pubkey: vault, isSigner: false, isWritable: true },
+      { pubkey: params.platformTreasury, isSigner: false, isWritable: true },
       { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
       { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
     ],
@@ -461,7 +415,10 @@ export function buildBuyPolicyIx(params: {
   });
 }
 
-/** close_policy: user closes + refunds unused premium. */
+/**
+ * close_policy: deactivate, refund unused premium + pro-rata stake.
+ * Stake refund is haircut if claims drained the pool (last-loss tranche).
+ */
 export function buildClosePolicyIx(params: {
   poolAdmin: PublicKey;
   user: PublicKey;
@@ -486,47 +443,89 @@ export function buildClosePolicyIx(params: {
 }
 
 /**
- * claim_payout: agent pulls USDC from pool to repay user's rescue.
- *   args: amount_usdc (u64), rescue_sig_hash ([u8;32]), claim_nonce (u64)
- * The claim_nonce must be unique per policy — we recommend using the
- * execution unix-timestamp-in-ms (bounded to u64) to guarantee monotonicity.
+ * claim_payout_with_zk_proof (v0.2 ZK-verified claim):
+ *
+ * Submits a Groth16 proof (produced by snarkjs from the circuit at
+ * `circuits/src/liquidation_proof.circom`) to the on-chain alt_bn128
+ * pairing verifier. No agent signature is required — math, not trust.
+ *
+ * Public inputs (MUST match circuit order):
+ *   [0] policy_commitment      — read from Policy PDA on-chain
+ *   [1] trigger_hf_bps         — e.g. 10500 ⇒ HF < 1.05
+ *   [2] rescue_amount_bucket   — buckets of 100 USDC
+ *   [3] oracle_price_usd_micro — Pyth price × 1e6
+ *   [4] oracle_slot            — Pyth publish slot (must be ≤150 slots old)
+ *
+ * Proof bytes are in BN254 big-endian encoding with α₁ negated
+ * (prepared-alpha convention). See `proofToOnchainBytes` in
+ * `lib/zk-proof.ts`.
  */
-export function buildClaimPayoutIx(params: {
+export function buildClaimPayoutWithZkProofIx(params: {
   poolAdmin: PublicKey;
   policyUser: PublicKey;
-  adminAgent: PublicKey;
   payer: PublicKey;
   rescueDestinationAta: PublicKey;
+  pythPriceAccount: PublicKey;
   amountMicroUsdc: bigint;
-  rescueSigHash: Buffer;  // 32 bytes
   claimNonce: bigint;
+  triggerHfBps: number;        // 10000..=20000
+  rescueAmountBucket: number;  // u32
+  oraclePriceUsdMicro: bigint;
+  oracleSlot: bigint;
+  proofA: Uint8Array;          // 64 bytes
+  proofB: Uint8Array;          // 128 bytes
+  proofC: Uint8Array;          // 64 bytes
 }): TransactionInstruction {
-  if (params.rescueSigHash.length !== 32) {
-    throw new Error(
-      `rescueSigHash must be exactly 32 bytes, got ${params.rescueSigHash.length}`
-    );
+  if (params.proofA.length !== 64) {
+    throw new Error(`proofA must be 64 bytes, got ${params.proofA.length}`);
   }
+  if (params.proofB.length !== 128) {
+    throw new Error(`proofB must be 128 bytes, got ${params.proofB.length}`);
+  }
+  if (params.proofC.length !== 64) {
+    throw new Error(`proofC must be 64 bytes, got ${params.proofC.length}`);
+  }
+
   const [pool] = derivePoolPDA(params.poolAdmin);
   const [vault] = deriveVaultPDA(pool);
   const [policy] = derivePolicyPDA(params.policyUser);
   const [claimRecord] = deriveClaimRecordPDA(policy, params.claimNonce);
 
-  const data = Buffer.alloc(8 + 8 + 32 + 8);
-  IX_CLAIM_PAYOUT.copy(data, 0);
-  data.writeBigUInt64LE(params.amountMicroUsdc, 8);
-  params.rescueSigHash.copy(data, 16, 0, 32);
-  data.writeBigUInt64LE(params.claimNonce, 48);
+  // Layout:
+  //   8  disc
+  //   8  amount_usdc        (u64)
+  //   8  claim_nonce        (u64)
+  //   2  trigger_hf_bps     (u16)
+  //   4  rescue_bucket      (u32)
+  //   8  oracle_price       (u64)
+  //   8  oracle_slot        (u64)
+  //   64 proof_a
+  //   128 proof_b
+  //   64 proof_c
+  // total = 302 bytes
+  const data = Buffer.alloc(8 + 8 + 8 + 2 + 4 + 8 + 8 + 64 + 128 + 64);
+  let o = 0;
+  IX_CLAIM_PAYOUT_ZK.copy(data, o); o += 8;
+  data.writeBigUInt64LE(params.amountMicroUsdc, o); o += 8;
+  data.writeBigUInt64LE(params.claimNonce, o); o += 8;
+  data.writeUInt16LE(params.triggerHfBps, o); o += 2;
+  data.writeUInt32LE(params.rescueAmountBucket, o); o += 4;
+  data.writeBigUInt64LE(params.oraclePriceUsdMicro, o); o += 8;
+  data.writeBigUInt64LE(params.oracleSlot, o); o += 8;
+  Buffer.from(params.proofA).copy(data, o); o += 64;
+  Buffer.from(params.proofB).copy(data, o); o += 128;
+  Buffer.from(params.proofC).copy(data, o); o += 64;
 
   return new TransactionInstruction({
     programId: SAKURA_INSURANCE_PROGRAM_ID,
     keys: [
       { pubkey: pool, isSigner: false, isWritable: true },
       { pubkey: policy, isSigner: false, isWritable: true },
-      { pubkey: params.adminAgent, isSigner: true, isWritable: false },
       { pubkey: params.payer, isSigner: true, isWritable: true },
       { pubkey: claimRecord, isSigner: false, isWritable: true },
       { pubkey: vault, isSigner: false, isWritable: true },
       { pubkey: params.rescueDestinationAta, isSigner: false, isWritable: true },
+      { pubkey: params.pythPriceAccount, isSigner: false, isWritable: false },
       { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
       { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
     ],
@@ -534,18 +533,28 @@ export function buildClaimPayoutIx(params: {
   });
 }
 
+// ── Pyth price feed addresses (SOL/USD PriceUpdateV2) ───────────────
+// Devnet/mainnet Pyth "Pull" oracle (PriceUpdateV2) SOL/USD accounts.
+// Source: https://www.pyth.network/developers/price-feed-ids
+export const PYTH_SOL_USD_DEVNET = new PublicKey(
+  "7UVimffxr9ow1uXYxsr4LHAcV58mLzhmwaeKvJ1pjLiE"
+);
+export const PYTH_SOL_USD_MAINNET = new PublicKey(
+  "7UVimffxr9ow1uXYxsr4LHAcV58mLzhmwaeKvJ1pjLiE"
+);
+
 // ── High-level helpers ──────────────────────────────────────────────
 
 /**
- * Check whether an insurance-backed rescue is available for this user.
- * Returns the Policy PDA + state if and only if:
- *   - A Policy PDA exists for the user
- *   - Policy is active
- *   - `now <= paid_through + 48h grace`
- *   - Remaining coverage (cap - total_claimed) >= rescueAmount
+ * Check whether a ZK rescue claim is eligible for this user:
+ *   - Policy PDA exists and is active
+ *   - now ≥ bought_at + pool.waiting_period_sec
+ *   - now ≤ paid_through + 48h grace
+ *   - (coverage_cap - total_claimed) ≥ rescueMicroUsdc
  */
-export async function checkInsuranceEligibility(params: {
+export async function checkClaimEligibility(params: {
   connection: Connection;
+  poolAdmin: PublicKey;
   user: PublicKey;
   rescueMicroUsdc: bigint;
   nowUnix?: number;
@@ -556,13 +565,28 @@ export async function checkInsuranceEligibility(params: {
   reason?: string;
 }> {
   const now = params.nowUnix ?? Math.floor(Date.now() / 1000);
-  const { pda, state } = await fetchPolicy(params.connection, params.user);
+  const [{ state: pool }, { pda, state }] = await Promise.all([
+    fetchPool(params.connection, params.poolAdmin),
+    fetchPolicy(params.connection, params.user),
+  ]);
 
+  if (!pool) {
+    return { eligible: false, policyPda: pda, policy: state, reason: "no_pool" };
+  }
   if (!state) {
     return { eligible: false, policyPda: pda, policy: null, reason: "no_policy" };
   }
   if (!state.isActive) {
     return { eligible: false, policyPda: pda, policy: state, reason: "inactive" };
+  }
+  const waitEndsAt = state.boughtAtUnix + pool.waitingPeriodSec;
+  if (BigInt(now) < waitEndsAt) {
+    return {
+      eligible: false,
+      policyPda: pda,
+      policy: state,
+      reason: "waiting_period",
+    };
   }
   const graceSec = 48n * 3600n;
   if (BigInt(now) > state.paidThroughUnix + graceSec) {
@@ -582,7 +606,7 @@ export async function checkInsuranceEligibility(params: {
 
 // ── Utility ─────────────────────────────────────────────────────────
 
-/** Hash a signature string into the 32-byte `rescue_sig_hash` on-chain field. */
+/** Hash a signature string into a 32-byte digest (legacy/rescue memos). */
 export function hashRescueSig(rescueSig: string): Buffer {
   return crypto.createHash("sha256").update(rescueSig).digest();
 }
@@ -603,10 +627,13 @@ export function formatPolicy(state: PolicyState) {
     user: state.user.toString(),
     coverageCapUsdc: microToUsdc(state.coverageCapUsdc),
     premiumPaidUsdc: microToUsdc(state.premiumPaidMicro),
+    stakeUsdc: microToUsdc(state.stakeUsdc),
     paidThrough: new Date(Number(state.paidThroughUnix) * 1000).toISOString(),
+    boughtAt: new Date(Number(state.boughtAtUnix) * 1000).toISOString(),
     totalClaimedUsdc: microToUsdc(state.totalClaimed),
     remainingCoverageUsdc: microToUsdc(state.coverageCapUsdc - state.totalClaimed),
     rescueCount: Number(state.rescueCount),
+    commitmentHash: "0x" + state.commitmentHash.toString("hex"),
     isActive: state.isActive,
   };
 }
@@ -616,21 +643,17 @@ export function formatPool(state: PoolState) {
   return {
     admin: state.admin.toString(),
     adminAgent: state.adminAgent.toString(),
+    platformTreasury: state.platformTreasury.toString(),
     usdcMint: state.usdcMint.toString(),
     usdcVault: state.usdcVault.toString(),
-    totalShares: state.totalShares.toString(),
-    premiumBps: state.premiumBps,
-    minReserveBps: state.minReserveBps,
+    totalStakesUsdc: microToUsdc(state.totalStakes),
     coverageOutstandingUsdc: microToUsdc(state.coverageOutstanding),
+    totalClaimsPaidUsdc: microToUsdc(state.totalClaimsPaid),
+    premiumBps: state.premiumBps,
+    platformFeeBps: state.platformFeeBps,
+    minStakeMultiplier: state.minStakeMultiplier,
+    maxCoveragePerUserUsdc: microToUsdc(state.maxCoveragePerUserUsdc),
+    waitingPeriodSec: Number(state.waitingPeriodSec),
     paused: state.paused,
-  };
-}
-
-/** Pretty-print an LpPositionState for API responses. */
-export function formatLpPosition(state: LpPositionState) {
-  return {
-    lp: state.lp.toString(),
-    shares: state.shares.toString(),
-    depositedAt: new Date(Number(state.depositedAt) * 1000).toISOString(),
   };
 }

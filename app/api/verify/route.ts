@@ -24,8 +24,8 @@ import {
 import { verifyDualHash } from "@/lib/dual-hash";
 import { verifyMerkleProof, verifyLeafHash } from "@/lib/merkle-audit";
 import type { MerkleProof } from "@/lib/merkle-audit";
-import { verifyRescueProof, verifyGhostRunProof, generateVerificationKey } from "@/lib/groth16-verify";
-import type { Groth16Proof, PublicSignals } from "@/lib/groth16-verify";
+import { verifyRescueProof, verifyGhostRunProof, generateVerificationKey } from "@/lib/zk-proof";
+import type { Groth16Proof, PublicSignals } from "@/lib/zk-proof";
 
 export async function POST(req: NextRequest) {
   let body: Record<string, any> = {};
@@ -125,8 +125,20 @@ export async function POST(req: NextRequest) {
         if (!proof || !publicSignals) {
           return NextResponse.json({ error: "zk_rescue requires: proof, publicSignals" }, { status: 400 });
         }
-        const verified = verifyRescueProof(proof, publicSignals);
+        const verified = await verifyRescueProof(proof, publicSignals);
         const vk = generateVerificationKey();
+
+        // publicSignals may be either the legacy commitment-style object or
+        // the real Groth16 string[] — narrow and render accordingly.
+        const sigsOut = Array.isArray(publicSignals)
+          ? { groth16PublicInputs: publicSignals }
+          : {
+              commitmentHash: (publicSignals as { commitmentHash?: string }).commitmentHash,
+              nullifier: (publicSignals as { nullifier?: string }).nullifier,
+              maxAmount: (publicSignals as { maxAmount?: string }).maxAmount,
+              triggerThreshold: (publicSignals as { triggerThreshold?: string }).triggerThreshold,
+            };
+
         return NextResponse.json({
           mode: "zk_rescue",
           verified,
@@ -136,12 +148,7 @@ export async function POST(req: NextRequest) {
           // claims — honest disclosure" section for full details.
           proofSystem: "Poseidon commitment proof (BN254) with Groth16-shaped structure",
           disclaimer: "Not a pairing-verified Groth16 proof — commitment-style proof only. See README.md for details.",
-          publicSignals: {
-            commitmentHash: publicSignals.commitmentHash,
-            nullifier: publicSignals.nullifier,
-            maxAmount: publicSignals.maxAmount,
-            triggerThreshold: publicSignals.triggerThreshold,
-          },
+          publicSignals: sigsOut,
           verificationKey: {
             nPublic: vk.nPublic,
             circuit: "sakura_rescue_v1",

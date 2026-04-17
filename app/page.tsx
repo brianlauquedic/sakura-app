@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import WalletConnect from "@/components/WalletConnect";
+import MutualPool from "@/components/MutualPool";
 import NonceGuardian from "@/components/NonceGuardian";
 import GhostRun from "@/components/GhostRun";
 import LiquidationShield from "@/components/LiquidationShield";
@@ -11,9 +12,10 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { useLang } from "@/contexts/LanguageContext";
 import Footer from "@/components/Footer";
 
-type Tab = "nonce" | "ghost" | "shield";
+type Tab = "mutual" | "nonce" | "ghost" | "shield";
 
 const TABS: { id: Tab; icon: string; label: string }[] = [
+  { id: "mutual", icon: "🌸", label: "Mutual Pool" },
   { id: "nonce",  icon: "🛡️", label: "Nonce Guardian" },
   { id: "ghost",  icon: "👻", label: "Ghost Run" },
   { id: "shield", icon: "⚡", label: "Liquidation Shield" },
@@ -23,7 +25,7 @@ function AppContent() {
   const { walletAddress, shortAddr, disconnect, showLanding, setShowLanding, activeProvider, isDemo, setIsDemo } = useWallet();
   const { isDayMode, timeBg } = useTheme();
   const { t } = useLang();
-  const [activeTab, setActiveTab] = useState<Tab>("nonce");
+  const [activeTab, setActiveTab] = useState<Tab>("mutual");
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -180,6 +182,11 @@ function AppContent() {
             </div>
 
             {/* ── Tab Content ── */}
+            <div style={{ display: activeTab === "mutual" ? "block" : "none" }}>
+              <ErrorBoundary fallbackLabel="Mutual Pool">
+                <MutualPool isDemo={isDemo} />
+              </ErrorBoundary>
+            </div>
             <div style={{ display: activeTab === "nonce" ? "block" : "none" }}>
               <ErrorBoundary fallbackLabel="Nonce Guardian">
                 <NonceGuardian isDemo={isDemo} />

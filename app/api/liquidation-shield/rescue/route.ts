@@ -23,9 +23,7 @@ import { buildRescueApproveTransaction, buildKaminoRepayInstructions, buildMargi
 import type { LendingPosition } from "@/lib/liquidation-shield";
 import { fetchMandate, microToUsdc, buildExecuteRescueIx, deriveMandatePDA } from "@/lib/mandate-program";
 import {
-  checkInsuranceEligibility,
-  buildClaimPayoutIx,
-  hashRescueSig,
+  checkClaimEligibility,
   SAKURA_INSURANCE_PROGRAM_ID,
 } from "@/lib/insurance-pool";
 
@@ -103,7 +101,7 @@ function parseLang(v: unknown): RescueLang {
 // Full SHA-256 cryptographic proof — see lib/crypto-proof.ts
 import { mandateHash as computeMandateHash, executionHash as computeExecutionHash, chainProof as computeChainProof } from "@/lib/crypto-proof";
 import { processRescueChain, getMerkleAnchorData } from "@/lib/dual-hash";
-import { generateRescueProof, buildProofMemoPayload } from "@/lib/groth16-verify";
+import { generateRescueProof, buildProofMemoPayload } from "@/lib/zk-proof";
 import { processWithCumulativeTracking } from "@/lib/crypto-proof";
 
 // ── GET: return agent pubkey for frontend SPL approve ──────────────────────────
@@ -427,14 +425,22 @@ export async function POST(req: NextRequest) {
     "11111111111111111111111111111111";
   if (insuranceAdminPubkeyStr && insuranceProgramDeployed) {
     try {
-      const elig = await checkInsuranceEligibility({
+      const elig = await checkClaimEligibility({
         connection: conn,
+        poolAdmin: new PublicKey(insuranceAdminPubkeyStr),
         user: new PublicKey(wallet),
         rescueMicroUsdc: BigInt(Math.ceil(rescueUsdc * 1_000_000)),
       });
+      // v0.2: claim requires a Groth16 proof generated from the circuit at
+      // circuits/src/liquidation_proof.circom. The rescue route does not have
+      // a witness (collateral_amount, debt_usd_micro, nonce) on hand — that
+      // flow happens on the demo/claim page which calls /api/verify directly
+      // with a pre-generated proof. So even if the policy *would* be eligible,
+      // we never mark this path eligible here, which cleanly falls through to
+      // mandate / SPL-delegate rescue.
       insuranceEligibility = {
-        eligible: elig.eligible,
-        reason: elig.reason,
+        eligible: false,
+        reason: elig.eligible ? "needs_zk_proof" : elig.reason,
         remainingCoverageUsdc: elig.policy
           ? Number(elig.policy.coverageCapUsdc - elig.policy.totalClaimed) / 1_000_000
           : 0,
@@ -586,30 +592,15 @@ export async function POST(req: NextRequest) {
     const computeIx = ComputeBudgetProgram.setComputeUnitPrice({ microLamports: priorityFee });
 
     // Choose rescue path (priority order):
-    //   1. insurance_pool    — Pool claim_payout funds agent escrow (whitepaper §8)
-    //   2. dual_gate_anchor  — SPL delegate + Anchor mandate PDA (v1 full-stack path)
-    //   3. spl_delegate_only — SPL delegate only (v1 fallback when Anchor unavailable)
+    //   1. dual_gate_anchor  — SPL delegate + Anchor mandate PDA (v1 full-stack path)
+    //   2. spl_delegate_only — SPL delegate only (v1 fallback when Anchor unavailable)
+    //
+    // NB: The v0.1 "insurance_pool" trust-based claim path was removed in v0.2.
+    // Sakura v0.2 gates all insurance claims on a Groth16 proof (circuits/
+    // liquidation_proof.circom) generated from a witness that this route does
+    // not have. The ZK claim flow lives in /api/verify + the demo/claim UI.
     let rescueIx;
-    if (insuranceEligibility.eligible) {
-      rescueMode = "insurance_pool";
-      // claim_nonce is a fresh u64 so the ClaimRecord PDA cannot collide.
-      // Use unix ms (bounded to safe u64) — monotonic per rescue.
-      const claimNonce = BigInt(Date.now());
-      // rescue_sig_hash is finalized only after the TX lands; pre-compute an
-      // off-chain proof hash over the same canonical fields for replay binding.
-      // This ties the claim_record on-chain to the rescue's canonical input.
-      const rescueSigHash = hashRescueSig(proofHashHex);
-      rescueIx = buildClaimPayoutIx({
-        poolAdmin: new PublicKey(insuranceAdminPubkeyStr),
-        policyUser: new PublicKey(wallet),
-        adminAgent: agentKp.publicKey,
-        payer: agentKp.publicKey,
-        rescueDestinationAta: agentUsdcAta,   // agent escrow (Step 2.5 will forward to protocol vault)
-        amountMicroUsdc: rescueAmount,
-        rescueSigHash,
-        claimNonce,
-      });
-    } else if (mandateOnChain) {
+    if (mandateOnChain) {
       rescueMode = "dual_gate_anchor";
       const [mandatePda] = deriveMandatePDA(new PublicKey(wallet));
       // Clamp reported HF to u16 range [0, 65535]; bps of HF up to 655.35

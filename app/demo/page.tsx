@@ -7,7 +7,7 @@ import ArchitectureDiagram from "@/components/ArchitectureDiagram";
 import type { CryptoProofData } from "@/components/CryptoProofPanel";
 
 const t = {
-  title: { zh: "Solis 密碼學 Demo", en: "Solis Cryptography Demo", ja: "Solis暗号デモ" },
+  title: { zh: "Sakura 密碼學 Demo", en: "Sakura Cryptography Demo", ja: "Sakura暗号デモ" },
   subtitle: { zh: "一鍵體驗完整的零知識證明流程", en: "One-click full zero-knowledge proof flow", ja: "ワンクリックで完全なZK証明フロー" },
   runDemo: { zh: "🚀 啟動完整 Demo", en: "🚀 Run Full Demo", ja: "🚀 フルデモ実行" },
   running: { zh: "⏳ 生成密碼學證明中...", en: "⏳ Generating cryptographic proofs...", ja: "⏳ 暗号証明を生成中..." },
