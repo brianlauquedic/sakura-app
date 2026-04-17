@@ -16,12 +16,18 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
-import { Connection, PublicKey, Transaction, Keypair, ComputeBudgetProgram } from "@solana/web3.js";
+import { Connection, PublicKey, Transaction, Keypair, ComputeBudgetProgram, TransactionInstruction } from "@solana/web3.js";
 import { RPC_URL } from "@/lib/agent";
 import { getConnection, getDynamicPriorityFee } from "@/lib/rpc";
-import { buildRescueApproveTransaction, buildKaminoRepayInstructions } from "@/lib/liquidation-shield";
+import { buildRescueApproveTransaction, buildKaminoRepayInstructions, buildMarginFiRepayInstructions } from "@/lib/liquidation-shield";
 import type { LendingPosition } from "@/lib/liquidation-shield";
 import { fetchMandate, microToUsdc, buildExecuteRescueIx, deriveMandatePDA } from "@/lib/mandate-program";
+import {
+  checkInsuranceEligibility,
+  buildClaimPayoutIx,
+  hashRescueSig,
+  SAKURA_INSURANCE_PROGRAM_ID,
+} from "@/lib/insurance-pool";
 
 export const maxDuration = 120;
 
@@ -151,7 +157,52 @@ export async function PUT(req: NextRequest) {
 
 const SAKURA_FEE_WALLET = process.env.SAKURA_FEE_WALLET?.trim() || "";
 const USDC_MINT = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
-const RESCUE_FEE_PERCENT = 0.01; // 1% performance fee
+
+/**
+ * Pay-per-Save fee model (replaces flat 1% on rescue amount).
+ *
+ * Economic alignment: we only charge a fraction of the *loss we actually
+ * prevented*, not a flat fee on the capital moved. A $200 rescue that
+ * prevents a 5% Kamino liquidation penalty saves the user ~$10 — we take
+ * 10% of that saving = $1. Under the old flat-fee model the same rescue
+ * would have cost the user $2 regardless of outcome.
+ *
+ * Formula:
+ *   estimated_saving_usd = rescue_usdc × liquidation_penalty_pct(protocol)
+ *   fee_usdc             = estimated_saving_usd × PAY_PER_SAVE_PCT
+ *
+ * Liquidation penalties below reflect each protocol's published value.
+ * Source (accurate as of Q1 2026):
+ *   - Kamino:   5% (close-factor 50%, liquidation bonus 5% on seized collateral)
+ *   - MarginFi: 5% (insurance-fee 2.5% + liquidator-profit 2.5%)
+ *   - Solend:   8% (legacy; higher because of older risk model)
+ *   - unknown:  5% (conservative fallback — never over-estimate saving)
+ */
+const LIQUIDATION_PENALTY_BY_PROTOCOL: Record<string, number> = {
+  kamino: 0.05,
+  marginfi: 0.05,
+  solend: 0.08,
+  unknown: 0.05,
+};
+const PAY_PER_SAVE_PCT = 0.10;       // 10 % of prevented loss
+const FEE_MIN_USDC = 0.10;           // floor so dust rescues still cover infra
+
+function computePayPerSaveFee(rescueUsdc: number, protocol: string): {
+  estimatedSavingUsd: number;
+  feeUsdc: number;
+  penaltyPct: number;
+} {
+  const key = (protocol || "unknown").toLowerCase();
+  const penaltyPct = LIQUIDATION_PENALTY_BY_PROTOCOL[key] ?? LIQUIDATION_PENALTY_BY_PROTOCOL.unknown;
+  const estimatedSavingUsd = rescueUsdc * penaltyPct;
+  const rawFee = estimatedSavingUsd * PAY_PER_SAVE_PCT;
+  const feeUsdc = Math.max(rawFee, FEE_MIN_USDC);
+  return {
+    estimatedSavingUsd: +estimatedSavingUsd.toFixed(6),
+    feeUsdc: +feeUsdc.toFixed(6),
+    penaltyPct,
+  };
+}
 
 /**
  * Verify rescue authorization via on-chain SPL Token delegate check.
@@ -355,10 +406,56 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // ── Step 1.pre: Insurance Pool eligibility probe (optional) ─────────────
+  //
+  // Determine up-front whether the user has an active Policy PDA in
+  // sakura_insurance and enough remaining coverage. If so, the rescue
+  // principal can be sourced from the Pool via claim_payout (whitepaper §8)
+  // — the user's wallet does NOT need an SPL delegate or Mandate PDA for the
+  // principal (they still need the delegate for the Pay-per-Save fee).
+  //
+  // Environment (both must be set for the insurance path to be attempted):
+  //   SAKURA_INSURANCE_ADMIN_PUBKEY    — derives the Pool PDA
+  //   NEXT_PUBLIC_INSURANCE_PROGRAM_ID — real deployed program id
+  let insuranceEligibility: {
+    eligible: boolean;
+    reason?: string;
+    remainingCoverageUsdc?: number;
+  } = { eligible: false, reason: "not_configured" };
+  const insuranceAdminPubkeyStr = process.env.SAKURA_INSURANCE_ADMIN_PUBKEY?.trim() || "";
+  const insuranceProgramDeployed = SAKURA_INSURANCE_PROGRAM_ID.toString() !==
+    "11111111111111111111111111111111";
+  if (insuranceAdminPubkeyStr && insuranceProgramDeployed) {
+    try {
+      const elig = await checkInsuranceEligibility({
+        connection: conn,
+        user: new PublicKey(wallet),
+        rescueMicroUsdc: BigInt(Math.ceil(rescueUsdc * 1_000_000)),
+      });
+      insuranceEligibility = {
+        eligible: elig.eligible,
+        reason: elig.reason,
+        remainingCoverageUsdc: elig.policy
+          ? Number(elig.policy.coverageCapUsdc - elig.policy.totalClaimed) / 1_000_000
+          : 0,
+      };
+    } catch (e) {
+      insuranceEligibility = {
+        eligible: false,
+        reason: `check_failed:${e instanceof Error ? e.message : String(e)}`,
+      };
+    }
+  }
+
   // ── Step 1a: Verify on-chain rescue authorization via SPL delegate (C-2 fix) ──
   // Confirms the user's USDC ATA has delegated authority to this agent.
   // This cannot be faked — verified directly against blockchain state.
   // Also implicitly verifies rescueUsdc <= approvedUsdc (delegate amount).
+  //
+  // NOTE: Even on the insurance-pool path we still require a valid SPL delegate
+  // because the Pay-per-Save fee is collected from the user's wallet
+  // (Step 3). Principal comes from pool, fee comes from user — that is the
+  // economic invariant the fee model relies on.
   const authCheck = await verifyRescueAuthorization(
     wallet, rescueUsdc, agentKp.publicKey, conn, lang
   );
@@ -378,15 +475,21 @@ export async function POST(req: NextRequest) {
   try {
     const { state: mandateState } = await fetchMandate(conn, new PublicKey(wallet));
     if (!mandateState) {
-      return NextResponse.json(
-        { error: lang === "en"
-            ? "No on-chain rescue mandate found. Please create a mandate first."
-            : lang === "ja"
-            ? "オンチェーンの救援マンデートが見つかりません。先にマンデートを作成してください。"
-            : "未找到鏈上救援授權 (Mandate PDA)。請先創建 Mandate。" },
-        { status: 403 }
-      );
-    }
+      // Insurance path can supply the principal even without a Mandate PDA.
+      // Only hard-fail if the insurance path is NOT available.
+      if (!insuranceEligibility.eligible) {
+        return NextResponse.json(
+          { error: lang === "en"
+              ? "No on-chain rescue mandate found. Please create a mandate first."
+              : lang === "ja"
+              ? "オンチェーンの救援マンデートが見つかりません。先にマンデートを作成してください。"
+              : "未找到鏈上救援授權 (Mandate PDA)。請先創建 Mandate。" },
+          { status: 403 }
+        );
+      }
+      // Insurance-path-only user — skip the remaining mandate checks.
+      mandateOnChain = null;
+    } else {
     if (!mandateState.isActive) {
       return NextResponse.json(
         { error: lang === "en"
@@ -424,6 +527,7 @@ export async function POST(req: NextRequest) {
       totalRescued: microToUsdc(mandateState.totalRescued),
       triggerHfBps: mandateState.triggerHfBps,
     };
+    }
   } catch (err) {
     // If mandate fetch fails (e.g., RPC error), log but don't block rescue
     // — SPL delegate check (Step 1a) already passed. Defense-in-depth: both
@@ -448,7 +552,7 @@ export async function POST(req: NextRequest) {
   // relying on Gate 1 alone — with a clear flag in the response.
   let rescueSig: string | null = null;
   let error: string | null = null;
-  let rescueMode: "dual_gate_anchor" | "spl_delegate_only" = "spl_delegate_only";
+  let rescueMode: "dual_gate_anchor" | "spl_delegate_only" | "insurance_pool" = "spl_delegate_only";
 
   // Module 16: dynamic priority fee (75th percentile of recent 150 slots)
   const priorityFee = await getDynamicPriorityFee(conn);
@@ -481,12 +585,31 @@ export async function POST(req: NextRequest) {
     // Module 16: dynamic priority fee for timely inclusion during congestion
     const computeIx = ComputeBudgetProgram.setComputeUnitPrice({ microLamports: priorityFee });
 
-    // Choose rescue path:
-    // - If mandateOnChain was populated (Anchor PDA fetched successfully),
-    //   use Anchor execute_rescue CPI (dual-gate).
-    // - Otherwise, fall back to raw SPL transfer (single-gate: SPL delegate only).
+    // Choose rescue path (priority order):
+    //   1. insurance_pool    — Pool claim_payout funds agent escrow (whitepaper §8)
+    //   2. dual_gate_anchor  — SPL delegate + Anchor mandate PDA (v1 full-stack path)
+    //   3. spl_delegate_only — SPL delegate only (v1 fallback when Anchor unavailable)
     let rescueIx;
-    if (mandateOnChain) {
+    if (insuranceEligibility.eligible) {
+      rescueMode = "insurance_pool";
+      // claim_nonce is a fresh u64 so the ClaimRecord PDA cannot collide.
+      // Use unix ms (bounded to safe u64) — monotonic per rescue.
+      const claimNonce = BigInt(Date.now());
+      // rescue_sig_hash is finalized only after the TX lands; pre-compute an
+      // off-chain proof hash over the same canonical fields for replay binding.
+      // This ties the claim_record on-chain to the rescue's canonical input.
+      const rescueSigHash = hashRescueSig(proofHashHex);
+      rescueIx = buildClaimPayoutIx({
+        poolAdmin: new PublicKey(insuranceAdminPubkeyStr),
+        policyUser: new PublicKey(wallet),
+        adminAgent: agentKp.publicKey,
+        payer: agentKp.publicKey,
+        rescueDestinationAta: agentUsdcAta,   // agent escrow (Step 2.5 will forward to protocol vault)
+        amountMicroUsdc: rescueAmount,
+        rescueSigHash,
+        claimNonce,
+      });
+    } else if (mandateOnChain) {
       rescueMode = "dual_gate_anchor";
       const [mandatePda] = deriveMandatePDA(new PublicKey(wallet));
       // Clamp reported HF to u16 range [0, 65535]; bps of HF up to 655.35
@@ -566,97 +689,141 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // ── Step 2.5: Real protocol repay CPI (Kamino) ─────────────────────────
+  // ── Step 2.5: Real protocol repay CPI (Kamino + MarginFi) ──────────────
   // After agent escrow receives the rescued USDC (Step 2 above), actually
-  // repay the user's Kamino obligation by calling Kamino's repay CPI with
-  // payer=agent, owner=user. If the position isn't on Kamino, or the SDK
-  // can't load the market, we leave the USDC in agent escrow and report
-  // protocolRepayStatus so the frontend and auditors can see honestly.
+  // repay the user's lending obligation by calling the respective protocol's
+  // repay CPI (payer=agent, owner=user). Dispatch by position.protocol. If
+  // the SDK can't load the account/market, we leave the USDC in agent escrow
+  // and report protocolRepayStatus so the frontend and auditors see honestly.
   let protocolRepaySig: string | null = null;
   let protocolRepayStatus:
-    | "repaid"                      // real Kamino CPI landed on-chain
-    | "skipped_not_kamino"           // position.protocol != kamino
-    | "skipped_missing_market"       // no marketAddress on position
-    | "skipped_sdk_unavailable"      // KaminoAction returned null (RPC/SDK failure)
-    | "skipped_rescue_failed"        // Step 2 didn't land, nothing to repay
-    | "failed_build"                 // repay tx build threw
-    | "failed_send"                  // repay tx sent but errored
+    | "repaid"                       // real CPI landed on-chain
+    | "skipped_not_kamino"            // kept for backwards-compat w/ existing audit dumps
+    | "skipped_unsupported_protocol"  // protocol neither kamino nor marginfi
+    | "skipped_missing_market"        // no marketAddress / mfiAccount on position
+    | "skipped_sdk_unavailable"       // SDK returned null (RPC/SDK failure)
+    | "skipped_rescue_failed"         // Step 2 didn't land, nothing to repay
+    | "failed_build"                  // repay tx build threw / simulate err
+    | "failed_send"                   // repay tx sent but errored
     = "skipped_rescue_failed";
-  if (rescueSig && !error) {
-    if (sanitizedPosition.protocol !== "kamino") {
-      protocolRepayStatus = "skipped_not_kamino";
-    } else if (!position.marketAddress) {
-      protocolRepayStatus = "skipped_missing_market";
-    } else {
-      try {
-        const built = await buildKaminoRepayInstructions({
-          walletAddress: wallet,
-          marketAddress: position.marketAddress,
-          obligationAddress: position.accountAddress,
-          payerPubkey: agentKp.publicKey.toString(),
-          repayMicroUsdc: BigInt(Math.floor(rescueUsdc * 1_000_000)),
-          rpcUrl: RPC_URL,
-        });
-        if (!built) {
-          protocolRepayStatus = "skipped_sdk_unavailable";
-        } else {
-          try {
-            const computeIx = ComputeBudgetProgram.setComputeUnitPrice({ microLamports: priorityFee });
-            const { blockhash, lastValidBlockHeight } = await conn.getLatestBlockhash(commitment);
-            const repayTx = new Transaction().add(computeIx, ...built.instructions);
-            repayTx.feePayer = agentKp.publicKey;
-            repayTx.recentBlockhash = blockhash;
-            repayTx.sign(agentKp);
 
-            // Simulate first — if Kamino repay fails, we keep the rescue but
-            // surface the error rather than spend gas on a doomed tx.
-            const simRepay = await conn.simulateTransaction(repayTx);
-            if (simRepay.value.err) {
+  /** Shared helper: sign + simulate + send a protocol repay tx. */
+  const sendProtocolRepay = async (
+    instructions: TransactionInstruction[],
+    protocolName: string,
+  ): Promise<void> => {
+    const computeIx = ComputeBudgetProgram.setComputeUnitPrice({ microLamports: priorityFee });
+    const { blockhash, lastValidBlockHeight } = await conn.getLatestBlockhash(commitment);
+    const repayTx = new Transaction().add(computeIx, ...instructions);
+    repayTx.feePayer = agentKp.publicKey;
+    repayTx.recentBlockhash = blockhash;
+    repayTx.sign(agentKp);
+
+    const simRepay = await conn.simulateTransaction(repayTx);
+    if (simRepay.value.err) {
+      console.warn(
+        `[rescue] ${protocolName} repay simulation failed:`,
+        JSON.stringify(simRepay.value.err),
+      );
+      protocolRepayStatus = "failed_build";
+      return;
+    }
+    protocolRepaySig = await conn.sendRawTransaction(repayTx.serialize(), { skipPreflight: false });
+    await conn.confirmTransaction(
+      { signature: protocolRepaySig, blockhash, lastValidBlockHeight },
+      commitment,
+    );
+    protocolRepayStatus = "repaid";
+    console.log(
+      `[rescue] ${protocolName} repay CPI landed: ${protocolRepaySig.slice(0, 12)}… (${rescueUsdc} USDC → ${position.accountAddress.slice(0, 8)}…)`,
+    );
+  };
+
+  if (rescueSig && !error) {
+    if (sanitizedPosition.protocol === "kamino") {
+      if (!position.marketAddress) {
+        protocolRepayStatus = "skipped_missing_market";
+      } else {
+        try {
+          const built = await buildKaminoRepayInstructions({
+            walletAddress: wallet,
+            marketAddress: position.marketAddress,
+            obligationAddress: position.accountAddress,
+            payerPubkey: agentKp.publicKey.toString(),
+            repayMicroUsdc: BigInt(Math.floor(rescueUsdc * 1_000_000)),
+            rpcUrl: RPC_URL,
+          });
+          if (!built) {
+            protocolRepayStatus = "skipped_sdk_unavailable";
+          } else {
+            try {
+              await sendProtocolRepay(built.instructions, "Kamino");
+            } catch (sendErr) {
               console.warn(
-                "[rescue] Kamino repay simulation failed:",
-                JSON.stringify(simRepay.value.err),
+                "[rescue] Kamino repay send failed:",
+                sendErr instanceof Error ? sendErr.message : String(sendErr),
               );
-              protocolRepayStatus = "failed_build";
-            } else {
-              protocolRepaySig = await conn.sendRawTransaction(
-                repayTx.serialize(),
-                { skipPreflight: false },
-              );
-              await conn.confirmTransaction(
-                { signature: protocolRepaySig, blockhash, lastValidBlockHeight },
-                commitment,
-              );
-              protocolRepayStatus = "repaid";
-              console.log(
-                `[rescue] Kamino repay CPI landed: ${protocolRepaySig.slice(0, 12)}… (${rescueUsdc} USDC → obligation ${position.accountAddress.slice(0, 8)}…)`,
-              );
+              protocolRepayStatus = "failed_send";
             }
-          } catch (sendErr) {
-            console.warn(
-              "[rescue] Kamino repay send failed:",
-              sendErr instanceof Error ? sendErr.message : String(sendErr),
-            );
-            protocolRepayStatus = "failed_send";
           }
+        } catch (buildErr) {
+          console.warn(
+            "[rescue] Kamino repay build threw:",
+            buildErr instanceof Error ? buildErr.message : String(buildErr),
+          );
+          protocolRepayStatus = "failed_build";
         }
-      } catch (buildErr) {
-        console.warn(
-          "[rescue] Kamino repay build threw:",
-          buildErr instanceof Error ? buildErr.message : String(buildErr),
-        );
-        protocolRepayStatus = "failed_build";
       }
+    } else if (sanitizedPosition.protocol === "marginfi") {
+      // MarginFi uses accountAddress as the MarginfiAccount pubkey.
+      if (!position.accountAddress) {
+        protocolRepayStatus = "skipped_missing_market";
+      } else {
+        try {
+          const built = await buildMarginFiRepayInstructions({
+            walletAddress: wallet,
+            marginfiAccountAddress: position.accountAddress,
+            payerPubkey: agentKp.publicKey.toString(),
+            repayMicroUsdc: BigInt(Math.floor(rescueUsdc * 1_000_000)),
+            repayAll: false,
+            rpcUrl: RPC_URL,
+          });
+          if (!built) {
+            protocolRepayStatus = "skipped_sdk_unavailable";
+          } else {
+            try {
+              await sendProtocolRepay(built.instructions, "MarginFi");
+            } catch (sendErr) {
+              console.warn(
+                "[rescue] MarginFi repay send failed:",
+                sendErr instanceof Error ? sendErr.message : String(sendErr),
+              );
+              protocolRepayStatus = "failed_send";
+            }
+          }
+        } catch (buildErr) {
+          console.warn(
+            "[rescue] MarginFi repay build threw:",
+            buildErr instanceof Error ? buildErr.message : String(buildErr),
+          );
+          protocolRepayStatus = "failed_build";
+        }
+      }
+    } else {
+      protocolRepayStatus = "skipped_unsupported_protocol";
     }
   }
 
-  // ── Step 3: 1% Performance Fee (only on successful rescue) ────────────
+  // ── Step 3: Pay-per-Save Performance Fee (only on successful rescue) ──
+  // Charge 10% of the liquidation penalty we prevented (protocol-specific).
   // Retries once on transient network failure. feeCollected is surfaced to
   // frontend so the user sees an honest status rather than a silent loss.
+  const payPerSave = computePayPerSaveFee(rescueUsdc, sanitizedPosition.protocol);
   let feeSig: string | null = null;
   if (rescueSig && !error && SAKURA_FEE_WALLET) {
     const userUsdcAta  = getAssociatedTokenAddressSync(usdcMintPubkey, new PublicKey(wallet));
     const feeWalletAta = getAssociatedTokenAddressSync(usdcMintPubkey, new PublicKey(SAKURA_FEE_WALLET));
-    const feeAmount    = BigInt(Math.ceil(rescueUsdc * RESCUE_FEE_PERCENT * 1_000_000));
+    const feeAmount    = BigInt(Math.ceil(payPerSave.feeUsdc * 1_000_000));
 
     const buildAndSendFeeTx = async (): Promise<string> => {
       const feeIx = createTransferCheckedInstruction(
@@ -683,13 +850,13 @@ export async function POST(req: NextRequest) {
     // Attempt 1
     try {
       feeSig = await buildAndSendFeeTx();
-      console.log(`[rescue] 1% fee collected: ${(rescueUsdc * RESCUE_FEE_PERCENT).toFixed(2)} USDC → ${feeSig.slice(0, 12)}...`);
+      console.log(`[rescue] Pay-per-Save fee collected: saved≈$${payPerSave.estimatedSavingUsd.toFixed(2)} fee=$${payPerSave.feeUsdc.toFixed(2)} → ${feeSig.slice(0, 12)}...`);
     } catch (feeErr) {
       console.error("[rescue] Fee collection attempt 1 failed, retrying:", feeErr);
       // Attempt 2 — fresh blockhash to avoid expiry
       try {
         feeSig = await buildAndSendFeeTx();
-        console.log(`[rescue] 1% fee collected (retry): ${(rescueUsdc * RESCUE_FEE_PERCENT).toFixed(2)} USDC → ${feeSig.slice(0, 12)}...`);
+        console.log(`[rescue] Pay-per-Save fee collected (retry): saved≈$${payPerSave.estimatedSavingUsd.toFixed(2)} fee=$${payPerSave.feeUsdc.toFixed(2)} → ${feeSig.slice(0, 12)}...`);
       } catch (feeErr2) {
         console.error("[rescue] Fee collection failed after retry (non-fatal):", feeErr2);
       }
@@ -778,7 +945,10 @@ export async function POST(req: NextRequest) {
     protocol: sanitizedPosition.protocol,
     wallet: wallet.slice(0, 8),
     rescueUsdc,
-    feeUsdc: +(rescueUsdc * RESCUE_FEE_PERCENT).toFixed(4),
+    feeModel: "pay_per_save_v1",
+    feePenaltyPct: payPerSave.penaltyPct,
+    estimatedSavingUsd: payPerSave.estimatedSavingUsd,
+    feeUsdc: payPerSave.feeUsdc,
     feeSig: feeSig?.slice(0, 20) ?? "pending",
     preHealthFactor: sanitizedPosition.healthFactor.toFixed(3),
     postHealthFactor: sanitizedPosition.postRescueHealthFactor?.toFixed(3),
@@ -813,8 +983,15 @@ export async function POST(req: NextRequest) {
       triggerHfBps: mandateOnChain.triggerHfBps,
       remainingUsdc: +(mandateOnChain.maxUsdc - mandateOnChain.totalRescued).toFixed(4),
     } : "fetch_failed",
+    // Insurance pool path (optional; only present when program deployed)
+    insurance: {
+      eligible: insuranceEligibility.eligible,
+      reason: insuranceEligibility.reason,
+      remainingCoverageUsdc: insuranceEligibility.remainingCoverageUsdc ?? 0,
+    },
     // Rescue path actually used on-chain:
-    //   "dual_gate_anchor" = SPL delegate + Anchor program (both gates)
+    //   "insurance_pool"    = Pool claim_payout (user-funded pool, LP-backed)
+    //   "dual_gate_anchor"  = SPL delegate + Anchor program (both gates)
     //   "spl_delegate_only" = SPL delegate only (Anchor PDA unavailable)
     rescueMode,
     proofHash: proofHashHex,
@@ -852,7 +1029,10 @@ export async function POST(req: NextRequest) {
     success: !!rescueSig && !error,
     rescueSig,
     feeSig,
-    feeUsdc: +(rescueUsdc * RESCUE_FEE_PERCENT).toFixed(4),
+    feeModel: "pay_per_save_v1",
+    feePenaltyPct: payPerSave.penaltyPct,
+    estimatedSavingUsd: payPerSave.estimatedSavingUsd,
+    feeUsdc: payPerSave.feeUsdc,
     feeCollected,
     memoSig,
     auditChain: mandateTxSig
@@ -888,6 +1068,12 @@ export async function POST(req: NextRequest) {
     timeWindowSec,
     // Anchor mandate PDA on-chain verification result
     mandatePDA: mandateOnChain ?? null,
+    // Insurance pool eligibility and path used
+    insurance: {
+      eligible: insuranceEligibility.eligible,
+      reason: insuranceEligibility.reason,
+      remainingCoverageUsdc: insuranceEligibility.remainingCoverageUsdc ?? 0,
+    },
     // Which gate was actually invoked for the rescue transfer on-chain
     rescueMode,
     proofHash: proofHashHex,

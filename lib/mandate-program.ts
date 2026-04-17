@@ -24,9 +24,12 @@ import * as borsh from "@coral-xyz/borsh"; // may need install
 
 // ── Program ID ──────────────────────────────────────────────────────
 // Replace with actual deployed program ID after `anchor deploy`
+// Must match programs/sakura-mandate/target/deploy/sakura_mandate-keypair.json
+// (solana-keygen pubkey → "2YT6MwLVkd1cpmoQX6KWWn66zz5XNCYrFf5Rjq12g959").
+// Override via NEXT_PUBLIC_MANDATE_PROGRAM_ID env for alternate deployments.
 export const SAKURA_MANDATE_PROGRAM_ID = new PublicKey(
   process.env.NEXT_PUBLIC_MANDATE_PROGRAM_ID ??
-    "AnszeCRFsBKmT5fBY9WywxGsZZZob8ZPFYqboYXpuYLp"
+    "2YT6MwLVkd1cpmoQX6KWWn66zz5XNCYrFf5Rjq12g959"
 );
 
 // ── PDA Derivation ──────────────────────────────────────────────────

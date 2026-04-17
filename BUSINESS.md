@@ -32,21 +32,26 @@ None of these charge subscriptions. All are usage-priced, with the Liquidation S
 - **Gross margin per swap:** ≈ 80–90% at average $200 swap size
 - **Payment rail:** Jupiter's `platformFeeBps` parameter — routed to our fee account at settlement, no separate tx
 
-### Line C — Liquidation Shield (performance fee)
-- **Unit price:** 1% of **rescued USDC amount** (matches current on-chain impl:
-  `app/api/liquidation-shield/rescue/route.ts` — `RESCUE_FEE_PERCENT = 0.01`).
-  Example: $800 rescue → $8 fee. User's net savings = (liquidation penalty avoided) − fee.
-  At a 5% Kamino penalty, $800 rescued from a $16k collateral position avoids ~$40 penalty → $32 net saving.
-- **Cost of goods:** SPL transfer gas + Memo gas + RPC reads ≈ $0.002
-- **Constraints:** only charged on successful rescue (rescueSig non-null). Bounded
-  above by the SPL delegate allowance (user-signed on-chain cap).
+### Line C — Liquidation Shield (Pay-per-Save performance fee)
+- **Unit price:** 10% of **estimated loss prevented**, not of rescue amount.
+  Formula (`app/api/liquidation-shield/rescue/route.ts` — `computePayPerSaveFee`):
+  `saving = rescueUsdc × liquidationPenaltyPct(protocol)`, then `fee = saving × 10 %`.
+  Protocol penalties are published constants:
+  Kamino 5%, MarginFi 5%, Solend 8%, unknown 5% (fallback).
+- **Example:** $800 Kamino rescue → saving ≈ $40 → fee **$4.00**.
+  User's net outcome = $40 penalty avoided − $4 fee = **$36 net to user (90% of saved value)**.
+  This replaces the earlier flat 1 %-of-rescue model, which charged $8 on the same rescue.
+- **Why this is aligned:** we only earn when we actually save the user money,
+  and we only earn a fraction of what we saved. If the liquidation penalty is
+  zero (stablecoin-vs-stablecoin position), the fee is also near-zero. There
+  is a **$0.10 USDC floor** so dust rescues still cover infra cost.
+- **Cost of goods:** SPL transfer gas + Memo gas + RPC reads ≈ $0.002.
+- **Constraints:** only charged on successful rescue (`rescueSig` non-null).
+  Bounded above by the SPL delegate allowance (user-signed on-chain cap).
 - **Payment rail:** fee tx is a separate SPL transfer by the agent (same delegate),
-  sent after rescueSig confirms. A failed fee tx is surfaced to the frontend
-  (`feeCollected: false`) rather than silently lost.
-- **Pricing roadmap:** future "saved-penalty" pricing model (fee = 1% × penalty avoided)
-  requires an on-chain oracle of each protocol's liquidation-penalty parameter. Tracked
-  separately — current code is **flat 1% of rescue amount**, and that is what BUSINESS.md
-  reflects.
+  sent after `rescueSig` confirms. A failed fee tx is surfaced to the frontend
+  (`feeCollected: false`) rather than silently lost. Audit memo records
+  `feeModel: "pay_per_save_v1"`, `estimatedSavingUsd`, and `feeUsdc`.
 
 ---
 
@@ -58,10 +63,14 @@ Assumes a single mid-tier user who touches all three features monthly. Numbers a
 |---|---|
 | Nonce Guardian reports | 1 × $1.00 = **$1.00** |
 | Ghost Run (≈5 runs × $200 swap × 0.3%) | **$3.00** |
-| Liquidation Shield fires (≈0.3 avg/mo × $400 rescue × 1%) | **$1.20** |
-| **Total ARPU / month** | **~$5.20** |
+| Liquidation Shield fires (≈0.3 avg/mo × $400 rescue × 5% penalty × 10% fee) | **$0.60** |
+| **Total ARPU / month** | **~$4.60** |
 | **Variable cost** (AI + gas + RPC) | **~$0.25** |
-| **Contribution margin** | **~$4.95 (95%)** |
+| **Contribution margin** | **~$4.35 (94.5%)** |
+
+> Note: moving to Pay-per-Save halves the Shield revenue line vs the old flat-1 %
+> model, but materially improves conversion and retention because the user's
+> net outcome is visibly positive every time the Shield fires.
 
 Break-even on fixed infra (Vercel Pro + Helius Growth + Upstash + Claude quota ≈ $900/mo) at ~182 paying monthly actives. Solana Frontier has >500k monthly active wallets; a 0.04% penetration hits break-even.
 

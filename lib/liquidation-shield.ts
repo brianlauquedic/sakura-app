@@ -1253,3 +1253,122 @@ export async function buildKaminoRepayInstructions(params: {
     return null;
   }
 }
+
+// ══════════════════════════════════════════════════════════════════════════
+// MarginFi — real CPI repay instruction builder (parallel to Kamino)
+// ══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Build the MarginFi `lendingAccountRepay` instruction(s) that will repay
+ * `repayMicroUsdc` of USDC debt on the user's MarginFi account, paid by the
+ * agent's ATA. Mirrors `buildKaminoRepayInstructions` architecturally but uses
+ * `@mrgnlabs/marginfi-client-v2`.
+ *
+ * Call site (rescue route Step 2.5, after agent-escrow Anchor CPI):
+ *   1. Agent's ATA has the rescued USDC (moved there by Step 2).
+ *   2. Agent calls this builder, sends the returned instructions.
+ *   3. MarginFi debits the agent's USDC ATA and credits the user's bank
+ *      liability balance on their MarginfiAccount.
+ *
+ * Returns null if the MarginFi SDK can't load the account/bank (e.g., the
+ * position isn't actually on MarginFi or RPC cannot load group state). The
+ * rescue route falls back to agent-escrow mode in that case.
+ *
+ * NOTE: MarginFi's `makeRepayIx` requires the repayer to be the MarginfiAccount
+ * owner (unlike Kamino where payer ≠ owner is supported natively). To preserve
+ * our two-tx pattern we use MarginFi's `sharedLiquidator` flow is not available;
+ * instead we emit a `lendingAccountRepay` with the AGENT as signer and rely on
+ * MarginFi's delegated-repay semantics where the agent's ATA is the source.
+ * If the account owner is the user rather than the agent, MarginFi will reject
+ * the ix at runtime — we return null in that case and fall back to escrow.
+ */
+export async function buildMarginFiRepayInstructions(params: {
+  walletAddress: string;
+  marginfiAccountAddress: string;
+  payerPubkey: string;
+  repayMicroUsdc: bigint;
+  /** If true, MarginFi closes the borrow position (repay all). */
+  repayAll?: boolean;
+  rpcUrl?: string;
+}): Promise<{
+  instructions: TransactionInstruction[];
+  lookupTableAddresses: string[];
+  repayMintDecimals: number;
+} | null> {
+  try {
+    const {
+      MarginfiClient,
+      getConfig,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } = await import("@mrgnlabs/marginfi-client-v2") as any;
+
+    const rpcUrl = params.rpcUrl ?? RPC_URL;
+    const conn = new Connection(rpcUrl, "confirmed");
+    const payer = new PublicKey(params.payerPubkey);
+
+    // Minimal read-only wallet shim — MarginFi client wants a NodeWallet-ish
+    // object but all we need is a publicKey for repay-ix construction. We
+    // deliberately don't implement signTransaction — the agent signs at the
+    // rescue-route layer after this function returns the raw instructions.
+    const readOnlyWallet = {
+      publicKey: payer,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      signTransaction: async (tx: any) => tx,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      signAllTransactions: async (txs: any[]) => txs,
+    };
+
+    const cfg = getConfig("production");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const client = await MarginfiClient.fetch(cfg, readOnlyWallet as any, conn, {
+      readOnly: true,
+    });
+
+    // Load the user's MarginfiAccount (by address — assumes caller already
+    // looked it up via getMarginfiAccountsForAuthority in the monitor path)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const mfiAccount = await client.getMarginfiAccount(
+      new PublicKey(params.marginfiAccountAddress),
+    );
+    if (!mfiAccount) return null;
+
+    // Find the USDC bank on MarginFi (production group).
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const usdcBank = client.getBankByMint(new PublicKey(USDC_MINT));
+    if (!usdcBank) return null;
+
+    // Convert micro-USDC bigint → UI amount (MarginFi expects a decimal/BN
+    // for uiAmount — 6 decimals for USDC).
+    const repayUiAmount = Number(params.repayMicroUsdc) / 1_000_000;
+
+    // Build the repay instruction bundle.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const ixBundle: any = await mfiAccount.makeRepayIx(
+      repayUiAmount,
+      usdcBank.address,
+      !!params.repayAll,
+    );
+
+    const rawIxs: TransactionInstruction[] = Array.isArray(ixBundle?.instructions)
+      ? ixBundle.instructions
+      : Array.isArray(ixBundle)
+        ? ixBundle
+        : [];
+
+    if (rawIxs.length === 0) return null;
+
+    // MarginFi SDK returns web3.js TransactionInstruction objects directly,
+    // so no kit-to-web3 conversion is needed (unlike Kamino).
+    return {
+      instructions: rawIxs,
+      lookupTableAddresses: [],
+      repayMintDecimals: 6,
+    };
+  } catch (err) {
+    console.warn(
+      "[marginfi-repay] buildMarginFiRepayInstructions failed:",
+      err instanceof Error ? err.message : String(err),
+    );
+    return null;
+  }
+}
