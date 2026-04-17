@@ -122,12 +122,12 @@ export default function MutualPool({ isDemo }: { isDemo?: boolean }) {
 
   async function buyPolicy() {
     if (!walletAddress) {
-      setBuyResult({ error: "Connect wallet first." });
+      setBuyResult({ error: t("mutualErrConnect") });
       return;
     }
     const provider = getProvider();
     if (!provider) {
-      setBuyResult({ error: "No wallet provider detected." });
+      setBuyResult({ error: t("mutualErrNoProvider") });
       return;
     }
     setBuyLoading(true);
@@ -182,7 +182,7 @@ export default function MutualPool({ isDemo }: { isDemo?: boolean }) {
       const msg = e instanceof Error ? e.message : String(e);
       // Phantom rejection → friendlier error
       if (msg.includes("User rejected") || msg.includes("rejected")) {
-        setBuyResult({ error: "User rejected transaction." });
+        setBuyResult({ error: t("mutualErrRejected") });
       } else {
         setBuyResult({ error: msg });
       }
@@ -193,7 +193,7 @@ export default function MutualPool({ isDemo }: { isDemo?: boolean }) {
 
   async function triggerDemoClaim() {
     if (!walletAddress) {
-      setClaimResult({ error: "Connect wallet first." });
+      setClaimResult({ error: t("mutualErrConnect") });
       return;
     }
     setClaimLoading(true);
@@ -273,7 +273,7 @@ export default function MutualPool({ isDemo }: { isDemo?: boolean }) {
             marginBottom: 8,
           }}
         >
-          SAKURA MUTUAL v0.2 · ZK-SETTLED INSURANCE
+          {t("mutualBrandTag")}
         </div>
         <h2
           style={{
@@ -285,50 +285,48 @@ export default function MutualPool({ isDemo }: { isDemo?: boolean }) {
             letterSpacing: "0.02em",
           }}
         >
-          Claims are settled by <em style={{ color: "var(--accent)", fontStyle: "normal" }}>math</em>, not trust.
+          {t("mutualHeadline1")} <em style={{ color: "var(--accent)", fontStyle: "normal" }}>{t("mutualHeadlineMath")}</em>{t("mutualHeadline2")}
         </h2>
         <p style={{ margin: "12px 0 0", fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.6 }}>
-          Stake USDC, lock a Poseidon commitment to your Kamino position, and
-          a Groth16 proof automatically releases a rescue payout when your
-          health factor drifts below your chosen trigger. No human approvals,
-          no discretion, no counter-party risk — just on-chain{" "}
-          <code style={{ color: "var(--accent)" }}>alt_bn128_pairing</code>.
+          {t("mutualDescription")}{" "}
+          <code style={{ color: "var(--accent)" }}>alt_bn128_pairing</code>
+          {t("mutualDescriptionEnd")}
         </p>
       </div>
 
       {/* Pool state card */}
       <StateCard
-        title="POOL STATE"
+        title={t("mutualPoolState")}
         loading={loading}
         err={err}
         empty={!status?.pool}
         emptyText={
           isDemo
-            ? "Pool not yet initialized on devnet (demo mode)."
-            : "Pool not yet initialized. Run `scripts/initialize-insurance-pool.ts`."
+            ? t("mutualPoolNotInitDemo")
+            : t("mutualPoolNotInit")
         }
       >
         {status?.pool && (
           <Grid
             rows={[
-              ["Program", short(INSURANCE_PROGRAM_ID)],
-              ["Pool Admin", short(status.pool.admin)],
-              ["Total Stakes", `$${fmt(status.pool.totalStakesUsdc)}`],
-              ["Coverage Outstanding", `$${fmt(status.pool.coverageOutstandingUsdc)}`],
-              ["Claims Paid", `$${fmt(status.pool.totalClaimsPaidUsdc)}`],
+              [t("mutualRowProgram"), short(INSURANCE_PROGRAM_ID)],
+              [t("mutualRowAdmin"), short(status.pool.admin)],
+              [t("mutualRowTotalStakes"), `$${fmt(status.pool.totalStakesUsdc)}`],
+              [t("mutualRowCoverageOut"), `$${fmt(status.pool.coverageOutstandingUsdc)}`],
+              [t("mutualRowClaimsPaid"), `$${fmt(status.pool.totalClaimsPaidUsdc)}`],
               [
-                "Premium / Platform Fee",
+                t("mutualRowPremiumFee"),
                 `${(status.pool.premiumBps / 100).toFixed(2)}% / ${(status.pool.platformFeeBps / 100).toFixed(2)}%`,
               ],
               [
-                "Min Stake Multiplier",
+                t("mutualRowStakeMul"),
                 `${(status.pool.minStakeMultiplier / 100).toFixed(2)}×`,
               ],
               [
-                "Waiting Period",
+                t("mutualRowWaitPeriod"),
                 `${status.pool.waitingPeriodSec}s`,
               ],
-              ["Paused", status.pool.paused ? "⚠️ yes" : "no"],
+              [t("mutualRowPaused"), status.pool.paused ? t("mutualYes") : t("mutualNo")],
             ]}
           />
         )}
@@ -336,27 +334,27 @@ export default function MutualPool({ isDemo }: { isDemo?: boolean }) {
 
       {/* Policy state card */}
       <StateCard
-        title="YOUR POLICY"
+        title={t("mutualYourPolicy")}
         loading={loading}
         err={err}
         empty={!hasPolicy}
         emptyText={
           walletAddress
-            ? "You don't have an active policy. Buy one to be protected."
-            : "Connect a wallet to see your policy."
+            ? t("mutualNoPolicy")
+            : t("mutualConnectForPolicy")
         }
       >
         {status?.policy && (
           <Grid
             rows={[
-              ["Active", status.policy.isActive ? "✓ yes" : "✗ no"],
-              ["Coverage Cap", `$${fmt(status.policy.coverageCapUsdc)}`],
-              ["Remaining Coverage", `$${fmt(status.policy.remainingCoverageUsdc)}`],
-              ["Stake (refundable)", `$${fmt(status.policy.stakeUsdc)}`],
-              ["Premium Paid", `$${fmt(status.policy.premiumPaidUsdc)}`],
-              ["Commitment (ZK)", status.policy.commitmentHash.slice(0, 18) + "…"],
-              ["Rescues Used", String(status.policy.rescueCount)],
-              ["Valid Through", status.policy.paidThrough.slice(0, 10)],
+              [t("mutualRowActive"), status.policy.isActive ? t("mutualActiveYes") : t("mutualActiveNo")],
+              [t("mutualRowCoverageCap"), `$${fmt(status.policy.coverageCapUsdc)}`],
+              [t("mutualRowRemaining"), `$${fmt(status.policy.remainingCoverageUsdc)}`],
+              [t("mutualRowStake"), `$${fmt(status.policy.stakeUsdc)}`],
+              [t("mutualRowPremiumPaid"), `$${fmt(status.policy.premiumPaidUsdc)}`],
+              [t("mutualRowCommitment"), status.policy.commitmentHash.slice(0, 18) + "…"],
+              [t("mutualRowRescuesUsed"), String(status.policy.rescueCount)],
+              [t("mutualRowValidThru"), status.policy.paidThrough.slice(0, 10)],
             ]}
           />
         )}
@@ -383,7 +381,7 @@ export default function MutualPool({ isDemo }: { isDemo?: boolean }) {
               color: "var(--text-muted)",
             }}
           >
-            BUY A POLICY
+            {t("mutualBuyPolicy")}
           </div>
           <label
             style={{
@@ -395,7 +393,7 @@ export default function MutualPool({ isDemo }: { isDemo?: boolean }) {
             }}
           >
             <span style={{ minWidth: 120, fontFamily: "var(--font-mono)" }}>
-              Coverage cap
+              {t("mutualCoverageCap")}
             </span>
             <input
               type="number"
@@ -426,12 +424,14 @@ export default function MutualPool({ isDemo }: { isDemo?: boolean }) {
                 lineHeight: 1.6,
               }}
             >
-              premium: ${(coverageCap * status.pool.premiumBps / 10000).toFixed(2)} / month
-              · stake: ${(
-                (coverageCap * status.pool.premiumBps / 10000) *
-                (status.pool.minStakeMultiplier / 100)
-              ).toFixed(2)} (refundable)
-              · waiting period: {status.pool.waitingPeriodSec}s
+              {t("mutualPremiumLine", {
+                p: (coverageCap * status.pool.premiumBps / 10000).toFixed(2),
+                s: (
+                  (coverageCap * status.pool.premiumBps / 10000) *
+                  (status.pool.minStakeMultiplier / 100)
+                ).toFixed(2),
+                w: status.pool.waitingPeriodSec,
+              })}
             </div>
           )}
         </div>
@@ -442,13 +442,13 @@ export default function MutualPool({ isDemo }: { isDemo?: boolean }) {
         <ActionButton
           disabled={!walletAddress || !poolReady || hasPolicy || buyLoading}
           onClick={buyPolicy}
-          label={buyLoading ? "Signing…" : "＋ Buy Policy"}
+          label={buyLoading ? t("mutualBtnSigning") : t("mutualBtnBuy")}
           primary
         />
         <ActionButton
           disabled={!walletAddress || !hasPolicy || claimLoading}
           onClick={triggerDemoClaim}
-          label={claimLoading ? "Proving…" : "⚡ Trigger ZK Rescue"}
+          label={claimLoading ? t("mutualBtnProving") : t("mutualBtnRescue")}
         />
       </div>
 
@@ -470,7 +470,7 @@ export default function MutualPool({ isDemo }: { isDemo?: boolean }) {
           ) : (
             <>
               <div style={{ color: "var(--green)", marginBottom: 8 }}>
-                ✓ Policy bought
+                {t("mutualBoughtOk")}
               </div>
               {buyResult.txSig && (
                 <div>
@@ -487,7 +487,7 @@ export default function MutualPool({ isDemo }: { isDemo?: boolean }) {
               )}
               <div>commitment: {buyResult.commitmentHash?.slice(0, 20)}…</div>
               <div style={{ marginTop: 8, color: "var(--accent)" }}>
-                Nonce saved to localStorage — required for future ZK claims.
+                {t("mutualNonceSaved")}
               </div>
             </>
           )}
@@ -511,7 +511,7 @@ export default function MutualPool({ isDemo }: { isDemo?: boolean }) {
             <div style={{ color: "var(--red, #e66)" }}>✗ {claimResult.error}</div>
           ) : (
             <>
-              <div style={{ color: "var(--green)", marginBottom: 8 }}>✓ Groth16 proof generated</div>
+              <div style={{ color: "var(--green)", marginBottom: 8 }}>{t("mutualProofOk")}</div>
               <div>commitment: {claimResult.commitmentHash}</div>
               {claimResult.proof && (
                 <>
@@ -519,12 +519,12 @@ export default function MutualPool({ isDemo }: { isDemo?: boolean }) {
                   <div>B (128B): {claimResult.proof.b.slice(0, 22)}…</div>
                   <div>C (64B): {claimResult.proof.c.slice(0, 22)}…</div>
                   <div style={{ marginTop: 8, color: "var(--text-muted)" }}>
-                    Public signals: {claimResult.proof.publicSignals.length} field elements
+                    {t("mutualPublicSignals", { n: claimResult.proof.publicSignals.length })}
                   </div>
                 </>
               )}
               <div style={{ marginTop: 8, color: "var(--accent)" }}>
-                Sign the returned v0 tx with your wallet to submit on-chain.
+                {t("mutualSubmitHint")}
               </div>
             </>
           )}
