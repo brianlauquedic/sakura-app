@@ -34,8 +34,13 @@ import crypto from "crypto";
 // Placeholder pubkey used until the program is deployed. We use the System
 // Program ID (all-ones) as a sentinel — any caller can check equality with
 // SystemProgram.programId to detect "not deployed".
+// .trim() defends against accidental whitespace/newlines in the env
+// value (e.g. when added via `echo "..." | vercel env add`). A stray
+// `\n` in the pubkey turns the base58 parse into a "Non-base58
+// character" crash at module load — which kills every route that
+// imports this file, including /api/liquidation-shield/rescue.
 export const SAKURA_INSURANCE_PROGRAM_ID = new PublicKey(
-  process.env.NEXT_PUBLIC_INSURANCE_PROGRAM_ID ??
+  (process.env.NEXT_PUBLIC_INSURANCE_PROGRAM_ID ?? "").trim() ||
     "11111111111111111111111111111111"
 );
 
