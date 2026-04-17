@@ -8,6 +8,7 @@
  * If STATS_API_KEY is not set, endpoint is disabled.
  */
 import { NextRequest, NextResponse } from "next/server";
+import crypto from "crypto";
 import { getUsageStats } from "@/lib/redis";
 
 export async function GET(req: NextRequest) {
@@ -18,9 +19,16 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Stats not configured" }, { status: 404 });
   }
 
-  // Verify key
-  const provided = req.nextUrl.searchParams.get("key");
-  if (provided !== STATS_KEY) {
+  // [SECURITY FIX M-5] Use timing-safe comparison to prevent timing attacks.
+  // Also accept key via Authorization header (preferred) to avoid URL logging.
+  const provided = req.headers.get("authorization")?.replace("Bearer ", "")
+    ?? req.nextUrl.searchParams.get("key");
+  if (!provided) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const keyBuf = Buffer.from(STATS_KEY, "utf-8");
+  const providedBuf = Buffer.from(provided, "utf-8");
+  if (keyBuf.length !== providedBuf.length || !crypto.timingSafeEqual(keyBuf, providedBuf)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

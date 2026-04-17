@@ -254,16 +254,10 @@ export async function proxy(req: NextRequest) {
       return NextResponse.next();
     }
 
-    // Demo mode: skip rate limiting for demo API calls.
-    // Demo data is served from lib/demo-data.ts and never hits real RPC/AI.
-    // Only bypass for our own origin (prevent external spoofing of Referer header).
-    const referer = req.headers.get("referer") ?? "";
-    const requestHost = req.headers.get("host") ?? "";
-    const isDemoRequest = referer.includes("demo=true") &&
-      requestHost && referer.includes(requestHost);
-    if (isDemoRequest) {
-      return NextResponse.next();
-    }
+    // [SECURITY FIX M-2] Demo mode rate-limit bypass REMOVED.
+    // Previously, spoofing Referer+Host headers bypassed ALL rate limiting.
+    // Demo endpoints use static data and are lightweight — they can share
+    // the general rate limit without issues.
 
     // Layer 4: Known bot UA
     if (!isMcpEndpoint && BOT_UA_PATTERNS.some(p => p.test(ua))) {

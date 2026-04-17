@@ -12,6 +12,9 @@ const FALLBACK_RPC = "https://api.mainnet-beta.solana.com";
 // sendTransaction is intentionally excluded: clients must submit transactions
 // directly to Solana (or use a dedicated signing flow) to prevent abuse of
 // our Helius API key for arbitrary transaction broadcasting.
+// [SECURITY FIX H-5] simulateTransaction REMOVED from public proxy.
+// It consumes heavy Helius compute credits and can be abused for quota drain.
+// Ghost Run simulate uses server-side getConnection() directly (not this proxy).
 const ALLOWED_METHODS = new Set([
   "getLatestBlockhash",
   "getBalance",
@@ -20,7 +23,6 @@ const ALLOWED_METHODS = new Set([
   "getTokenAccountsByOwner",
   "getParsedTransaction",
   "getParsedAccountInfo",
-  "simulateTransaction",
   "getMinimumBalanceForRentExemption",
   "getRecentBlockhash",
   "getFeeForMessage",

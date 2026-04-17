@@ -30,14 +30,16 @@ export async function POST(req: NextRequest) {
   let memoPayload: string;
   try {
     const body = await req.json();
-    // Internal-only endpoint: require secret if configured.
-    // Set INTERNAL_API_SECRET in Vercel env vars to restrict to server-side callers only.
+    // [SECURITY FIX M-1] INTERNAL_API_SECRET is now MANDATORY.
+    // Without it, anyone can call this endpoint and drain platform SOL via memo writes.
     const configuredSecret = process.env.INTERNAL_API_SECRET;
-    if (configuredSecret) {
-      const provided = req.headers.get("x-internal-secret");
-      if (provided !== configuredSecret) {
-        return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-      }
+    if (!configuredSecret) {
+      console.error("[agent/memo] INTERNAL_API_SECRET not configured — endpoint disabled for safety");
+      return NextResponse.json({ error: "endpoint_not_configured" }, { status: 503 });
+    }
+    const provided = req.headers.get("x-internal-secret");
+    if (provided !== configuredSecret) {
+      return NextResponse.json({ error: "unauthorized" }, { status: 401 });
     }
     memoPayload = (body.message ?? body.memoPayload) as string;
     if (!memoPayload || typeof memoPayload !== "string") {
@@ -48,9 +50,10 @@ export async function POST(req: NextRequest) {
   }
 
   // [SECURITY FIX] Truncate to byte-safe length to prevent oversized tx
+  // Also strip trailing U+FFFD from multi-byte UTF-8 boundary splits
   const encoded = new TextEncoder().encode(memoPayload);
   const safeMemo = encoded.length > MAX_MEMO_BYTES
-    ? new TextDecoder().decode(encoded.slice(0, MAX_MEMO_BYTES))
+    ? new TextDecoder().decode(encoded.slice(0, MAX_MEMO_BYTES)).replace(/\uFFFD+$/, "")
     : memoPayload;
 
   const keypair = getPlatformKeypair();

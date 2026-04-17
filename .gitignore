@@ -44,3 +44,24 @@ next-env.d.ts
 .claude/
 .claude/
 .claude/
+
+# Anchor / Rust build artifacts
+programs/**/target/
+programs/**/test-ledger/
+programs/**/.anchor/
+target/
+test-ledger/
+.anchor/
+*.rs.bk
+
+# Solana validator state
+**/test-ledger/
+
+# Test output
+coverage/
+.nyc_output/
+
+# Local dev helpers (not for repo)
+screenshot_debug.js
+screenshot_demo.js
+

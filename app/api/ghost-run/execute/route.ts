@@ -11,10 +11,11 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { Connection } from "@solana/web3.js";
-import { createSigningAgent, RPC_URL } from "@/lib/agent";
+import { createSigningAgent, createFullAgent, sakStake, sakLend, RPC_URL } from "@/lib/agent";
 import { getConnection } from "@/lib/rpc";
 import type { StrategyStep } from "@/lib/ghost-run";
 import { getWalletLimiter, checkWalletLimitMemory } from "@/lib/redis";
+import { processOperation } from "@/lib/dual-hash";
 
 export const maxDuration = 120;
 
@@ -82,7 +83,8 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const agent = createSigningAgent();
+  // Use full agent with DefiPlugin + MiscPlugin for trade/stake/lend operations
+  const agent = await createFullAgent() ?? createSigningAgent();
   if (!agent) {
     return NextResponse.json({ error: "Agent not configured (SAKURA_AGENT_PRIVATE_KEY missing)" }, { status: 500 });
   }
@@ -101,25 +103,21 @@ export async function POST(req: NextRequest) {
 
       if (step.type === "stake" && step.outputToken === "mSOL") {
         if (step.inputAmount > MAX_STAKE_SOL_PER_STEP) throw new Error(`Stake amount exceeds per-step limit of ${MAX_STAKE_SOL_PER_STEP} SOL`);
-        // Marinade liquid stake via Jupiter
-        const result = await (agent as unknown as {
-          stakeWithJup: (amount: number) => Promise<string>
-        }).stakeWithJup(step.inputAmount);
+        // Marinade liquid stake via Jupiter (sakStake wrapper)
+        const result = await sakStake(agent, step.inputAmount);
         sig = result;
         if (sig) await conn.confirmTransaction(sig, "confirmed");
       } else if (step.type === "stake" && step.outputToken === "jitoSOL") {
         if (step.inputAmount > MAX_STAKE_SOL_PER_STEP) throw new Error(`Stake amount exceeds per-step limit of ${MAX_STAKE_SOL_PER_STEP} SOL`);
-        // Jito liquid stake via Jupiter
-        const result = await (agent as unknown as {
-          stakeWithJup: (amount: number, validator?: string) => Promise<string>
-        }).stakeWithJup(step.inputAmount, "J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn");
+        // Jito liquid stake via Jupiter (sakStake wrapper with validator)
+        const result = await sakStake(agent, step.inputAmount, "J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn");
         sig = result;
         if (sig) await conn.confirmTransaction(sig, "confirmed");
       } else if (step.type === "lend") {
         if (step.inputAmount > MAX_LEND_AMOUNT_PER_STEP) throw new Error(`Lend amount exceeds per-step limit of ${MAX_LEND_AMOUNT_PER_STEP}`);
-        const result = await (agent as unknown as {
-          lendAsset: (assetMint: string, amount: number) => Promise<string>
-        }).lendAsset(
+        // Lulo lending via DefiPlugin (sakLend wrapper)
+        const result = await sakLend(
+          agent,
           step.inputToken === "USDC"
             ? "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
             : "So11111111111111111111111111111111111111112",
@@ -133,8 +131,12 @@ export async function POST(req: NextRequest) {
         const conn = await getConn("confirmed");
         const { TOKEN_MINTS, TOKEN_DECIMALS } = await import("@/lib/ghost-run");
 
-        const inputMint = TOKEN_MINTS[step.inputToken] ?? step.inputToken;
-        const outputMint = TOKEN_MINTS[step.outputToken] ?? step.outputToken;
+        // [SECURITY FIX] Enforce token allowlist — reject unknown tokens instead of using raw input
+        const inputMint = TOKEN_MINTS[step.inputToken];
+        const outputMint = TOKEN_MINTS[step.outputToken];
+        if (!inputMint || !outputMint) {
+          throw new Error("Unknown token — only allowlisted tokens are permitted");
+        }
         const inDecimals = TOKEN_DECIMALS[step.inputToken] ?? 9;
         const inputLamports = Math.round(step.inputAmount * Math.pow(10, inDecimals));
 
@@ -193,8 +195,9 @@ export async function POST(req: NextRequest) {
 
       if (sig) signatures.push(sig);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      errors.push(`${step.type} ${step.inputToken}→${step.outputToken}: ${msg}`);
+      // [SECURITY FIX H-1] Never expose raw error — may contain RPC URLs with API keys
+      console.error(`[ghost-run/execute] step ${stepIdx} error:`, err instanceof Error ? err.message : String(err));
+      errors.push(`${step.type} ${step.inputToken}→${step.outputToken}: execution failed`);
     }
   }
 
@@ -205,6 +208,8 @@ export async function POST(req: NextRequest) {
       const { executionProofHash } = await import("@/lib/crypto-proof");
       const execTs = new Date().toISOString();
       const execProof = executionProofHash(body.commitmentId ?? "none", signatures, execTs);
+      // Dual-Hash execution record
+      const dualExec = processOperation("ghost_run", execProof.input, execTs);
       const proofText = JSON.stringify({
         event: "sakura_ghost_run_executed",
         version: 2,
@@ -213,6 +218,10 @@ export async function POST(req: NextRequest) {
         ref_commitment: (body.commitmentId ?? "none").slice(0, 20),
         execution_hash: execProof.hash,
         execution_input: execProof.input,
+        // Dual-Hash layer
+        poseidon_hash: dualExec.poseidonHash,
+        merkle_root: dualExec.merkleRoot,
+        merkle_leaf_index: dualExec.merkleLeaf.index,
         platformFeeBps: PLATFORM_FEE_BPS,
         signatures: signatures.map(s => s.slice(0, 12)),
         ts: execTs,

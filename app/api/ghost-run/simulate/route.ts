@@ -23,6 +23,8 @@ import type { StrategyStep } from "@/lib/ghost-run";
 import { createReadOnlyAgent, RPC_URL } from "@/lib/agent";
 import { getConnection } from "@/lib/rpc";
 import { getWalletLimiter, checkWalletLimitMemory, trackUsage } from "@/lib/redis";
+import { processGhostRunCommit } from "@/lib/dual-hash";
+import { generateGhostRunProof } from "@/lib/groth16-verify";
 import { DEMO_GHOST_STRATEGY, getDemoGhostResult, getDemoGhostResultMarinade, getDemoGhostResultKamino, getDemoGhostResultJito } from "@/lib/demo-data";
 import type { Lang } from "@/lib/demo-data";
 
@@ -254,18 +256,51 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Generate demo commitment + store run (same as real mode, so UI panels always show)
-    const cryptoMod = await import("crypto");
+    // ── Real cryptographic proofs on demo data ──────────────────────
+    // Demo mode uses REAL crypto functions on FAKE data so judges see the full proof layer.
+    const { commitmentHash } = await import("@/lib/crypto-proof");
     const demoStrategy = body.strategy ?? "demo";
-    const demoCommitmentId = "GR-DEMO" + cryptoMod.createHash("sha256")
-      .update(demoStrategy + Date.now()).digest("hex").slice(0, 4).toUpperCase();
+    const demoWallet8 = "demo...mode";
+    const demoCommitTs = new Date().toISOString();
+
+    // 1. Real SHA-256 commitment (same as real mode)
+    const demoCommitResult = commitmentHash(
+      demoStrategy,
+      JSON.stringify(result.result),
+      demoWallet8,
+      demoCommitTs,
+    );
+    const demoCommitmentId = demoCommitResult.commitmentId;
+
+    // 2. Real dual-hash: SHA-256 + Poseidon + Merkle tree insertion
+    const demoDualCommit = processGhostRunCommit(
+      JSON.stringify(demoStrategy),
+      JSON.stringify(result.result),
+      demoWallet8,
+      demoCommitTs,
+    );
+
+    // 3. Real ZK commitment proof (Groth16-format, Poseidon-based)
+    let demoZkProof = null;
+    try {
+      const bundle = generateGhostRunProof(
+        JSON.stringify(demoStrategy),
+        JSON.stringify(result.result),
+        "demo_wallet",
+      );
+      demoZkProof = {
+        proofDigest: bundle.proofDigest,
+        poseidonDigest: bundle.poseidonDigest,
+        verified: bundle.verified,
+      };
+    } catch { /* optional */ }
 
     let demoRunId: string | null = null;
     try {
       const { storeRun } = await import("@/lib/run-store");
       demoRunId = await storeRun({
         strategy: demoStrategy,
-        walletShort: "demo...mode",
+        walletShort: demoWallet8,
         steps: result.steps,
         result: result.result,
         aiAnalysis: demoData.aiAnalysis,
@@ -283,6 +318,13 @@ export async function POST(req: NextRequest) {
       commitmentId: demoCommitmentId,
       commitmentMemoSig: null,
       runId: demoRunId,
+      dualHash: {
+        poseidonCommitment: demoDualCommit.commitPoseidon,
+        merkleRoot: demoDualCommit.merkleRoot,
+        merkleLeafIndex: demoDualCommit.merkleLeaf.index,
+        treeSize: demoDualCommit.treeSize,
+      },
+      zkProof: demoZkProof,
     });
   }
 
@@ -395,9 +437,9 @@ export async function POST(req: NextRequest) {
   try {
     result = await simulateStrategy(steps, wallet);
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    console.error("[ghost-run/simulate] simulation error:", err);
-    return NextResponse.json({ error: `Simulation failed: ${msg}` }, { status: 500 });
+    // [SECURITY FIX H-1] Never expose raw error — may contain RPC URLs with API keys
+    console.error("[ghost-run/simulate] simulation error:", err instanceof Error ? err.message : String(err));
+    return NextResponse.json({ error: "Simulation failed. Please try again later." }, { status: 500 });
   }
 
   // ── Module 07+10: Conditional order detection + live price distance ──
@@ -493,6 +535,17 @@ export async function POST(req: NextRequest) {
             token: { type: "string", description: "LST token symbol: mSOL, jitoSOL, or bSOL" },
           },
           required: ["token"],
+        },
+      },
+      {
+        name: "rug_check_token",
+        description: "Check if a token is safe (rug pull risk analysis) using SAK TokenPlugin rugCheck via rugcheck.xyz. Use this BEFORE recommending any swap to verify the output token is not a known rug pull. Returns risk score, market info, and safety assessment.",
+        input_schema: {
+          type: "object" as const,
+          properties: {
+            token_symbol: { type: "string", description: "Token symbol: SOL, USDC, USDT, mSOL, jitoSOL, bSOL" },
+          },
+          required: ["token_symbol"],
         },
       },
     ];
@@ -605,6 +658,20 @@ export async function POST(req: NextRequest) {
             };
           }
 
+          case "rug_check_token": {
+            const tokenSymbol = input.token_symbol as string;
+            const mint = TOKEN_MINT_MAP[tokenSymbol];
+            if (!mint) return { error: `Unknown token symbol: ${tokenSymbol}` };
+            try {
+              // SAK TokenPlugin rugCheck — calls rugcheck.xyz API via plugin method
+              const rugResult = await (agent.methods as Record<string, (...args: unknown[]) => Promise<unknown>>)
+                .fetchTokenReportSummary(mint);
+              return { token: tokenSymbol, mint: mint.slice(0, 12), rugCheck: rugResult, source: "rugcheck.xyz via SAK TokenPlugin" };
+            } catch {
+              return { token: tokenSymbol, mint: mint.slice(0, 12), rugCheck: "unavailable", note: "rugCheck unavailable, proceed with caution", source: "fallback" };
+            }
+          }
+
           default:
             return { error: `Unknown tool: ${name}` };
         }
@@ -642,9 +709,10 @@ warnings: ${result.warnings.join("; ") || "none"}
 YOUR TASK — Use tools in this order:
 1. check_wallet_balances — verify wallet can fund each step
 2. get_token_price — get prices for each input AND output token (exact USD values)
-3. get_stake_positions — full portfolio picture including staked SOL
-4. get_inflation_rate — get current Solana inflation to calculate REAL staking yield
-5. get_lst_market_depth — for any stake step, verify the LST protocol depth (mSOL/jitoSOL)
+3. rug_check_token — for any SWAP step, check the output token for rug pull risk BEFORE recommending
+4. get_stake_positions — full portfolio picture including staked SOL
+5. get_inflation_rate — get current Solana inflation to calculate REAL staking yield
+6. get_lst_market_depth — for any stake step, verify the LST protocol depth (mSOL/jitoSOL)
 
 ${AI_LANG_DIRECTIVE[simLang]}
 ${AI_ANALYSIS_TEMPLATE[simLang]}`,
@@ -703,6 +771,29 @@ ${AI_ANALYSIS_TEMPLATE[simLang]}`,
   const commitResult = commitmentHash(strategy, JSON.stringify(result), wallet.slice(0, 8), commitTs);
   const commitmentId = commitResult.commitmentId;
 
+  // Dual-Hash Ghost Run commitment (SHA-256 + Poseidon + Merkle)
+  const dualCommit = processGhostRunCommit(
+    JSON.stringify(strategy),
+    JSON.stringify(result),
+    wallet.slice(0, 8),
+    commitTs,
+  );
+
+  // Groth16 proof of simulation integrity
+  let grProof = null;
+  try {
+    const bundle = generateGhostRunProof(
+      JSON.stringify(strategy),
+      JSON.stringify(result),
+      wallet,
+    );
+    grProof = {
+      proofDigest: bundle.proofDigest,
+      poseidonDigest: bundle.poseidonDigest,
+      verified: bundle.verified,
+    };
+  } catch { /* optional */ }
+
   const commitmentPayload = JSON.stringify({
     event: "ghost_run_commitment",
     version: 2,
@@ -710,6 +801,13 @@ ${AI_ANALYSIS_TEMPLATE[simLang]}`,
     strategy_hash: commitResult.strategyHash,
     sim_result_hash: commitResult.resultHash,
     commit_input: commitResult.commitInput,
+    // Dual-Hash layer
+    poseidon_commitment: dualCommit.commitPoseidon,
+    merkle_root: dualCommit.merkleRoot,
+    merkle_leaf_index: dualCommit.merkleLeaf.index,
+    // Groth16 proof digest
+    zk_proof: grProof?.proofDigest ?? null,
+    zk_verified: grProof?.verified ?? false,
     wallet: wallet.slice(0, 8),
     steps: steps.length,
     can_execute: result.canExecute,
@@ -751,5 +849,14 @@ ${AI_ANALYSIS_TEMPLATE[simLang]}`,
     });
   } catch { /* store is optional */ }
 
-  return NextResponse.json({ steps, result, aiAnalysis, commitmentId, commitmentMemoSig, runId });
+  return NextResponse.json({
+    steps, result, aiAnalysis, commitmentId, commitmentMemoSig, runId,
+    dualHash: {
+      poseidonCommitment: dualCommit.commitPoseidon,
+      merkleRoot: dualCommit.merkleRoot,
+      merkleLeafIndex: dualCommit.merkleLeaf.index,
+      treeSize: dualCommit.treeSize,
+    },
+    zkProof: grProof,
+  });
 }

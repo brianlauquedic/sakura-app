@@ -3,7 +3,7 @@
 > Three Solana-native AI protocols protecting your onchain assets.
 > Built for [Colosseum Frontier Hackathon 2026](https://frontier.colosseum.org/) · April 6 – May 11
 
-**Live demo (no wallet required):** `https://solis-app-sigma.vercel.app/?demo=true`
+**Live demo (no wallet required):** `https://www.sakuraaai.com/?demo=true`
 
 ---
 
@@ -78,6 +78,123 @@ No other product rescues positions across Kamino + MarginFi with pre-authorized 
 
 ---
 
+## Architecture
+
+### Three-Layer System
+
+```mermaid
+flowchart TB
+    User([👤 User · Wallet])
+
+    subgraph Frontend[" 💻 Frontend · Next.js 16 + wa-iro Design "]
+        direction LR
+        NG[🛡️ Nonce Guardian<br/>Durable Nonce attack detection]
+        GR[👻 Ghost Run<br/>Multi-step pre-simulation]
+        LS[⚡ Liquidation Shield<br/>AI rescue + Anchor PDA mandate]
+    end
+
+    subgraph Server[" 🔐 API · AI · Cryptographic Audit "]
+        direction TB
+        API["<b>API Routes</b><br/>x402 payment · Redis replay protection<br/>CSRF · rate-limit · origin check"]
+        AI["<b>AI Core</b><br/>Claude Sonnet 4.6 agentic 6-tool loop<br/>Solana Agent Kit · Solana Agent Skills"]
+        Crypto["<b>Cryptographic Audit · 160 tests ✅</b><br/>SHA-256 hash chain · Poseidon BN254<br/>Merkle audit tree · Groth16 ZK proof"]
+        API --> AI
+        API --> Crypto
+    end
+
+    subgraph Chain[" ⛓️ Solana Devnet "]
+        direction LR
+        Anchor["<b>Sakura Mandate</b><br/>Anchor Program · PDA · CPI<br/>AnszeCRFsBKmT5fBY9WywxGsZZZob8ZPFYqboYXpuYLp"]
+        Memo["<b>Memo Program</b><br/>immutable audit anchor"]
+        Protocols["Jupiter · Kamino · MarginFi<br/>Nonce Accounts · LST pools"]
+    end
+
+    User --> Frontend
+    Frontend --> Server
+    Server --> Chain
+    Anchor -.audit trail.-> Memo
+```
+
+### Liquidation Shield — Dual-Gate Rescue Flow
+
+The rescue path enforces **two independent on-chain authorization gates** before any token moves. Each gate is separately verifiable against Solana state and cannot be forged.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as User
+    participant F as Frontend
+    participant API as rescue API
+    participant PDA as Anchor<br/>Mandate PDA
+    participant SPL as SPL Token<br/>Delegate
+    participant Memo as Memo Program
+
+    Note over U,PDA: Setup (one-time)
+    U->>PDA: create_mandate(max_usdc, trigger_hf_bps)
+    U->>SPL: approve(delegate = agent, amount)
+
+    Note over F,API: Monitoring loop
+    loop every 30s
+        F->>API: scan Kamino + MarginFi positions
+        API-->>F: HF = 1.03 ⚠️ CRITICAL
+    end
+
+    Note over U,Memo: Rescue execution
+    U->>F: confirm rescue $812 USDC
+    F->>API: POST rescue(wallet, position, rescueUsdc)
+
+    rect rgb(255, 240, 240)
+        Note right of API: Dual-gate security
+        API->>SPL: verifyRescueAuthorization()
+        SPL-->>API: ✅ delegate = agent · amount ≥ rescue
+        API->>PDA: fetchMandate()
+        PDA-->>API: ✅ isActive · agent matches · ceiling ok
+    end
+
+    API->>API: build rescue TX + 1% fee<br/>compute SHA-256 + Poseidon<br/>+ Merkle leaf + Groth16 ZK proof
+    API->>Memo: audit: mandate_hash · exec_hash<br/>chain_proof · zk_digest · merkle_root
+    Memo-->>API: memoSig
+    API-->>F: {rescueSig, feeSig, mandatePDA, hashChain, zkProof}
+    F-->>U: HF restored 1.03 → 1.42 ✅<br/>liquidation penalty saved
+```
+
+### Ghost Run — Pre-Execution Simulation Flow
+
+Claude parses natural language, builds real unsigned transactions, then runs `simulateTransaction` against live mainnet state **before** the user signs anything. Every simulation produces a cryptographic commitment that can be reproduced later.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as User
+    participant F as Frontend
+    participant AI as Claude Sonnet 4.6
+    participant RPC as Solana RPC
+    participant SAK as Solana Agent Kit
+    participant Memo as Memo Program
+
+    U->>F: "Stake 2 SOL to Marinade,<br/>deposit 150 USDC to Kamino,<br/>swap 0.5 SOL to JitoSOL"
+    F->>AI: parse strategy
+
+    loop agentic tool loop (up to 6 tools)
+        AI->>RPC: simulateTransaction per step
+        AI->>RPC: Jupiter quote · getInflationRate · getTokenSupply
+        AI->>SAK: rug_check_token(mint)
+    end
+
+    AI-->>F: per-step output amounts · APY · gas · conflicts
+    F->>F: compute commitment<br/>SHA-256 + Poseidon(strategy, result)
+    F->>Memo: anchor commitment ID
+    F-->>U: Ghost Run report<br/>+ share-link (GR-XXXXXXXX)
+
+    Note over U,SAK: User confirms
+    U->>F: execute
+    F->>SAK: stakeWithJup · lendAsset · swap
+    SAK-->>F: signatures
+    F->>Memo: audit: strategy_hash · result_hash · exec_sig
+```
+
+---
+
 ## Technical Architecture
 
 ```
@@ -135,10 +252,10 @@ Sakura exposes a **Model Context Protocol (MCP) JSON-RPC 2.0 API** at `/api/mcp`
 
 ```bash
 # Discover tools
-curl https://solis-app-sigma.vercel.app/api/mcp
+curl https://www.sakuraaai.com/api/mcp
 
 # Call a tool (requires x-payment: 1.00 USDC tx signature)
-curl -X POST https://solis-app-sigma.vercel.app/api/mcp \
+curl -X POST https://www.sakuraaai.com/api/mcp \
   -H "Content-Type: application/json" \
   -H "x-payment: <solana_tx_signature>" \
   -d '{
@@ -190,7 +307,7 @@ curl -X POST https://solis-app-sigma.vercel.app/api/mcp \
 Visit `/?demo=true` — no wallet required. All three features auto-load with preset dramatic data instantly.
 
 ```
-https://solis-app-sigma.vercel.app/?demo=true
+https://www.sakuraaai.com/?demo=true
 ```
 
 Includes: CRITICAL foreign-authority nonce threat, Ghost Run 3-step simulation ($43.72/yr yield), Kamino position at HF 1.03 near liquidation.
@@ -219,7 +336,7 @@ HELIUS_API_KEY=              # Solana RPC (primary)
 # Required for execution features
 SAKURA_AGENT_PRIVATE_KEY=    # Agent keypair as JSON number array (64 bytes)
 SAKURA_FEE_WALLET=           # Fee collection wallet (base58)
-NEXT_PUBLIC_BASE_URL=        # https://solis-app-sigma.vercel.app
+NEXT_PUBLIC_BASE_URL=        # https://www.sakuraaai.com
 
 # Optional (Redis for distributed rate limiting + replay protection)
 UPSTASH_REDIS_REST_URL=

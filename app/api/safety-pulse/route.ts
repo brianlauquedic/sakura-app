@@ -5,8 +5,8 @@
  * Aggregates real-time health factor distribution across Kamino/MarginFi/Solend.
  * Cached in Redis for 3 minutes. Falls back to last cached value or demo data.
  *
- * Inspired by INTMAX's Anonymity Set concept: each user monitoring their
- * position contributes to a collective safety infrastructure that benefits all.
+ * Each user monitoring their position contributes to a collective safety
+ * infrastructure that benefits all — a decentralized safety network.
  */
 import { NextResponse } from "next/server";
 import { getRedisClient } from "@/lib/redis";
