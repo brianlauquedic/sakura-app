@@ -3,7 +3,7 @@ use anchor_spl::token::{self, Mint, Token, TokenAccount, Transfer};
 
 // Placeholder program ID — replaced by `solana-keygen pubkey` of the
 // generated keypair file at build time. Must be base58-valid.
-declare_id!("11111111111111111111111111111111");
+declare_id!("A91n9X4MxLaeV9NF1K3jC2yet5VhKjTj48wgWQCA7wka");
 
 /// Sakura Rescue Insurance Pool — v0.1
 ///
