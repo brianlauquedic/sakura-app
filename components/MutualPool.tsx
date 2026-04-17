@@ -17,7 +17,7 @@
 import { useEffect, useState } from "react";
 import { useWallet } from "@/contexts/WalletContext";
 import { useLang } from "@/contexts/LanguageContext";
-import { Connection, PublicKey } from "@solana/web3.js";
+import { VersionedTransaction } from "@solana/web3.js";
 
 type PoolView = {
   admin: string;
@@ -66,7 +66,7 @@ const POOL_ADMIN =
   "2iCWnS1J8WYZn4reo9YD76qZiiZ39t2c1oGM3dyYwHNg";
 
 export default function MutualPool({ isDemo }: { isDemo?: boolean }) {
-  const { walletAddress } = useWallet();
+  const { walletAddress, getProvider } = useWallet();
   const { t } = useLang();
   const [status, setStatus] = useState<Status | null>(null);
   const [loading, setLoading] = useState(false);
@@ -82,6 +82,17 @@ export default function MutualPool({ isDemo }: { isDemo?: boolean }) {
       }
   >(null);
   const [claimLoading, setClaimLoading] = useState(false);
+  const [buyResult, setBuyResult] = useState<
+    | null
+    | {
+        txSig?: string;
+        commitmentHash?: string;
+        nonce?: string;
+        error?: string;
+      }
+  >(null);
+  const [buyLoading, setBuyLoading] = useState(false);
+  const [coverageCap, setCoverageCap] = useState<number>(500);
 
   // Poll pool/policy status
   useEffect(() => {
@@ -109,6 +120,77 @@ export default function MutualPool({ isDemo }: { isDemo?: boolean }) {
     };
   }, [walletAddress]);
 
+  async function buyPolicy() {
+    if (!walletAddress) {
+      setBuyResult({ error: "Connect wallet first." });
+      return;
+    }
+    const provider = getProvider();
+    if (!provider) {
+      setBuyResult({ error: "No wallet provider detected." });
+      return;
+    }
+    setBuyLoading(true);
+    setBuyResult(null);
+    try {
+      const res = await fetch("/api/insurance/buy-policy", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          wallet: walletAddress,
+          poolAdmin: POOL_ADMIN,
+          coverageCapUsdc: coverageCap,
+          // obligationAddress & nonceHex omitted → server uses defaults
+          //   obligation = wallet (demo), nonce = random 128-bit
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok || json.ok === false) {
+        setBuyResult({ error: json.error ?? `HTTP ${res.status}` });
+        return;
+      }
+
+      // Deserialize + sign v0 tx via wallet provider
+      const txBytes = Uint8Array.from(atob(json.txBase64), (c) =>
+        c.charCodeAt(0)
+      );
+      const vTx = VersionedTransaction.deserialize(txBytes);
+      const signResult = await provider.signAndSendTransaction(vTx);
+      const txSig =
+        typeof signResult === "string" ? signResult : signResult?.signature;
+
+      // Persist nonce locally so user can claim later
+      try {
+        localStorage.setItem(
+          `sakura_policy_nonce_${walletAddress}`,
+          JSON.stringify({
+            nonce: json.nonce,
+            commitmentHash: json.commitmentHash,
+            boughtAt: Date.now(),
+          })
+        );
+      } catch {
+        // quota exceeded or storage disabled — non-fatal
+      }
+
+      setBuyResult({
+        txSig,
+        commitmentHash: json.commitmentHash,
+        nonce: json.nonce,
+      });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      // Phantom rejection → friendlier error
+      if (msg.includes("User rejected") || msg.includes("rejected")) {
+        setBuyResult({ error: "User rejected transaction." });
+      } else {
+        setBuyResult({ error: msg });
+      }
+    } finally {
+      setBuyLoading(false);
+    }
+  }
+
   async function triggerDemoClaim() {
     if (!walletAddress) {
       setClaimResult({ error: "Connect wallet first." });
@@ -117,17 +199,32 @@ export default function MutualPool({ isDemo }: { isDemo?: boolean }) {
     setClaimLoading(true);
     setClaimResult(null);
     try {
-      // Demo values — real flow pulls these from live Kamino position + Pyth
+      // Pull the nonce we saved when the policy was bought; falls back to "1"
+      // so the demo-mode path still produces a proof (it'll fail on-chain
+      // verification but lets the UI demonstrate the flow).
+      let storedNonce = "1";
+      try {
+        const raw = localStorage.getItem(
+          `sakura_policy_nonce_${walletAddress}`
+        );
+        if (raw) {
+          const parsed = JSON.parse(raw) as { nonce?: string };
+          if (parsed.nonce) storedNonce = parsed.nonce;
+        }
+      } catch {
+        // localStorage parse error → fall back to "1"
+      }
+
       const body = {
         wallet: walletAddress,
         poolAdmin: POOL_ADMIN,
-        obligationAddress: walletAddress, // demo — real value is Kamino obligation pubkey
+        obligationAddress: walletAddress, // demo — production binds to Kamino obligation pubkey
         marketAddress: "",                // no Kamino repay in demo (pure ZK claim)
         rescueUsdc: 100,
         triggerHfBps: 10500,
         collateralAmount: "10000000000",  // 10 SOL in lamports
         debtUsdMicro: "1500000000",       // $1500 in micro-USD
-        nonce: "1",
+        nonce: storedNonce,
         oraclePriceUsdMicro: "180000000", // $180 SOL (demo)
         oracleSlot: "0",                  // will be updated in real flow
       };
@@ -265,15 +362,87 @@ export default function MutualPool({ isDemo }: { isDemo?: boolean }) {
         )}
       </StateCard>
 
+      {/* Buy-policy form (only visible if no active policy) */}
+      {!hasPolicy && (
+        <div
+          style={{
+            padding: 16,
+            border: "1px solid var(--border)",
+            borderRadius: 10,
+            background: "var(--bg-card)",
+            display: "flex",
+            flexDirection: "column",
+            gap: 12,
+          }}
+        >
+          <div
+            style={{
+              fontFamily: "var(--font-mono)",
+              fontSize: 10,
+              letterSpacing: "0.14em",
+              color: "var(--text-muted)",
+            }}
+          >
+            BUY A POLICY
+          </div>
+          <label
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              fontSize: 13,
+              color: "var(--text-secondary)",
+            }}
+          >
+            <span style={{ minWidth: 120, fontFamily: "var(--font-mono)" }}>
+              Coverage cap
+            </span>
+            <input
+              type="number"
+              min={10}
+              max={status?.pool?.maxCoveragePerUserUsdc ?? 10000}
+              step={10}
+              value={coverageCap}
+              onChange={(e) => setCoverageCap(Number(e.target.value))}
+              style={{
+                flex: 1,
+                padding: "6px 10px",
+                borderRadius: 6,
+                border: "1px solid var(--border)",
+                background: "var(--bg-base)",
+                color: "var(--text-primary)",
+                fontFamily: "var(--font-mono)",
+                fontSize: 13,
+              }}
+            />
+            <span style={{ color: "var(--text-muted)", fontSize: 12 }}>USDC</span>
+          </label>
+          {status?.pool && (
+            <div
+              style={{
+                fontSize: 11,
+                color: "var(--text-muted)",
+                fontFamily: "var(--font-mono)",
+                lineHeight: 1.6,
+              }}
+            >
+              premium: ${(coverageCap * status.pool.premiumBps / 10000).toFixed(2)} / month
+              · stake: ${(
+                (coverageCap * status.pool.premiumBps / 10000) *
+                (status.pool.minStakeMultiplier / 100)
+              ).toFixed(2)} (refundable)
+              · waiting period: {status.pool.waitingPeriodSec}s
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Actions */}
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
         <ActionButton
-          disabled={!walletAddress || !poolReady || hasPolicy}
-          onClick={() => {
-            // Buy-policy flow is a separate route (not shipped yet).
-            alert("buy_policy flow: see scripts/initialize-insurance-pool.ts for admin init; user buy UI wired in v0.3.");
-          }}
-          label="＋ Buy Policy"
+          disabled={!walletAddress || !poolReady || hasPolicy || buyLoading}
+          onClick={buyPolicy}
+          label={buyLoading ? "Signing…" : "＋ Buy Policy"}
           primary
         />
         <ActionButton
@@ -282,6 +451,48 @@ export default function MutualPool({ isDemo }: { isDemo?: boolean }) {
           label={claimLoading ? "Proving…" : "⚡ Trigger ZK Rescue"}
         />
       </div>
+
+      {/* Buy result */}
+      {buyResult && (
+        <div
+          style={{
+            padding: 16,
+            border: "1px solid var(--border)",
+            borderRadius: 10,
+            background: "var(--bg-card)",
+            fontFamily: "var(--font-mono)",
+            fontSize: 12,
+            color: "var(--text-secondary)",
+          }}
+        >
+          {buyResult.error ? (
+            <div style={{ color: "var(--red, #e66)" }}>✗ {buyResult.error}</div>
+          ) : (
+            <>
+              <div style={{ color: "var(--green)", marginBottom: 8 }}>
+                ✓ Policy bought
+              </div>
+              {buyResult.txSig && (
+                <div>
+                  tx:{" "}
+                  <a
+                    href={`https://explorer.solana.com/tx/${buyResult.txSig}?cluster=devnet`}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{ color: "var(--accent)" }}
+                  >
+                    {buyResult.txSig.slice(0, 12)}…{buyResult.txSig.slice(-6)}
+                  </a>
+                </div>
+              )}
+              <div>commitment: {buyResult.commitmentHash?.slice(0, 20)}…</div>
+              <div style={{ marginTop: 8, color: "var(--accent)" }}>
+                Nonce saved to localStorage — required for future ZK claims.
+              </div>
+            </>
+          )}
+        </div>
+      )}
 
       {/* Claim result */}
       {claimResult && (

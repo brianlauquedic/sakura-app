@@ -1,12 +1,12 @@
-# Solis 竞品全面对比报告（Colosseum Frontier 2026）
+# Sakura 竞品全面对比报告（Colosseum Frontier 2026）
 
 > 生成日期：2026-04-04
-> 数据来源：三路并行研究 Agent（Colosseum 历届获奖、Solis 代码审计、竞品深度调研）
+> 数据来源：三路并行研究 Agent（Colosseum 历届获奖、Sakura 代码审计、竞品深度调研）
 > 用途：Colosseum Frontier 2026 黑客松评审材料准备
 
 ---
 
-## 第一部分：Solis 现状完整盘点
+## 第一部分：Sakura 现状完整盘点
 
 ### 1.1 全部功能列表（按模块）
 
@@ -68,7 +68,7 @@
 | Upstash Redis | 配额持久化（可选），内存备份 | 100% |
 | HTTP 402 支付流 | `lib/x402.ts` — Phantom → USDC 转账 → 验证 | 100% |
 | 重放保护 | 交易签名 24h TTL 追踪 | 100% |
-| 管理员白名单 | SOLIS_ADMIN_WALLETS 环境变量 | 100% |
+| 管理员白名单 | SAKURA_ADMIN_WALLETS 环境变量 | 100% |
 
 #### 模块七：Agent（部分实现）
 | 功能 | 具体实现 | 完成度 |
@@ -223,12 +223,12 @@
 
 **特殊格式：** AI Agent 自主竞技，无人工代码参与
 
-| 状态 | 项目 | 得票/排名 | 核心功能 | 与 Solis 关系 |
+| 状态 | 项目 | 得票/排名 | 核心功能 | 与 Sakura 关系 |
 |------|------|---------|---------|-------------|
-| 投票领先 | **SOLPRISM**（by agent "Mereum"）| 108 票领先 | commit-reveal 协议，使 AI 推理在链上可验证 | **直接竞争威胁** — 核心功能与 Solis 差异化点完全重叠 |
+| 投票领先 | **SOLPRISM**（by agent "Mereum"）| 108 票领先 | commit-reveal 协议，使 AI 推理在链上可验证 | **直接竞争威胁** — 核心功能与 Sakura 差异化点完全重叠 |
 | 官方获奖者 | 待公布 | - | 结果预期见 blog.colosseum.com | - |
 
-**关键警示：** SOLPRISM 的核心技术主张（可验证 AI 推理 on-chain）与 Solis 的最大差异化点高度重叠。如 SOLPRISM 在 Frontier 2026 中参赛，将成为最直接的技术竞争对手。需在 Pitch 中强调 Solis 的完整 DeFi 工具链（SOLPRISM 仅做可验证机制，无 DeFi 执行层）。
+**关键警示：** SOLPRISM 的核心技术主张（可验证 AI 推理 on-chain）与 Sakura 的最大差异化点高度重叠。如 SOLPRISM 在 Frontier 2026 中参赛，将成为最直接的技术竞争对手。需在 Pitch 中强调 Sakura 的完整 DeFi 工具链（SOLPRISM 仅做可验证机制，无 DeFi 执行层）。
 
 ---
 
@@ -248,7 +248,7 @@
 
 ### 3.1 竞品全景图
 
-| 竞品 | 类别 | 资金状态 | 代币 | 与 Solis 重叠度 | 威胁等级 |
+| 竞品 | 类别 | 资金状态 | 代币 | 与 Sakura 重叠度 | 威胁等级 |
 |------|------|---------|------|--------------|---------|
 | Hive AI | DeFi AI Agent | $60K 奖金，无 VC | BUZZ（-99.5%）| 45% | 低（代币崩溃，用户流失）|
 | Project Plutus | AI 交易 Hub | $18K 奖金，无 VC | PPCOIN（市值 $15K）| 40% | 低（代币基本归零）|
@@ -276,12 +276,12 @@
 - 上架 Bitget / CoinEx
 - 24h 交易量：约 $17K — 实质上已死亡
 
-**功能对比 Solis：**
+**功能对比 Sakura：**
 - 重叠点（~45%）：AI 对话界面、Swap 执行、流动质押、收益率聚合、自主 Agent 再平衡
-- Solis 领先：无 SHA-256 链上证明、无代币安全扫描、无 x402/MCP
+- Sakura 领先：无 SHA-256 链上证明、无代币安全扫描、无 x402/MCP
 - Hive AI 领先：自主再平衡 Agent 已真实实现（非占位符）
 
-**战略结论：** 代币崩溃已从根本上损毁 Hive AI 的信誉。对 Solis 而言，BUZZ 是"代币战略失败"的最佳对照案例，在 Pitch 中可直接引用。
+**战略结论：** 代币崩溃已从根本上损毁 Hive AI 的信誉。对 Sakura 而言，BUZZ 是"代币战略失败"的最佳对照案例，在 Pitch 中可直接引用。
 
 ---
 
@@ -294,12 +294,12 @@
 - PPCOIN：市值约 $15K，Raydium 24h 交易量 $20 — 基本归零
 - 正在转型：无代码 Agent 工作流构建器
 
-**功能对比 Solis：**
+**功能对比 Sakura：**
 - 重叠点（~40%）：AI 对话、代币分析、Swap 执行、钱包分析
-- Solis 领先：链上可验证推理、动态蜜罐模拟、HTTP 402 支付
+- Sakura 领先：链上可验证推理、动态蜜罐模拟、HTTP 402 支付
 - Project Plutus 独有：钱包跟单信号、DLMM 流动性管理
 
-**战略结论：** PPCOIN 市值几乎归零，验证了无代币策略的正确性。Plutus 正在"无代码"方向转型，可能未来与 Solis 在 DeFi 场景重叠减少。
+**战略结论：** PPCOIN 市值几乎归零，验证了无代币策略的正确性。Plutus 正在"无代码"方向转型，可能未来与 Sakura 在 DeFi 场景重叠减少。
 
 ---
 
@@ -312,14 +312,14 @@
 - 由 AI agent "Mereum" 构建，无代币
 - 核心技术：链上 AI 推理可验证性
 
-**与 Solis 的关键冲突：**
-SOLPRISM 的核心技术主张与 Solis 的最大差异化点（SHA-256 commit-reveal + Solana Memo）完全重叠。这是目前已知最直接的技术竞争威胁。
+**与 Sakura 的关键冲突：**
+SOLPRISM 的核心技术主张与 Sakura 的最大差异化点（SHA-256 commit-reveal + Solana Memo）完全重叠。这是目前已知最直接的技术竞争威胁。
 
 **差异化反击策略：**
 - SOLPRISM = 纯协议层（可验证机制，无 DeFi 产品）
-- Solis = 完整 DeFi 应用（可验证推理 + Swap/Stake/Lend/分析全流程）
-- SOLPRISM 是工具，Solis 是用户使用的终端产品
-- 在 Pitch 中可以说："SOLPRISM 证明了这个方向的市场需求，Solis 是这个方向的完整实现"
+- Sakura = 完整 DeFi 应用（可验证推理 + Swap/Stake/Lend/分析全流程）
+- SOLPRISM 是工具，Sakura 是用户使用的终端产品
+- 在 Pitch 中可以说："SOLPRISM 证明了这个方向的市场需求，Sakura 是这个方向的完整实现"
 
 ---
 
@@ -329,7 +329,7 @@ SOLPRISM 的核心技术主张与 Solis 的最大差异化点（SHA-256 commit-r
 
 **资金：** $250K pre-seed，Solana Accelerator 入选
 
-**功能对比 Solis：**
+**功能对比 Sakura：**
 - 重叠点（~10%）：Swap 执行
 - 几乎无 AI 顾问功能，无安全分析，无对话界面
 - Urani 专注 MEV 防护，是基础设施，非顾问产品
@@ -344,7 +344,7 @@ SOLPRISM 的核心技术主张与 Solis 的最大差异化点（SHA-256 commit-r
 
 **资金：** $3.75M，a16z crypto CSX 领投，主网启动中
 
-**功能对比 Solis：**
+**功能对比 Sakura：**
 - 重叠点（~20%）：收益优化方向
 - 纯协议，无 AI 对话、无安全分析
 - 不是顾问产品，而是稳定币协议
@@ -359,7 +359,7 @@ SOLPRISM 的核心技术主张与 Solis 的最大差异化点（SHA-256 commit-r
 
 **资金/状态：** Cypherpunk 总冠军，Colosseum Accelerator Cohort 4
 
-**功能对比 Solis：**
+**功能对比 Sakura：**
 - 重叠点（~5%）：Solana 安全
 - 纯硬件产品，无 AI，无分析，无 DeFi 执行
 
@@ -371,9 +371,9 @@ SOLPRISM 的核心技术主张与 Solis 的最大差异化点（SHA-256 commit-r
 
 **产品定位：** Solana 交易调试开发者平台（Tenderly for Solana）
 
-**功能对比 Solis：**
+**功能对比 Sakura：**
 - 重叠点（~0%）：服务完全不同用户群（开发者 vs 散户 DeFi 用户）
-- Seer 的交易追踪能力可视为 Solis 改进方向（参考改进建议 F5）
+- Seer 的交易追踪能力可视为 Sakura 改进方向（参考改进建议 F5）
 
 **战略结论：** 互补而非竞争。
 
@@ -383,12 +383,12 @@ SOLPRISM 的核心技术主张与 Solis 的最大差异化点（SHA-256 commit-r
 
 **产品定位：** MCP 支付中间件，使 MCP 服务构建者可通过 HTTP 402 + 稳定币盈利
 
-**功能对比 Solis：**
+**功能对比 Sakura：**
 - 重叠点（~15%）：MCP 架构 + x402 支付
 - 纯基础设施层，无 DeFi 顾问产品在其之上
-- Solis 是 MCP/x402 的使用者，Latinum 是基础设施提供者
+- Sakura 是 MCP/x402 的使用者，Latinum 是基础设施提供者
 
-**战略结论：** 架构相似，定位互补。Solis 的 MCP 端点一旦实现，实际上是 Latinum 的下游应用。
+**战略结论：** 架构相似，定位互补。Sakura 的 MCP 端点一旦实现，实际上是 Latinum 的下游应用。
 
 ---
 
@@ -398,12 +398,12 @@ SOLPRISM 的核心技术主张与 Solis 的最大差异化点（SHA-256 commit-r
 
 **资金/状态：** Cypherpunk Stablecoin 1st，Cohort 4
 
-**功能对比 Solis：**
+**功能对比 Sakura：**
 - 重叠点（~15%）：MCP + x402 基础设施
 - 开源项目，无商业模式
-- MCPay 是协议，Solis 是应用
+- MCPay 是协议，Sakura 是应用
 
-**战略结论：** MCPay 开源竞争导致 Latinum 的 B2B 盈利能力存疑，但对 Solis（应用层）无直接影响。
+**战略结论：** MCPay 开源竞争导致 Latinum 的 B2B 盈利能力存疑，但对 Sakura（应用层）无直接影响。
 
 ---
 
@@ -411,12 +411,12 @@ SOLPRISM 的核心技术主张与 Solis 的最大差异化点（SHA-256 commit-r
 
 **产品定位：** 无头部署的借贷仓位监控（Kamino/Marginfi/Solend），实时 LTV 和 health factor 计算
 
-**功能对比 Solis：**
+**功能对比 Sakura：**
 - 重叠点（~25%）：借贷仓位监控
 - 只监控，无法执行（没有 Swap/再平衡/通知机制）
-- Solis 的 `/api/cron/guardian` 占位符本质上就是这个功能，但 Solis 可以执行
+- Sakura 的 `/api/cron/guardian` 占位符本质上就是这个功能，但 Sakura 可以执行
 
-**战略结论：** Solis 可以声称"DeFi Risk Guardian 发现问题，Solis 发现并解决问题"。一旦 cron/guardian 实现，这是明确的产品差异化。
+**战略结论：** Sakura 可以声称"DeFi Risk Guardian 发现问题，Sakura 发现并解决问题"。一旦 cron/guardian 实现，这是明确的产品差异化。
 
 ---
 
@@ -424,7 +424,7 @@ SOLPRISM 的核心技术主张与 Solis 的最大差异化点（SHA-256 commit-r
 
 **产品定位：** 全链上 BNPL（先买后付）+ 链上信用评分
 
-**功能对比 Solis：**
+**功能对比 Sakura：**
 - 重叠点（~5%）：借贷相关
 - 信用协议，无 AI 对话，无安全分析，无顾问功能
 
@@ -436,7 +436,7 @@ SOLPRISM 的核心技术主张与 Solis 的最大差异化点（SHA-256 commit-r
 
 ### 4.1 产品功能完整性（10大竞品功能矩阵）
 
-| 功能 | Solis | Hive AI | Project Plutus | SOLPRISM | Urani | Reflect | DeFi Risk Guardian | MCPay | Latinum | Seer | Yumi |
+| 功能 | Sakura | Hive AI | Project Plutus | SOLPRISM | Urani | Reflect | DeFi Risk Guardian | MCPay | Latinum | Seer | Yumi |
 |------|-------|---------|---------------|---------|-------|---------|-------------------|-------|---------|------|------|
 | AI 对话界面 | ✅ Claude | ✅ 自研 | ✅ 自研 | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | 代币安全分析 | ✅ GoPlus+模拟 | ⚠️ 基础 | ✅ Token Agent | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
@@ -458,7 +458,7 @@ SOLPRISM 的核心技术主张与 Solis 的最大差异化点（SHA-256 commit-r
 | 多语言支持 | ✅ 3语言 | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
 
 **功能覆盖宽度排名（满 18 项）：**
-Solis (13/18) > Hive AI (9/18) > Project Plutus (8/18) > DeFi Risk Guardian (4/18) > Reflect/Urani/Yumi (3/18) > MCPay/Latinum (3/18)
+Sakura (13/18) > Hive AI (9/18) > Project Plutus (8/18) > DeFi Risk Guardian (4/18) > Reflect/Urani/Yumi (3/18) > MCPay/Latinum (3/18)
 
 ---
 
@@ -466,7 +466,7 @@ Solis (13/18) > Hive AI (9/18) > Project Plutus (8/18) > DeFi Risk Guardian (4/1
 
 | 项目 | 主要收入来源 | 次要来源 | 代币通胀风险 | 可持续性 |
 |------|------------|---------|------------|---------|
-| **Solis** | Swap 0.3% + 按需付费分析 | 质押/借贷推荐费 | 无（无代币）| 中高 |
+| **Sakura** | Swap 0.3% + 按需付费分析 | 质押/借贷推荐费 | 无（无代币）| 中高 |
 | **Hive AI** | BUZZ 代币（质押解锁高级功能）| 协议费？ | 极高（-99.5%）| 极低 |
 | **Project Plutus** | PPCOIN 代币 + 订阅？ | 交易手续费？ | 极高（-99%+）| 极低 |
 | **Urani** | MEV 内化（报价改善费用）| LP 赚取费用 | 无 | 中 |
@@ -490,12 +490,12 @@ Solis (13/18) > Hive AI (9/18) > Project Plutus (8/18) > DeFi Risk Guardian (4/1
 | Project Plutus | PPCOIN | 未知峰值 | ~$15K | **>-99%** | $20 |
 
 **核心结论：**
-1. 两个与 Solis 重叠度最高的竞品（Hive AI 45%，Plutus 40%）都因代币崩溃而实质性死亡
+1. 两个与 Sakura 重叠度最高的竞品（Hive AI 45%，Plutus 40%）都因代币崩溃而实质性死亡
 2. 这个领域有代币的 DeFi AI 项目存活率极低
 3. 代币崩溃不仅失去市值，更重要的是完全失去用户信任
-4. 无代币方向的 Solis 在这场竞争中几乎自动获胜，等待对方自我消亡
+4. 无代币方向的 Sakura 在这场竞争中几乎自动获胜，等待对方自我消亡
 
-**Frontier 2026 战略含义：** Solis 应在 Pitch 中直接展示这张对比表，用数据证明无代币策略是正确的战略选择。
+**Frontier 2026 战略含义：** Sakura 应在 Pitch 中直接展示这张对比表，用数据证明无代币策略是正确的战略选择。
 
 ---
 
@@ -504,7 +504,7 @@ Solis (13/18) > Hive AI (9/18) > Project Plutus (8/18) > DeFi Risk Guardian (4/1
 | 项目 | 评分（0-10）| 理由 |
 |------|-----------|------|
 | **Reflect** | 9 | delta-neutral 收益稳定，USDC+ 有机需求，a16z 背书，已主网 |
-| **Solis** | 7 | Swap 费用真实可观，但量依赖用户增长；无订阅，按需付费较零散 |
+| **Sakura** | 7 | Swap 费用真实可观，但量依赖用户增长；无订阅，按需付费较零散 |
 | **Latinum** | 6 | MCP 支付市场正在形成，但竞争激烈（MCPay 开源）|
 | **Yumi Finance** | 6 | BNPL 利差可持续，但 DeFi 信用风险高，坏账会侵蚀利润 |
 | **Urani** | 6 | MEV 内化护城河强，但需要交易量支撑 |
@@ -519,7 +519,7 @@ Solis (13/18) > Hive AI (9/18) > Project Plutus (8/18) > DeFi Risk Guardian (4/1
 
 | 项目 | 主要拉新机制 | 留存机制 | 病毒系数 | 优势 |
 |------|------------|---------|---------|------|
-| **Solis** | AI 对话新颖性 + 免费配额 | 聊天历史 + 组合健康追踪 | 低-中 | 低摩擦、无需理解 DeFi |
+| **Sakura** | AI 对话新颖性 + 免费配额 | 聊天历史 + 组合健康追踪 | 低-中 | 低摩擦、无需理解 DeFi |
 | **Hive AI** | BUZZ 代币炒作（已失效）| 代币质押锁仓 | 已崩溃 | 历史案例 |
 | **Project Plutus** | PPCOIN 代币（已失效）| 自动化交易回报 | 已崩溃 | 历史案例 |
 | **Urani** | MEV 保护故事 + 技术优越性 | 实际节省的 MEV 金额 | 低 | 专业用户口碑 |
@@ -535,7 +535,7 @@ Solis (13/18) > Hive AI (9/18) > Project Plutus (8/18) > DeFi Risk Guardian (4/1
 
 | 项目 | 前端安全 | 智能合约安全 | 用户资金保护 | 链上可验证性 | 评分 |
 |------|---------|------------|------------|------------|------|
-| **Solis** | 7层防护+Anti-Sybil | GoPlus+蜜罐模拟 | HTTP 402+重放保护 | SHA-256+Solana Memo | 9/10 |
+| **Sakura** | 7层防护+Anti-Sybil | GoPlus+蜜罐模拟 | HTTP 402+重放保护 | SHA-256+Solana Memo | 9/10 |
 | **Unruggable** | N/A | 硬件级离线存储 | 私钥离线，Solana 优化 | 硬件安全元素 | 10/10 |
 | **SOLPRISM** | 标准 | commit-reveal 协议 | N/A（协议层）| 链上 AI 推理证明 | 8/10 |
 | **Urani** | 标准 | 意图验证+MEV防护 | 无滑点保护 | 意图证明 | 8/10 |
@@ -553,19 +553,19 @@ Solis (13/18) > Hive AI (9/18) > Project Plutus (8/18) > DeFi Risk Guardian (4/1
 | **Unruggable** | 硬件安全钱包 | 极强（私钥安全）| 现有方案非 Solana 优化 | 10/10 |
 | **Reflect** | 稳定币收益 | 极强（$280B 闲置）| 手动操作复杂 | 9/10 |
 | **Seer** | 交易调试 | 极强（开发者痛点）| 无 Solana 专用工具 | 9/10 |
-| **Solis** | DeFi 决策辅助 | 强（安全+收益两难）| 各渠道分散繁琐 | 8/10 |
+| **Sakura** | DeFi 决策辅助 | 强（安全+收益两难）| 各渠道分散繁琐 | 8/10 |
 | **Urani** | MEV 防护 | 强（大户损失大）| JUP 等聚合器无此功能 | 7/10 |
 | **Yumi Finance** | DeFi 信用/BNPL | 中（新兴需求）| 传统金融 | 6/10 |
 | **Latinum** | MCP 变现 | 中（开发者收入）| 免费 MCPay | 6/10 |
 | **MCPay** | MCP 支付 | 中 | 人工谈判 | 5/10 |
-| **Hive AI** | DeFi AI 自动化 | 中 | Solis/Jupiter 替代 | 3/10（代币崩溃削弱可信度）|
+| **Hive AI** | DeFi AI 自动化 | 中 | Sakura/Jupiter 替代 | 3/10（代币崩溃削弱可信度）|
 | **Project Plutus** | AI 自动交易 | 中 | 多种替代方案 | 2/10（代币归零）|
 
 ---
 
 ### 4.8 功能全面性（DeFi 用户旅程覆盖对比）
 
-**Solis 覆盖的完整 DeFi 用户旅程：**
+**Sakura 覆盖的完整 DeFi 用户旅程：**
 1. 连接钱包 → 2. 查看健康 → 3. 分析代币 → 4. AI 咨询 → 5. 执行 Swap/Stake/Lend → 6. 验证 AI 推理 → 7. 付费解锁高级功能
 
 **竞品覆盖路径：**
@@ -575,17 +575,17 @@ Solis (13/18) > Hive AI (9/18) > Project Plutus (8/18) > DeFi Risk Guardian (4/1
 - Reflect: 仅步骤 5（稳定币收益），被动型
 - SOLPRISM: 仅步骤 6（验证机制），缺少所有 DeFi 功能
 - DeFi Risk Guardian: 步骤 5.5（监控），但无法执行闭环
-- **Solis 是唯一覆盖完整旅程的项目**
+- **Sakura 是唯一覆盖完整旅程的项目**
 
 ---
 
-## 第五部分：Solis 竞争优势分析
+## 第五部分：Sakura 竞争优势分析
 
 ### 5.1 真正的差异化亮点（6个）
 
 **差异化亮点 1：唯一的链上可验证 AI 推理（完整应用层）**
-- Solis 将 AI 决策理由 SHA-256 哈希写入 Solana Memo，用户可独立验证 AI 没有篡改建议
-- **关键区别于 SOLPRISM**：SOLPRISM 是协议层的可验证机制；Solis 是有完整 DeFi 工具链的终端应用，可验证推理是其中一个功能，不是全部
+- Sakura 将 AI 决策理由 SHA-256 哈希写入 Solana Memo，用户可独立验证 AI 没有篡改建议
+- **关键区别于 SOLPRISM**：SOLPRISM 是协议层的可验证机制；Sakura 是有完整 DeFi 工具链的终端应用，可验证推理是其中一个功能，不是全部
 - 直接对应 Frontier 评审关注的"创新性"和"安全"维度
 
 **差异化亮点 2：最全面的 DeFi 用户旅程覆盖**
@@ -601,7 +601,7 @@ Solis (13/18) > Hive AI (9/18) > Project Plutus (8/18) > DeFi Risk Guardian (4/1
 **差异化亮点 4：原生 HTTP 402/x402 支付集成**
 - 完整实现 Coinbase x402 标准（`@coinbase/x402 2.1.0`）
 - 在 DeFi 用户界面中无缝集成链上微支付（而非需要跳转到支付页）
-- MCPay/Latinum 只是纯协议，Solis 是有用户界面的完整应用实现
+- MCPay/Latinum 只是纯协议，Sakura 是有用户界面的完整应用实现
 
 **差异化亮点 5：生产级多源数据聚合与实时备份**
 - 同时接入 9 个数据源（Helius/Jupiter/GoPlus/Marinade/Jito/Kamino/Raydium/Solend/CoinGecko）
@@ -619,7 +619,7 @@ Solis (13/18) > Hive AI (9/18) > Project Plutus (8/18) > DeFi Risk Guardian (4/1
 
 ```
                     AI 可信度（链上可验证性）
-高 |                        Solis ★
+高 |                        Sakura ★
    |                   SOLPRISM (协议层)
    |
 中 |           Hive AI
@@ -629,7 +629,7 @@ Solis (13/18) > Hive AI (9/18) > Project Plutus (8/18) > DeFi Risk Guardian (4/1
      窄（单功能）    DeFi功能宽度    宽（全流程）
 ```
 
-**Solis 占据右上角**：功能最宽 + AI 最可信 — 无其他项目同时满足
+**Sakura 占据右上角**：功能最宽 + AI 最可信 — 无其他项目同时满足
 
 ---
 
@@ -639,12 +639,12 @@ Solis (13/18) > Hive AI (9/18) > Project Plutus (8/18) > DeFi Risk Guardian (4/1
 
 在 DeFi 赛道：
 - 竞争对手可能包括 yield 聚合器、DEX、借贷协议
-- Solis 优势：完整旅程覆盖 + AI 集成 + 真实收费模型
+- Sakura 优势：完整旅程覆盖 + AI 集成 + 真实收费模型
 - 风险：纯 DeFi 协议（Reflect 这类）有更强的协议护城河
 
 在 AI 赛道：
 - 直接竞争对手：SOLPRISM（如参赛）、Hive AI 类项目
-- Solis 优势：链上可验证 AI 推理 + 完整 DeFi 执行 + 无代币 + 真实盈利
+- Sakura 优势：链上可验证 AI 推理 + 完整 DeFi 执行 + 无代币 + 真实盈利
 - 风险：SOLPRISM 如果在 Frontier 2026 也参赛，技术叙事有重叠
 
 **整体竞争力：强（7.5–8/10）**
@@ -654,15 +654,15 @@ Solis (13/18) > Hive AI (9/18) > Project Plutus (8/18) > DeFi Risk Guardian (4/1
 
 ---
 
-## 第六部分：Solis 改进建议（F1-F5, B1-B3, UX1-UX3, H1-H4）
+## 第六部分：Sakura 改进建议（F1-F5, B1-B3, UX1-UX3, H1-H4）
 
 ### 功能层面改进（F1-F5）
 
 ---
 
 **改进 F1**
-- **发现：** 对比 Hive AI 和 Project Plutus 发现，两者都有真实运行的自主 Agent（DCA 自动执行、流动性再平衡），而 Solis 的 `/api/agent/loop` 和 `/api/agent/rebalance` 是空文件。
-- **问题：** Solis 的 Agent 功能仅停留在 UI 占位符层面，无法演示"自主执行"——这是 AI 黑客松的核心评分项。
+- **发现：** 对比 Hive AI 和 Project Plutus 发现，两者都有真实运行的自主 Agent（DCA 自动执行、流动性再平衡），而 Sakura 的 `/api/agent/loop` 和 `/api/agent/rebalance` 是空文件。
+- **问题：** Sakura 的 Agent 功能仅停留在 UI 占位符层面，无法演示"自主执行"——这是 AI 黑客松的核心评分项。
 - **改进方案：** 至少实现一个可演示的 Agent 场景：建议实现"再平衡建议执行 Agent"——当用户资产健康评分低于阈值（如 60 分），Agent 自动生成再平衡方案并请求用户确认后执行。使用 Solana Agent Kit v2 的 `createSolanaTools` 完成 swap 操作，在 AgentPanel UI 中显示执行日志。全程需要写 Memo 留下可验证记录。
 - **优先级：** 高
 - **实现难度：** 中
@@ -671,19 +671,19 @@ Solis (13/18) > Hive AI (9/18) > Project Plutus (8/18) > DeFi Risk Guardian (4/1
 ---
 
 **改进 F2**
-- **发现：** 对比 MCPay（Cypherpunk Stablecoin 第一名）和 Latinum（Breakout AI 第一名），两者都完整实现了 MCP Server 功能，让外部 AI Agent（如 Claude）可以通过标准 MCP 协议调用 Solis 的工具。
-- **问题：** Solis 的 `/api/mcp` 端点是占位符，实际上无法被任何 MCP 客户端（Claude Desktop、Cursor 等）调用。这与 Frontier 2026 的时代背景（MCP 生态爆发）严重不符。
-- **改进方案：** 将 Solis 的 5个核心工具（`analyzToken`、`getWalletHealth`、`getYieldRates`、`executeSwap`、`stakeSOL`）暴露为标准 MCP Server。使用 `@modelcontextprotocol/sdk` 实现 JSON-RPC 2.0 接口，部署到 `/api/mcp` 路径。在 README 中提供 `claude_desktop_config.json` 配置示例，让评审可以一键接入。
+- **发现：** 对比 MCPay（Cypherpunk Stablecoin 第一名）和 Latinum（Breakout AI 第一名），两者都完整实现了 MCP Server 功能，让外部 AI Agent（如 Claude）可以通过标准 MCP 协议调用 Sakura 的工具。
+- **问题：** Sakura 的 `/api/mcp` 端点是占位符，实际上无法被任何 MCP 客户端（Claude Desktop、Cursor 等）调用。这与 Frontier 2026 的时代背景（MCP 生态爆发）严重不符。
+- **改进方案：** 将 Sakura 的 5个核心工具（`analyzToken`、`getWalletHealth`、`getYieldRates`、`executeSwap`、`stakeSOL`）暴露为标准 MCP Server。使用 `@modelcontextprotocol/sdk` 实现 JSON-RPC 2.0 接口，部署到 `/api/mcp` 路径。在 README 中提供 `claude_desktop_config.json` 配置示例，让评审可以一键接入。
 - **优先级：** 高
 - **实现难度：** 中
-- **预期影响：** 进入 Frontier 2026 的 AI 基础设施/MCP 赛道视野；可在演示时用 Claude Desktop 实时调用 Solis，极具说服力。
+- **预期影响：** 进入 Frontier 2026 的 AI 基础设施/MCP 赛道视野；可在演示时用 Claude Desktop 实时调用 Sakura，极具说服力。
 
 ---
 
 **改进 F3**
-- **发现：** 对比 DeFi Risk Guardian（Agent Hackathon 参赛项目），后者实现了持续的仓位风险监控（LTV 和 health factor 实时计算，跨 Kamino/Marginfi/Solend），而 Solis 的 `/api/cron/guardian` 是空占位符。
-- **问题：** Solis 缺少主动风险监控——用户借贷仓位接近清算时无法收到预警，这是高价值用户（借贷用户）的核心需求。
-- **改进方案：** 实现 `/api/cron/guardian` 的基础版本：每 30 分钟通过 Vercel Cron 扫描已知钱包的 Kamino 借贷仓位，当 health factor < 1.3 时通过 Solana Memo 写入预警记录（链上可查），并在 Solis 界面下次打开时显示红色预警横幅。可以作为付费功能（持续监控 = 每月 1 USDC 订阅费）。差异于 DeFi Risk Guardian：Solis 不仅监控，还可以执行再平衡来避免清算。
+- **发现：** 对比 DeFi Risk Guardian（Agent Hackathon 参赛项目），后者实现了持续的仓位风险监控（LTV 和 health factor 实时计算，跨 Kamino/Marginfi/Solend），而 Sakura 的 `/api/cron/guardian` 是空占位符。
+- **问题：** Sakura 缺少主动风险监控——用户借贷仓位接近清算时无法收到预警，这是高价值用户（借贷用户）的核心需求。
+- **改进方案：** 实现 `/api/cron/guardian` 的基础版本：每 30 分钟通过 Vercel Cron 扫描已知钱包的 Kamino 借贷仓位，当 health factor < 1.3 时通过 Solana Memo 写入预警记录（链上可查），并在 Sakura 界面下次打开时显示红色预警横幅。可以作为付费功能（持续监控 = 每月 1 USDC 订阅费）。差异于 DeFi Risk Guardian：Sakura 不仅监控，还可以执行再平衡来避免清算。
 - **优先级：** 高
 - **实现难度：** 中
 - **预期影响：** 完成订阅收入模式的第一步；解决"必需品"问题（仓位预警是刚需）；与 DeFi Risk Guardian 形成差异化（监控+执行闭环）。
@@ -691,8 +691,8 @@ Solis (13/18) > Hive AI (9/18) > Project Plutus (8/18) > DeFi Risk Guardian (4/1
 ---
 
 **改进 F4**
-- **发现：** 对比 Reflect Protocol（a16z $375 万融资），它解决了 $280B 稳定币闲置收益问题，而 Solis 的收益推荐功能只是"建议用户去 Kamino 存 USDC"，没有一键聚合最优收益路径。
-- **问题：** Solis 获取收益数据但没有"最优收益路由推荐"功能——用户仍然需要自行对比 Marinade/Kamino/Raydium 的 APY 并手动选择。
+- **发现：** 对比 Reflect Protocol（a16z $375 万融资），它解决了 $280B 稳定币闲置收益问题，而 Sakura 的收益推荐功能只是"建议用户去 Kamino 存 USDC"，没有一键聚合最优收益路径。
+- **问题：** Sakura 获取收益数据但没有"最优收益路由推荐"功能——用户仍然需要自行对比 Marinade/Kamino/Raydium 的 APY 并手动选择。
 - **改进方案：** 在 `/api/yield` 基础上增加 `GET /api/yield/optimal?amount=X&asset=USDC&risk=low|medium|high` 端点，根据用户资产规模和风险偏好，由 Claude AI 生成最优收益路径建议（带理由）。在 DefiAssistant 组件中添加"一键最优收益"快捷按钮，Claude 建议后可直接跳转执行。
 - **优先级：** 中
 - **实现难度：** 低
@@ -701,8 +701,8 @@ Solis (13/18) > Hive AI (9/18) > Project Plutus (8/18) > DeFi Risk Guardian (4/1
 ---
 
 **改进 F5**
-- **发现：** 对比 Seer（Cypherpunk Infrastructure 第一名），它提供 Solana 交易完整追踪（类 Tenderly），而 Solis 在用户执行 Swap/Stake 后没有交易结果的深度解析。
-- **问题：** 用户在 Solis 执行操作后，如果交易失败或产生异常价格冲击，没有工具帮助诊断原因。这影响用户信任度和高级用户留存。
+- **发现：** 对比 Seer（Cypherpunk Infrastructure 第一名），它提供 Solana 交易完整追踪（类 Tenderly），而 Sakura 在用户执行 Swap/Stake 后没有交易结果的深度解析。
+- **问题：** 用户在 Sakura 执行操作后，如果交易失败或产生异常价格冲击，没有工具帮助诊断原因。这影响用户信任度和高级用户留存。
 - **改进方案：** 在 SwapModal/StakeModal 的"交易确认"界面增加"交易分析"链接：通过 Helius Transaction API 解析用户最近 10 笔交易，用 Claude 生成可读的"本次 Swap 实际执行价格 X，MEV 损失约 Y SOL，建议下次使用 Jito 打包"摘要。不需要完整的 Seer 功能，只需要 Claude 解读 Helius 返回的交易数据。
 - **优先级：** 中
 - **实现难度：** 低
@@ -715,9 +715,9 @@ Solis (13/18) > Hive AI (9/18) > Project Plutus (8/18) > DeFi Risk Guardian (4/1
 ---
 
 **改进 B1**
-- **发现：** 审计发现 Solis 的订阅模式在 README 标注"Planned"但零代码实现；对比 Seer、Latinum 等已实现订阅/定期收费的项目，Solis 缺乏经常性收入（Recurring Revenue）。
-- **问题：** 目前 Solis 的收入全部是交易型（Swap 手续费、单次付费分析），无法展示可预测的现金流，这在 VC 融资评审中是弱点。
-- **改进方案：** 实现"Solis Pro 月度订阅"：每月 5 USDC，通过 `x402-next` 实现每月自动扣费（或手动续费）。Pro 包含：无限 AI 咨询次数（超过免费 3 次配额）+ 借贷仓位监控预警 + 优先数据刷新频率。在 `/api/quota` 中增加 `subscription_tier: 'free' | 'pro'` 状态字段，UI 中显示清晰的升级引导。
+- **发现：** 审计发现 Sakura 的订阅模式在 README 标注"Planned"但零代码实现；对比 Seer、Latinum 等已实现订阅/定期收费的项目，Sakura 缺乏经常性收入（Recurring Revenue）。
+- **问题：** 目前 Sakura 的收入全部是交易型（Swap 手续费、单次付费分析），无法展示可预测的现金流，这在 VC 融资评审中是弱点。
+- **改进方案：** 实现"Sakura Pro 月度订阅"：每月 5 USDC，通过 `x402-next` 实现每月自动扣费（或手动续费）。Pro 包含：无限 AI 咨询次数（超过免费 3 次配额）+ 借贷仓位监控预警 + 优先数据刷新频率。在 `/api/quota` 中增加 `subscription_tier: 'free' | 'pro'` 状态字段，UI 中显示清晰的升级引导。
 - **优先级：** 高
 - **实现难度：** 中
 - **预期影响：** 提供可预测的经常性收入流；在黑客松 Pitch 中可展示完整的"SaaS + 交易费"双轨商业模式；有利于赛后 VC 融资沟通。
@@ -725,19 +725,19 @@ Solis (13/18) > Hive AI (9/18) > Project Plutus (8/18) > DeFi Risk Guardian (4/1
 ---
 
 **改进 B2**
-- **发现：** 对比 Urani（Renaissance DeFi 第一名）的 MEV 内化模式，和 Reflect 的收益差价模式，两者都有协议级别的深层盈利机制（非表面费用）。Solis 的 0.3% Swap 费用属于同质化竞争，Jupiter 聚合器本身只收 0%（协议层面）。
-- **问题：** Solis 的 Swap 费用（30 bps）可能导致用户流失到直接使用 Jupiter——为什么要通过 Solis 而不是直接用 Jupiter？缺乏足够的附加值支撑费用。
-- **改进方案：** 为每笔通过 Solis 执行的 Swap 提供"智能路由 + AI 安全验证"附加价值：在 Swap 前自动运行代币安全检测（GoPlus+蜜罐模拟），并生成"Solis Safety Badge"（本次交易通过 Solis 安全验证，可在 Memo 中查阅）。将这个安全保障作为 0.3% 费用的明确对价，在 SwapModal 中突出显示"您为安全验证支付 0.3%"。同时考虑降低费率至 0.15%，以提高竞争力。
+- **发现：** 对比 Urani（Renaissance DeFi 第一名）的 MEV 内化模式，和 Reflect 的收益差价模式，两者都有协议级别的深层盈利机制（非表面费用）。Sakura 的 0.3% Swap 费用属于同质化竞争，Jupiter 聚合器本身只收 0%（协议层面）。
+- **问题：** Sakura 的 Swap 费用（30 bps）可能导致用户流失到直接使用 Jupiter——为什么要通过 Sakura 而不是直接用 Jupiter？缺乏足够的附加值支撑费用。
+- **改进方案：** 为每笔通过 Sakura 执行的 Swap 提供"智能路由 + AI 安全验证"附加价值：在 Swap 前自动运行代币安全检测（GoPlus+蜜罐模拟），并生成"Sakura Safety Badge"（本次交易通过 Sakura 安全验证，可在 Memo 中查阅）。将这个安全保障作为 0.3% 费用的明确对价，在 SwapModal 中突出显示"您为安全验证支付 0.3%"。同时考虑降低费率至 0.15%，以提高竞争力。
 - **优先级：** 中
 - **实现难度：** 低
-- **预期影响：** 解决"为什么要付 0.3% 给 Solis"的用户疑虑；安全附加值与可验证 AI 推理叙事一致；可能提升 Swap 转化率。
+- **预期影响：** 解决"为什么要付 0.3% 给 Sakura"的用户疑虑；安全附加值与可验证 AI 推理叙事一致；可能提升 Swap 转化率。
 
 ---
 
 **改进 B3**
-- **发现：** 对比 Latinum（Breakout AI 第一名）的 MCP 变现模式，发现 Solis 的工具价值（代币分析、收益数据、DeFi 建议）可以作为 B2B API 服务出售给其他 AI Agent 构建者。
-- **问题：** Solis 目前是纯 B2C 产品，但其数据聚合能力（GoPlus+Jupiter+Marinade+Kamino+Helius 统一接口）对其他开发者极有价值，这个价值被低估了。
-- **改进方案：** 推出"Solis API 开发者版"：将 `/api/token`、`/api/yield`、`/api/wallet` 作为付费 API 对外开放（$0.01/次 或 $30/月无限量）。通过 x402 中间件实现 API Key 付费，或提供 MCP Server 接口让其他 Claude Agent 调用。在文档中展示"接入 Solis，2 行代码获得完整 Solana DeFi 数据 + AI 分析"。
+- **发现：** 对比 Latinum（Breakout AI 第一名）的 MCP 变现模式，发现 Sakura 的工具价值（代币分析、收益数据、DeFi 建议）可以作为 B2B API 服务出售给其他 AI Agent 构建者。
+- **问题：** Sakura 目前是纯 B2C 产品，但其数据聚合能力（GoPlus+Jupiter+Marinade+Kamino+Helius 统一接口）对其他开发者极有价值，这个价值被低估了。
+- **改进方案：** 推出"Sakura API 开发者版"：将 `/api/token`、`/api/yield`、`/api/wallet` 作为付费 API 对外开放（$0.01/次 或 $30/月无限量）。通过 x402 中间件实现 API Key 付费，或提供 MCP Server 接口让其他 Claude Agent 调用。在文档中展示"接入 Sakura，2 行代码获得完整 Solana DeFi 数据 + AI 分析"。
 - **优先级：** 中
 - **实现难度：** 低
 - **预期影响：** 开辟 B2B 收入渠道，与 B2C 并行；在 AI Agent 生态爆发背景下，B2B API 增长速度可能超过 B2C；Pitch 时可以展示"双边市场"商业模式。
@@ -749,9 +749,9 @@ Solis (13/18) > Hive AI (9/18) > Project Plutus (8/18) > DeFi Risk Guardian (4/1
 ---
 
 **改进 UX1**
-- **发现：** 对比 Hive AI 的"直接说话就能操作 DeFi"的交互设计，Solis 的 DefiAssistant 有 AI 对话，但用户需要自己知道要问什么，缺乏主动引导。
-- **问题：** 新用户进入 Solis 不知道从哪里开始——连接钱包后，面对"健康报告/代币/DeFi AI/Agent"四个 Tab，不清楚操作顺序和优先项。
-- **改进方案：** 实现"Solis 欢迎旅程"（Onboarding Flow）：首次连接钱包后，自动触发 Claude 生成个性化欢迎语（"你的钱包有 X SOL，风险等级是 Y，我建议你首先做 Z"），并在界面右侧显示 3 个"立即行动"快捷卡片（基于用户实际资产状况动态生成）。将当前静态的"意图卡片"替换为 Claude 根据用户仓位实时生成的推荐。
+- **发现：** 对比 Hive AI 的"直接说话就能操作 DeFi"的交互设计，Sakura 的 DefiAssistant 有 AI 对话，但用户需要自己知道要问什么，缺乏主动引导。
+- **问题：** 新用户进入 Sakura 不知道从哪里开始——连接钱包后，面对"健康报告/代币/DeFi AI/Agent"四个 Tab，不清楚操作顺序和优先项。
+- **改进方案：** 实现"Sakura 欢迎旅程"（Onboarding Flow）：首次连接钱包后，自动触发 Claude 生成个性化欢迎语（"你的钱包有 X SOL，风险等级是 Y，我建议你首先做 Z"），并在界面右侧显示 3 个"立即行动"快捷卡片（基于用户实际资产状况动态生成）。将当前静态的"意图卡片"替换为 Claude 根据用户仓位实时生成的推荐。
 - **优先级：** 中
 - **实现难度：** 低
 - **预期影响：** 显著降低新用户跳出率；增加用户首次执行操作的概率（=增加 Swap 手续费收入）。
@@ -759,7 +759,7 @@ Solis (13/18) > Hive AI (9/18) > Project Plutus (8/18) > DeFi Risk Guardian (4/1
 ---
 
 **改进 UX2**
-- **发现：** 对比 Reflect 的"存入 USDC 自动增值"零摩擦体验，Solis 的所有执行操作（Swap/Stake/Lend）都需要用户手动打开 Modal、确认参数、签名。
+- **发现：** 对比 Reflect 的"存入 USDC 自动增值"零摩擦体验，Sakura 的所有执行操作（Swap/Stake/Lend）都需要用户手动打开 Modal、确认参数、签名。
 - **问题：** 用户咨询"我应该把 100 USDC 存到哪里"后，从 AI 建议到实际执行，需要 4-6 步点击，摩擦过大，转化率低。
 - **改进方案：** 在 DefiAssistant 的 AI 建议结果下方，直接嵌入"一键执行"按钮：当 Claude 建议"将 50 USDC 存入 Kamino（7.2% APY）"时，立即显示预填充的 LendModal，用户只需点击"确认"并签名。消除从"建议"到"执行"之间所有需要用户重新手动输入的步骤。技术上使用 URL 参数或 React Context 在 DefiAssistant 和 LendModal 之间传递推荐参数。
 - **优先级：** 高
@@ -769,9 +769,9 @@ Solis (13/18) > Hive AI (9/18) > Project Plutus (8/18) > DeFi Risk Guardian (4/1
 ---
 
 **改进 UX3**
-- **发现：** 对比 Project Plutus 的"无代码 Agent 配置"界面，Solis 的 AgentPanel 是占位符；同时，对比 Seer 的"每笔交易可追溯"记录，Solis 没有操作历史视图。
-- **问题：** 用户无法查看 Solis 平台的操作历史：哪些 Swap 是通过 Solis 执行的？AI 建议了什么？收取了多少费用？这个透明度缺失影响用户信任和回访动机。
-- **改进方案：** 实现"Solis Activity Log"（活动记录）Tab：记录所有通过 Solis 执行的操作（时间、类型、金额、AI 推理哈希、Solana Tx 链接）。与链上 Memo 数据打通——凡是写入 Memo 的 AI 决策，都可以在 Activity Log 中一键查看完整推理链。同时显示"通过 Solis 累计节省/盈利 X SOL"，创造成就感和留存动机。
+- **发现：** 对比 Project Plutus 的"无代码 Agent 配置"界面，Sakura 的 AgentPanel 是占位符；同时，对比 Seer 的"每笔交易可追溯"记录，Sakura 没有操作历史视图。
+- **问题：** 用户无法查看 Sakura 平台的操作历史：哪些 Swap 是通过 Sakura 执行的？AI 建议了什么？收取了多少费用？这个透明度缺失影响用户信任和回访动机。
+- **改进方案：** 实现"Sakura Activity Log"（活动记录）Tab：记录所有通过 Sakura 执行的操作（时间、类型、金额、AI 推理哈希、Solana Tx 链接）。与链上 Memo 数据打通——凡是写入 Memo 的 AI 决策，都可以在 Activity Log 中一键查看完整推理链。同时显示"通过 Sakura 累计节省/盈利 X SOL"，创造成就感和留存动机。
 - **优先级：** 中
 - **实现难度：** 中
 - **预期影响：** 提升用户信任度（透明度是 DeFi 用户的核心需求）；增加回访频率；AI 可验证推理功能的最佳展示窗口。
@@ -783,9 +783,9 @@ Solis (13/18) > Hive AI (9/18) > Project Plutus (8/18) > DeFi Risk Guardian (4/1
 ---
 
 **改进 H1**
-- **发现：** Colosseum 历届获奖项目（Unruggable、Reflect、Urani）都有一个极其清晰的"一句话价值主张"。当前 Solis 的定位"Solana DeFi AI Advisor"太宽泛，在 Frontier 2026 竞争中，"DeFi AI"项目可能有数十个，需要更锐利的差异化叙事。**警示：** SOLPRISM 的出现意味着"可验证 AI"叙事有被抢占的风险，需要在 Pitch 中强调 Solis = 可验证 AI + 完整 DeFi 工具链（而非仅仅可验证机制）。
-- **问题：** Solis 没有充分利用其最独特的技术能力——"链上可验证 AI 推理 + 完整 DeFi 执行"——作为核心叙事支点。
-- **改进方案：** 将 Pitch 和 README 的核心叙事重构为：**"Solis — The Only DeFi Advisor Where Every AI Decision is Verifiable On-Chain"**。在说明"可验证"时，明确指出：不仅仅是验证机制（那是 SOLPRISM 做的），而是在完整 DeFi 操作流程中的端到端可验证性。围绕这个核心构建 Pitch：① 问题：DeFi AI 建议不可信（黑盒）；② 解法：SHA-256 + Solana Memo；③ 应用：从建议到 Swap/Stake 执行，全程留证；④ 对比：SOLPRISM 只是协议，Solis 是你真正使用的产品。
+- **发现：** Colosseum 历届获奖项目（Unruggable、Reflect、Urani）都有一个极其清晰的"一句话价值主张"。当前 Sakura 的定位"Solana DeFi AI Advisor"太宽泛，在 Frontier 2026 竞争中，"DeFi AI"项目可能有数十个，需要更锐利的差异化叙事。**警示：** SOLPRISM 的出现意味着"可验证 AI"叙事有被抢占的风险，需要在 Pitch 中强调 Sakura = 可验证 AI + 完整 DeFi 工具链（而非仅仅可验证机制）。
+- **问题：** Sakura 没有充分利用其最独特的技术能力——"链上可验证 AI 推理 + 完整 DeFi 执行"——作为核心叙事支点。
+- **改进方案：** 将 Pitch 和 README 的核心叙事重构为：**"Sakura — The Only DeFi Advisor Where Every AI Decision is Verifiable On-Chain"**。在说明"可验证"时，明确指出：不仅仅是验证机制（那是 SOLPRISM 做的），而是在完整 DeFi 操作流程中的端到端可验证性。围绕这个核心构建 Pitch：① 问题：DeFi AI 建议不可信（黑盒）；② 解法：SHA-256 + Solana Memo；③ 应用：从建议到 Swap/Stake 执行，全程留证；④ 对比：SOLPRISM 只是协议，Sakura 是你真正使用的产品。
 - **优先级：** 高
 - **实现难度：** 低（仅改叙事）
 - **预期影响：** 在评审中形成独特记忆点；有效区别于所有其他 DeFi AI 竞品和 SOLPRISM。
@@ -793,17 +793,17 @@ Solis (13/18) > Hive AI (9/18) > Project Plutus (8/18) > DeFi Risk Guardian (4/1
 ---
 
 **改进 H2**
-- **发现：** 查阅历届 Colosseum 获奖项目，总冠军（Ore、Reflect、Unruggable、TapeDrive）都有一个可以在评审现场实时演示的 Wow Moment。Solis 目前的演示流程是"连接钱包 → 看健康分 → 问 AI → 付费分析"，缺乏真正令人印象深刻的演示时刻。
-- **问题：** 如果评审给 Solis 两分钟演示时间，没有一个操作可以让观众"哇"的一声——链上 Memo 验证步骤技术价值高但视觉冲击弱；Swap 执行没有差异化（Jupiter 直接也能做）。
-- **改进方案：** 设计"Colosseum Wow Demo"场景：① 输入一个刚发行 1 小时的代币地址（准备一个明显的蜜罐代币）；② Solis AI 实时分析并给出"DANGER：蜜罐，无法卖出，建议立即回避"判断，带具体理由；③ 点击"查看链上证明"，打开 Solana Explorer 显示 3 分钟前写入的 AI 推理 Memo；④ 演示者说"任何人，现在，可以独立验证这个 AI 没有说谎"。这个 60 秒的场景将定义整个 Pitch 的记忆点。
+- **发现：** 查阅历届 Colosseum 获奖项目，总冠军（Ore、Reflect、Unruggable、TapeDrive）都有一个可以在评审现场实时演示的 Wow Moment。Sakura 目前的演示流程是"连接钱包 → 看健康分 → 问 AI → 付费分析"，缺乏真正令人印象深刻的演示时刻。
+- **问题：** 如果评审给 Sakura 两分钟演示时间，没有一个操作可以让观众"哇"的一声——链上 Memo 验证步骤技术价值高但视觉冲击弱；Swap 执行没有差异化（Jupiter 直接也能做）。
+- **改进方案：** 设计"Colosseum Wow Demo"场景：① 输入一个刚发行 1 小时的代币地址（准备一个明显的蜜罐代币）；② Sakura AI 实时分析并给出"DANGER：蜜罐，无法卖出，建议立即回避"判断，带具体理由；③ 点击"查看链上证明"，打开 Solana Explorer 显示 3 分钟前写入的 AI 推理 Memo；④ 演示者说"任何人，现在，可以独立验证这个 AI 没有说谎"。这个 60 秒的场景将定义整个 Pitch 的记忆点。
 - **优先级：** 高
 - **实现难度：** 低（需准备演示数据）
-- **预期影响：** 评审记住 Solis 的概率从 ~20% 提升至 ~80%；与"可验证 AI"叙事完全一致；可用于演示视频制作。
+- **预期影响：** 评审记住 Sakura 的概率从 ~20% 提升至 ~80%；与"可验证 AI"叙事完全一致；可用于演示视频制作。
 
 ---
 
 **改进 H3**
-- **发现：** 历届 Colosseum 获奖项目都提交了完整的技术文档和代码可读性。Solis 当前的 agent 路由是占位符，如果评审审查代码会发现大量"TODO"和空文件，影响技术印象分。
+- **发现：** 历届 Colosseum 获奖项目都提交了完整的技术文档和代码可读性。Sakura 当前的 agent 路由是占位符，如果评审审查代码会发现大量"TODO"和空文件，影响技术印象分。
 - **问题：** 占位符文件（`/api/agent/loop`、`/api/agent/rebalance`、`/api/cron/guardian`、`/api/cron/alerts`、`/api/mcp`）如果被评审看到，会显得项目"虚有其表"，降低技术可信度。
 - **改进方案：** 三个策略选择（按优先级）：① 在提交前完成至少一个 Agent 路由（推荐 `rebalance`）的基础实现；② 如时间不足，将占位符文件删除并在 README 的"Roadmap"部分标注"Phase 2 开发中"，避免误导；③ 在占位符文件中添加详细注释说明设计意图和实现计划，让评审看到思考深度而非空白。无论选择哪个，确保项目中没有会报错的路由和没有完全空白的主要功能文件。
 - **优先级：** 高
@@ -813,12 +813,12 @@ Solis (13/18) > Hive AI (9/18) > Project Plutus (8/18) > DeFi Risk Guardian (4/1
 ---
 
 **改进 H4**
-- **发现：** 对比 Frontier 2026 可能的评审标准（参考历届，Colosseum 评审看重：创新性、完成度、商业可行性、技术深度、团队），Solis 在"商业可行性"维度的展示材料不足——没有用户数据、没有交易量数据、没有明确的 GTM（上市策略）。
-- **问题：** Solis 有完整的盈利模式（6种收入流），但没有以评审友好的方式呈现商业潜力——缺乏市场规模数据、竞争格局定位图、目标用户画像。
-- **改进方案：** 准备一张"Solis 商业模式一页纸"作为 Pitch 辅助材料：① TAM/SAM/SOM（Solana 活跃 DeFi 用户 ~200万，目标 5% = 10万用户，月均 2 USDC 收益 = 年收入 $240K 起）；② 竞品定位图（X轴：功能覆盖宽度，Y轴：AI 可信度，Solis 占据右上角无竞争区间）；③ 三阶段增长路径（Phase 1：黑客松演示用户 → Phase 2：散户 DeFi 用户 → Phase 3：B2B API 开发者）。这些材料不需要进入代码，但需要在 Pitch Deck 和 README 中体现。
+- **发现：** 对比 Frontier 2026 可能的评审标准（参考历届，Colosseum 评审看重：创新性、完成度、商业可行性、技术深度、团队），Sakura 在"商业可行性"维度的展示材料不足——没有用户数据、没有交易量数据、没有明确的 GTM（上市策略）。
+- **问题：** Sakura 有完整的盈利模式（6种收入流），但没有以评审友好的方式呈现商业潜力——缺乏市场规模数据、竞争格局定位图、目标用户画像。
+- **改进方案：** 准备一张"Sakura 商业模式一页纸"作为 Pitch 辅助材料：① TAM/SAM/SOM（Solana 活跃 DeFi 用户 ~200万，目标 5% = 10万用户，月均 2 USDC 收益 = 年收入 $240K 起）；② 竞品定位图（X轴：功能覆盖宽度，Y轴：AI 可信度，Sakura 占据右上角无竞争区间）；③ 三阶段增长路径（Phase 1：黑客松演示用户 → Phase 2：散户 DeFi 用户 → Phase 3：B2B API 开发者）。这些材料不需要进入代码，但需要在 Pitch Deck 和 README 中体现。
 - **优先级：** 中
 - **实现难度：** 低
-- **预期影响：** 显著提升评审对商业可行性维度的评分；帮助评审理解 Solis 的长期价值；为赛后 VC 沟通预备材料。
+- **预期影响：** 显著提升评审对商业可行性维度的评分；帮助评审理解 Sakura 的长期价值；为赛后 VC 沟通预备材料。
 
 ---
 
@@ -826,7 +826,7 @@ Solis (13/18) > Hive AI (9/18) > Project Plutus (8/18) > DeFi Risk Guardian (4/1
 
 ### 所有项目在所有维度的评分表（0-10分）
 
-| 评分维度 | Solis | Hive AI | Project Plutus | SOLPRISM | Urani | Reflect | Yumi Finance | MCPay | Latinum | Seer | Unruggable |
+| 评分维度 | Sakura | Hive AI | Project Plutus | SOLPRISM | Urani | Reflect | Yumi Finance | MCPay | Latinum | Seer | Unruggable |
 |---------|-------|---------|---------------|---------|-------|---------|--------------|-------|---------|------|-----------|
 | **功能完整性** | 8.0 | 7.0 | 6.5 | 4.0 | 6.0 | 7.0 | 6.0 | 5.0 | 5.5 | 7.5 | 8.0 |
 | **盈利模式清晰度** | 7.5 | 2.0 | 2.0 | 3.0 | 7.0 | 8.5 | 7.0 | 1.0 | 6.0 | 5.5 | 7.0 |
@@ -879,30 +879,30 @@ Solis (13/18) > Hive AI (9/18) > Project Plutus (8/18) > DeFi Risk Guardian (4/1
 
 ---
 
-### 8.2 Solis 在 Pitch 中最应该强调的 5 个点
+### 8.2 Sakura 在 Pitch 中最应该强调的 5 个点
 
 **必讲 Point 1：链上可验证 AI 推理（Verifiable AI on Solana）**
 > "我们是全球第一个将 AI 决策理由写到区块链上、让任何人可以独立验证的完整 DeFi 应用。不是协议，不是概念——你现在打开 Solana Explorer，搜索我们的 Program ID，就能看到刚刚 AI 做出的每一个分析决策。"
 >
-> — 这个点无全功能竞品；SOLPRISM 只是协议层，Solis 是用户用的产品
+> — 这个点无全功能竞品；SOLPRISM 只是协议层，Sakura 是用户用的产品
 
 **必讲 Point 2：代币坟场数据（Token Graveyard）**
-> "看看我们的直接竞品：Hive AI 的 BUZZ 代币从 $122M 市值跌至 $600K，-99.5%，24小时交易量只剩 $17K。Plutus 的 PPCOIN 市值仅 $15K，24小时交易量 $20。这是最直接的数据证明：在 DeFi AI 领域，代币策略失败了。Solis 从第一天起就选择了无代币、真实盈利的路线。"
+> "看看我们的直接竞品：Hive AI 的 BUZZ 代币从 $122M 市值跌至 $600K，-99.5%，24小时交易量只剩 $17K。Plutus 的 PPCOIN 市值仅 $15K，24小时交易量 $20。这是最直接的数据证明：在 DeFi AI 领域，代币策略失败了。Sakura 从第一天起就选择了无代币、真实盈利的路线。"
 >
-> — 直接用对手数据佐证 Solis 的战略选择，评审难以反驳
+> — 直接用对手数据佐证 Sakura 的战略选择，评审难以反驳
 
 **必讲 Point 3：真实盈利模式（从第一天起盈利）**
-> "Solis 有 6 种收入来源全部已上线：0.3% Swap 手续费、质押推荐费、借贷推荐费、高级分析付费（1 USDC/次）、超配额按需付费、验证费用。我们不依赖代币发行，第一笔 Swap 就产生了真实收入。"
+> "Sakura 有 6 种收入来源全部已上线：0.3% Swap 手续费、质押推荐费、借贷推荐费、高级分析付费（1 USDC/次）、超配额按需付费、验证费用。我们不依赖代币发行，第一笔 Swap 就产生了真实收入。"
 >
 > — 直接回应评审"商业可行性"维度，数字具体有力
 
 **必讲 Point 4：完整 DeFi 旅程（一站式 vs 单点工具）**
-> "SOLPRISM 只做可验证机制，Urani 只做 MEV 保护，Seer 只做调试。Solis 是唯一覆盖 Solana DeFi 完整旅程的 AI 助手：连接钱包 → 健康评分 → 代币安全 → AI 建议 → 一键执行 → 链上验证。我们的用户不需要去 5 个不同的平台完成一笔 DeFi 操作。"
+> "SOLPRISM 只做可验证机制，Urani 只做 MEV 保护，Seer 只做调试。Sakura 是唯一覆盖 Solana DeFi 完整旅程的 AI 助手：连接钱包 → 健康评分 → 代币安全 → AI 建议 → 一键执行 → 链上验证。我们的用户不需要去 5 个不同的平台完成一笔 DeFi 操作。"
 >
-> — 建立 Solis 在市场图上的唯一位置
+> — 建立 Sakura 在市场图上的唯一位置
 
 **建议讲 Point 5：动态蜜罐模拟（技术深度）**
-> "我们在 GoPlus 基础之上额外实现了动态蜜罐模拟——对每一个被分析的代币，Solis 会在链上实际模拟卖出操作，验证是否真的可以退出。这是任何 DeFi AI 助手都没有的功能，因为它需要我们维护真实的 Solana 节点连接和交易模拟能力。"
+> "我们在 GoPlus 基础之上额外实现了动态蜜罐模拟——对每一个被分析的代币，Sakura 会在链上实际模拟卖出操作，验证是否真的可以退出。这是任何 DeFi AI 助手都没有的功能，因为它需要我们维护真实的 Solana 节点连接和交易模拟能力。"
 >
 > — 展示技术深度，区别于只调用 GoPlus API 的竞品
 
@@ -915,16 +915,16 @@ Solis (13/18) > Hive AI (9/18) > Project Plutus (8/18) > DeFi Risk Guardian (4/1
 **应对话术：**
 > "SOLPRISM 验证了这个方向的需求——可验证 AI 推理确实是市场需要的。但 SOLPRISM 是一个协议，就像 x402 是一个协议一样。你不会直接'使用' x402——你使用的是 MCPay、Latinum 这样的应用。
 >
-> Solis 对可验证 AI 推理来说，就像 MCPay/Latinum 对 x402 协议一样——我们是让真实 DeFi 用户真正用到这项技术的完整应用。SOLPRISM 证明了协议可行，Solis 是用户真正使用的产品。"
+> Sakura 对可验证 AI 推理来说，就像 MCPay/Latinum 对 x402 协议一样——我们是让真实 DeFi 用户真正用到这项技术的完整应用。SOLPRISM 证明了协议可行，Sakura 是用户真正使用的产品。"
 
 **技术差异化强调：**
-- Solis 的可验证推理不只是机制，而是嵌入在每次 DeFi 操作中（Swap 前分析 → 链上证明 → 执行 → 验证闭环）
+- Sakura 的可验证推理不只是机制，而是嵌入在每次 DeFi 操作中（Swap 前分析 → 链上证明 → 执行 → 验证闭环）
 - SOLPRISM 没有 DeFi 执行功能
-- Solis 有 Swap/Stake/Lend/安全分析全工具链
+- Sakura 有 Swap/Stake/Lend/安全分析全工具链
 
 ---
 
-### 8.4 Solis 最可能拿奖的赛道
+### 8.4 Sakura 最可能拿奖的赛道
 
 **首选赛道：AI 赛道（AI Track）**
 - 核心优势：链上可验证 AI 推理（应用层无竞品）
@@ -939,12 +939,12 @@ Solis (13/18) > Hive AI (9/18) > Project Plutus (8/18) > DeFi Risk Guardian (4/1
 
 **特别奖可能：On-chain Data/Insights Track**
 - 核心优势：代币安全分析 + 蜜罐模拟 + AI 链上证明 = 链上数据洞察
-- Frontier 2026 新增"On-chain data/insights"赛道，Solis 的分析功能直接契合
+- Frontier 2026 新增"On-chain data/insights"赛道，Sakura 的分析功能直接契合
 - 胜率估计：中，值得作为第三赛道参赛
 
 **不建议参加：Infrastructure Track / Stablecoin Track**
 - 竞争对手技术深度更强（Seer、Reflect 已证明该赛道所需标准）
-- Solis 的基础设施功能是支撑，非核心创新
+- Sakura 的基础设施功能是支撑，非核心创新
 
 **综合建议：以 AI 赛道为主赛道参赛，DeFi 赛道 + On-chain Data 赛道作为辅赛道，在 Pitch 中同时覆盖三个维度的评审关注点。**
 
@@ -958,7 +958,7 @@ Solis (13/18) > Hive AI (9/18) > Project Plutus (8/18) > DeFi Risk Guardian (4/1
 | Renaissance/Radar 获奖项目 | 高 | Colosseum 官方公告，多源核实 |
 | Breakout/Cypherpunk 获奖项目 | 高 | Colosseum 官方公告，多源核实 |
 | AI Agent Hackathon 结果 | 中（待官方公布）| 投票数据，官方结果尚未发布 |
-| Solis 功能盘点 | 极高 | 代码直接审计（18个端点，11个组件，9个库文件）|
+| Sakura 功能盘点 | 极高 | 代码直接审计（18个端点，11个组件，9个库文件）|
 | Hive AI / Plutus 代币市值 | 高 | CoinMarketCap/CoinGecko（2026-04 数据）|
 | Hive AI 24h 交易量 $17K | 高 | CoinMarketCap 2026-04 数据 |
 | Plutus 24h 交易量 $20 | 高 | Raydium 2026-04 数据 |
@@ -975,4 +975,4 @@ Solis (13/18) > Hive AI (9/18) > Project Plutus (8/18) > DeFi Risk Guardian (4/1
 ---
 
 *报告结束*
-*Solis — The Only DeFi Advisor Where Every AI Decision is Verifiable On-Chain*
+*Sakura — The Only DeFi Advisor Where Every AI Decision is Verifiable On-Chain*

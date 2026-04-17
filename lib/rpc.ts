@@ -18,6 +18,24 @@ import { Connection } from "@solana/web3.js";
 
 const HELIUS_API_KEY = process.env.HELIUS_API_KEY ?? "";
 
+/**
+ * Devnet RPC for Sakura Mutual v0.2 (the on-chain insurance program lives
+ * on devnet during the hackathon). Any caller touching the insurance PDAs
+ * MUST use `getDevnetConnection()` — `getConnection()` returns a mainnet
+ * connection and will silently fail to read our devnet accounts.
+ */
+const DEVNET_RPC_URL =
+  process.env.SAKURA_RPC_URL
+  ?? (HELIUS_API_KEY
+    ? `https://devnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}`
+    : "https://api.devnet.solana.com");
+
+export async function getDevnetConnection(
+  commitment: "confirmed" | "finalized" = "confirmed"
+): Promise<Connection> {
+  return new Connection(DEVNET_RPC_URL, commitment);
+}
+
 const RPC_ENDPOINTS = [
   // Primary
   process.env.HELIUS_RPC_URL

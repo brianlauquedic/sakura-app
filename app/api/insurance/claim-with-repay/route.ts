@@ -66,7 +66,7 @@ import {
 import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 
 import { RPC_URL } from "@/lib/agent";
-import { getConnection, getDynamicPriorityFee } from "@/lib/rpc";
+import { getDevnetConnection, getDynamicPriorityFee } from "@/lib/rpc";
 import {
   buildClaimPayoutWithZkProofIx,
   checkClaimEligibility,
@@ -163,8 +163,8 @@ export async function POST(req: NextRequest) {
       ? parseBigInt(body.claimNonce, "claimNonce")
       : BigInt(Date.now());
 
-    const connection: Connection = getConnection
-      ? await getConnection("confirmed")
+    const connection: Connection = getDevnetConnection
+      ? await getDevnetConnection("confirmed")
       : new Connection(RPC_URL, "confirmed");
 
     // ── 1. Eligibility gate (reads Pool + Policy) ─────────────────────

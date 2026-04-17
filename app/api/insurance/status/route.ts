@@ -17,7 +17,7 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { PublicKey } from "@solana/web3.js";
-import { getConnection } from "@/lib/rpc";
+import { getDevnetConnection } from "@/lib/rpc";
 import {
   SAKURA_INSURANCE_PROGRAM_ID,
   fetchPool,
@@ -90,7 +90,7 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const conn = await getConnection("confirmed");
+    const conn = await getDevnetConnection("confirmed");
     const { state: pool } = await fetchPool(conn, admin);
 
     let policy: PolicyState | null = null;
