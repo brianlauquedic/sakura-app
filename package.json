@@ -8,13 +8,15 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "devnet:e2e": "tsx scripts/devnet-e2e.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.82.0",
     "@coinbase/x402": "^2.1.0",
     "@kamino-finance/klend-sdk": "^7.3.22",
     "@mrgnlabs/marginfi-client-v2": "^6.4.1",
+    "@noble/curves": "^2.2.0",
     "@solana-agent-kit/plugin-defi": "^2.0.8",
     "@solana-agent-kit/plugin-misc": "^2.0.6",
     "@solana-agent-kit/plugin-token": "^2.0.9",

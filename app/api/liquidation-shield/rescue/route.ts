@@ -19,7 +19,7 @@ import crypto from "crypto";
 import { Connection, PublicKey, Transaction, Keypair, ComputeBudgetProgram } from "@solana/web3.js";
 import { RPC_URL } from "@/lib/agent";
 import { getConnection, getDynamicPriorityFee } from "@/lib/rpc";
-import { buildRescueApproveTransaction } from "@/lib/liquidation-shield";
+import { buildRescueApproveTransaction, buildKaminoRepayInstructions } from "@/lib/liquidation-shield";
 import type { LendingPosition } from "@/lib/liquidation-shield";
 import { fetchMandate, microToUsdc, buildExecuteRescueIx, deriveMandatePDA } from "@/lib/mandate-program";
 
@@ -566,6 +566,89 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // ── Step 2.5: Real protocol repay CPI (Kamino) ─────────────────────────
+  // After agent escrow receives the rescued USDC (Step 2 above), actually
+  // repay the user's Kamino obligation by calling Kamino's repay CPI with
+  // payer=agent, owner=user. If the position isn't on Kamino, or the SDK
+  // can't load the market, we leave the USDC in agent escrow and report
+  // protocolRepayStatus so the frontend and auditors can see honestly.
+  let protocolRepaySig: string | null = null;
+  let protocolRepayStatus:
+    | "repaid"                      // real Kamino CPI landed on-chain
+    | "skipped_not_kamino"           // position.protocol != kamino
+    | "skipped_missing_market"       // no marketAddress on position
+    | "skipped_sdk_unavailable"      // KaminoAction returned null (RPC/SDK failure)
+    | "skipped_rescue_failed"        // Step 2 didn't land, nothing to repay
+    | "failed_build"                 // repay tx build threw
+    | "failed_send"                  // repay tx sent but errored
+    = "skipped_rescue_failed";
+  if (rescueSig && !error) {
+    if (sanitizedPosition.protocol !== "kamino") {
+      protocolRepayStatus = "skipped_not_kamino";
+    } else if (!position.marketAddress) {
+      protocolRepayStatus = "skipped_missing_market";
+    } else {
+      try {
+        const built = await buildKaminoRepayInstructions({
+          walletAddress: wallet,
+          marketAddress: position.marketAddress,
+          obligationAddress: position.accountAddress,
+          payerPubkey: agentKp.publicKey.toString(),
+          repayMicroUsdc: BigInt(Math.floor(rescueUsdc * 1_000_000)),
+          rpcUrl: RPC_URL,
+        });
+        if (!built) {
+          protocolRepayStatus = "skipped_sdk_unavailable";
+        } else {
+          try {
+            const computeIx = ComputeBudgetProgram.setComputeUnitPrice({ microLamports: priorityFee });
+            const { blockhash, lastValidBlockHeight } = await conn.getLatestBlockhash(commitment);
+            const repayTx = new Transaction().add(computeIx, ...built.instructions);
+            repayTx.feePayer = agentKp.publicKey;
+            repayTx.recentBlockhash = blockhash;
+            repayTx.sign(agentKp);
+
+            // Simulate first — if Kamino repay fails, we keep the rescue but
+            // surface the error rather than spend gas on a doomed tx.
+            const simRepay = await conn.simulateTransaction(repayTx);
+            if (simRepay.value.err) {
+              console.warn(
+                "[rescue] Kamino repay simulation failed:",
+                JSON.stringify(simRepay.value.err),
+              );
+              protocolRepayStatus = "failed_build";
+            } else {
+              protocolRepaySig = await conn.sendRawTransaction(
+                repayTx.serialize(),
+                { skipPreflight: false },
+              );
+              await conn.confirmTransaction(
+                { signature: protocolRepaySig, blockhash, lastValidBlockHeight },
+                commitment,
+              );
+              protocolRepayStatus = "repaid";
+              console.log(
+                `[rescue] Kamino repay CPI landed: ${protocolRepaySig.slice(0, 12)}… (${rescueUsdc} USDC → obligation ${position.accountAddress.slice(0, 8)}…)`,
+              );
+            }
+          } catch (sendErr) {
+            console.warn(
+              "[rescue] Kamino repay send failed:",
+              sendErr instanceof Error ? sendErr.message : String(sendErr),
+            );
+            protocolRepayStatus = "failed_send";
+          }
+        }
+      } catch (buildErr) {
+        console.warn(
+          "[rescue] Kamino repay build threw:",
+          buildErr instanceof Error ? buildErr.message : String(buildErr),
+        );
+        protocolRepayStatus = "failed_build";
+      }
+    }
+  }
+
   // ── Step 3: 1% Performance Fee (only on successful rescue) ────────────
   // Retries once on transient network failure. feeCollected is surfaced to
   // frontend so the user sees an honest status rather than a silent loss.
@@ -808,6 +891,13 @@ export async function POST(req: NextRequest) {
     // Which gate was actually invoked for the rescue transfer on-chain
     rescueMode,
     proofHash: proofHashHex,
+    // Real protocol CPI follow-up (Kamino repay)
+    //   protocolRepaySig === non-null iff a genuine Kamino repay CPI landed
+    //   on-chain and the user's obligation debt actually decreased. When null,
+    //   the rescued USDC sits in agent escrow and protocolRepayStatus explains
+    //   why (not kamino, sdk unavailable, sim failed, etc.).
+    protocolRepaySig,
+    protocolRepayStatus,
     // Module 09: Token-2022 extension warning (null = standard SPL, safe)
     tokenExtensionWarning,
     error,

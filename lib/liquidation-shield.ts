@@ -1108,3 +1108,148 @@ export async function monitorPositions(walletAddress: string): Promise<MonitorRe
     impliedLiquidationProb,
   };
 }
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Real Kamino Repay CPI (2026-04-17 Phase 2 upgrade)
+// ──────────────────────────────────────────────────────────────────────────────
+// Agent holds rescued USDC in escrow after the Anchor mandate CPI. To actually
+// reduce the user's debt, the agent must call Kamino's repayObligationLiquidity
+// instruction as payer on the user's obligation. This module builds those
+// instructions from @kamino-finance/klend-sdk and converts the @solana/kit
+// instruction shape back to @solana/web3.js TransactionInstruction so it fits
+// our existing tx pipeline.
+// ══════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Build a real Kamino repay instruction set. Returns web3.js-compatible
+ * instructions that repay `repayMicroUsdc` of debt on `obligationAddr`, with
+ * `payerPubkey` supplying the USDC (not the obligation owner).
+ *
+ * Caller flow:
+ *   1. Agent moves rescued USDC into agent ATA via the Anchor mandate CPI.
+ *   2. Agent calls this builder and sends the returned instructions as a
+ *      follow-up tx. payer = agent, owner = user's wallet.
+ *   3. Kamino internally transfers USDC from agent ATA → reserve liquidity
+ *      vault, and decrements the user's borrow balance on their obligation.
+ *
+ * Returns null if Kamino SDK can't find the market/obligation (e.g., position
+ * isn't actually on Kamino or RPC cannot load market state). The rescue route
+ * falls back to agent-escrow mode in that case and reports it honestly.
+ */
+export async function buildKaminoRepayInstructions(params: {
+  walletAddress: string;
+  marketAddress: string;
+  obligationAddress: string;
+  payerPubkey: string;
+  repayMicroUsdc: bigint;
+  rpcUrl?: string;
+}): Promise<{
+  instructions: TransactionInstruction[];
+  lookupTableAddresses: string[];
+  repayMintDecimals: number;
+} | null> {
+  try {
+    const { KaminoAction, KaminoMarket, VanillaObligation } = await import(
+      "@kamino-finance/klend-sdk"
+    );
+
+    const rpcUrl = params.rpcUrl ?? RPC_URL;
+    const conn = new Connection(rpcUrl, "confirmed");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const rpc = createSolanaRpc(rpcUrl) as any;
+
+    // Load the market (fetches all reserves + scope prices)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const market = await KaminoMarket.load(rpc, params.marketAddress as any, 150);
+    if (!market) return null;
+
+    // Resolve USDC reserve on this market
+    const usdcReserve = market.getReserveByMint(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      USDC_MINT.toString() as any,
+    );
+    if (!usdcReserve) return null;
+
+    // Fetch user's obligation (by wallet + VanillaObligation type)
+    const obligation = await market.getObligationByWallet(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      params.walletAddress as any,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      new VanillaObligation(KAMINO_LENDING_PROGRAM as any),
+    );
+    if (!obligation) return null;
+
+    // Current slot — Kamino needs it for scope/price-staleness checks
+    const currentSlot = await conn.getSlot("confirmed");
+
+    // Build the repay action. payer ≠ owner is the whole point:
+    //   owner  = user wallet (decrements their debt)
+    //   payer  = agent (supplies the USDC from escrow ATA)
+    const action = await KaminoAction.buildRepayTxns(
+      market,
+      // amount as string — SDK converts to BN internally
+      params.repayMicroUsdc.toString(),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      USDC_MINT.toString() as any,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      params.walletAddress as any,           // owner
+      obligation,
+      /* useV2Ixs            */ true,
+      /* scopeRefreshConfig  */ undefined,
+      /* currentSlot         */ BigInt(currentSlot),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      params.payerPubkey as any,             // payer = agent
+      /* extraComputeBudget  */ 400_000,
+      /* includeAtaIxs       */ true,
+      /* requestElevationGroup */ false,
+      /* initUserMetadata    */ { skipInitialization: true, skipLutCreation: true },
+    );
+
+    // Concatenate the ix phases that actually move funds:
+    //   setup (ATA creation, scope refresh), lending (the repay CPI), cleanup (farms).
+    // We skip computeBudgetIxs because our rescue route adds its own priority-fee ix.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const rawIxs: any[] = [
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ...((action as any).setupIxs ?? []),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ...((action as any).lendingIxs ?? []),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ...((action as any).cleanupIxs ?? []),
+    ];
+
+    // Convert @solana/kit Instruction → @solana/web3.js TransactionInstruction.
+    // kit AccountRole: 0=readonly, 1=writable, 2=readonlySigner, 3=writableSigner.
+    const instructions: TransactionInstruction[] = rawIxs.map((ix) => {
+      const keys = (ix.accounts ?? []).map((a: { address: string; role: number }) => ({
+        pubkey: new PublicKey(a.address),
+        isSigner: (a.role & 2) !== 0,
+        isWritable: (a.role & 1) !== 0,
+      }));
+      const data = Buffer.from(ix.data ?? new Uint8Array());
+      return new TransactionInstruction({
+        programId: new PublicKey(ix.programAddress),
+        keys,
+        data,
+      });
+    });
+
+    // LUTs that KaminoAction attached (if any) — caller may fold them into a V0 tx
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const lookupTableAddresses: string[] = ((action as any).lookupTableAddresses ?? []).map(
+      (x: unknown) => String(x),
+    );
+
+    return {
+      instructions,
+      lookupTableAddresses,
+      repayMintDecimals: 6,
+    };
+  } catch (err) {
+    console.warn(
+      "[kamino-repay] buildKaminoRepayInstructions failed:",
+      err instanceof Error ? err.message : String(err),
+    );
+    return null;
+  }
+}
