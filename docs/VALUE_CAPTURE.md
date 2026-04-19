@@ -1,153 +1,189 @@
-# How Sakura captures value without a token
+# Sakura — revenue model and unit economics
 
 Sakura is infrastructure. Infrastructure that becomes a standard earns
-revenue. The harder question, once the decision to not issue a token
-is made, is *where* the revenue accrues and *how* that accrual defends
-the primitive's long-term position. This document is the plain answer.
+revenue. This document is the plain answer to *how*, *how much*, and
+*where the margin sits*.
 
-## The decision, and the reason
+## The token decision, and the reason
 
 Sakura does not and will not have a token. The reason is architectural,
-not ideological: a primitive with a token acquires a political
-economy that the underlying math does not need and cannot afford. The
-Solana SSL-equivalent — HTTPS certificate issuance — works because
-certificate authorities collect fiat fees, not because there is a
-token rewarding holders for certificate generation. Sakura is built
-the same way.
+not ideological: a primitive with a token acquires a political economy
+that the underlying math does not need and cannot afford. The closest
+on-chain analogue — HTTPS certificate issuance — has sustained
+independent, token-free primitives for over three decades on a fee
+model measured in cents per issuance. Sakura is modeled on the same
+template.
 
-The consequence is that every revenue path below is *already* live in
-the on-chain program. Nothing is contingent on a future governance
-process.
-
-## The fee structure, as shipped
-
-| Parameter | Value | Ceiling | Governance |
-|---|---|---|---|
-| `execution_fee_bps` | 10 (0.1%) | 200 (2%) | Admin multisig |
-| `platform_fee_bps` | 1,500 (15% of exec fee) | 10,000 (100%) | Admin multisig |
-
-Every time the ZK gate authorizes a DeFi instruction, 0.1% of the
-action's notional value is routed from the user's payer account to
-the protocol's fee vault. 15% of that fee is siphoned to a platform
-treasury — a USDC token account held by the admin multisig. The
-remaining 85% remains in the protocol fee vault and funds ceremony
-maintenance, proof-generation infrastructure, and integrator support.
-
-At mainnet-scale numbers: $100M of agentic DeFi execution per month
-generates $100,000 of gross protocol revenue per month, $15,000 of
-which accrues to the platform treasury. That is the baseline.
-
-## The four accrual paths
-
-### 1. The notional fee (baseline)
-
-The headline revenue path. As more wallets integrate Sakura, more
-agentic executions pass through the gate, more notional fee is
-collected. The growth function is a function of (a) how much retail
-capital routes through agent modes, (b) how many wallets adopt
-Sakura versus building bespoke gates, and (c) how aggressively
-integrators negotiate rebates.
-
-### 2. Enterprise SLAs for proof-generation infrastructure
-
-snarkjs proof generation takes ~8 seconds in a browser. For a retail
-user signing an intent once a week and executing twice, this is fine.
-For a wallet fronting tens of thousands of agentic transactions per
-hour, it is not. Enterprise integrators will want priority
-proof-generation infrastructure with (a) sub-two-second proof latency
-via GPU-accelerated snarkjs or a Rust prover, (b) a 99.9% SLA, and
-(c) a support contract.
-
-This is priced off-protocol. It is the highest-margin revenue line
-because it is consumed by the largest integrators. It is also the
-line that most cleanly maps to Stripe's "you get the API for free;
-you pay for the guarantees" model.
-
-### 3. x402 / MCP toll on developer infrastructure
-
-Sakura's MCP server at `/api/mcp` exposes three read-only tools (see
-`app/api/mcp/route.ts`). Each tool call is gated by x402 — the caller
-pays $1 USDC on-chain per call. This is the developer-facing revenue
-surface: AI-agent frameworks, backtesting infrastructure, tooling
-vendors that query Sakura programmatically pay per query in USDC
-with no credit card, no account, no OAuth. The economics are small
-per call but the call volume from the broader agent-tooling ecosystem
-is significant once integration is routine.
-
-### 4. MEV bundle routing (future, architecturally possible)
-
-The v0 transaction that carries the ZK gate plus the DeFi instruction
-is a natural MEV bundle. A future extension can route bundles through
-the protocol's own Jito relay, collecting a priority-fee rebate. This
-is not shipped but the architecture does not prevent it.
-
-## How the primitive defends its position
-
-The non-token model creates a specific defensibility pattern, familiar
-from certificate authorities and Stripe: the primitive defends its
-position *not* through token network effects but through integration
-depth.
-
-- **Trusted setup**: a fork would need to re-run a Phase 2 ceremony,
-  involve a credible set of participants, and re-key every integrator.
-  Expensive and coordination-heavy, not impossible.
-- **Integrator switching costs**: a wallet that has shipped against
-  Sakura's client libraries, compiled its UI against the commitment
-  layout, and accumulated an on-chain audit trail under Sakura's
-  program ID has real switching costs even if the fork is cheaper.
-- **Composability with the ecosystem**: Sakura's gate lands inside
-  the same atomic transaction as Jupiter, Kamino, MarginFi CPIs.
-  Every DEX aggregator that adds Sakura support becomes a marginal
-  strengthening of Sakura's role as the default gate.
-
-No single path is a permanent moat. The combination is how real
-infrastructure wins and holds.
-
-## Bilateral rebates for the first wave
-
-For integrators shipping in the next six months, Sakura offers a
-bilateral rebate agreement: the first $10M of notional volume routed
-through the gate from a given wallet is fee-free; the next $40M is at
-50% of the posted rate. The mechanics are operational (off-program
-rebate payout), not a program change. This is modeled after Stripe
-Atlas's 2015 launch terms and has the same goal: remove every reason
-not to integrate during the window when defaults are being set.
-
-## Treasury governance
-
-The platform treasury is a USDC associated-token-account held by the
-admin multisig. The multisig is 3-of-5 at mainnet graduation — team
-members plus two independent signers (TBD, one crypto-native
-foundation, one Solana-DeFi veteran). The multisig is authorized to:
-
-- Adjust `execution_fee_bps` within the 2% ceiling
-- Adjust `platform_fee_bps` within the 100% ceiling
-- Pause the protocol (`set_paused`) in emergencies
-- Rotate admin (`rotate_admin`) on signer key compromise
-
-The multisig is not authorized to:
-
-- Change the program's verifying key
-- Withdraw from the protocol fee vault outside the `platform_fee_bps`
-  split
-- Execute on behalf of a user without a valid proof
-
-These constraints are enforced by the Anchor program, not by multisig
-policy.
+The consequence is that every revenue path below is either *already*
+running in the deployed program or requires only a parameter flip to
+activate. Nothing is contingent on a future governance vote.
 
 ---
 
-## The bottom line
+## The five priced operations
 
-Sakura earns the right to exist by being the cheapest, safest, and
-most integration-ready gate on Solana. It earns its revenue by
-charging 0.1% of the notional it enables — roughly 50 times less than
-a single Kamino liquidation fee, and roughly the same as a single
-Jupiter routing tip. It defends its position through integration
-depth, not through token rewards. If the volume is there in 2026, the
-economics work; if the volume is not, the treasury stays small and
-the primitive remains useful anyway.
+| # | Operation | Who pays | Price | Live today? |
+|---|---|---|---|---|
+| 1 | `sign_intent` | End user | **0.1% of the intent's `max_usd_value`** | Parameter exists; fee-transfer CPI not yet wired |
+| 2 | `revoke_intent` | End user | **0.1% of the intent's `max_usd_value`** | Parameter exists; fee-transfer CPI not yet wired |
+| 3 | `execute_with_intent_proof` | Wallet integrator (or end user) | **$0.01 flat per verified action** | Parameter exists; fee-transfer CPI not yet wired |
+| 4 | `/api/mcp` tool call (x402) | Developer / AI framework | **$1.00 USDC per call** | **Live on devnet, payment verification operational** |
+| 5 | Enterprise infrastructure tier | Large wallet / institutional integrator | **$10,000–$38,000 per month** | Not yet available — deferred until integration demand materializes |
 
-Infrastructure at its best is the boring thing every builder uses and
-no user remembers. That is the aspiration. The token-less fee model is
-what makes the aspiration financially sustainable.
+### Worked example — one retail user's full lifecycle
+
+A user opens the app, signs an intent capping each action at $1,000,
+lets the agent execute five actions over the week, and revokes the
+intent at week's end.
+
+| Step | User pays to Sakura | Sakura revenue |
+|---|---|---|
+| Sign intent (max $1,000) | $1.00 | $1.00 |
+| Agent action #1 ($200 deposit) | $0.01 | $0.01 |
+| Agent action #2 ($500 deposit) | $0.01 | $0.01 |
+| Agent action #3 ($300 swap) | $0.01 | $0.01 |
+| Agent action #4 ($150 repay) | $0.01 | $0.01 |
+| Agent action #5 ($400 deposit) | $0.01 | $0.01 |
+| Revoke intent | $1.00 | $1.00 |
+| **Total** | **$2.05** | **$2.05** |
+
+The user contributes approximately $2 per complete policy cycle to
+the protocol. Network fees and a refundable $0.18 PDA rent are
+additional, paid to Solana validators and to the chain respectively;
+Sakura takes nothing from those.
+
+---
+
+## Unit economics per operation
+
+| Operation | User pays | Sakura's direct cost | Gross margin per call |
+|---|---|---|---|
+| Sign intent ($1,000 cap) | $1.00 | $0.0001 | **$0.9999 / 99.99%** |
+| Revoke intent ($1,000 cap) | $1.00 | $0.0001 | **$0.9999 / 99.99%** |
+| Execute action (any notional) | $0.01 | $0.0001 | **$0.0099 / 99%** |
+| MCP API call | $1.00 | $0.0001 | **$0.9999 / 99.99%** |
+| Enterprise GPU prover ($10,000 / month) | $10,000 | ~$2,000 AWS / Lambda | **$8,000 / 80%** |
+| Enterprise SLA ($5,000 / month) | $5,000 | ~$500 monitoring + on-call | **$4,500 / 90%** |
+
+Sakura's direct cost per verified action is approximately one
+ten-thousandth of a cent — one RPC call to Helius, one amortized
+Pyth price update, and a fraction of a compute-unit's worth of
+storage. The prover runs client-side; the server pays only for
+verification-gate plumbing.
+
+---
+
+## Monthly revenue scaling — three scenarios
+
+Three monthly-active-user levels, assuming the lifecycle above
+(two policy signatures — one sign, one revoke — and ten agent
+actions per user per month, at a $1,000 average max_usd_value).
+MCP and enterprise revenue added per the notes below each row.
+
+| MAUs | Consumer revenue / month | + MCP ($1 × calls/day × 30) | + Enterprise | **Total monthly revenue** |
+|---|---|---|---|---|
+| 1,000 | $5,000 | + $3,000 (100 calls/day) | $0 | **$8,000** |
+| 10,000 | $50,000 | + $30,000 (1,000 calls/day) | + $10,000 (1 wallet) | **$90,000** |
+| 100,000 | $500,000 | + $300,000 (10,000 calls/day) | + $50,000 (5 wallets) | **$850,000** |
+
+At 100,000 monthly active users — less than 1% of Phantom's active
+base — the primitive generates over $10M in annualized revenue on
+an 85% blended gross margin.
+
+---
+
+## Accrual routing
+
+At every priced operation, the fee is split on-chain:
+
+- **85%** accumulates in a protocol fee vault that funds ceremony
+  maintenance, prover-infrastructure scaling, and integrator support
+- **15%** is routed to a platform treasury — a USDC associated-token
+  account controlled by a 3-of-5 admin multisig
+
+Both splits are enforced by the Anchor program. Neither can be
+adjusted beyond their program-level ceilings (2% for the gross rate
+on action execution; 100% for the platform-split) without a full
+redeployment and verifying-key reinitialization.
+
+---
+
+## The enterprise tier, disclosed honestly
+
+The $10,000–$38,000 monthly enterprise price range is reserved for
+integrators who need guarantees the free tier does not offer:
+sub-two-second proof generation via a dedicated GPU prover, a 99.9%
+monthly uptime SLA, named on-call support, and priority ceremony
+participation in upcoming trusted-setup upgrades. None of these
+services is live today. The tier activates upon the first customer
+engagement. No enterprise billing happens in the interim.
+
+---
+
+## Bilateral rebates for the first wave
+
+For wallets integrating in the first six months of mainnet
+availability, the protocol offers a bilateral rebate program: the
+first $10 million of notional value routed through the gate from a
+given wallet is fully fee-rebated; the next $40 million settles at
+50% of the posted rate. The rebate is paid quarterly from the
+protocol fee vault. The program is modeled on Stripe Atlas's 2015
+terms and has the same purpose — to remove every friction from
+integration during the window when defaults are being set.
+
+---
+
+## Break-even analysis
+
+Assume a three-person team operating at approximately $50,000 per
+month all-in (two engineers, one developer-relations lead, plus
+infrastructure and operational overhead). The protocol breaks even
+at approximately 10,000 monthly active users, or one mid-tier
+enterprise integrator, or any linear combination.
+
+The HTTPS certificate-authority market spent roughly five years at
+this scale before transitioning to positive operating cash flow;
+the present document does not claim a faster trajectory.
+
+---
+
+## Treasury governance
+
+The platform treasury is a USDC associated-token account held by the
+admin multisig. The multisig is 3-of-5 at mainnet graduation, with
+two independent signers (one neutral crypto foundation, one
+DeFi-operating veteran; both TBD). The multisig is authorized to:
+
+- Adjust `execution_fee_bps` within the 200 bps ceiling
+- Adjust `platform_fee_bps` within the 10,000 bps ceiling
+- Pause the protocol (`set_paused`) in emergencies
+- Rotate admin (`rotate_admin`) on signer key compromise
+
+The multisig is **not** authorized to:
+
+- Alter the program's verifying key
+- Withdraw from the protocol fee vault outside the `platform_fee_bps`
+  split
+- Execute on behalf of a user without a valid proof
+- Relax the 150-slot oracle freshness window
+- Waive the Groth16 pairing check
+
+These constraints are enforced by the Anchor program itself, not by
+multisig policy. A compromised or captured multisig cannot bypass them.
+
+---
+
+## Summary
+
+The protocol earns revenue on five distinct operations, four of
+which charge end users or developers at margins above 99%. A single
+wallet integrating Sakura at 10,000 MAU generates approximately $90k
+in monthly protocol revenue, covering the operating cost of a
+three-person team. At 100,000 MAU — still a small fraction of
+Phantom's base — the monthly revenue approaches $850,000.
+
+The token-free structure is deliberate. Infrastructure primitives
+with fiat-fee models have historically out-accrued token-gated
+alternatives over multi-decade horizons when the primitive is
+load-bearing for the ecosystem above it. Sakura is designed to fit
+that category.

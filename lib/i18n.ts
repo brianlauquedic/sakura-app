@@ -114,31 +114,31 @@ export const translations = {
   trust1: { zh: "⛩️ 私鑰永不離開你的設備", en: "⛩️ Your private key never leaves your device", ja: "⛩️ 秘密鍵はあなたのデバイスから出ない" },
   trust2: { zh: "⛓️ 你的規則細節只有你知道，鏈上只存一個雜湊", en: "⛓️ Only you know the rule details — only a hash reaches the chain", ja: "⛓️ ルールの詳細を知るのはあなただけ — チェーンに届くのはハッシュだけ" },
   trust3: { zh: "🛡️ 越界不是被「阻止」，是根本做不到", en: "🛡️ Exceeding the rule is not blocked — it is unreachable", ja: "🛡️ 規則超過は「ブロック」されるのではなく、到達不可能" },
-  trust4: { zh: "⚡ 開源公共品 · 每家錢包一行代碼接入", en: "⚡ Open-source public good · any wallet integrates in one line", ja: "⚡ オープンソース公共財 · どのウォレットも 1 行で統合" },
+  trust4: { zh: "⚡ MIT 授權、源碼公開 · 錢包一行代碼接入 · 無需許可", en: "⚡ MIT-licensed, source-public · one-line wallet integration · permissionless", ja: "⚡ MIT ライセンス、ソース公開 · ウォレット 1 行統合 · 許可不要" },
 
   // ── CTA (new) ──────────────────────────────────────────────────────
   ctaFreeLabel: {
-    zh: "一句話簽一次 · 代理用一年 · 鏈上成本 $0.0001 / 次",
-    en: "Write one sentence. Use it all year. $0.0001 per agent action on-chain.",
-    ja: "1 文を 1 度書く · 1 年使える · 1 回 $0.0001 のオンチェーンコスト",
+    zh: "簽一次意圖 · 代理每次動作都在鏈上驗證",
+    en: "Sign one intent. Every agent action is verified on-chain.",
+    ja: "意図を 1 度署名 · エージェントアクションは毎回オンチェーン検証",
   },
   ctaFreeDesc: {
-    zh: "連接 Phantom 或 OKX，寫下你想讓代理做的事——「代理可以每週在 Kamino 放貸 $500 USDC」、「代理可以在任何 Solana DEX 換 $100 以內的幣」——Sakura 把這句話變成鏈上規則。之後代理每次想動手，都要在鏈上出示證明。對你來說免費；對接入 Sakura 的錢包而言，單次成本比一條 Discord 訊息還便宜。",
-    en: "Connect Phantom or OKX and write what you want the agent to be able to do — \"lend $500 USDC into Kamino weekly,\" or \"swap under $100 on any Solana DEX.\" Sakura turns that sentence into an on-chain rule. From then on, every time the agent wants to act, it has to produce a proof on-chain. Free for you; for a wallet integrating Sakura, cheaper per call than a Discord message.",
-    ja: "Phantom または OKX を接続し、エージェントに許可したいことを書く——「Kamino に毎週 $500 USDC 貸す」「Solana DEX で $100 以内のスワップ」。Sakura はこの 1 文をオンチェーンのルールに変える。以降エージェントが動こうとする度、オンチェーンで証明を提示しなければならない。あなたには無料。Sakura を統合するウォレットにとって、1 回のコストは Discord メッセージより安い。",
+    zh: "連接 Phantom 或 OKX，以自然語言寫下代理的權限邊界——例如「代理可在 Kamino 放貸，單次最多 $500 USDC，有效期一週」——Sakura 將其編碼為鏈上承諾。之後代理的每次動作都必須通過 ZK 閘門驗證，單次成本約 $0.01（約合一杯咖啡的五百分之一）。整合、源碼公開、接入無需許可。",
+    en: "Connect Phantom or OKX and write the agent's permissible bounds in natural language — for example, \"the agent may lend up to $500 USDC into Kamino for one week.\" Sakura encodes the sentence as an on-chain commitment. Every subsequent agent action must pass the ZK gate, at approximately $0.01 per call (roughly one five-hundredth of a cup of coffee). Integration is permissionless; source is public.",
+    ja: "Phantom または OKX を接続し、エージェントの権限境界を自然言語で書く——例「エージェントは Kamino に、1 回最大 $500 USDC、1 週間だけ貸し出せる」。Sakura はこの文をオンチェーンのコミットメントに符号化する。以降のエージェントアクションは毎回 ZK ゲートを通過する必要があり、1 回あたり約 $0.01（コーヒー 1 杯の約 500 分の 1）。統合は許可不要、ソースは公開。",
   },
-  ctaFreeBadge1: { zh: "🌸 寫一句話就是規則", en: "🌸 One sentence is the rule", ja: "🌸 1 文がルール" },
+  ctaFreeBadge1: { zh: "🌸 一句話就是鏈上規則", en: "🌸 One sentence becomes an on-chain rule", ja: "🌸 1 文がオンチェーンルール" },
   ctaFreeBadge2: { zh: "🔬 越界鏈上直接拒絕", en: "🔬 Out-of-bounds rejected on-chain", ja: "🔬 規則超過はオンチェーンで拒否" },
-  ctaFreeBadge3: { zh: "📜 每次動作永久留痕", en: "📜 Every action permanently audit-logged", ja: "📜 各動作が永続監査記録" },
+  ctaFreeBadge3: { zh: "📜 每次動作永久審計", en: "📜 Every action permanently audit-logged", ja: "📜 各動作が永続監査記録" },
   ctaFreeBtn: {
-    zh: "👻 連接 Phantom — 免費開始",
-    en: "👻 Connect Phantom — Start Free",
-    ja: "👻 Phantom接続 — 無料で開始",
+    zh: "👻 連接 Phantom",
+    en: "👻 Connect Phantom",
+    ja: "👻 Phantom を接続",
   },
   ctaSubNote: {
-    zh: "無帳號 · 無訂閱 · 無 OAuth · 接入是公開的，不是誰的許可",
-    en: "No account · no subscription · no OAuth · integration is open, not anyone's permission",
-    ja: "アカウント不要 · サブスク不要 · OAuth 不要 · 統合は公開、誰かの許可ではない",
+    zh: "簽意圖 0.1% 一次性費 · 代理動作 $0.01 / 次 · 網絡費 $0.001 · 無帳號 · 無訂閱",
+    en: "Sign intent 0.1% one-time · agent action $0.01 per call · network fee $0.001 · no account · no subscription",
+    ja: "意図署名 0.1% 一回費 · エージェントアクション $0.01 / 回 · ネットワーク費 $0.001 · アカウント不要 · サブスク不要",
   },
 
   // ── Stripe MPP section (new) ────────────────────────────────────────
