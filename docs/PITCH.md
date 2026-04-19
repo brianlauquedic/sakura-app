@@ -1,13 +1,14 @@
 # Sakura Pitch — 3 versions
 
-> **Product:** Agentic Consumer Protocol (tech: Intent-Execution Protocol)
+> **Product:** Sakura — bounded AI-agent execution for Solana
 > **Hackathon:** Colosseum Frontier 2026
-> **One-liner:** AI agents act within math-enforced bounds, proved on-chain via Groth16.
+> **One-liner:** Sign one intent. Your AI agent operates inside it. Proven on-chain.
 
-The three versions below share the same spine (problem → solution →
-proof → ask) but differ in depth and audience. Record all three —
-Colosseum reviewers, Dovey Wan / Meltem Demirors investor tier, and
-the 30-second elevator cut each need a different beat.
+Three versions share the same spine (problem → primitive → proof →
+ask) but differ in depth and audience. The 60-second cut is for X
+and Farcaster. The 3-minute cut is the Colosseum submission video.
+The 8-minute cut is for extended investor / design-partner
+conversations after the hackathon closes.
 
 ---
 
@@ -90,10 +91,10 @@ Voiceover: *"Solana's alt_bn128 pairing syscall verifies the proof in
 116k CU. Every executed action gets an on-chain forensic record —
 `keccak256(proof_a ‖ proof_c)` — that anyone can audit later."*
 
-### Shot 7 — the dual engine (2:40–2:55)
-Title card: *"Agentic Consumer Protocol — for Dovey Wan's agent wave.
-Intent-Execution Protocol — for Meltem's infra maturity curve. Same
-product. Both framings are true."*
+### Shot 7 — the positioning card (2:40–2:55)
+Title card: *"A consumer primitive for retail self-custody. An
+infrastructure primitive for the next agentic wallet stack. Same
+protocol, two surfaces."*
 
 ### Shot 8 — close (2:55–3:00)
 "Sakura. Colosseum Frontier 2026. Bounded by math."
