@@ -24,14 +24,14 @@ function useIsMobile() {
 }
 
 const AGENT_KEYS = [
-  // Single-product architecture (v0.3): Shielded Lending replaces the prior
-  // 3-tab layout. The four cards now describe four LAYERS of the unified
-  // product (cross-protocol routing, ZK pairing verification, on-chain
-  // audit, agent-mediated rescue) rather than separate features.
-  { tag: "Cross-Protocol Routing", titleKey: "agent1Title" as const, descKey: "agent1Desc" as const, icon: "路", color: "var(--accent)" },
-  { tag: "ZK Pairing Verifier",    titleKey: "agent2Title" as const, descKey: "agent2Desc" as const, icon: "証", color: "var(--gold)" },
-  { tag: "On-chain Audit",         titleKey: "agent3Title" as const, descKey: "agent3Desc" as const, icon: "鑑", color: "#FF4444" },
-  { tag: "Agent-Mediated Rescue",  titleKey: "agent4Title" as const, descKey: "agent4Desc" as const, icon: "救", color: "var(--green)" },
+  // Single-product architecture (v0.3, Agentic Consumer Protocol): the four
+  // cards describe the four layers of bounded agentic execution — intent
+  // commitment (Poseidon tree), ZK pairing gate (alt_bn128), atomic execute
+  // + audit (ActionRecord), and Pyth oracle binding.
+  { tag: "Intent Commitment",    titleKey: "agent1Title" as const, descKey: "agent1Desc" as const, icon: "意", color: "var(--accent)" },
+  { tag: "ZK Pairing Gate",      titleKey: "agent2Title" as const, descKey: "agent2Desc" as const, icon: "証", color: "var(--gold)" },
+  { tag: "Atomic + Audit",       titleKey: "agent3Title" as const, descKey: "agent3Desc" as const, icon: "鎖", color: "#FF4444" },
+  { tag: "Oracle Binding",       titleKey: "agent4Title" as const, descKey: "agent4Desc" as const, icon: "価", color: "var(--green)" },
 ];
 
 const PROTOCOLS = [
@@ -40,8 +40,9 @@ const PROTOCOLS = [
 ];
 
 const STATS = [
-  { numValue: 3,   suffix: "",   labelKey: "statLabel1" as const },
-  { numValue: 285, suffix: "M",  labelKey: "statLabel2" as const },
+  // v0.3: first-bounded-agentic / per-action ZK cost / Solana DeFi TVL reach / 100% gated
+  { numValue: 1,   suffix: "",   labelKey: "statLabel1" as const },
+  { numValue: 116, suffix: "",   labelKey: "statLabel2" as const },
   { numValue: 4,   suffix: "B+", labelKey: "statLabel3" as const },
   { numValue: 100, suffix: "%",  labelKey: "statLabel4" as const },
 ];
