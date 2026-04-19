@@ -13,7 +13,7 @@ const CONTENT = {
       {
         heading: "1. Introduction",
         body: [
-          `These Terms of Service ("Terms") constitute a binding legal agreement between you ("User," "you," or "your") and Sakura ("Sakura," "we," "us," or "our") governing your access to and use of Sakura Mutual — our zero-knowledge insurance settlement protocol on Solana — and its associated Solana-native defense suite (Nonce Guardian, Ghost Run, Liquidation Shield), including the web application, the mutual-pool smart contract, AI analysis features, and all associated interfaces (collectively, the "Services").`,
+          `These Terms of Service ("Terms") constitute a binding legal agreement between you ("User," "you," or "your") and Sakura ("Sakura," "we," "us," or "our") governing your access to and use of Sakura Shielded Lending — our private lending layer on Solana with on-chain Groth16 ZK-verified rescue — and its associated Solana-native primitives (cross-protocol CPI routing, alt_bn128 pairing verifier, on-chain audit), including the web application, the lending-pool smart contract, AI analysis features, and all associated interfaces (collectively, the "Services").`,
           "Our Privacy Policy is incorporated into these Terms by reference and forms part of this agreement.",
           "By accessing or using the Services, you confirm that you are at least 18 years of age, that you have read and understood these Terms, and that you agree to be bound by them.",
           `We may update these Terms from time to time. Continued use of the Services after any update constitutes acceptance of the revised Terms.`,
@@ -31,7 +31,7 @@ const CONTENT = {
       {
         heading: "3. Wallet Connection and Read-Only Access",
         subsections: [
-          { title: "3.1 Non-Custodial", body: "Sakura never holds custody of your assets and never stores your private keys or seed phrase. Nonce Guardian operates in read-only mode. Ghost Run and Liquidation Shield may execute on-chain transactions on your behalf — but only with your explicit confirmation (Ghost Run) or pre-authorization via SPL Token Approve within a hard spending cap you set (Liquidation Shield). Sakura never initiates transactions beyond the scope you have authorized." },
+          { title: "3.1 Non-Custodial", body: "Sakura never holds custody of your assets and never stores your private keys or seed phrase. Shielded Lending operates in read-only mode. cross-protocol routing and Shielded Lending may execute on-chain transactions on your behalf — but only with your explicit confirmation (跨協議救援) or pre-authorization via SPL Token Approve within a hard spending cap you set (Shielded Lending). Sakura never initiates transactions beyond the scope you have authorized." },
           { title: "3.2 User Responsibility", body: "You remain fully in control of your wallet at all times. You are solely responsible for all DeFi transactions you choose to execute based on Sakura's analysis." },
           { title: "3.3 Third-Party Wallet", body: "Phantom is a third-party wallet application. Sakura bears no liability for issues arising from Phantom's software, security, or availability." },
         ],
@@ -39,9 +39,9 @@ const CONTENT = {
       {
         heading: "4. Core Features",
         subsections: [
-          { title: "4.1 Nonce Guardian", body: "Uses getProgramAccounts (Solana RPC) to scan all Durable Nonce accounts associated with your wallet and flag authority hijacking risks. The free scan is read-only. The $1.00 USDC AI security report is delivered via x402 (HTTP 402 Payment Required). A SHA-256 hash of each report is permanently recorded on Solana via the Memo Program for independent verification. Results are informational only and do not constitute security guarantees." },
-          { title: "4.2 Ghost Run", body: "Constructs multi-step DeFi transactions from natural-language input and simulates them using Solana-native simulateTransaction against live mainnet state, with sigVerify disabled. Simulation is free. Actual execution via Solana Agent Kit (SAK) is initiated only with your explicit confirmation and incurs a 0.3% platform fee collected via Jupiter Platform Fee. Sakura bears no liability for losses arising from executed strategies." },
-          { title: "4.3 Liquidation Shield", body: "Monitors lending position health factors on Kamino, MarginFi, and Solend via getProgramAccounts. Monitoring is free. Rescue execution requires your prior authorization via SPL Token Approve — a token-program-level hard spending cap that Sakura cannot exceed. Rescue transactions are executed by SAK lendAsset() only within the authorized amount. A 1% rescue fee is charged on success. Sakura does not guarantee rescue completion; on-chain conditions, network congestion, or insufficient authorized funds may prevent rescue." },
+          { title: "4.1 Shielded Lending", body: "Uses getProgramAccounts (Solana RPC) to scan all Durable Nonce accounts associated with your wallet and flag authority hijacking risks. The free scan is read-only. The $1.00 USDC AI security report is delivered via x402 (HTTP 402 Payment Required). A SHA-256 hash of each report is permanently recorded on Solana via the Memo Program for independent verification. Results are informational only and do not constitute security guarantees." },
+          { title: "4.2 跨協議救援", body: "Constructs multi-step DeFi transactions from natural-language input and simulates them using Solana-native simulateTransaction against live mainnet state, with sigVerify disabled. Simulation is free. Actual execution via Solana Agent Kit (SAK) is initiated only with your explicit confirmation and incurs a 0.3% platform fee collected via Jupiter Platform Fee. Sakura bears no liability for losses arising from executed strategies." },
+          { title: "4.3 Shielded Lending", body: "Monitors lending position health factors on Kamino, MarginFi, and Solend via getProgramAccounts. Monitoring is free. Rescue execution requires your prior authorization via SPL Token Approve — a token-program-level hard spending cap that Sakura cannot exceed. Rescue transactions are executed by SAK lendAsset() only within the authorized amount. A 1% rescue fee is charged on success. Sakura does not guarantee rescue completion; on-chain conditions, network congestion, or insufficient authorized funds may prevent rescue." },
         ],
       },
       {
@@ -60,7 +60,7 @@ const CONTENT = {
               "circumvent geographic restrictions or access the Services from a Restricted Jurisdiction.",
             ],
           },
-          { title: "5.3 Fee Model", body: "Sakura uses a pay-per-use model with no subscription required. Nonce Guardian scans are free; AI security reports cost $1.00 USDC per report, paid via x402. Ghost Run simulations are free; execution incurs a 0.3% platform fee via Jupiter. Liquidation Shield monitoring is free; a 1% rescue fee is charged only on successful rescue. All fees are collected on-chain and transparent." },
+          { title: "5.3 Fee Model", body: "Sakura uses a pay-per-use model with no subscription required. Shielded Lending position scans are free; AI security reports cost $1.00 USDC per report, paid via x402. cross-protocol rescue simulations are free; execution incurs a 0.3% platform fee via Jupiter. Shielded Lending monitoring is free; a 1% rescue fee is charged only on successful rescue. All fees are collected on-chain and transparent." },
         ],
       },
       {
@@ -140,7 +140,7 @@ const CONTENT = {
       {
         heading: "1. 簡介",
         body: [
-          `本使用條款（「條款」）構成您（「使用者」、「您」）與 Sakura（「Sakura」、「我們」或「我方」）之間具有約束力的法律協議，規範您訪問和使用 Sakura Mutual — 我們位於 Solana 的零知識保險結算協議，及其配套 Solana 原生防禦套件（Nonce Guardian、Ghost Run、Liquidation Shield），包括網頁應用程式、互助池智能合約、AI 分析功能及所有相關介面（統稱「服務」）。`,
+          `本使用條款（「條款」）構成您（「使用者」、「您」）與 Sakura（「Sakura」、「我們」或「我方」）之間具有約束力的法律協議，規範您訪問和使用 Sakura Shielded Lending — 我們位於 Solana 的私密借貸層（由鏈上 Groth16 ZK 證明驗證救援），及其配套 Solana 原生基礎元件（跨協議 CPI 路由、alt_bn128 配對驗證器、鏈上審計），包括網頁應用程式、借貸池智能合約、AI 分析功能及所有相關介面（統稱「服務」）。`,
           "我們的隱私政策已納入本條款並構成本協議的一部分。",
           "訪問或使用服務即表示您確認年滿18歲，已閱讀並理解本條款，並同意受其約束。",
           "我們可能不時更新本條款。在任何更新後繼續使用服務，即表示接受修訂後的條款。",
@@ -158,7 +158,7 @@ const CONTENT = {
       {
         heading: "3. 錢包連接與唯讀存取",
         subsections: [
-          { title: "3.1 非託管", body: "Sakura 從不持有您的資產托管，也不儲存您的私鑰或助記詞。Nonce Guardian 以純唯讀模式運作。Ghost Run 和 Liquidation Shield 可代表您執行鏈上交易——但僅在您明確確認（Ghost Run）或透過 SPL Token Approve 在您設定的硬性支出上限內預授權（Liquidation Shield）的情況下進行。Sakura 絕不超出您授權範圍發起任何交易。" },
+          { title: "3.1 非託管", body: "Sakura 從不持有您的資產托管，也不儲存您的私鑰或助記詞。Shielded Lending 以純唯讀模式運作。cross-protocol routing 和 Shielded Lending 可代表您執行鏈上交易——但僅在您明確確認（跨協議救援）或透過 SPL Token Approve 在您設定的硬性支出上限內預授權（Shielded Lending）的情況下進行。Sakura 絕不超出您授權範圍發起任何交易。" },
           { title: "3.2 使用者責任", body: "您始終完全掌控自己的錢包。您根據 Sakura 分析選擇執行的所有 DeFi 交易均由您獨自負責。" },
           { title: "3.3 第三方錢包", body: "Phantom 是第三方錢包應用程式。Sakura 對因 Phantom 軟體、安全性或可用性問題引起的損失不承擔責任。" },
         ],
@@ -166,9 +166,9 @@ const CONTENT = {
       {
         heading: "4. 核心功能",
         subsections: [
-          { title: "4.1 Nonce Guardian", body: "以 Solana RPC getProgramAccounts 掃描您錢包關聯的所有 Durable Nonce 賬戶，標記 authority 劫持風險。免費掃描為唯讀操作。$1.00 USDC AI 安全報告透過 x402 協議（HTTP 402 Payment Required）支付解鎖。每份報告的 SHA-256 哈希透過 Memo Program 永久上鏈以供獨立驗證。掃描結果僅供參考，不構成安全保證。" },
-          { title: "4.2 Ghost Run", body: "以自然語言輸入解析多步 DeFi 交易，並利用 Solana 原生 simulateTransaction（sigVerify 關閉）在主網真實狀態下進行預執行模擬。模擬免費。透過 Solana Agent Kit（SAK）的實際執行需要您明確確認，並收取 0.3% 平台費（透過 Jupiter Platform Fee 機制）。Sakura 對已執行策略產生的損失不承擔責任。" },
-          { title: "4.3 Liquidation Shield", body: "透過 getProgramAccounts 監控 Kamino、MarginFi 及 Solend 的借貸倉位健康因子。監控免費。救援執行需要您事先透過 SPL Token Approve 授權——此為 token program 層面的硬性支出上限，Sakura 不得超出。救援交易由 SAK lendAsset() 在授權金額範圍內執行。救援成功後收取 1% 服務費。Sakura 不保證救援必然成功；鏈上條件、網路擁堵或授權金額不足均可能導致救援無法完成。" },
+          { title: "4.1 Shielded Lending", body: "以 Solana RPC getProgramAccounts 掃描您錢包關聯的所有 Durable Nonce 賬戶，標記 authority 劫持風險。免費掃描為唯讀操作。$1.00 USDC AI 安全報告透過 x402 協議（HTTP 402 Payment Required）支付解鎖。每份報告的 SHA-256 哈希透過 Memo Program 永久上鏈以供獨立驗證。掃描結果僅供參考，不構成安全保證。" },
+          { title: "4.2 跨協議救援", body: "以自然語言輸入解析多步 DeFi 交易，並利用 Solana 原生 simulateTransaction（sigVerify 關閉）在主網真實狀態下進行預執行模擬。模擬免費。透過 Solana Agent Kit（SAK）的實際執行需要您明確確認，並收取 0.3% 平台費（透過 Jupiter Platform Fee 機制）。Sakura 對已執行策略產生的損失不承擔責任。" },
+          { title: "4.3 Shielded Lending", body: "透過 getProgramAccounts 監控 Kamino、MarginFi 及 Solend 的借貸倉位健康因子。監控免費。救援執行需要您事先透過 SPL Token Approve 授權——此為 token program 層面的硬性支出上限，Sakura 不得超出。救援交易由 SAK lendAsset() 在授權金額範圍內執行。救援成功後收取 1% 服務費。Sakura 不保證救援必然成功；鏈上條件、網路擁堵或授權金額不足均可能導致救援無法完成。" },
         ],
       },
       {
@@ -187,7 +187,7 @@ const CONTENT = {
               "規避地理限制或從受限司法管轄區存取服務。",
             ],
           },
-          { title: "5.3 收費模式", body: "Sakura 採用按使用付費模式，無需訂閱。Nonce Guardian 掃描免費；AI 安全報告每份 $1.00 USDC，透過 x402 支付。Ghost Run 模擬免費；執行收取 0.3% 平台費（透過 Jupiter）。Liquidation Shield 監控免費；僅在救援成功後收取 1% 服務費。所有費用均在鏈上收取，完全透明可查。" },
+          { title: "5.3 收費模式", body: "Sakura 採用按使用付費模式，無需訂閱。Shielded Lending 掃描免費；AI 安全報告每份 $1.00 USDC，透過 x402 支付。cross-protocol routing 模擬免費；執行收取 0.3% 平台費（透過 Jupiter）。Shielded Lending 監控免費；僅在救援成功後收取 1% 服務費。所有費用均在鏈上收取，完全透明可查。" },
         ],
       },
       {
@@ -267,7 +267,7 @@ const CONTENT = {
       {
         heading: "1. はじめに",
         body: [
-          `本利用規約（「規約」）は、お客様（「ユーザー」「お客様」）とSakura（「Sakura」「当社」）の間で締結される拘束力のある法的合意であり、Sakura Mutual — Solana上のゼロ知識保険決済プロトコル — およびその付属のSolanaネイティブ防衛スイート（Nonce Guardian、Ghost Run、Liquidation Shield）、ウェブアプリケーション、相互プールスマートコントラクト、AI分析機能、および関連インターフェース（総称して「サービス」）へのアクセスおよび利用を規定します。`,
+          `本利用規約（「規約」）は、お客様（「ユーザー」「お客様」）とSakura（「Sakura」「当社」）の間で締結される拘束力のある法的合意であり、Sakura Shielded Lending — Solana上のプライベート・レンディング・レイヤー（オンチェーン Groth16 ZK 証明による救援）— およびその付属のSolanaネイティブ基盤（クロスプロトコル CPI ルーティング、alt_bn128 ペアリング検証、オンチェーン監査）、ウェブアプリケーション、レンディング・プール・スマートコントラクト、AI分析機能、および関連インターフェース（総称して「サービス」）へのアクセスおよび利用を規定します。`,
           "当社のプライバシーポリシーは参照により本規約に組み込まれ、本合意の一部を構成します。",
           "サービスにアクセスまたは利用することで、お客様は18歳以上であること、本規約を読み理解したこと、および本規約に拘束されることに同意することを確認します。",
           "当社は随時本規約を更新することがあります。更新後もサービスを継続して利用することで、改訂された規約への同意とみなされます。",
@@ -452,10 +452,10 @@ export default function TermsPage() {
           </strong>
           {" — "}
           {lang === "zh"
-            ? "Sakura 是 Solana 上第一個原生 AI 守護協議，以匠人精神應對三個真實威脅：Nonce Guardian 防禦 Drift $2.85 億同款攻擊向量（以攻擊者的 getProgramAccounts 反守為攻）、Ghost Run 以 simulateTransaction 幽靈執行多步 DeFi 策略（在零資本風險下確認精確 token delta）、Liquidation Shield 在 400ms 內完成跨協議借貸倉位救援（SPL Token Approve 硬性鎖定 AI 可動用資金上限）。三項不可妥協的設計原則：① 零託管——私鑰永不離開您的設備；② 按使用付費——無訂閱，無帳號，連接即用；③ AI 決策 SHA-256 永久上鏈——任何人可在 Solscan 獨立核驗，無需信任 Sakura 的任何服務器。備えあれば憂いなし——這是架構層面的承諾，不是營銷口號。"
+            ? "Sakura 是 Solana 上第一個原生 AI 守護協議，以匠人精神應對三個真實威脅：Shielded Lending 防禦 Drift $2.85 億同款攻擊向量（以攻擊者的 getProgramAccounts 反守為攻）、cross-protocol routing 以 simulateTransaction 幽靈執行多步 DeFi 策略（在零資本風險下確認精確 token delta）、Shielded Lending 在 400ms 內完成跨協議借貸倉位救援（SPL Token Approve 硬性鎖定 AI 可動用資金上限）。三項不可妥協的設計原則：① 零託管——私鑰永不離開您的設備；② 按使用付費——無訂閱，無帳號，連接即用；③ AI 決策 SHA-256 永久上鏈——任何人可在 Solscan 獨立核驗，無需信任 Sakura 的任何服務器。備えあれば憂いなし——這是架構層面的承諾，不是營銷口號。"
             : lang === "ja"
-            ? "SakuraはSolana上初のネイティブAIガーディアンプロトコルで、匠の精神で3つの現実の脅威に対応します：Nonce GuardianがDrift $2.85億同型攻撃ベクターを防御（攻撃者のgetProgramAccountsを盾に転用）、Ghost RunがsimulateTransactionでマルチステップDeFi戦略をゴースト実行（資本リスクゼロで正確なtoken deltaを確認）、Liquidation Shieldが400ms以内にクロスプロトコル貸出ポジションを救済（SPL Token ApproveがAI使用資金上限をハードロック）。3つの妥協なき設計原則：①ゼロカストディ——秘密鍵はデバイス外に出ない；②使用量課金——サブスクリプション不要、アカウント不要、接続即利用；③AI判断SHA-256永続オンチェーン刻印——誰でもSolscanで独立検証可能、Sakuraのサーバーへの信頼不要。備えあれば憂いなし——アーキテクチャレベルの約束、マーケティングスローガンではありません。"
-            : "Sakura is the first native AI guardian protocol on Solana, responding with Takumi precision to three real threats: Nonce Guardian defends against the $285M Drift-class attack vector (repurposing the attacker's own getProgramAccounts as your shield); Ghost Run ghost-executes multi-step DeFi strategies with simulateTransaction at zero capital risk (confirming exact token deltas before you commit a dollar); Liquidation Shield executes cross-protocol lending rescue within 400ms (SPL Token Approve hard-locking the maximum funds the AI can touch). Three non-negotiable design principles: ① Zero custody — private keys never leave your device; ② Pay-per-use — no subscription, no account, connect and go; ③ AI decisions SHA-256 permanently on-chain — independently verifiable by anyone on Solscan, zero reliance on Sakura's servers. 備えあれば憂いなし — an architectural commitment, not a marketing slogan."}
+            ? "SakuraはSolana上初のネイティブAIガーディアンプロトコルで、匠の精神で3つの現実の脅威に対応します：Shielded LendingがDrift $2.85億同型攻撃ベクターを防御（攻撃者のgetProgramAccountsを盾に転用）、跨協議救援がsimulateTransactionでマルチステップDeFi戦略をゴースト実行（資本リスクゼロで正確なtoken deltaを確認）、Shielded Lendingが400ms以内にクロスプロトコル貸出ポジションを救済（SPL Token ApproveがAI使用資金上限をハードロック）。3つの妥協なき設計原則：①ゼロカストディ——秘密鍵はデバイス外に出ない；②使用量課金——サブスクリプション不要、アカウント不要、接続即利用；③AI判断SHA-256永続オンチェーン刻印——誰でもSolscanで独立検証可能、Sakuraのサーバーへの信頼不要。備えあれば憂いなし——アーキテクチャレベルの約束、マーケティングスローガンではありません。"
+            : "Sakura is the first native AI guardian protocol on Solana, responding with Takumi precision to three real threats: Shielded Lending defends against the $285M Drift-class attack vector (repurposing the attacker's own getProgramAccounts as your shield); cross-protocol routing ghost-executes multi-step DeFi strategies with simulateTransaction at zero capital risk (confirming exact token deltas before you commit a dollar); Shielded Lending executes cross-protocol lending rescue within 400ms (SPL Token Approve hard-locking the maximum funds the AI can touch). Three non-negotiable design principles: ① Zero custody — private keys never leave your device; ② Pay-per-use — no subscription, no account, connect and go; ③ AI decisions SHA-256 permanently on-chain — independently verifiable by anyone on Solscan, zero reliance on Sakura's servers. 備えあれば憂いなし — an architectural commitment, not a marketing slogan."}
         </div>
 
         {/* Global notice */}

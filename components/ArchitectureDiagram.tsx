@@ -52,7 +52,7 @@ export default function ArchitectureDiagram() {
   return (
     <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-gray-900/90 to-black/70 p-5 space-y-1">
       <h3 className="text-center text-sm font-bold text-white/80 mb-4">
-        🏗️ {i("title")} — Sakura Mutual Insurance
+        🏗️ {i("title")} — Sakura Shielded Lending
       </h3>
 
       {/* AI Layer */}
