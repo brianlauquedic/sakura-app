@@ -1,25 +1,25 @@
 /**
  * lib/zk-proof.ts — Real Groth16 proof generation + verification
  *
- * Replaces the deleted `lib/groth16-verify.ts` which was a Poseidon-hash-
- * equality "ZK" theater. This file uses actual snarkjs against the
- * compiled Circom circuit `circuits/src/liquidation_proof.circom`.
+ * Circuit: `circuits/src/intent_proof.circom` (v0.3, Agentic Consumer Protocol)
+ * Proves: action ⊆ user_signed_intent
  *
  * Artifacts expected at:
- *   public/zk/liquidation_proof.wasm       (witness generator)
- *   public/zk/liquidation_proof.zkey       (proving key)
- *   public/zk/verification_key.json        (verification key)
+ *   public/zk/intent_proof.wasm           (witness generator)
+ *   public/zk/intent_proof.zkey           (proving key)
+ *   public/zk/intent_verification_key.json (verification key)
  *
  * The on-chain verifier is in `programs/sakura-insurance/src/lib.rs`
- * (function `claim_payout_with_zk_proof`) using the `groth16-solana`
+ * (instruction `execute_with_intent_proof`) using the `groth16-solana`
  * crate + Solana's alt_bn128 pairing syscall.
  *
  * Public inputs (order MUST match circuit's `public` list):
- *   [0] policy_commitment       Poseidon(obligation, wallet, nonce)
- *   [1] trigger_hf_bps          e.g. 10500 ⇒ HF < 1.05
- *   [2] rescue_amount_bucket    buckets of 100 USDC
- *   [3] oracle_price_usd_micro  Pyth price (micro-USD)
- *   [4] oracle_slot             Pyth publish slot
+ *   [0] intent_commitment       Poseidon-tree(7 leaves — see below)
+ *   [1] action_type             0=Borrow, 1=Lend, 2=Swap, 3=Repay, ...
+ *   [2] action_amount           token amount in micro-units (u64)
+ *   [3] action_target_index     0=Kamino, 1=MarginFi, 2=Solend, ...
+ *   [4] oracle_price_usd_micro  Pyth price at execution (u64 micro-USD)
+ *   [5] oracle_slot             Pyth publish slot (u64)
  */
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -35,19 +35,28 @@ export type Groth16Proof = {
 
 export type PublicSignals = string[];
 
-export type LiquidationWitness = {
+/**
+ * Witness for IntentProof circuit. Public portion must match what the
+ * on-chain verifier reads from the transaction; private portion is the
+ * user's signed-intent secret known only to the prover.
+ */
+export type IntentWitness = {
   // Public
-  policyCommitment: bigint;
-  triggerHfBps: number;            // e.g. 10500
-  rescueAmountBucket: number;      // in buckets of 100 USDC
-  oraclePriceUsdMicro: bigint;     // Pyth price scaled to 1e6
-  oracleSlot: bigint;
+  intentCommitment: bigint;
+  actionType: number;              // 0..255
+  actionAmount: bigint;            // u64 micro-units
+  actionTargetIndex: number;       // 0..31
+  oraclePriceUsdMicro: bigint;     // u64 micro-USD
+  oracleSlot: bigint;              // u64
+
   // Private
-  collateralAmount: bigint;
-  debtUsdMicro: bigint;
-  positionAccountBytes: bigint;    // Kamino obligation pubkey as 31-byte big-int
-  userWalletBytes: bigint;         // Solana pubkey as 31-byte big-int
-  nonce: bigint;
+  maxAmount: bigint;               // u64 per-action cap
+  maxUsdValue: bigint;             // u64 per-action USD cap (micro-USD)
+  allowedProtocols: bigint;        // u32 bitmap
+  allowedActionTypes: bigint;      // u32 bitmap
+  walletBytes: bigint;             // 31-byte pubkey slice as field element
+  nonce: bigint;                   // anti-replay
+  intentTextHash: bigint;          // Poseidon of the NL intent text (field elt)
 };
 
 export type ProofBundle = {
@@ -75,7 +84,7 @@ function fieldToBE32(x: bigint): Uint8Array {
  * Convert a snarkjs Groth16 proof into the `(proof_a, proof_b, proof_c)`
  * byte layout expected by the on-chain `groth16-solana` verifier:
  *
- *   proof_a: 64B  (G1 point, BE-encoded x || y; NEGATED per prepared-alpha convention)
+ *   proof_a: 64B  (G1 point, BE-encoded x || y; NEGATED per light-protocol convention)
  *   proof_b: 128B (G2 point, BE-encoded (x.c1, x.c0, y.c1, y.c0))
  *   proof_c: 64B  (G1 point, BE-encoded x || y)
  *
@@ -89,22 +98,9 @@ export function proofToOnchainBytes(proof: Groth16Proof): {
 } {
   const ax = BigInt(proof.pi_a[0]);
   const ay = BigInt(proof.pi_a[1]);
-  // Negate A.y (light-protocol groth16-solana convention).
-  //
-  // The Groth16 identity is  e(A, B) == e(α, β) * e(Σ IC, γ) * e(C, δ).
-  // Rearranged into a single pairing product equal to 1, we need to negate
-  // ONE of {A, α, Σ, C}. Different implementations choose differently:
-  //
-  //   arkworks:        negate α inside VK (prepared-alpha), leave A alone
-  //   light-protocol:  expect the SUBMITTER to negate A; keep α positive
-  //
-  // The on-chain groth16-solana crate (light-protocol) follows the second
-  // convention — even though `parse-vk-to-rust.js` wraps α via `negateG1`
-  // during VK export, the crate internally negates again, so the *net*
-  // effect is that callers must provide `-A`. Empirically verified on
-  // devnet 2026-04 (program AnszeCRFsBKmT5fBY9WywxGsZZZob8ZPFYqboYXpuYLp):
-  // submitting A without negation caused pairing failure at ~116k CU;
-  // negating restored successful verification.
+  // Negate A.y — light-protocol groth16-solana convention (VK alpha stays
+  // positive, caller submits -A). Empirically verified on devnet under
+  // program AnszeCRFsBKmT5fBY9WywxGsZZZob8ZPFYqboYXpuYLp.
   const negAy = (BN254_P - (ay % BN254_P)) % BN254_P;
 
   const proofA = new Uint8Array(64);
@@ -126,47 +122,78 @@ export function proofToOnchainBytes(proof: Groth16Proof): {
   return { proofA, proofB, proofC };
 }
 
-// ── Poseidon commitment (client-side; matches circuit) ───────────────
+// ── Poseidon intent commitment (client-side; matches circuit) ────────
 
 /**
- * Compute Poseidon(position_account, user_wallet, nonce).
- * Uses circomlibjs. Must match the Poseidon template in the circuit.
- * Returns a decimal string for snarkjs + a hex string for on-chain storage.
+ * Compute the 2-layer Poseidon tree that binds all 7 intent leaves into
+ * a single field-element commitment. MUST exactly match the circuit:
+ *
+ *     h1     = Poseidon(intent_text_hash, wallet_bytes, nonce)
+ *     h2     = Poseidon(max_amount, max_usd_value, allowed_protocols)
+ *     final  = Poseidon(h1, h2, allowed_action_types)
+ *
+ * circomlibjs's Poseidon template only supports arity-2/3 inputs, hence
+ * the tree. See circuits/src/intent_proof.circom § C1.
  */
-export async function computePolicyCommitment(
-  positionAccountBytes: bigint,
-  userWalletBytes: bigint,
-  nonce: bigint
+export async function computeIntentCommitment(
+  intentTextHash: bigint,
+  walletBytes: bigint,
+  nonce: bigint,
+  maxAmount: bigint,
+  maxUsdValue: bigint,
+  allowedProtocols: bigint,
+  allowedActionTypes: bigint
 ): Promise<{ decimal: string; bytesBE32: Uint8Array; hex: string }> {
-  // Dynamic import — circomlibjs is a heavy module, only load when called.
+  // Dynamic import — circomlibjs is heavy, only load when called.
   const { buildPoseidon } = await import("circomlibjs");
   const poseidon = await buildPoseidon();
-  const hash = poseidon([positionAccountBytes, userWalletBytes, nonce]);
-  const decimal = poseidon.F.toString(hash);
+
+  const h1 = poseidon([intentTextHash, walletBytes, nonce]);
+  const h2 = poseidon([maxAmount, maxUsdValue, allowedProtocols]);
+  // Poseidon outputs are field elements; pass them back as BigInt via F.toObject.
+  const h1Big = BigInt(poseidon.F.toString(h1));
+  const h2Big = BigInt(poseidon.F.toString(h2));
+
+  const hFinal = poseidon([h1Big, h2Big, allowedActionTypes]);
+  const decimal = poseidon.F.toString(hFinal);
   const bytesBE32 = fieldToBE32(BigInt(decimal));
   const hex = "0x" + Buffer.from(bytesBE32).toString("hex");
   return { decimal, bytesBE32, hex };
 }
 
+/**
+ * Convert a Solana pubkey (32 bytes) into a BN254-safe field element by
+ * dropping the high byte and interpreting the remaining 31 bytes as a
+ * big-endian integer. Matches Num2Bits(248) in the circuit.
+ */
+export function pubkeyToFieldBytes(pubkey32: Uint8Array): bigint {
+  if (pubkey32.length !== 32) {
+    throw new Error(`pubkeyToFieldBytes expects 32 bytes, got ${pubkey32.length}`);
+  }
+  let v = 0n;
+  for (let i = 1; i < 32; i++) {
+    v = (v << 8n) | BigInt(pubkey32[i]);
+  }
+  return v;
+}
+
 // ── Proof generation (browser or server) ─────────────────────────────
 
 /**
- * Generate a Groth16 proof for the liquidation eligibility circuit.
+ * Generate a Groth16 proof for the IntentProof circuit.
  *
  * Runs in both browser and Node. In the browser, artifacts are fetched
- * from `/zk/liquidation_proof.wasm` + `/zk/liquidation_proof.zkey`. In
- * Node, pass absolute paths via `artifactBase`.
+ * from `/zk/intent_proof.wasm` + `/zk/intent_proof.zkey`. In Node, pass
+ * absolute paths via `artifactBase`.
  */
-export async function generateLiquidationProof(
-  witness: LiquidationWitness,
+export async function generateIntentProof(
+  witness: IntentWitness,
   opts: { artifactBase?: string } = {}
 ): Promise<ProofBundle> {
   const snarkjs = await import("snarkjs");
 
   // Resolve artifact base in a cwd-safe way. `./public/zk` breaks on Vercel
-  // Fluid Compute when the function's working directory is the lambda root
-  // (/var/task) — relative paths can miss the traced includes. Use
-  // process.cwd() so we always resolve from the project root.
+  // Fluid Compute when the function's working directory is the lambda root.
   let base: string;
   if (opts.artifactBase) {
     base = opts.artifactBase;
@@ -178,26 +205,30 @@ export async function generateLiquidationProof(
     base = nodePath.join(process.cwd(), "public", "zk");
   }
 
+  // Input names MUST match the circom signal names verbatim.
   const input = {
-    policy_commitment: witness.policyCommitment.toString(),
-    trigger_hf_bps: witness.triggerHfBps.toString(),
-    rescue_amount_bucket: witness.rescueAmountBucket.toString(),
+    intent_commitment: witness.intentCommitment.toString(),
+    action_type: witness.actionType.toString(),
+    action_amount: witness.actionAmount.toString(),
+    action_target_index: witness.actionTargetIndex.toString(),
     oracle_price_usd_micro: witness.oraclePriceUsdMicro.toString(),
     oracle_slot: witness.oracleSlot.toString(),
-    collateral_amount: witness.collateralAmount.toString(),
-    debt_usd_micro: witness.debtUsdMicro.toString(),
-    position_account_bytes: witness.positionAccountBytes.toString(),
-    user_wallet_bytes: witness.userWalletBytes.toString(),
+    max_amount: witness.maxAmount.toString(),
+    max_usd_value: witness.maxUsdValue.toString(),
+    allowed_protocols: witness.allowedProtocols.toString(),
+    allowed_action_types: witness.allowedActionTypes.toString(),
+    wallet_bytes: witness.walletBytes.toString(),
     nonce: witness.nonce.toString(),
+    intent_text_hash: witness.intentTextHash.toString(),
   };
 
   const { proof, publicSignals } = await snarkjs.groth16.fullProve(
     input,
-    `${base}/liquidation_proof.wasm`,
-    `${base}/liquidation_proof.zkey`
+    `${base}/intent_proof.wasm`,
+    `${base}/intent_proof.zkey`
   );
 
-  const commitBytes = fieldToBE32(witness.policyCommitment);
+  const commitBytes = fieldToBE32(witness.intentCommitment);
   return {
     proof: proof as Groth16Proof,
     publicSignals: publicSignals as PublicSignals,
@@ -211,11 +242,11 @@ export async function generateLiquidationProof(
  * Verify a Groth16 proof off-chain using snarkjs. Useful for API routes
  * that want to pre-filter bad proofs before submitting to chain.
  *
- * The on-chain verifier in `sakura_insurance.claim_payout_with_zk_proof`
- * performs the authoritative check via alt_bn128 pairing — this is only
- * a fast fail-closed prefilter.
+ * The on-chain verifier in `sakura_insurance.execute_with_intent_proof`
+ * performs the authoritative alt_bn128 pairing check — this is a fast
+ * fail-closed prefilter only.
  */
-export async function verifyLiquidationProof(
+export async function verifyIntentProof(
   proof: Groth16Proof,
   publicSignals: PublicSignals,
   opts: { vkPath?: string } = {}
@@ -224,7 +255,7 @@ export async function verifyLiquidationProof(
 
   let vk: any;
   if (typeof window !== "undefined") {
-    const res = await fetch("/zk/verification_key.json");
+    const res = await fetch("/zk/intent_verification_key.json");
     vk = await res.json();
   } else {
     const fs = await import("fs");
@@ -232,7 +263,12 @@ export async function verifyLiquidationProof(
     const nodePath = require("path");
     const vkPath =
       opts.vkPath ??
-      nodePath.join(process.cwd(), "public", "zk", "verification_key.json");
+      nodePath.join(
+        process.cwd(),
+        "public",
+        "zk",
+        "intent_verification_key.json"
+      );
     vk = JSON.parse(fs.readFileSync(vkPath, "utf8"));
   }
 
@@ -258,4 +294,30 @@ export function buildProofMemoPayload(bundle: {
     c: bundle.commitmentHash ?? "",
   });
   return Buffer.from(json, "utf8").toString("base64url");
+}
+
+// ── Back-compat shims for legacy call-sites ──────────────────────────
+// These let older routes (claim_payout, old API routes) keep compiling
+// while we migrate. They should be removed once all callers use the
+// intent-proof path.
+
+export type LiquidationWitness = IntentWitness;
+
+/** @deprecated Use `generateIntentProof` instead. */
+export const generateLiquidationProof = generateIntentProof;
+
+/** @deprecated Use `verifyIntentProof` instead. */
+export const verifyLiquidationProof = verifyIntentProof;
+
+/**
+ * @deprecated Use `computeIntentCommitment` instead. Back-compat wrapper
+ * that treats the three inputs as (intent_text_hash, wallet, nonce) and
+ * zeros out the policy fields. Only safe for smoke tests.
+ */
+export async function computePolicyCommitment(
+  a: bigint,
+  b: bigint,
+  c: bigint
+): Promise<{ decimal: string; bytesBE32: Uint8Array; hex: string }> {
+  return computeIntentCommitment(a, b, c, 0n, 0n, 0n, 0n);
 }

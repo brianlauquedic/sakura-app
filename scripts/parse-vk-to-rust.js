@@ -120,10 +120,18 @@ function main() {
 // Source: circuits/build/verification_key.json (Groth16, BN254, nPublic=${nPublic})
 // Encoding: big-endian 32-byte limbs, compatible with groth16-solana v0.2.
 //
+// Circuit: circuits/src/intent_proof.circom
+// Proves: action ⊂ user_signed_intent
+//
 // Public inputs (in order, must match circom main's \`public\` list):
-//   [0] commitment_hash       — Poseidon(collateral, debt, wallet, nonce)
-//   [1] trigger_hf_bps        — e.g. 10_500 ⇒ HF < 1.05
-//   [2] rescue_amount_bucket  — buckets of 100 USDC
+//   [0] intent_commitment        — Poseidon-tree of (intent_text_hash, wallet,
+//                                   nonce, max_amount, max_usd_value,
+//                                   allowed_protocols, allowed_action_types)
+//   [1] action_type              — 0=borrow, 1=lend, 2=swap, 3=repay, ... (u8)
+//   [2] action_amount            — token amount in micro-units (u64)
+//   [3] action_target_index      — 0=Kamino, 1=MarginFi, 2=Solend, ... (u8)
+//   [4] oracle_price_usd_micro   — Pyth price at execution (u64 micro-USD)
+//   [5] oracle_slot              — Pyth publish slot (u64)
 //
 // Balance of Groth16 pairing: alpha_g1 is stored POSITIVE here; the caller
 // of Groth16Verifier is expected to pass a NEGATED proof_a (see the crate's

@@ -4,10 +4,10 @@ import { useLang } from "@/contexts/LanguageContext";
 
 const t = {
   title: { zh: "技術架構", en: "Architecture", ja: "アーキテクチャ" },
-  sakLayer: { zh: "Solana Agent Kit 執行層", en: "Solana Agent Kit Execution Layer", ja: "Solana Agent Kit実行層" },
-  cryptoLayer: { zh: "密碼學證明層", en: "Cryptographic Proof Layer", ja: "暗号証明層" },
+  sakLayer: { zh: "SAK 執行器層", en: "SAK Executor Layer", ja: "SAK実行器層" },
+  cryptoLayer: { zh: "ZK 證明層", en: "ZK Proof Layer", ja: "ZK証明層" },
   chainLayer: { zh: "Solana 鏈上層", en: "Solana On-Chain Layer", ja: "Solanaオンチェーン層" },
-  aiLayer: { zh: "AI 決策層", en: "AI Decision Layer", ja: "AI意思決定層" },
+  aiLayer: { zh: "AI 意圖決策層", en: "AI Intent Decision Layer", ja: "AI意図決定層" },
 } as const;
 
 type Lang = "zh" | "en" | "ja";
@@ -52,52 +52,57 @@ export default function ArchitectureDiagram() {
   return (
     <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-gray-900/90 to-black/70 p-5 space-y-1">
       <h3 className="text-center text-sm font-bold text-white/80 mb-4">
-        🏗️ {i("title")} — Sakura Shielded Lending
+        🏗️ {i("title")} — Sakura Agentic Consumer Protocol
       </h3>
 
-      {/* AI Layer */}
+      {/* AI Intent Decision Layer — 4 skills */}
       <LayerBox
         color="border-purple-500/30"
         glow="rgba(168,85,247,0.08)"
         icon="🧠"
         title={i("aiLayer")}
-        items={["Claude Sonnet 4.6", "Portfolio Analysis", "Risk Assessment", "Strategy Generation"]}
+        items={[
+          "Claude Sonnet 4.6",
+          "intent-parser (NL → policy)",
+          "route-selector (bounds-aware)",
+          "risk-checker (oracle/slippage/HF)",
+          "intent-executor (atomic compose)",
+        ]}
       />
 
       <Arrow />
 
-      {/* SAK Execution Layer */}
+      {/* SAK Executor Layer */}
       <LayerBox
         color="border-blue-500/30"
         glow="rgba(59,130,246,0.08)"
         icon="⚡"
         title={i("sakLayer")}
         items={[
-          "TokenPlugin: fetchPrice",
-          "DefiPlugin: trade / stake / lend",
-          "MiscPlugin: compressedAirdrop / jitoTip",
-          "Jupiter V6 Swap",
-          "Marinade / Jito Stake",
-          "Lulo Lending",
+          "SAK v2 TokenPlugin: fetchPrice",
+          "SAK v2 DefiPlugin: routes + APY",
+          "lib/sak-executor.ts → unsigned ix",
+          "Jupiter V6 (real)",
+          "Kamino / MarginFi / Solend CPI",
+          "Marinade / Jito LST",
         ]}
       />
 
       <Arrow />
 
-      {/* Crypto Proof Layer */}
+      {/* ZK Proof Layer */}
       <LayerBox
         color="border-emerald-500/30"
         glow="rgba(52,211,153,0.08)"
         icon="🔐"
         title={i("cryptoLayer")}
         items={[
-          "SHA-256 Hash Chain",
-          "Poseidon (BN254)",
-          "Dual-Hash (zERC20)",
-          "Merkle Audit Tree",
-          "ZK Commitment Proof",
-          "Cumulative Tracking",
-          "Commitment-Nullifier",
+          "Groth16 (BN254)",
+          "Poseidon tree (7 leaves)",
+          "snarkjs.fullProve",
+          "Trusted setup pot13 + beacon",
+          "Num2Bits range checks",
+          "action ⊂ user_signed_intent",
         ]}
       />
 
@@ -110,17 +115,31 @@ export default function ArchitectureDiagram() {
         icon="⛓️"
         title={i("chainLayer")}
         items={[
-          "Memo Program (audit trail)",
-          "SPL Token (delegate rescue)",
-          "Light Protocol (ZK compress)",
-          "Merkle Root Anchor",
-          "Proof Digest On-Chain",
+          "execute_with_intent_proof ix",
+          "alt_bn128 pairing (~116k CU)",
+          "Pyth PriceUpdateV2 cross-check",
+          "Intent PDA + ActionRecord PDA",
+          "Atomic v0 tx (gate + DeFi)",
+          "Solana Blinks (sign-intent)",
         ]}
       />
 
       {/* Tech badges */}
       <div className="pt-3 mt-3 border-t border-white/5 flex flex-wrap justify-center gap-2">
-        {["Solana", "Next.js 16", "SAK v2", "Poseidon", "BN254", "Merkle Audit", "Light Protocol"].map(tag => (
+        {[
+          "Solana",
+          "Anchor",
+          "Circom 2.1.6",
+          "Groth16",
+          "BN254",
+          "alt_bn128",
+          "Pyth Pull Oracle",
+          "Light Protocol",
+          "SAK v2",
+          "Claude Skills",
+          "MCP",
+          "Blinks",
+        ].map(tag => (
           <span key={tag} className="text-[10px] px-2 py-0.5 rounded bg-white/5 text-gray-400 border border-white/5">
             {tag}
           </span>

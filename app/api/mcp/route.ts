@@ -63,27 +63,86 @@ async function verifyMCPPayment(
   }
 }
 
-// ── MCP Tool Definitions (v3 — Shielded Lending core) ──────────────
+// ── MCP Tool Definitions (v0.3 — Agentic Consumer Protocol) ──────────
 //
-// v3 collapses the prior 3-tab architecture (Nonce Guardian / Ghost Run /
-// Liquidation Shield) into a single focused product: Shielded Lending,
-// powered by on-chain Groth16 pairing verification on Solana's alt_bn128
-// syscall. The exposed MCP tool returns honest pool + policy state read
-// from the deployed program — no AI fluff, no simulated proofs.
+// v0.3 pivots Sakura from mutual insurance to the Intent-Execution
+// Protocol: users sign NL intents, AI agents execute within mathematically
+// enforced bounds (Groth16 + Pyth oracle + SPL approve cap). MCP tools
+// expose read-only views of Protocol / Intent / ActionRecord state plus
+// preview helpers for intent commitment + witness construction.
+//
+// NONE of these tools sign transactions. Signing lives client-side so the
+// user's private witness (max_amount, max_usd_value, bitmaps, nonce)
+// never leaves the browser.
 const TOOLS = [
   {
-    name: "sakura_shielded_lending_status",
+    name: "sakura_intent_protocol_status",
     description:
-      "Read the on-chain state of Sakura's Shielded Lending pool (mutual self-insured) and the caller's policy if any. Returns: program id, pool TVL, total stakes, total claims paid, plus the user's coverage cap, stake, claims-to-date, and policy commitment hash. All data is fetched live from the deployed Anchor program on Solana devnet.",
+      "Read the on-chain IntentProtocol state (v0.3, Agentic Consumer Protocol) plus the caller's active Intent and most recent ActionRecords if any. Returns: program id, protocol admin, fee vault, total intents signed, total actions executed, pause flag — and if `wallet` is passed, the user's intent commitment, expiry, active flag, actions-executed count, and up to 10 recent ActionRecord summaries.",
     inputSchema: {
       type: "object",
       properties: {
         wallet: {
           type: "string",
-          description: "Optional Solana wallet address (base58). If provided, returns the policy state for this user; if omitted, returns only the global pool state.",
+          description:
+            "Optional Solana wallet address (base58). If provided, returns the Intent PDA state + recent ActionRecords for this user.",
         },
       },
       required: [],
+    },
+  },
+  {
+    name: "sakura_compute_intent_commitment",
+    description:
+      "Compute the 32-byte intent_commitment (2-layer Poseidon tree over 7 leaves) that the user will sign via `sign_intent`. This matches the circuit constraint C1 in circuits/src/intent_proof.circom. The client should verify the returned hex against its own local computation before signing — the MCP server is a convenience, not a source of truth. Inputs are kept private: the server never stores them.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        intent_text: { type: "string", description: "Natural-language intent text" },
+        wallet: { type: "string", description: "User wallet base58" },
+        nonce: { type: "string", description: "u64 decimal string" },
+        max_amount_micro: { type: "string", description: "u64 decimal string — per-action token cap" },
+        max_usd_value_micro: { type: "string", description: "u64 decimal string — per-action USD cap" },
+        allowed_protocols_bitmap: { type: "number", description: "u32 bitmap" },
+        allowed_action_types_bitmap: { type: "number", description: "u32 bitmap" },
+      },
+      required: [
+        "intent_text",
+        "wallet",
+        "nonce",
+        "max_amount_micro",
+        "max_usd_value_micro",
+        "allowed_protocols_bitmap",
+        "allowed_action_types_bitmap",
+      ],
+    },
+  },
+  {
+    name: "sakura_check_action_bounds",
+    description:
+      "Pre-flight check: does a proposed action satisfy circuit constraints C2–C5? Returns per-constraint pass/fail with numeric details. Use this BEFORE generating a Groth16 proof to avoid wasting ~10s on a witness that will be rejected. Does NOT hit RPC — pure arithmetic check against the caller's locally-held intent bounds.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        action_type: { type: "number" },
+        action_amount_micro: { type: "string" },
+        action_target_index: { type: "number" },
+        oracle_price_usd_micro: { type: "string" },
+        max_amount_micro: { type: "string" },
+        max_usd_value_micro: { type: "string" },
+        allowed_protocols_bitmap: { type: "number" },
+        allowed_action_types_bitmap: { type: "number" },
+      },
+      required: [
+        "action_type",
+        "action_amount_micro",
+        "action_target_index",
+        "oracle_price_usd_micro",
+        "max_amount_micro",
+        "max_usd_value_micro",
+        "allowed_protocols_bitmap",
+        "allowed_action_types_bitmap",
+      ],
     },
   },
 ];
@@ -178,21 +237,192 @@ export async function POST(req: NextRequest) {
 
 // ── Tool dispatch ────────────────────────────────────────────────
 async function callTool(name: string, args: Record<string, unknown>): Promise<unknown> {
-  const base = process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : "http://localhost:3000";
-
-  if (name === "sakura_shielded_lending_status") {
-    const wallet = String(args.wallet ?? "");
-    const url = wallet && wallet.length >= 32
-      ? `${base}/api/insurance/status?user=${encodeURIComponent(wallet)}`
-      : `${base}/api/insurance/status`;
-    const res = await fetch(url, { method: "GET" });
-    if (!res.ok) throw new Error(`Shielded Lending status fetch failed: HTTP ${res.status}`);
-    return await res.json();
+  if (name === "sakura_intent_protocol_status") {
+    return await callIntentProtocolStatus(args);
+  }
+  if (name === "sakura_compute_intent_commitment") {
+    return await callComputeIntentCommitment(args);
+  }
+  if (name === "sakura_check_action_bounds") {
+    return callCheckActionBounds(args);
   }
 
   throw new Error(`Unknown tool: ${name}`);
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Tool implementations
+// ─────────────────────────────────────────────────────────────────
+
+async function callIntentProtocolStatus(
+  args: Record<string, unknown>
+): Promise<unknown> {
+  const {
+    SAKURA_INSURANCE_PROGRAM_ID,
+    fetchProtocol,
+    fetchIntent,
+  } = await import("@/lib/insurance-pool");
+
+  const wallet = typeof args.wallet === "string" ? args.wallet : "";
+  const conn = await getConnection("confirmed");
+
+  // Admin key is derived from env (deployed-protocol admin). For the
+  // demo we use the Solana CLI key holder the user already registered;
+  // if not configured, we return program metadata only.
+  const adminEnv = process.env.SAKURA_PROTOCOL_ADMIN;
+  if (!adminEnv) {
+    return {
+      program_id: SAKURA_INSURANCE_PROGRAM_ID.toBase58(),
+      note: "SAKURA_PROTOCOL_ADMIN env var not set — returning program id only.",
+    };
+  }
+  const admin = new PublicKey(adminEnv);
+  const { pda: protocolPda, state: protocol } = await fetchProtocol(conn, admin);
+
+  const out: Record<string, unknown> = {
+    program_id: SAKURA_INSURANCE_PROGRAM_ID.toBase58(),
+    protocol_pda: protocolPda.toBase58(),
+    admin: admin.toBase58(),
+    protocol_state: protocol
+      ? {
+          total_intents_signed: protocol.totalIntentsSigned.toString(),
+          total_actions_executed: protocol.totalActionsExecuted.toString(),
+          paused: protocol.paused,
+          execution_fee_bps: protocol.executionFeeBps,
+          platform_fee_bps: protocol.platformFeeBps,
+          usdc_mint: protocol.usdcMint.toBase58(),
+          fee_vault: protocol.feeVault.toBase58(),
+        }
+      : null,
+  };
+
+  if (wallet && wallet.length >= 32) {
+    try {
+      const user = new PublicKey(wallet);
+      const { pda: intentPda, state: intent } = await fetchIntent(conn, user);
+      out.user = {
+        wallet: user.toBase58(),
+        intent_pda: intentPda.toBase58(),
+        intent_state: intent
+          ? {
+              intent_commitment_hex:
+                "0x" + Buffer.from(intent.intentCommitment).toString("hex"),
+              signed_at: intent.signedAt.toString(),
+              expires_at: intent.expiresAt.toString(),
+              actions_executed: intent.actionsExecuted.toString(),
+              is_active: intent.isActive,
+            }
+          : null,
+      };
+    } catch {
+      out.user_error = "invalid wallet pubkey";
+    }
+  }
+
+  return out;
+}
+
+async function callComputeIntentCommitment(
+  args: Record<string, unknown>
+): Promise<unknown> {
+  const { computeIntentCommitment, pubkeyToFieldBytes } = await import(
+    "@/lib/zk-proof"
+  );
+  const { buildPoseidon } = await import("circomlibjs");
+
+  const walletPk = new PublicKey(String(args.wallet));
+  const walletField = pubkeyToFieldBytes(walletPk.toBytes());
+
+  // intent_text_hash = Poseidon(first 31-byte big-endian slice of utf8 bytes)
+  // Long texts: split into 31-byte chunks and fold with Poseidon(3).
+  const poseidon = await buildPoseidon();
+  const textBytes = Buffer.from(String(args.intent_text), "utf8");
+  let acc = 0n;
+  for (let i = 0; i < textBytes.length; i += 31) {
+    const chunk = textBytes.subarray(i, Math.min(i + 31, textBytes.length));
+    let v = 0n;
+    for (let j = 0; j < chunk.length; j++) v = (v << 8n) | BigInt(chunk[j]);
+    const h = poseidon([acc, v, BigInt(i)]);
+    acc = BigInt(poseidon.F.toString(h));
+  }
+  const intentTextHash = acc;
+
+  const nonce = BigInt(String(args.nonce));
+  const maxAmount = BigInt(String(args.max_amount_micro));
+  const maxUsd = BigInt(String(args.max_usd_value_micro));
+  const allowedProtocols = BigInt(Number(args.allowed_protocols_bitmap));
+  const allowedActionTypes = BigInt(Number(args.allowed_action_types_bitmap));
+
+  const { hex, decimal } = await computeIntentCommitment(
+    intentTextHash,
+    walletField,
+    nonce,
+    maxAmount,
+    maxUsd,
+    allowedProtocols,
+    allowedActionTypes
+  );
+
+  return {
+    intent_commitment_hex: hex,
+    intent_commitment_decimal: decimal,
+    intent_text_hash_decimal: intentTextHash.toString(),
+    note:
+      "Verify client-side before signing. The 32-byte hex is what sign_intent " +
+      "writes to the Intent PDA.",
+  };
+}
+
+function callCheckActionBounds(args: Record<string, unknown>): unknown {
+  const actionType = Number(args.action_type);
+  const actionAmount = BigInt(String(args.action_amount_micro));
+  const targetIndex = Number(args.action_target_index);
+  const priceMicro = BigInt(String(args.oracle_price_usd_micro));
+  const maxAmount = BigInt(String(args.max_amount_micro));
+  const maxUsd = BigInt(String(args.max_usd_value_micro));
+  const allowedProtocols = BigInt(Number(args.allowed_protocols_bitmap));
+  const allowedActionTypes = BigInt(Number(args.allowed_action_types_bitmap));
+
+  const c2_amount_cap = actionAmount <= maxAmount;
+  const c3_protocol_bit =
+    ((allowedProtocols >> BigInt(targetIndex)) & 1n) === 1n;
+  const c4_action_type_bit =
+    ((allowedActionTypes >> BigInt(actionType)) & 1n) === 1n;
+  const lhs = actionAmount * priceMicro;
+  const rhs = maxUsd * 1_000_000n;
+  const c5_usd_cap = lhs <= rhs;
+
+  const all_pass =
+    c2_amount_cap && c3_protocol_bit && c4_action_type_bit && c5_usd_cap;
+
+  return {
+    all_pass,
+    checks: {
+      c2_amount_cap: {
+        pass: c2_amount_cap,
+        action_amount: actionAmount.toString(),
+        max_amount: maxAmount.toString(),
+      },
+      c3_protocol_bit: {
+        pass: c3_protocol_bit,
+        target_index: targetIndex,
+        allowed_protocols_bitmap: allowedProtocols.toString(2),
+      },
+      c4_action_type_bit: {
+        pass: c4_action_type_bit,
+        action_type: actionType,
+        allowed_action_types_bitmap: allowedActionTypes.toString(2),
+      },
+      c5_usd_cap: {
+        pass: c5_usd_cap,
+        lhs: lhs.toString(),
+        rhs: rhs.toString(),
+      },
+    },
+    advice: all_pass
+      ? "Safe to generate Groth16 proof."
+      : "Reject this action — at least one circuit constraint would fail.",
+  };
 }
 
 // ── JSON-RPC helpers ─────────────────────────────────────────────

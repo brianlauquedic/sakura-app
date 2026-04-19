@@ -2,7 +2,8 @@
 
 import { useEffect } from "react";
 import WalletConnect from "@/components/WalletConnect";
-import MutualPool from "@/components/MutualPool";
+import IntentSigner from "@/components/IntentSigner";
+import ActionHistory from "@/components/ActionHistory";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { useWallet } from "@/contexts/WalletContext";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -152,10 +153,15 @@ function AppContent() {
               </div>
             </div>
 
-            {/* ── Single-product view: Shielded Lending (via MutualPool) ── */}
-            <ErrorBoundary fallbackLabel="Shielded Lending">
-              <MutualPool isDemo={isDemo} />
-            </ErrorBoundary>
+            {/* ── Agentic Consumer Protocol — Intent Execution ── */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+              <ErrorBoundary fallbackLabel="Intent Signer">
+                <IntentSigner />
+              </ErrorBoundary>
+              <ErrorBoundary fallbackLabel="Action History">
+                <ActionHistory />
+              </ErrorBoundary>
+            </div>
           </>
         )}
       </div>

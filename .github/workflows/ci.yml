@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Cancel old runs when a new commit is pushed to the same ref.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ts-and-tests:
+    name: Typecheck + unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Typecheck (strict, whole repo)
+        run: npx tsc --noEmit
+
+      - name: Unit tests (vitest)
+        # Run the full suite; narrow to intent-commitment.test.ts first so
+        # the v0.3 invariants fail fast if the circuit's commitment shape drifts.
+        run: |
+          npx vitest run __tests__/intent-commitment.test.ts
+          npx vitest run
+
+      - name: Next.js lint
+        run: npm run lint --if-present

@@ -1,180 +1,135 @@
-# Sakura Mutual — Colosseum Frontier 2026 Pitch
+# Sakura Pitch — 3 versions
 
-> **One-line**: The first ZK-verified mutual insurance pool for Solana DeFi
-> — pay a premium, get rescued from liquidation, prove eligibility without
-> revealing your position.
+> **Product:** Agentic Consumer Protocol (tech: Intent-Execution Protocol)
+> **Hackathon:** Colosseum Frontier 2026
+> **One-liner:** AI agents act within math-enforced bounds, proved on-chain via Groth16.
 
----
-
-## Page 1 — The hook
-
-**A $4B problem.** Solana DeFi lending TVL sits around $4B across Kamino,
-MarginFi, Solend, and Drift. In a fast crash, health factors flip from
-1.4 → 0.9 in seconds. Liquidators take 5–15% of the position. Users lose
-billions per cycle.
-
-**The current "fix" is no fix.** Apricot Assist auto-deleverages, but only
-on its own X-Farm. Third-party liquidator MEV bots compete for spread,
-not user safety. Nobody insures the position.
-
-**Sakura Mutual = liquidation insurance, on-chain, ZK-verified.**
+The three versions below share the same spine (problem → solution →
+proof → ask) but differ in depth and audience. Record all three —
+Colosseum reviewers, Dovey Wan / Meltem Demirors investor tier, and
+the 30-second elevator cut each need a different beat.
 
 ---
 
-## Page 2 — How it works (90 seconds)
+## Version A — 60 seconds (elevator, for shares on X / Farcaster)
 
-1. **Buy a policy.** Deposit a premium + a refundable stake. Bind a
-   Poseidon commitment to your obligation account.
-2. **AI monitors.** Claude Sonnet 4.6 watches your health factor across
-   Kamino / MarginFi / Solend via `getProgramAccounts`.
-3. **HF drops below trigger.** Sakura generates a Groth16 proof of
-   eligibility (in the circuit: HF < trigger AND commitment matches AND
-   bucket ≤ debt). On-chain pairing verifies in 1 ix.
-4. **Pool pays out** USDC directly to your rescue ATA. No second signature
-   required. Pyth re-checked on-chain. Replay-safe via PDA init.
-
-Total time from price tick to USDC in your wallet: **< 800ms**.
-
----
-
-## Page 3 — Why this wins on Solana (and only Solana)
-
-| Capability | Solana | Ethereum | Bitcoin |
-|---|---|---|---|
-| `alt_bn128_pairing` syscall (Groth16 in 1 ix) | ✅ | ✅ (precompile) | ❌ |
-| `simulateTransaction` ghost-run primitive | ✅ | ⚠️ (different semantics) | ❌ |
-| `getProgramAccounts` filtered scan | ✅ | ❌ | ❌ |
-| 400ms slot time | ✅ | ❌ (12s) | ❌ (10min) |
-| Cross-protocol obligation accounts | ✅ | ⚠️ | ❌ |
-
-**The 400ms slot time is the product**. Liquidations don't wait for the
-next block — Sakura has to rescue *within* the slot the price ticks. No
-other chain can offer that.
+> **[0:00–0:05] Hook**
+> "AI agents for DeFi have two modes: read-only, and give-them-your-keys.
+> Neither is acceptable."
+>
+> **[0:05–0:20] Problem**
+> "Users want an agent that can lend to the best pool, repay debt before
+> liquidation, rebalance when yields shift — but they don't want to hand
+> over custody. Existing solutions are approval popups that break UX, or
+> session keys that trust a server."
+>
+> **[0:20–0:40] Solution**
+> "Sakura makes agentic authority cryptographic. The user signs a
+> natural-language intent. A zero-knowledge proof — verified by Solana's
+> alt_bn128 syscall in 116k compute units — proves that whatever the
+> agent wants to do falls inside those bounds. If the proof fails, the
+> on-chain transaction reverts before the DeFi action runs. It's not
+> allowlisting. It's not a server enforcing policy. It's math."
+>
+> **[0:40–0:55] Proof**
+> "We're live on devnet today — you can run `scripts/e2e-intent-execute.ts`
+> and watch a Groth16 proof pass on-chain, end to end, in under 30 seconds.
+> Program ID Ansze… — proof is real."
+>
+> **[0:55–1:00] Ask**
+> "Sakura at Colosseum Frontier 2026. Find us at frontier.colosseum.org."
 
 ---
 
-## Page 4 — The mutual model (no LP cold start)
+## Version B — 3 minutes (hackathon submission video)
 
-Conventional insurance protocols (Nexus Mutual, InsurAce, Unslashed) need
-external LPs to seed the pool. They all suffered the same fate: 6 months
-of bootstrapping, low utilization, eventual abandonment.
+### Shot 1 — cold open (0:00–0:15)
+Screen recording of Phantom popup: "sign_intent — lend up to 1000 USDC…"
+Voiceover: *"The user signs once. What comes next is what matters."*
 
-**Sakura's pool *is* the policyholders.** Every buy deposits:
+### Shot 2 — problem (0:15–0:45)
+Cut to split screen. Left: "Read-only — analyze your portfolio." Right:
+"Full custody — give me your private key." Text overlay: "We reject this
+false choice."
+Voiceover: *"Every agentic wallet today lives on one side of this line.
+Sakura is the cryptographic primitive that lets you live on neither side
+— you get execution, without the custody handoff."*
 
-- `premium` → split: `platform_fee` + `pool_share`
-- `stake` → pool, refundable pro-rata at close
+### Shot 3 — the commitment (0:45–1:15)
+Zoom into a terminal showing the 7 intent leaves. Then the 2-layer
+Poseidon tree animating into a 32-byte hex hash. Then Solscan showing
+the `sign_intent` tx + Intent PDA.
+Voiceover: *"Your policy — max amount, allowed protocols, expiry —
+gets hashed into a single 32-byte commitment. That's what goes on-chain.
+The seven underlying values never leave your browser."*
 
-Stakes are the **last-loss tranche**. A fraudulent claim drains the
-fraudster's own stake first. That's Lloyd's of London, ported to Solana.
+### Shot 4 — the agent proposes (1:15–1:45)
+Claude Sonnet chat: user asks *"go lend now"*. Claude invokes
+`route-selector` skill. JSON output: `{action: Lend, target: Kamino,
+amount: 100 USDC, expected_apy_delta: +150bps}`. Then `risk-checker`
+runs — verdict `allow`.
+Voiceover: *"Four Claude Agent Skills handle the decision: parse the
+intent, pick the action, check the risks, then execute. Each skill is
+scoped, inspectable, composable."*
 
-No external LP. No cold start. Capital efficiency = 100% from day 1.
+### Shot 5 — the proof (1:45–2:15)
+Terminal showing `snarkjs.groth16.fullProve` running for ~5s. Then the
+v0 transaction being assembled: `ComputeBudget` + `execute_with_intent_proof`
++ Kamino deposit — all atomic.
+Voiceover: *"snarkjs generates the Groth16 proof in under ten seconds.
+We post a fresh Pyth price update, assemble an atomic v0 transaction
+with the ZK gate first and the DeFi instruction second. If the pairing
+check fails, the whole transaction reverts — the DeFi action never
+happens."*
 
----
+### Shot 6 — on-chain verification (2:15–2:40)
+Solscan tx page showing the successful execution. Program logs:
+`alt_bn128 pairing ✓` · `oracle cross-check ✓` · `ActionRecord written`.
+Pan to the ActionRecord PDA with its `proof_fingerprint`.
+Voiceover: *"Solana's alt_bn128 pairing syscall verifies the proof in
+116k CU. Every executed action gets an on-chain forensic record —
+`keccak256(proof_a ‖ proof_c)` — that anyone can audit later."*
 
-## Page 5 — The privacy story
+### Shot 7 — the dual engine (2:40–2:55)
+Title card: *"Agentic Consumer Protocol — for Dovey Wan's agent wave.
+Intent-Execution Protocol — for Meltem's infra maturity curve. Same
+product. Both framings are true."*
 
-A naive design would put `commitment_hash` openly in every Policy PDA.
-That leaks: *"this wallet has an insured Kamino loan."*
-
-Sakura v0.3 (post-hackathon) replaces individual commitments with a
-**Poseidon Merkle tree** rooted in `Pool`. The claim circuit proves
-membership instead of equality. On-chain observers see only:
-
-- the root (which everyone shares)
-- a nullifier (one-time, opaque)
-- the payout amount
-
-Combined with **selective audit keys**, the user can voluntarily prove
-ownership to one auditor (e.g. for a partner integration) without
-revealing it to the world.
-
-This is the same privacy stack as Aztec / Railgun / Panther — built
-specifically for Solana's `spl-account-compression` primitive.
-
----
-
-## Page 6 — Three core demos
-
-### Demo 1 — Nonce Guardian
-Reactive product against the April 2026 $285M durable-nonce hijack class.
-Scans all 80-byte SystemProgram accounts your wallet authored,
-flags any whose authority was rotated to an attacker. Shipped today.
-
-### Demo 2 — Ghost Run
-Solana-native multi-step strategy preview. Build an unsigned transaction
-for stake + lend + LP, run `simulateTransaction` ×3, return precise
-token deltas + gas. **The first consumer-grade Solana ghost executor.**
-
-### Demo 3 — Liquidation Shield (HEADLINE)
-Pre-authorize a USDC rescue cap via SPL `approve`. AI watches HF.
-When triggered, Sakura submits a Groth16 proof + Pyth-bound payout in
-one transaction. Token program enforces the cap as a hard limit.
-
----
-
-## Page 7 — Why we ship before the others
-
-We have already:
-
-- ✅ `liquidation_proof.circom` compiled, zkey generated, tested on
-  devnet
-- ✅ `programs/sakura-insurance` Anchor program with mutual pool +
-  ZK claim verifier (Light Protocol's `groth16-solana`)
-- ✅ Pyth Pull oracle integration with owner + feed_id + slot binding
-- ✅ Three working UI flows (Nonce Guardian, Ghost Run, Liquidation Shield)
-- ✅ Claude Sonnet 4.6 Managed Agents API integration with skills
-- ✅ Trusted setup transcript with reproducible artifact hashes
-- ✅ Self-audit checklist mapped to source lines (`docs/AUDIT.md`)
-
-What we still need (post-hackathon):
-- 7-contributor public ceremony
-- Merkle-tree privacy upgrade (designed in `docs/MERKLE_DESIGN.md`)
-- Squads multisig for admin
-- Mainnet deployment + insurance fund seeding ($50K)
+### Shot 8 — close (2:55–3:00)
+"Sakura. Colosseum Frontier 2026. Bounded by math."
 
 ---
 
-## Page 8 — Traction & GTM
+## Version C — 8 minutes (investor / deep-dive)
 
-**Wedge product**: Liquidation Shield. Wallets with active Kamino /
-MarginFi positions get a one-tap "insure this position for $X / month"
-button.
+Covers version B then adds:
 
-**Channel partners (signed LOI)**:
-- Kamino integration team (preferred status for shielded positions)
-- Squads (admin multisig + treasury)
-- Helius (RPC + indexer subsidy)
-
-**Pricing**: `premium_bps = 50` (0.5% / month) on `coverage_cap`. At
-$4B addressable TVL, even 1% capture = $40M coverage = $200K MRR
-gross premium.
-
----
-
-## Page 9 — Team & ask
-
-**Brian Lau** — solo builder. Previously [redacted DeFi background].
-Built circuits + Anchor program + Next.js UI in 4 weeks.
-
-**Ask**:
-- $250K seed → audit (Halborn / OtterSec) + 7-contributor ceremony +
-  3-month mainnet runway
-- Helius / Squads / Kamino partnership intros
-- Listing on Solana DeFi aggregators
-
-**Use of funds**:
-- 50% audit + ceremony
-- 30% engineering (Merkle privacy + multisig + mobile)
-- 20% mainnet insurance fund (under-collateralized launch hedge)
+- **Minute 3–4:** Why this wasn't possible until 2026. `alt_bn128`
+  syscall shipped in Solana 1.17. Light Protocol's `groth16-solana`
+  crate matured. Pyth Pull Oracle (PriceUpdateV2) replaced push accounts.
+  Claude Sonnet 4.6's skill composition became reliable. SAK v2
+  stabilized. Sakura is the first product to compose all five.
+- **Minute 4–5:** Market sizing. Solana DeFi TVL ~$4B. Agentic wallet
+  TAM = retail self-custody holders who currently don't use DeFi
+  because UX is too risky. That's ~10M Phantom MAUs.
+- **Minute 5–6:** Moat. The circuit design (2-layer Poseidon, bit-test
+  via IsEqual + sum, C5 USD cap via integer arithmetic) is
+  non-obvious. The trusted setup is done. The VK is baked in. Forking
+  requires redoing Phase 2 of the ceremony.
+- **Minute 6–7:** Competitive landscape. Apricot Assist only manages
+  Apricot's own X-Farm. Voltr is on Base/Mode, not Solana. Session-key
+  wallets give soft bounds — no cryptographic guarantee. Sakura is the
+  only Solana-native, bounds-enforcing, atomic-execution primitive.
+- **Minute 7–8:** Roadmap. Mainnet deploy. Kamino + MarginFi real CPI
+  (devnet is memo-mode because the reserves don't exist there). SDK for
+  third-party agent builders. Blinks catalog for common intent templates.
 
 ---
 
-## Page 10 — Closing
+## Key phrases to hit (every version)
 
-Every Solana DeFi user with a leveraged position has the same
-recurring nightmare: *"will I get liquidated tonight?"*
-
-Sakura Mutual answers: *"no — and we'll prove it on-chain in 400ms,
-without revealing what you hold."*
-
-That's the product. That's why we win Frontier 2026.
+- "Math, not trust"
+- "The agent cannot exceed what the user consented to — it's a circuit constraint, not an allowlist"
+- "Atomic v0 transaction — both land or both revert"
+- "alt_bn128 pairing in 116k compute units"
+- "Devnet-verified today, run the E2E test yourself"
