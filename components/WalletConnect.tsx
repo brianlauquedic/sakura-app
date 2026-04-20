@@ -337,6 +337,42 @@ export default function WalletConnect({
         </section>
 
         {/* ═══════════════════════════════════════════════════════════════
+            論 · THESIS — contrarian market positioning, sits above 壱
+            Above the fold for anyone who scrolls past the hero.
+            ═══════════════════════════════════════════════════════════════ */}
+        <section className="landing-thesis">
+          <div className="thesis-label jp-heading">
+            <span className="thesis-label-rule" aria-hidden />
+            {t("thesisLabel")}
+            <span className="thesis-label-rule" aria-hidden />
+          </div>
+          <h2
+            className="jp-heading thesis-title"
+            style={{ color: "var(--text-primary)" }}
+          >
+            {t("thesisTitle")}
+          </h2>
+          <p
+            className="thesis-body whitespace-pre-line"
+            style={{ color: "var(--text-secondary)" }}
+          >
+            {t("thesisBody")}
+          </p>
+        </section>
+
+        {/* ═══════════════════════════════════════════════════════════════
+            時 · WHY NOW — Asia retail tuition pullquote
+            ═══════════════════════════════════════════════════════════════ */}
+        <aside className="landing-pullquote">
+          <span className="pullquote-corner tl" aria-hidden />
+          <span className="pullquote-corner br" aria-hidden />
+          <div className="pullquote-label jp-heading">{t("timingLabel")}</div>
+          <blockquote className="pullquote-body whitespace-pre-line">
+            {t("timingPullquote")}
+          </blockquote>
+        </aside>
+
+        {/* ═══════════════════════════════════════════════════════════════
             壱 · Four Guardians — 意 証 鎖 価  (4-col on desktop)
             ═══════════════════════════════════════════════════════════════ */}
         <SectionHeading numeral="壱" title={t("agentsTitle")} />
@@ -519,6 +555,20 @@ export default function WalletConnect({
         </div>
 
         {/* ═══════════════════════════════════════════════════════════════
+            算 · THE CEILING — TAM capture math, between 参 and 肆
+            ═══════════════════════════════════════════════════════════════ */}
+        <section className="landing-ceiling">
+          <div className="ceiling-label jp-heading">
+            <span className="ceiling-label-rule" aria-hidden />
+            {t("ceilingLabel")}
+            <span className="ceiling-label-rule" aria-hidden />
+          </div>
+          <pre className="ceiling-body whitespace-pre-line">
+            {t("ceilingBody")}
+          </pre>
+        </section>
+
+        {/* ═══════════════════════════════════════════════════════════════
             肆 · x402 — Stripe MPP
             ═══════════════════════════════════════════════════════════════ */}
         <SectionHeading numeral="肆" title={t("stripeSectionTitle")} />
@@ -642,6 +692,19 @@ export default function WalletConnect({
             ))}
           </div>
         </div>
+
+        {/* ═══════════════════════════════════════════════════════════════
+            訓 · FOUNDER VOICE — operator voice pullquote before closing
+            ═══════════════════════════════════════════════════════════════ */}
+        <aside className="landing-founder">
+          <span className="founder-corner tl" aria-hidden />
+          <span className="founder-corner br" aria-hidden />
+          <div className="founder-label jp-heading">{t("founderVoiceLabel")}</div>
+          <blockquote className="founder-body whitespace-pre-line">
+            {t("founderVoice")}
+          </blockquote>
+          <div className="founder-sign jp-heading">{t("founderSign")}</div>
+        </aside>
 
         {/* Closing mark */}
         <div

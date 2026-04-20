@@ -840,6 +840,198 @@ textarea:focus-visible,
   .temple-card::after { width: 16px; height: 16px; }
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   論 · THESIS · 時 · 算 · 訓 — narrative thesis blocks
+   These sit above/below the numbered sections and carry the
+   Forbes-grade business prose (contrarian claim, timing pullquote,
+   TAM math, founder voice). Styled as quiet classical 和紙 blocks —
+   no brackets (reserved for numbered sections); instead they use
+   centered gold-rule labels and wide prose columns.
+   ═══════════════════════════════════════════════════════════════ */
+.landing-thesis {
+  text-align: center;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 8px 0;
+}
+.thesis-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 11.5px;
+  letter-spacing: 0.28em;
+  color: var(--accent);
+  margin-bottom: 20px;
+  text-transform: none;
+}
+.thesis-label-rule {
+  height: 1px;
+  width: 40px;
+  background: linear-gradient(to right, transparent, var(--accent) 30%, var(--accent) 70%, transparent);
+  opacity: 0.55;
+}
+.thesis-title {
+  font-size: clamp(20px, 2.4vw, 28px);
+  line-height: 1.55;
+  letter-spacing: 0.06em;
+  font-weight: 400;
+  max-width: 820px;
+  margin: 0 auto 32px;
+}
+.thesis-body {
+  font-size: 14px;
+  line-height: 2.05;
+  letter-spacing: 0.02em;
+  max-width: 680px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+/* ── 時 · WHY NOW pullquote — framed 鉤括弧, vermillion accent ── */
+.landing-pullquote {
+  position: relative;
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 48px 56px;
+  background: linear-gradient(180deg, var(--bg-card) 0%, var(--bg-card-2) 100%);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+}
+.pullquote-corner {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--accent);
+  pointer-events: none;
+}
+.pullquote-corner.tl { top: -1px; left: -1px; border-right: none; border-bottom: none; }
+.pullquote-corner.br { bottom: -1px; right: -1px; border-left: none; border-top: none; }
+.pullquote-label {
+  display: inline-block;
+  font-size: 10.5px;
+  letter-spacing: 0.28em;
+  color: var(--accent);
+  margin-bottom: 18px;
+}
+.pullquote-body {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 15px;
+  line-height: 2.0;
+  letter-spacing: 0.04em;
+  color: var(--text-primary);
+  font-weight: 400;
+  quotes: "「" "」";
+}
+
+/* ── 算 · THE CEILING — TAM math, monospace computation block ── */
+.landing-ceiling {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 40px 48px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  position: relative;
+}
+.landing-ceiling::before,
+.landing-ceiling::after {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid var(--gold);
+  pointer-events: none;
+  opacity: 0.85;
+}
+.landing-ceiling::before { top: -1px; left: -1px; border-right: none; border-bottom: none; }
+.landing-ceiling::after { bottom: -1px; right: -1px; border-left: none; border-top: none; }
+
+.ceiling-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 10.5px;
+  letter-spacing: 0.28em;
+  color: var(--gold);
+  margin-bottom: 22px;
+}
+.ceiling-label-rule {
+  height: 1px;
+  width: 28px;
+  background: var(--gold);
+  opacity: 0.55;
+}
+.ceiling-body {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.95;
+  letter-spacing: 0.01em;
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+  overflow-x: auto;
+}
+
+/* ── 訓 · FOUNDER VOICE — operator voice, centered, serif display ── */
+.landing-founder {
+  position: relative;
+  max-width: 780px;
+  margin: 16px auto 8px;
+  padding: 52px 56px 44px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  text-align: center;
+}
+.founder-corner {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--accent);
+  pointer-events: none;
+}
+.founder-corner.tl { top: -1px; left: -1px; border-right: none; border-bottom: none; }
+.founder-corner.br { bottom: -1px; right: -1px; border-left: none; border-top: none; }
+.founder-label {
+  font-size: 10.5px;
+  letter-spacing: 0.28em;
+  color: var(--accent);
+  margin-bottom: 22px;
+}
+.founder-body {
+  margin: 0 0 22px;
+  font-family: var(--font-heading);
+  font-size: 17px;
+  line-height: 2.0;
+  letter-spacing: 0.04em;
+  color: var(--text-primary);
+  font-weight: 400;
+  font-style: normal;
+}
+.founder-sign {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: var(--text-muted);
+}
+
+@media (max-width: 1023px) {
+  .landing-pullquote { padding: 36px 32px; }
+  .landing-ceiling { padding: 32px 28px; }
+  .landing-founder { padding: 40px 32px 34px; }
+  .founder-body { font-size: 16px; }
+}
+@media (max-width: 640px) {
+  .thesis-body { text-align: left; padding: 0 4px; }
+  .landing-pullquote { padding: 28px 20px; }
+  .landing-ceiling { padding: 24px 18px; }
+  .landing-founder { padding: 32px 22px 28px; }
+  .founder-body { font-size: 15px; }
+  .ceiling-body { font-size: 11.5px; }
+  .pullquote-corner { width: 16px; height: 16px; }
+  .founder-corner { width: 16px; height: 16px; }
+}
+
 /* ── Closing mark ── */
 .landing-closing {
   padding-top: 24px;

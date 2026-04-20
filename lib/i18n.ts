@@ -40,9 +40,75 @@ export const translations = {
     ja: "AI エージェントのために作られ、数学によって強制される。",
   },
   heroSubtitle: {
-    zh: "SWIFT 是跨境的一層，HTTPS 是加密的一層，Sakura 是代理的一層。",
-    en: "SWIFT is the layer for cross-border. HTTPS is the layer for encryption. Sakura is the layer for agents.",
-    ja: "SWIFT が国境の層、HTTPS が暗号化の層、Sakura がエージェントの層。",
+    zh: "SWIFT 是跨境的一層，HTTPS 是加密的一層，Sakura 是代理的一層。\n2026 上半年，四家主流錢包（Phantom / Backpack / Abstract / Infinex）同時推代理模式——在那之前，必須有人先把「越界」做成數學上不可能的事。",
+    en: "SWIFT is the layer for cross-border. HTTPS is the layer for encryption. Sakura is the layer for agents.\nBy H1 2026, four consumer wallets (Phantom, Backpack, Abstract, Infinex) each ship an agent mode. Before that line is crossed, someone has to make 'out of bounds' a mathematical impossibility — not a policy.",
+    ja: "SWIFT は国境の層、HTTPS は暗号化の層、Sakura はエージェントの層。\n2026 年前半、4 つの主要ウォレット（Phantom / Backpack / Abstract / Infinex）が同時にエージェントモードを出荷する。その一線を越える前に、誰かが「境界外」を数学的に不可能な事実にしておく必要がある——ポリシーではなく。",
+  },
+
+  // ═══════════════════════════════════════════════════════════════════
+  // THESIS — 論 · contrarian market thesis, elevated above section 壱
+  // ═══════════════════════════════════════════════════════════════════
+  thesisLabel: {
+    zh: "論 · THESIS",
+    en: "論 · THESIS",
+    ja: "論 · THESIS",
+  },
+  thesisTitle: {
+    zh: "投在 200 個代理 DeFi 應用上的 VC 錢，大部分捕獲不到價值。真正的 take-rate 沉澱在它們下面的那一層。",
+    en: "VC dollars funded 200 agentic-DeFi applications in 2025. Most will not capture value. The take-rate accrues to the layer underneath them.",
+    ja: "2025 年、VC は 200 社のエージェント DeFi アプリに資金を投じた。そのほとんどは価値を捕獲できない。テイクレートは、その下の層に沈殿する。",
+  },
+  thesisBody: {
+    zh: "SWIFT 為每一筆跨境支付定價一個信任單位，清算 \\$6 兆 / 日。Visa Interchange 為每一次刷卡定價一個授權單位，年捕獲 \\$30B。HTTPS 為每一次加密握手定價一個證書單位，30 年，\\$CA 市場獨立於上面所有應用存活。黃金保管為每一兆美元財富定價 0.3%。\n\n它們的共同形狀：一個無可替代、無法繞過、無人能改寫的原語 (primitive)，應用在它上面複利成長。\n\n代理執行是下一個這樣的原語——每一個 AI 代理對你錢包的每一次動作，都需要被驗證是否落在你已簽的邊界內。誰做那層驗證，誰就擁有這條曲線。\n\nSakura 是它的實作。",
+    en: "SWIFT prices a single unit of cross-border trust — and clears \\$6T daily. Visa Interchange prices a single unit of authorization — and captures \\$30B annually. HTTPS prices a single unit of encrypted handshake, has done so for thirty years, and the certificate-authority market sustains independently of every application above it. Gold custody prices 0.3% on a \\$12T base.\n\nTheir common shape: one irreplaceable, unbypassable, non-rewritable primitive, with applications compounding on top of it.\n\nAgentic execution is the next such primitive — every action an AI agent attempts on your wallet must be verified against the bounds you signed. Whoever operates that verifier owns the curve.\n\nSakura is its implementation.",
+    ja: "SWIFT は国境越え信頼の単位に値付けし、\\$6 兆 / 日を清算する。Visa Interchange はカード認証の単位に値付けし、年 \\$30B を捕獲する。HTTPS は暗号化ハンドシェイクの単位に値付けし、30 年間、証明書当局市場は上位のあらゆるアプリから独立して存続してきた。金保管は \\$12 兆に 0.3% を値付けする。\n\n共通の形——代替不可能、迂回不可能、書き換え不可能なプリミティブ、その上にアプリケーションが複利で積み上がる。\n\nエージェント実行は、次のそのようなプリミティブ——AI エージェントがあなたのウォレットで試みる各動作は、あなたが署名した境界の内側に収まっているかを検証される必要がある。その検証層を運用する者が、この曲線を所有する。\n\nSakura はその実装である。",
+  },
+
+  // ═══════════════════════════════════════════════════════════════════
+  // TIMING — 時 · why now, Asia retail tuition pullquote
+  // ═══════════════════════════════════════════════════════════════════
+  timingLabel: {
+    zh: "時 · WHY NOW",
+    en: "時 · WHY NOW",
+    ja: "時 · WHY NOW",
+  },
+  timingPullquote: {
+    zh: "2014 Mt.Gox。2019 OKEx。2022 FTX。亞洲散戶用三次本金買來同一條定律：運營方能覆蓋的規則，遲早會被覆蓋。\n\n第四張帳單，發生在某個凌晨三點——一個 AI 代理按照一個被靜默輪替的會話金鑰，把錢包抽空。所謂「彈窗授權」「白名單」「會話過期」，皆是運營層承諾，與 2014 年的交易所冷熱錢包之爭，沒有結構差別。\n\nSakura 趕在第四張帳單之前落地。",
+    en: "2014 Mt.Gox. 2019 OKEx. 2022 FTX. Asia retail paid the tuition three times to learn the same law: any rule an operator can override will be overridden.\n\nThe fourth bill arrives at 3 AM — when an AI agent, acting on a silently-rotated session key, drains a wallet. Approval popups, allowlists, session expiries — all operator promises, structurally indistinguishable from the hot-wallet / cold-wallet debates of 2014.\n\nSakura ships before the fourth bill.",
+    ja: "2014 年 Mt.Gox。2019 年 OKEx。2022 年 FTX。アジアの個人投資家は、同じ法則を三度の元本で学んだ——運営者が上書きできる規則は、いずれ上書きされる。\n\n四度目の請求書は、午前 3 時に届く——AI エージェントが、静かにローテーションされたセッションキーに従い、ウォレットを抜く瞬間。承認ポップアップ、許可リスト、セッション有効期限——いずれも運営層の約束であり、2014 年のホット / コールドウォレット論争と構造的に何も変わらない。\n\nSakura は、四度目の請求書が届く前に着地する。",
+  },
+
+  // ═══════════════════════════════════════════════════════════════════
+  // CEILING — 算 · TAM capture math
+  // ═══════════════════════════════════════════════════════════════════
+  ceilingLabel: {
+    zh: "算 · THE CEILING",
+    en: "算 · THE CEILING",
+    ja: "算 · THE CEILING",
+  },
+  ceilingBody: {
+    zh: "\\$4B Solana DeFi TVL，經代理可達 × 2026 年 4 家主流錢包代理模式 × 前 \\$10M 整合量 rebate 後 0.1% 路由費\n\n= 首年路由費天花板 \\$4M–12M ARR（僅路由，不含 x402 每次 API 呼叫 \\$1 結算，不含保險池浮存金，不含 L2 擴展）。\n\n這道算式不依賴於 200 個代理應用中哪一個會活下來。算式成立，只需要那層驗證器被呼叫——不問誰呼叫。",
+    en: "\\$4B Solana DeFi TVL reachable via agents × 4 major wallet agent modes shipping in 2026 × 0.1% routing fee, applied after the first-\\$10M integrator rebate\n\n= year-1 routing-fee ceiling of \\$4M–12M ARR (routing alone; excluding x402 per-API-call settlement at \\$1, excluding insurance-pool float, excluding L2 expansion).\n\nThe math does not depend on picking which of the 200 agent apps survives. The math holds as long as the verifier layer gets called — independent of caller.",
+    ja: "\\$4B Solana DeFi TVL、エージェント経由で到達可能 × 2026 年の 4 つの主要ウォレットがエージェントモードを出荷 × 最初の \\$10M の統合量リベート後 0.1% のルーティング手数料\n\n= 初年度ルーティング手数料の天井：\\$4M–12M ARR（ルーティングのみ。x402 API 呼び出し毎の \\$1 決済を除き、保険プールのフロートを除き、L2 拡張を除く）。\n\nこの計算式は、200 のエージェントアプリのどれが生き残るかに依存しない。検証層が呼び出されさえすれば成立する——呼び出し元が誰であろうと。",
+  },
+
+  // ═══════════════════════════════════════════════════════════════════
+  // FOUNDER VOICE — 訓 · operator voice quote near closing
+  // ═══════════════════════════════════════════════════════════════════
+  founderVoiceLabel: {
+    zh: "訓 · FOUNDER VOICE",
+    en: "訓 · FOUNDER VOICE",
+    ja: "訓 · FOUNDER VOICE",
+  },
+  founderVoice: {
+    zh: "我們不是為了保護用戶不被 AI 代理坑才做的 Sakura。我們做它，是為了讓「運營方」這個角色在架構上消失。\n\n用戶就是主權。\n數學只是強制執行。",
+    en: "We did not build Sakura to protect users from AI agents. We built it so the operator class becomes architecturally irrelevant.\n\nThe user IS the sovereign.\nThe math is just the enforcement.",
+    ja: "私たちは、ユーザーを AI エージェントから守るために Sakura を作ったのではない。運営者という階級を、アーキテクチャ的に無関係にするために作った。\n\nユーザーこそが、主権である。\n数学は、その強制にすぎない。",
+  },
+  founderSign: {
+    zh: "— Sakura team · Colosseum Frontier 2026",
+    en: "— Sakura team · Colosseum Frontier 2026",
+    ja: "— Sakura team · Colosseum Frontier 2026",
   },
 
   // ── Features (3 core) ─────────────────────────────────────────────
@@ -79,9 +145,9 @@ export const translations = {
   // ── Differentiator ────────────────────────────────────────────────
   diffTitle: { zh: "這道題該解一次，不該解四次。", en: "Solved once. Not four times.", ja: "一度で済ませる問題を、四度解かない。" },
   diffDesc: {
-    zh: "每道代理閘門驗證四件事：已簽意圖、Pyth 價格、150 塊新鮮度、nonce 防重放。各自建造，工程師季度計。\n\nSakura 做一次給所有人。前 \\$10M 整合量免費，之後 0.1% 名義金額自動路由至協議金庫。\n\nSWIFT 日清算 \\$6 兆，Visa Interchange 年捕獲 \\$300 億，HTTPS 憑證三十年按次收費，黃金保管 \\$12 兆基年費 0.3%——皆法幣定價、獨立運營、機制自鎖。Sakura 走同一範式。",
-    en: "Every agentic gate runs the same four checks — signed intent, Pyth price, 150-block freshness, replay guard. Built independently, the cost is measured in engineer-quarters.\n\nSakura ships it once, for everyone. First \\$10M of notional from early integrators is rebated. Beyond, 0.1% routes to the protocol fee vault.\n\nSWIFT clears \\$6T daily. Visa Interchange captures \\$30B annually. HTTPS has priced cents per issuance for thirty years. Gold custody prices 0.3% on a \\$12T base. Each is fiat-priced, independently operated, bound by a mechanism operators cannot override. Same template.",
-    ja: "各ゲートは同じ 4 つを検証する——署名済み意図、Pyth 価格、150 ブロック新鮮度、再生防止。個別構築すれば、コストはエンジニア四半期単位。\n\nSakura は一度作り、すべてのウォレットに届ける。第一波統合者の最初の \\$10M の名目額は無料、以降は 0.1% がプロトコル手数料金庫へ。\n\nSWIFT は日々 \\$6 兆を清算。Visa Interchange は年 \\$300 億を捕獲。HTTPS は 30 年、1 発行あたり数セント。金保管は \\$12 兆に年 0.3%。いずれも法定通貨建て、独立運営、運営者が機構を書き換えられない。同じテンプレート。",
+    zh: "每道代理閘門都驗證同樣四件事：已簽意圖、Pyth 當下價、150 塊新鮮度、nonce 防重放。Phantom、Backpack、Abstract、Infinex 各自從零搭、審計、維護這四層——工程師季度計。每次 Solana 協議升級，這四層都得重做一輪。\n\nSakura 做一次，給所有人。前 \\$10M 整合量 rebate，之後 0.1% 名義金額自動路由至協議金庫；無帳號、無 OAuth、無商務談判——源碼 MIT 授權，整合無需許可。\n\nSWIFT 日清算 \\$6T，為每一筆跨境支付定一個信任單位之價。Visa Interchange 年捕獲 \\$30B，為每一次授權定價。HTTPS 證書市場三十年按次收費，獨立於上面所有 web 應用存活。黃金保管在 \\$12T 基上收 0.3%，年營收以十億計。\n\n共通結構：一個無可替代、無法繞過、無人能改寫的原語 (primitive)，為單一信任單位定價，讓應用在上面複利。Sakura 是代理執行層版本的同一條模板。",
+    en: "Every agentic gate runs the same four checks — signed intent, live Pyth price, 150-block freshness, replay guard. Phantom, Backpack, Abstract, and Infinex each build, audit, and maintain those four independently — engineer-quarters per wallet, re-incurred on every Solana protocol upgrade.\n\nSakura ships it once, for all of them. First \\$10M of integrator notional is rebated; beyond, 0.1% routes to the protocol fee vault. No accounts. No OAuth. No business-development gate. MIT-licensed source. Permissionless integration.\n\nSWIFT clears \\$6T daily — pricing one unit of cross-border trust. Visa Interchange captures \\$30B annually — pricing one unit of card authorization. The HTTPS certificate market has priced cents per issuance for thirty years, sustaining independently of every web application above it. Gold custody takes 0.3% of a \\$12T base — revenue in the billions, annually.\n\nCommon shape: one irreplaceable, unbypassable, non-rewritable primitive that prices a single unit of trust and lets applications compound on top. Sakura is the agentic-execution-layer implementation of that template.",
+    ja: "各エージェントゲートは同じ 4 つを検証する——署名済み意図、Pyth の現行価格、150 ブロックの新鮮度、再生防止。Phantom、Backpack、Abstract、Infinex が各々独立にこれを構築・監査・維持する——ウォレットあたりエンジニア四半期単位、Solana プロトコルのアップグレード毎に再発生する。\n\nSakura は一度だけ構築し、すべてに届ける。統合者の最初の \\$10M はリベート、以降は 0.1% がプロトコル金庫へ。アカウント不要、OAuth 不要、BD 交渉不要。MIT ソース、許可不要の統合。\n\nSWIFT は \\$6T を日々清算する——国境越え信頼の単位に値付けする。Visa Interchange は年 \\$30B を捕獲する——カード認証の単位に値付けする。HTTPS 証明書市場は 30 年、1 発行あたり数セントで値付けし、上位のあらゆる web アプリから独立して存続してきた。金保管は \\$12T に 0.3% を取り、年収益は数十億規模。\n\n共通の形——代替不可能、迂回不可能、書き換え不可能なプリミティブが、単一の信頼単位に値付けし、アプリケーションがその上に複利する。Sakura はエージェント実行層における同じテンプレートの実装である。",
   },
 
   // ── Sakura Character Narrative ───────────────────────────────────
@@ -96,9 +162,9 @@ export const translations = {
     ja: "起源 · ORIGIN",
   },
   sakuraCharacterDesc: {
-    zh: "規則可被覆蓋之處，遲早會被覆蓋。Mt.Gox、OKEx、FTX——亞洲散戶用三次本金買來的定律。\n\nAI 代理走到同一岔口。會話金鑰、白名單、彈窗——皆運營層承諾，皆可被運營方覆蓋。\n\nSakura 交給密碼學。一句邊界，Poseidon 壓為承諾上鏈；代理每一動作附 Groth16 證明，越界不落地。\n\nSWIFT 之於跨境清算，HTTPS 之於加密連線，黃金保管之於兆級財富——皆機制自鎖。運營方、維護者、治理機構，皆動不了。\n\n不是約束越界。是越不了界。有備無患。",
-    en: "Rules get overridden wherever operators can override them. Mt.Gox in 2014, OKEx in 2020, FTX in 2022 — retail paid the tuition three times to learn the law.\n\nAgentic DeFi lands at the same fork. Session keys, allowlists, approval popups — all operator promises.\n\nSakura hands the question to cryptography. One natural-language boundary, Poseidon-compressed into a 32-byte commitment on-chain. Every agent action thereafter ships with a Groth16 proof; outside the commitment, it cannot land.\n\nSWIFT for cross-border settlement. HTTPS for encrypted connections. Gold custody for trillion-dollar wealth. Each holds because its mechanism is beyond operator override. Sakura brings that discipline to agentic execution.\n\nNot a commitment to behave. A mathematical impossibility.",
-    ja: "運営者が上書きできる規則は、いずれ上書きされる。Mt.Gox、OKEx、FTX——アジアの個人投資家が三度の元本で学んだ法則である。\n\nAI エージェントは同じ分岐に立つ。セッションキー、許可リスト、承認ポップアップ——いずれも運営層の約束であり、運営者が上書きできる。\n\nSakura はこの問いを暗号に委ねる。自然言語の境界を 1 文。Poseidon がオンチェーンの 32 バイトコミットメントに圧縮する。エージェントの各動作は Groth16 証明を伴い、境界外では着地しない。\n\nSWIFT が国境決済を、HTTPS が暗号化接続を、金保管が兆単位の富を——いずれも機構が運営者の裁量を超えて成立する。Sakura は同じ規律をエージェント実行にもたらす。\n\n越境しないという約束ではない。数学的に越境できない。",
+    zh: "自主託管 (self-custody) 不是功能——它是過去二十年，散戶用戶在與金融軟體反覆拉鋸的一項「權利」，而且他們在每一輪拉鋸中都輸給同一個論點：軟體供應商保留對用戶動作的某種否決權。\n\n這道論點的代價，是亞洲散戶用三次本金買來的：Mt.Gox (2014)、OKEx (2019)、FTX (2022)——每一次都是同一個結構，運營方能覆蓋的規則，遲早會被覆蓋。\n\nAI 代理 DeFi 是同一場交易的第三次重演。代理承諾便利；代理的運營方，靜默地把用戶在 1990 年代讓出的那塊地，重新收了回去。「我的錢、我的規則」變成行銷文案，而規則由運營方的會話金鑰輪替節奏決定，不是用戶。\n\nSakura 的消費者價值是一條密碼學性質：一個接入 Sakura 閘門的錢包，其背後的代理，無論被誰控制、運行在哪裡、被升級了多少輪，都無法在用戶已簽的邊界之外動作。這條性質由 Solana 鏈上的原生配對驗證器在每一筆交易中強制執行，不是由鏈下監控。\n\n用戶的策略（單次上限、允許協議、過期時間）留在用戶的瀏覽器，上鏈的只是一個 32 位元組雜湊。\n\n不是約束代理。是從架構上把「運營方」這個角色挖空。\n\n用戶就是主權。數學只是強制執行。",
+    en: "Self-custody is not a feature. It is a right retail users have been negotiating with financial software for two decades, and repeatedly losing to the same argument: that software providers must retain some veto over user action.\n\nAsia retail paid the tuition three times to learn the law: Mt.Gox (2014), OKEx (2019), FTX (2022) — same structure each time. Any rule an operator can override will be overridden.\n\nAgentic DeFi is the third replay of the same trade. The agent promises convenience; the agent's operator quietly reclaims the ground retail gave up in the 1990s. \"My money, my rules\" becomes a marketing line, and the rules are set by the operator's session-key rotation cadence rather than by the user.\n\nSakura's consumer value is a single cryptographic property: a wallet behind a Sakura gate cannot act outside the bounds the user signed — no matter who controls the agent, where it runs, or how many times its software is updated. The property is enforced by Solana's native pairing verifier on every transaction, not by an off-chain monitor.\n\nThe user's policy — per-action cap, allowed protocols, expiry — stays in the user's browser. Only a 32-byte hash reaches the chain.\n\nNot a constraint on agents. An architectural erasure of the operator role.\n\nThe user is the sovereign. The math is just the enforcement.",
+    ja: "自己保管 (self-custody) は機能ではない——個人投資家が過去 20 年、金融ソフトウェアと繰り返し交渉し、同じ論点で負け続けてきた「権利」である。その論点とは、ソフトウェア提供者はユーザー動作に対する何らかの拒否権を保持しなければならない、というもの。\n\nその代価を、アジアの個人投資家は三度の元本で学んだ：Mt.Gox (2014)、OKEx (2019)、FTX (2022)——毎回同じ構造。運営者が上書きできる規則は、いずれ上書きされる。\n\nエージェント DeFi は、同じ取引の三度目の再生である。エージェントは利便性を約束し、運営者は、1990 年代に個人投資家が譲った領域を、静かに取り戻す。「私の金、私の規則」はマーケティングコピーとなり、規則は運営者のセッションキー・ローテーションの頻度で決まる——ユーザーではなく。\n\nSakura の消費者価値は、一つの暗号学的性質である：Sakura ゲートに接続されたウォレットの背後のエージェントは、誰が制御していようと、どこで動いていようと、ソフトウェアが何度更新されようと、ユーザーが署名した境界の外では動作できない。この性質は、Solana のネイティブペアリング検証器が全トランザクションで強制する——オフチェーン監視ではない。\n\nユーザーのポリシー（アクション毎の上限、許可プロトコル、有効期限）はブラウザに留まる。チェーンに届くのは 32 バイトのハッシュだけ。\n\nエージェントへの制約ではない。運営者という階級の、アーキテクチャ的消去である。\n\nユーザーが主権。数学は、その強制にすぎない。",
   },
   sakuraMission: {
     zh: "使命：讓自主託管從一項承諾，變成一條定理。",
