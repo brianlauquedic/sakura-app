@@ -709,9 +709,27 @@ textarea:focus-visible,
 }
 
 @media (max-width: 640px) {
-  .cta-panel { padding: 36px 24px 32px; max-width: 100%; }
+  .cta-panel {
+    padding: 30px 16px 26px;      /* widen inner content on mobile */
+    max-width: 100%;
+  }
   .cta-panel::before,
   .cta-panel::after { width: 16px; height: 16px; }
+
+  /* Each feature spec gets its own full-width row, left-aligned —
+     prevents awkward 2-line wraps inside a narrow flex item. */
+  .cta-specs {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .cta-spec {
+    justify-content: flex-start;
+    text-align: left;
+    gap: 8px;
+  }
+  /* Description no longer capped tighter than panel interior */
+  .cta-desc { max-width: 100%; }
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -842,7 +860,8 @@ textarea:focus-visible,
   .temple-card.no-pad .landing-agent-cell { padding: 26px 22px; }
 }
 @media (max-width: 640px) {
-  .temple-card { padding: 28px 20px; }
+  .temple-card { padding: 24px 14px; }
+  .temple-card.no-pad .landing-agent-cell { padding: 20px 14px; }
   .temple-card::before,
   .temple-card::after { width: 16px; height: 16px; }
 }
@@ -1033,10 +1052,10 @@ textarea:focus-visible,
   .founder-body { font-size: 16px; }
 }
 @media (max-width: 640px) {
-  .thesis-body { text-align: left; padding: 0 4px; }
-  .landing-pullquote { padding: 28px 20px; }
-  .landing-ceiling { padding: 24px 18px; }
-  .landing-founder { padding: 32px 22px 28px; }
+  .thesis-body { text-align: left; padding: 0 2px; }
+  .landing-pullquote { padding: 26px 14px; }
+  .landing-ceiling { padding: 22px 14px; }
+  .landing-founder { padding: 28px 16px 24px; }
   .founder-body { font-size: 15px; }
   .ceiling-body { font-size: 11.5px; }
   .pullquote-corner { width: 16px; height: 16px; }
@@ -1076,7 +1095,7 @@ textarea:focus-visible,
   .landing-nav-links { gap: 20px; }
   .landing-nav-brandtext { font-size: 16px; }
 
-  .landing-container { padding: 32px 14px 56px; gap: 40px; }
+  .landing-container { padding: 32px 8px 56px; gap: 40px; }
 
   /* Keep the 美人觀印 classical composition intact on mobile —
      bijin ⇢ gaze-line ⇢ seal, side-by-side. Shrink to fit 375px. */

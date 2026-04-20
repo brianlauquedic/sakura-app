@@ -441,9 +441,9 @@ export default function WalletConnect({
               opacity={0.035}
               size={44}
             />
-            <div className="relative z-[1] flex items-start gap-6">
+            <div className="relative z-[1] flex flex-col items-stretch gap-4 sm:flex-row sm:items-start sm:gap-6">
               <div
-                className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-[10px] font-serif text-[26px]"
+                className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-[10px] font-serif text-[22px] sm:h-14 sm:w-14 sm:text-[26px]"
                 style={{
                   background: "var(--accent-soft)",
                   border: "1px solid var(--accent-mid)",
@@ -532,9 +532,9 @@ export default function WalletConnect({
         <div className="temple-card">
           <span className="temple-dot tr" aria-hidden />
           <span className="temple-dot bl" aria-hidden />
-          <div className="flex items-start gap-6">
+          <div className="flex flex-col items-stretch gap-4 sm:flex-row sm:items-start sm:gap-6">
             <div
-              className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-md font-serif text-[18px]"
+              className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-md font-serif text-[16px] sm:h-12 sm:w-12 sm:text-[18px]"
               style={{
                 background: "var(--accent-soft)",
                 border: "1px solid var(--accent-mid)",
