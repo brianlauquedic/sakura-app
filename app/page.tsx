@@ -12,7 +12,9 @@ import Footer from "@/components/Footer";
 
 function AppContent() {
   const { walletAddress, shortAddr, disconnect, showLanding, setShowLanding, activeProvider, isDemo, setIsDemo } = useWallet();
-  const { isDayMode, timeBg } = useTheme();
+  // Dark-only design (v0.3). timeBg was used to tint background by time-of-day
+  // but was overriding the Shadcn --background variable and causing contrast
+  // regressions. Now we always use --bg-base (墨色).
   const { t } = useLang();
 
   useEffect(() => {
@@ -25,8 +27,7 @@ function AppContent() {
 
   return (
     <main className="min-h-screen" style={{
-      background: isDayMode ? "var(--bg-base)" : timeBg.bg,
-      transition: "background 1.5s ease, color 1.5s ease",
+      background: "var(--bg-base)",
     }}>
       <div className="main-container" style={{ maxWidth: 860, margin: "0 auto", padding: "40px 24px" }}>
         {!showApp ? (

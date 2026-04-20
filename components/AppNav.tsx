@@ -16,13 +16,13 @@ const LANG_OPTIONS: { code: Lang; flag: string; label: string }[] = [
 
 export default function AppNav() {
   const router = useRouter();
-  const { lang, setLang, t } = useLang();
+  const { lang, setLang } = useLang();
   const {
     walletAddress, shortAddr, walletLoading,
     phantomAvailable, okxAvailable,
     connect, disconnect, setShowLanding, setIsDemo,
   } = useWallet();
-  const { isDayMode, toggleDayMode, timeBg } = useTheme();
+  const { timeBg } = useTheme();
 
   return (
     <header style={{
@@ -57,24 +57,7 @@ export default function AppNav() {
           {timeBg.name}
         </span>
 
-        {/* Theme toggle */}
-        <button
-          onClick={toggleDayMode}
-          title={isDayMode ? t("switchToNight") : t("switchToDay")}
-          style={{
-            display: "flex", alignItems: "center", gap: 4,
-            padding: "3px 8px", borderRadius: 5, cursor: "pointer",
-            border: "1px solid var(--border)",
-            background: isDayMode ? "#F2EBE0" : "var(--bg-card)",
-            color: isDayMode ? "#2A1A10" : "var(--text-secondary)",
-            fontSize: 11, transition: "all 0.3s ease",
-          }}
-        >
-          <span style={{ fontSize: 12 }}>{isDayMode ? "☀️" : "🌙"}</span>
-          <span style={{ fontSize: 10, letterSpacing: "0.04em" }}>
-            {isDayMode ? t("dayMode") : t("nightMode")}
-          </span>
-        </button>
+        {/* Theme toggle removed — dark-only per v0.3 design decision */}
       </div>
 
       {/* Right: Lang + Wallet */}

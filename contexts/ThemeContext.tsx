@@ -53,21 +53,17 @@ const ThemeContext = createContext<ThemeCtx>({
 });
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  // Default: day mode (light). User preference is saved to localStorage.
-  const [isDayMode, setIsDayMode] = useState(true);
+  // v0.3 decision: dark-only. Top Solana hackathon winners (Drift,
+  // TAPEDRIVE, Seer, Corbits) and all premium infrastructure brands
+  // (Vercel, Linear, Stripe Docs, Phantom landing) ship dark-only.
+  // The day-mode toggle was a feature that halved our design effort
+  // and degraded contrast in both modes. Removed.
+  const isDayMode = false;
   const [timeBg, setTimeBg] = useState<TimeBg>(getTimeColor());
 
   useEffect(() => {
-    const saved = localStorage.getItem("sakura_day_mode");
-    // Only override if user has explicitly chosen before
-    if (saved === "0") setIsDayMode(false);
-    if (saved === "1") setIsDayMode(true);
+    document.body.style.background = "#0E0C0A";
   }, []);
-
-  // Sync body background with theme so it doesn't show dark bg below themed wrappers
-  useEffect(() => {
-    document.body.style.background = isDayMode ? "#F2EBE0" : "#0E0C0A";
-  }, [isDayMode]);
 
   useEffect(() => {
     const tick = () => setTimeBg(getTimeColor());
@@ -76,14 +72,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     return () => clearInterval(id);
   }, []);
 
-  function toggleDayMode() {
-    setIsDayMode(v => {
-      localStorage.setItem("sakura_day_mode", v ? "0" : "1");
-      return !v;
-    });
-  }
-
-  const dayVars = isDayMode ? DAY_VARS : {} as React.CSSProperties;
+  // Toggle is a no-op kept for backward compatibility with AppNav
+  // which still reads this. UI button will be hidden in AppNav.
+  const toggleDayMode = () => {};
+  const dayVars: React.CSSProperties = {};
 
   return (
     <ThemeContext.Provider value={{ isDayMode, toggleDayMode, timeBg, dayVars }}>
