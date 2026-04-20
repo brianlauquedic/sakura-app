@@ -1,10 +1,16 @@
 "use client";
 
 /**
- * WalletConnect.tsx — Sakura landing page (pre-login hero + full
- * narrative stack). Completely rewritten with Shadcn UI, Lucide icons,
- * and 和柄 Wa-gara SVG pattern backgrounds. All i18n keys and wallet
- * connection logic preserved from the prior inline-styled version.
+ * WalletConnect.tsx — Sakura landing page.
+ *
+ * Rebuilt as a Kiyomizu-dera / Kinkaku-ji temple-style layout:
+ *   • Full-width top nav with hairline rule (清水寺 style horizontal menu)
+ *   • Asymmetric hero: 「美人觀印」 — bijin ukiyo-e gazing toward the 朱印
+ *     seal, connected by a fine gold 視線 gaze-line
+ *   • Sections keyed by classical 壱・弐・参・肆・伍・陸 numerals over
+ *     mincho headings and full-width hairline rules
+ *   • Desktop uses the full ~1200px canvas; mobile stacks cleanly
+ *   • All i18n keys preserved from prior version.
  */
 
 import { useState, useEffect } from "react";
@@ -30,17 +36,12 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import {
   Seigaiha,
   Shippo,
   Asanoha,
-  KyokaiDivider,
 } from "@/components/WaPattern";
 import { cn } from "@/lib/utils";
 
@@ -65,8 +66,6 @@ function useIsMobile() {
   return isMobile;
 }
 
-// 4 agent cards — each = one circuit guarantee.
-// Icons = Lucide for technical clarity; kanji label sits above each.
 const AGENT_KEYS = [
   {
     tag: "Intent Commitment",
@@ -142,321 +141,201 @@ export default function WalletConnect({
   const showMobileDeepLinks = isMobile && !phantomAvailable && !okxAvailable;
 
   return (
-    <div className="mx-auto max-w-[760px]">
-      {/* ── 上部ナビ Top nav — 清水寺風 Kiyomizu-style horizontal serif
-          links. No pills, no borders, just spaced 明朝 text with a
-          single hairline rule underneath. ── */}
-      <nav
-        className="mb-14 flex items-center justify-center gap-10 border-b pb-4 pt-2"
-        style={{ borderColor: "var(--border)" }}
-      >
-        <NavLink href="/docs" label={t("navDocs")} />
-        <NavLink href="/use-cases" label={t("navUseCases")} />
-        <NavLink href="/mcp" label="MCP API" accent />
+    <div className="landing-root">
+      {/* ── Secondary section nav — 清水寺 style horizontal serif links,
+          sits below the site-wide AppNav. Three classical menu items. ── */}
+      <nav className="landing-subnav">
+        <div className="landing-subnav-inner">
+          <NavLink href="/docs" label={t("navDocs")} />
+          <span className="landing-subnav-dot" aria-hidden />
+          <NavLink href="/use-cases" label={t("navUseCases")} />
+          <span className="landing-subnav-dot" aria-hidden />
+          <NavLink href="/mcp" label="MCP API" accent />
+        </div>
       </nav>
 
-      {/* ═══════════════════════════════════════════════════════════════
-          Hero
-          ═══════════════════════════════════════════════════════════════ */}
-      <div className="relative mb-14 text-center">
-        {/* 勲章 Hackathon badge */}
-        <Badge
-          variant="outline"
-          className="fade-in-up fade-in-up-1 mb-7 border-[var(--accent-mid)] bg-[var(--accent-soft)] font-mono text-[11px] tracking-[0.14em] text-[var(--accent)]"
-        >
-          <span className="mr-2 inline-block h-1.5 w-1.5 rounded-full bg-[var(--accent)]" />
-          {t("hackathonBadge")}
-        </Badge>
-
-        {/* 朱印 + 和美人 — dramatic seal moment + ukiyo-e bijin */}
-        <div className="mx-auto mb-5 flex items-center justify-center gap-8">
-          {/* 和美人 ukiyo-e portrait */}
-          <div style={{ width: 140, height: 186 }} className="hero-logo flex-shrink-0">
-            <WaBijinSVG size={140} height={186} />
+      <div className="landing-container">
+        {/* ═══════════════════════════════════════════════════════════════
+            Hero — 「美人觀印」 asymmetric 2-column composition
+            Left: bijin + seal with fine gold 視線 gaze-line
+            Right: title, tagline, body, CTA
+            ═══════════════════════════════════════════════════════════════ */}
+        <section className="landing-hero">
+          <div className="landing-hero-bijin">
+            <BijinSealComposition />
           </div>
 
-          {/* 朱印 seal — the brand's defining anchor */}
-          <SakuraSeal size={190} />
-        </div>
-
-        {/* 題字 Title — serif on cream, deep 墨 ink */}
-        <h1
-          className="jp-heading fade-in-up fade-in-up-1 hero-title mb-2 text-[52px] leading-[1.1] tracking-[0.06em]"
-          style={{ color: "var(--text-primary)", fontWeight: 400 }}
-        >
-          Sakura
-        </h1>
-
-        <div
-          className="fade-in-up fade-in-up-1 hero-tagline mb-4 text-[13px] tracking-[0.32em]"
-          style={{
-            color: "var(--accent)",
-            fontFamily: "var(--font-heading)",
-            fontWeight: 500,
-          }}
-        >
-          {t("heroTagline")}
-        </div>
-
-        {/* 朱印 divider — fine gold hairline with seal dot */}
-        <div className="mx-auto mb-5 flex max-w-[240px] items-center gap-2">
-          <div
-            className="h-px flex-1"
-            style={{
-              background:
-                "linear-gradient(to right, transparent, var(--gold) 40%, var(--gold) 60%, transparent)",
-              opacity: 0.5,
-            }}
-          />
-          <span
-            className="inline-block h-1.5 w-1.5 rounded-full"
-            style={{ background: "var(--accent)" }}
-          />
-          <div
-            className="h-px flex-1"
-            style={{
-              background:
-                "linear-gradient(to right, transparent, var(--gold) 40%, var(--gold) 60%, transparent)",
-              opacity: 0.5,
-            }}
-          />
-        </div>
-
-        <p
-          className="fade-in-up fade-in-up-2 mx-auto mb-7 max-w-[480px] text-[13px] leading-[2.0] tracking-[0.02em]"
-          style={{ color: "var(--text-secondary)" }}
-        >
-          {t("heroSubtitle")}
-        </p>
-
-        {/* 信頼の証 Trust badges */}
-        <div className="mb-8 flex flex-wrap justify-center gap-2">
-          {(["trust1", "trust2", "trust3", "trust4"] as const).map((k) => (
+          <div className="landing-hero-copy">
+            {/* 勲章 Hackathon badge */}
             <Badge
-              key={k}
               variant="outline"
-              className="border-[var(--border)] bg-[var(--bg-card)]/60 px-3 py-1 font-sans text-[11px] font-normal tracking-[0.03em] text-[var(--text-secondary)]"
+              className="fade-in-up fade-in-up-1 mb-5 border-[var(--accent-mid)] bg-[var(--accent-soft)] font-mono text-[11px] tracking-[0.14em] text-[var(--accent)]"
             >
-              {t(k)}
+              <span className="mr-2 inline-block h-1.5 w-1.5 rounded-full bg-[var(--accent)]" />
+              {t("hackathonBadge")}
             </Badge>
-          ))}
-        </div>
 
-        {/* ─── CTA Card ─── */}
-        <Card className="relative mx-auto mb-14 max-w-[460px] overflow-hidden border-[var(--border)] bg-[var(--bg-card)]">
-          <div
-            className="absolute left-0 right-0 top-0 h-[2px]"
-            style={{ background: "var(--accent)" }}
-          />
-          <CardContent className="p-6 text-center sm:p-7">
-            {walletAddress ? (
-              <>
-                <div className="mb-2.5 flex items-center justify-center gap-2">
-                  <span className="inline-block h-[7px] w-[7px] rounded-full bg-[var(--green)]" />
-                  <span className="jp-heading text-[14px] tracking-[0.06em] text-[var(--text-primary)]">
-                    {t("connectedWallet")}
-                  </span>
-                </div>
-                <div
-                  className="mb-5 font-mono text-[12px] tracking-[0.05em]"
-                  style={{ color: "var(--text-muted)" }}
-                >
-                  {walletAddress.slice(0, 6)}…{walletAddress.slice(-6)}
-                </div>
-                <Button
-                  onClick={onEnterApp}
-                  size="lg"
-                  className="w-full font-serif tracking-[0.06em]"
-                  style={{ background: "var(--accent)", color: "#fff" }}
-                >
-                  {t("enterApp")}
-                  <ArrowRight className="ml-1.5 h-4 w-4" />
-                </Button>
-              </>
-            ) : (
-              <>
-                <div className="jp-heading mb-1.5 text-[14px] tracking-[0.06em] text-[var(--text-primary)]">
-                  {t("ctaFreeLabel")}
-                </div>
-                <p
-                  className="mb-4 text-[12px] leading-[1.8] tracking-[0.02em]"
-                  style={{ color: "var(--text-secondary)" }}
-                >
-                  {t("ctaFreeDesc")}
-                </p>
-                <div className="mb-4 flex flex-wrap justify-center gap-2">
-                  {(["ctaFreeBadge1", "ctaFreeBadge2", "ctaFreeBadge3"] as const).map(
-                    (key) => (
-                      <Badge
-                        key={key}
-                        variant="outline"
-                        className="gap-1 border-[var(--border-light)] bg-transparent px-2.5 py-1 font-sans text-[11px] font-normal tracking-[0.04em] text-[var(--text-secondary)]"
-                      >
-                        <CheckCircle2 className="h-3 w-3" style={{ color: "var(--green)" }} />
-                        {t(key)}
-                      </Badge>
-                    )
-                  )}
-                </div>
-
-                {showMobileDeepLinks ? (
-                  <MobileDeepLinks lang={lang} />
-                ) : (
-                  <DesktopConnectButtons
-                    connect={connect}
-                    walletLoading={walletLoading}
-                    phantomAvailable={phantomAvailable}
-                    okxAvailable={okxAvailable}
-                    phantomLabel={t("ctaFreeBtn")}
-                  />
-                )}
-
-                <p
-                  className="mt-2.5 text-[10px] tracking-[0.03em]"
-                  style={{ color: "var(--text-muted)" }}
-                >
-                  {t("ctaSubNote")}
-                </p>
-
-                {onTryDemo && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={onTryDemo}
-                    className="mt-3.5 w-full border-dashed border-[var(--border)] bg-transparent text-[12px] font-normal tracking-[0.06em]"
-                    style={{ color: "var(--text-muted)" }}
-                  >
-                    <PlayCircle className="mr-1.5 h-3.5 w-3.5" />
-                    {lang === "zh"
-                      ? "無需錢包，體驗 Demo"
-                      : lang === "ja"
-                        ? "ウォレット不要でデモを体験"
-                        : "Try Demo (no wallet needed)"}
-                  </Button>
-                )}
-              </>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* ═══════════════════════════════════════════════════════════════
-          桜 Sakura Character Narrative
-          ═══════════════════════════════════════════════════════════════ */}
-      <Card className="relative mb-7 overflow-hidden border-[var(--border)] bg-[var(--bg-card)]">
-        <div
-          className="absolute left-0 right-0 top-0 h-[2px]"
-          style={{ background: "var(--accent)" }}
-        />
-        <Seigaiha
-          className="pointer-events-none absolute inset-0"
-          opacity={0.035}
-          size={44}
-        />
-
-        <CardContent className="relative z-10 p-7">
-          <Badge
-            variant="outline"
-            className="mb-5 border-[rgba(255,75,75,0.2)] bg-[rgba(255,75,75,0.06)] font-mono text-[10px] tracking-[0.15em]"
-            style={{ color: "var(--accent)" }}
-          >
-            {t("sakuraOriginBadge")}
-          </Badge>
-
-          <div className="flex items-start gap-5">
-            {/* 桜 Kanji crest */}
-            <div
-              className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-[10px] font-serif text-[22px]"
+            <h1
+              className="jp-heading fade-in-up fade-in-up-1 hero-title mb-3"
               style={{
-                background: "var(--accent-soft)",
-                border: "1px solid var(--accent-mid)",
-                color: "var(--accent)",
-                boxShadow: "0 2px 12px rgba(255,75,75,0.1)",
+                color: "var(--text-primary)",
+                fontWeight: 400,
+                fontSize: "clamp(44px, 6vw, 72px)",
+                lineHeight: 1.05,
+                letterSpacing: "0.05em",
               }}
             >
-              桜
+              Sakura
+            </h1>
+
+            <div
+              className="fade-in-up fade-in-up-1 hero-tagline mb-5"
+              style={{
+                color: "var(--accent)",
+                fontFamily: "var(--font-heading)",
+                fontSize: "14px",
+                fontWeight: 500,
+                letterSpacing: "0.32em",
+              }}
+            >
+              {t("heroTagline")}
             </div>
 
-            <div className="min-w-0 flex-1">
-              <h2
-                className="jp-heading mb-3 text-[15px] font-normal tracking-[0.07em]"
-                style={{ color: "var(--text-primary)" }}
-              >
-                {t("sakuraWho")}
-              </h2>
+            {/* 朱印 gold hairline divider */}
+            <HairlineDivider className="mb-5" width={180} />
 
-              <p
-                className="mb-4 whitespace-pre-line text-[13px] leading-[2.0] tracking-[0.015em]"
-                style={{ color: "var(--text-secondary)" }}
-              >
-                {t("sakuraCharacterDesc")}
-              </p>
+            <p
+              className="fade-in-up fade-in-up-2 mb-6"
+              style={{
+                color: "var(--text-secondary)",
+                fontSize: "14px",
+                lineHeight: 2.0,
+                letterSpacing: "0.02em",
+                maxWidth: 520,
+              }}
+            >
+              {t("heroSubtitle")}
+            </p>
 
-              {/* Mission callout */}
+            {/* 信頼の証 Trust badges */}
+            <div className="mb-6 flex flex-wrap gap-2">
+              {(["trust1", "trust2", "trust3", "trust4"] as const).map((k) => (
+                <Badge
+                  key={k}
+                  variant="outline"
+                  className="border-[var(--border)] bg-[var(--bg-card)]/60 px-3 py-1 font-sans text-[11px] font-normal tracking-[0.03em] text-[var(--text-secondary)]"
+                >
+                  {t(k)}
+                </Badge>
+              ))}
+            </div>
+
+            {/* CTA card — narrower than hero copy column for rhythm */}
+            <Card className="relative mb-2 overflow-hidden border-[var(--border)] bg-[var(--bg-card)]" style={{ maxWidth: 460 }}>
               <div
-                className="mb-4 rounded-md border px-4 py-2.5 font-serif text-[12.5px] tracking-[0.05em]"
-                style={{
-                  background: "var(--accent-soft)",
-                  borderColor: "var(--accent-mid)",
-                  color: "var(--accent)",
-                }}
-              >
-                ◈ {t("sakuraMission")}
-              </div>
-
-              {/* 3 cultural pills */}
-              <div className="mb-4 flex flex-wrap gap-2">
-                {(["sakuraJapanValue1", "sakuraJapanValue2", "sakuraJapanValue3"] as const).map(
-                  (k) => (
-                    <Badge
-                      key={k}
-                      variant="outline"
-                      className="border-[var(--border)] bg-[var(--bg-base)] px-2.5 py-1 font-sans text-[10.5px] font-normal tracking-[0.03em]"
-                      style={{ color: "var(--text-secondary)" }}
-                    >
-                      {t(k)}
-                    </Badge>
-                  )
-                )}
-              </div>
-
-              {/* 4 tech primitive bullets */}
-              <div className="flex flex-col gap-1.5">
-                {(["sakuraTech1", "sakuraTech2", "sakuraTech3", "sakuraTech4"] as const).map(
-                  (k) => (
-                    <div
-                      key={k}
-                      className="flex items-center gap-2 rounded border border-[var(--border)] bg-[var(--bg-base)] px-3 py-1.5 font-mono text-[11px] leading-[1.6] tracking-[0.015em]"
-                      style={{ color: "var(--text-secondary)" }}
-                    >
-                      <ArrowRight
-                        className="h-3 w-3 flex-shrink-0"
-                        style={{ color: "var(--accent)", opacity: 0.7 }}
-                      />
-                      <span>{t(k)}</span>
+                className="absolute left-0 right-0 top-0 h-[2px]"
+                style={{ background: "var(--accent)" }}
+              />
+              <CardContent className="p-6 text-left sm:p-7">
+                {walletAddress ? (
+                  <>
+                    <div className="mb-2.5 flex items-center gap-2">
+                      <span className="inline-block h-[7px] w-[7px] rounded-full bg-[var(--green)]" />
+                      <span className="jp-heading text-[14px] tracking-[0.06em] text-[var(--text-primary)]">
+                        {t("connectedWallet")}
+                      </span>
                     </div>
-                  )
+                    <div
+                      className="mb-5 font-mono text-[12px] tracking-[0.05em]"
+                      style={{ color: "var(--text-muted)" }}
+                    >
+                      {walletAddress.slice(0, 6)}…{walletAddress.slice(-6)}
+                    </div>
+                    <Button
+                      onClick={onEnterApp}
+                      size="lg"
+                      className="w-full font-serif tracking-[0.06em]"
+                      style={{ background: "var(--accent)", color: "#fff" }}
+                    >
+                      {t("enterApp")}
+                      <ArrowRight className="ml-1.5 h-4 w-4" />
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <div className="jp-heading mb-1.5 text-[14px] tracking-[0.06em] text-[var(--text-primary)]">
+                      {t("ctaFreeLabel")}
+                    </div>
+                    <p
+                      className="mb-4 text-[12px] leading-[1.8] tracking-[0.02em]"
+                      style={{ color: "var(--text-secondary)" }}
+                    >
+                      {t("ctaFreeDesc")}
+                    </p>
+                    <div className="mb-4 flex flex-wrap gap-2">
+                      {(["ctaFreeBadge1", "ctaFreeBadge2", "ctaFreeBadge3"] as const).map(
+                        (key) => (
+                          <Badge
+                            key={key}
+                            variant="outline"
+                            className="gap-1 border-[var(--border-light)] bg-transparent px-2.5 py-1 font-sans text-[11px] font-normal tracking-[0.04em] text-[var(--text-secondary)]"
+                          >
+                            <CheckCircle2 className="h-3 w-3" style={{ color: "var(--green)" }} />
+                            {t(key)}
+                          </Badge>
+                        )
+                      )}
+                    </div>
+
+                    {showMobileDeepLinks ? (
+                      <MobileDeepLinks lang={lang} />
+                    ) : (
+                      <DesktopConnectButtons
+                        connect={connect}
+                        walletLoading={walletLoading}
+                        phantomAvailable={phantomAvailable}
+                        okxAvailable={okxAvailable}
+                        phantomLabel={t("ctaFreeBtn")}
+                      />
+                    )}
+
+                    <p
+                      className="mt-2.5 text-[10px] tracking-[0.03em]"
+                      style={{ color: "var(--text-muted)" }}
+                    >
+                      {t("ctaSubNote")}
+                    </p>
+
+                    {onTryDemo && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={onTryDemo}
+                        className="mt-3.5 w-full border-dashed border-[var(--border)] bg-transparent text-[12px] font-normal tracking-[0.06em]"
+                        style={{ color: "var(--text-muted)" }}
+                      >
+                        <PlayCircle className="mr-1.5 h-3.5 w-3.5" />
+                        {lang === "zh"
+                          ? "無需錢包，體驗 Demo"
+                          : lang === "ja"
+                            ? "ウォレット不要でデモを体験"
+                            : "Try Demo (no wallet needed)"}
+                      </Button>
+                    )}
+                  </>
                 )}
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           </div>
-        </CardContent>
-      </Card>
+        </section>
 
-      {/* ═══════════════════════════════════════════════════════════════
-          Four Agent Cards — 意 証 鎖 価
-          ═══════════════════════════════════════════════════════════════ */}
-      <div className="mb-4">
-        <div
-          className="jp-heading mb-4 text-[10.5px] font-normal uppercase tracking-[0.2em]"
-          style={{ color: "var(--text-muted)" }}
-        >
-          {t("agentsTitle")}
-        </div>
-        <KyokaiDivider className="mb-4" />
+        {/* ═══════════════════════════════════════════════════════════════
+            壱 · Four Guardians — 意 証 鎖 価  (4-col on desktop)
+            ═══════════════════════════════════════════════════════════════ */}
+        <SectionHeading numeral="壱" title={t("agentsTitle")} />
 
         <div
-          className="feature-grid relative grid grid-cols-1 overflow-hidden rounded-lg border sm:grid-cols-2"
+          className="landing-agents relative grid overflow-hidden rounded-lg border"
           style={{ borderColor: "var(--border)", background: "var(--bg-card)" }}
         >
           <Shippo
@@ -464,19 +343,10 @@ export default function WalletConnect({
             opacity={0.04}
             size={40}
           />
-          {AGENT_KEYS.map((a, idx) => (
+          {AGENT_KEYS.map((a) => (
             <div
               key={a.tag}
-              className="relative z-10 p-6 transition-colors hover:bg-[var(--bg-card-2)]/60"
-              style={{
-                // Hairline dividers between cards — bottom border on top
-                // row, right border on left column. No top-border color
-                // bar (that was creating the red horizontal slice).
-                borderRight:
-                  idx % 2 === 0 ? "1px solid var(--border)" : "none",
-                borderBottom:
-                  idx < 2 ? "1px solid var(--border)" : "none",
-              }}
+              className="landing-agent-cell relative z-10 p-6 transition-colors hover:bg-[var(--bg-card-2)]/60"
             >
               <div className="mb-3 flex items-center gap-2.5">
                 <div
@@ -498,13 +368,13 @@ export default function WalletConnect({
                 </span>
               </div>
               <h3
-                className="jp-heading mb-1.5 text-[13.5px] font-normal tracking-[0.04em]"
+                className="jp-heading mb-1.5 text-[14px] font-normal tracking-[0.04em]"
                 style={{ color: "var(--text-primary)" }}
               >
                 {t(a.titleKey)}
               </h3>
               <p
-                className="text-[11.5px] leading-[1.9]"
+                className="text-[12px] leading-[1.9]"
                 style={{ color: "var(--text-secondary)" }}
               >
                 {t(a.descKey)}
@@ -512,176 +382,377 @@ export default function WalletConnect({
             </div>
           ))}
         </div>
-      </div>
 
-      <Separator className="my-6 bg-[var(--border)]" />
+        {/* ═══════════════════════════════════════════════════════════════
+            弐 · 桜の物語 Origin — narrative (left) + tech primitives (right)
+            ═══════════════════════════════════════════════════════════════ */}
+        <SectionHeading numeral="弐" title={t("sakuraOriginBadge")} />
 
-      {/* ═══════════════════════════════════════════════════════════════
-          Differentiator — 証
-          ═══════════════════════════════════════════════════════════════ */}
-      <Card className="mb-3 border-[var(--border)] bg-[var(--bg-card)]">
-        <div
-          className="absolute left-0 top-0 h-full w-[2px]"
-          style={{ background: "var(--accent)" }}
-        />
-        <CardContent className="relative flex items-start gap-4 p-5">
-          <div
-            className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md font-serif text-[13px]"
-            style={{
-              background: "var(--accent-soft)",
-              border: "1px solid var(--accent-mid)",
-              color: "var(--accent)",
-            }}
-          >
-            証
-          </div>
-          <div className="min-w-0 flex-1">
-            <h3
-              className="jp-heading mb-1.5 text-[13.5px] font-normal tracking-[0.04em]"
-              style={{ color: "var(--text-primary)" }}
-            >
-              {t("diffTitle")}
-            </h3>
-            <p
-              className="whitespace-pre-line text-[12px] leading-[1.95] tracking-[0.02em]"
-              style={{ color: "var(--text-secondary)" }}
-            >
-              {t("diffDesc")}
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* ═══════════════════════════════════════════════════════════════
-          x402 — Stripe MPP
-          ═══════════════════════════════════════════════════════════════ */}
-      <Card className="relative mb-3 overflow-hidden border-[var(--border)] bg-[var(--bg-card)]">
-        <div
-          className="absolute left-0 top-0 h-full w-[2px]"
-          style={{ background: "#635BFF" }}
-        />
-        <Asanoha
-          className="pointer-events-none absolute inset-0 z-0"
-          opacity={0.025}
-          size={52}
-        />
-        <CardContent className="relative z-10 p-5">
-          <div className="mb-2.5 flex items-center gap-2.5">
+        <div className="landing-origin grid gap-5">
+          <Card className="relative overflow-hidden border-[var(--border)] bg-[var(--bg-card)]">
             <div
-              className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md"
+              className="absolute left-0 top-0 h-full w-[3px]"
+              style={{ background: "var(--accent)" }}
+            />
+            <Seigaiha
+              className="pointer-events-none absolute inset-0"
+              opacity={0.035}
+              size={44}
+            />
+            <CardContent className="relative z-10 p-7">
+              <div className="flex items-start gap-5">
+                <div
+                  className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-[10px] font-serif text-[22px]"
+                  style={{
+                    background: "var(--accent-soft)",
+                    border: "1px solid var(--accent-mid)",
+                    color: "var(--accent)",
+                    boxShadow: "0 2px 12px rgba(255,75,75,0.1)",
+                  }}
+                >
+                  桜
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h2
+                    className="jp-heading mb-3 text-[16px] font-normal tracking-[0.07em]"
+                    style={{ color: "var(--text-primary)" }}
+                  >
+                    {t("sakuraWho")}
+                  </h2>
+                  <p
+                    className="mb-4 whitespace-pre-line text-[13px] leading-[2.0] tracking-[0.015em]"
+                    style={{ color: "var(--text-secondary)" }}
+                  >
+                    {t("sakuraCharacterDesc")}
+                  </p>
+                  <div
+                    className="mb-4 rounded-md border px-4 py-2.5 font-serif text-[13px] tracking-[0.05em]"
+                    style={{
+                      background: "var(--accent-soft)",
+                      borderColor: "var(--accent-mid)",
+                      color: "var(--accent)",
+                    }}
+                  >
+                    ◈ {t("sakuraMission")}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {(["sakuraJapanValue1", "sakuraJapanValue2", "sakuraJapanValue3"] as const).map(
+                      (k) => (
+                        <Badge
+                          key={k}
+                          variant="outline"
+                          className="border-[var(--border)] bg-[var(--bg-base)] px-2.5 py-1 font-sans text-[11px] font-normal tracking-[0.03em]"
+                          style={{ color: "var(--text-secondary)" }}
+                        >
+                          {t(k)}
+                        </Badge>
+                      )
+                    )}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-[var(--border)] bg-[var(--bg-card)]">
+            <CardContent className="p-7">
+              <div
+                className="jp-heading mb-4 text-[11px] font-normal uppercase tracking-[0.2em]"
+                style={{ color: "var(--text-muted)" }}
+              >
+                {lang === "zh"
+                  ? "技術根幹 / Technical Primitives"
+                  : lang === "ja"
+                    ? "技術の根幹 / Technical Primitives"
+                    : "Technical Primitives"}
+              </div>
+              <div className="flex flex-col gap-2">
+                {(["sakuraTech1", "sakuraTech2", "sakuraTech3", "sakuraTech4"] as const).map(
+                  (k) => (
+                    <div
+                      key={k}
+                      className="flex items-center gap-2 rounded border border-[var(--border)] bg-[var(--bg-base)] px-3 py-2 font-mono text-[11.5px] leading-[1.7] tracking-[0.015em]"
+                      style={{ color: "var(--text-secondary)" }}
+                    >
+                      <ArrowRight
+                        className="h-3.5 w-3.5 flex-shrink-0"
+                        style={{ color: "var(--accent)", opacity: 0.7 }}
+                      />
+                      <span>{t(k)}</span>
+                    </div>
+                  )
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* ═══════════════════════════════════════════════════════════════
+            参 · 差別化 Distinction
+            ═══════════════════════════════════════════════════════════════ */}
+        <SectionHeading numeral="参" title={t("diffTitle")} />
+
+        <Card className="relative border-[var(--border)] bg-[var(--bg-card)]">
+          <div
+            className="absolute left-0 top-0 h-full w-[3px]"
+            style={{ background: "var(--accent)" }}
+          />
+          <CardContent className="relative flex items-start gap-5 p-7">
+            <div
+              className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-md font-serif text-[15px]"
               style={{
-                background: "#635BFF20",
-                border: "1px solid #635BFF40",
-                color: "#8B87FF",
+                background: "var(--accent-soft)",
+                border: "1px solid var(--accent-mid)",
+                color: "var(--accent)",
               }}
             >
-              <FileBadge className="h-4 w-4" />
+              証
             </div>
-            <h3
-              className="jp-heading text-[13.5px] font-normal tracking-[0.04em]"
-              style={{ color: "var(--text-primary)" }}
-            >
-              {t("stripeSectionTitle")}
-            </h3>
-          </div>
-          <p
-            className="mb-3 text-[12px] leading-[1.95] tracking-[0.02em]"
-            style={{ color: "var(--text-secondary)" }}
-          >
-            {t("stripeSectionDesc")}
-          </p>
-          <div className="mb-2.5 flex flex-col gap-1.5">
-            {(["stripeFeature1", "stripeFeature2", "stripeFeature3"] as const).map((k) => (
-              <div
-                key={k}
-                className="rounded border border-[var(--border)] bg-transparent px-3 py-1.5 text-[11px] tracking-[0.03em]"
+            <div className="min-w-0 flex-1">
+              <p
+                className="whitespace-pre-line text-[13px] leading-[2.0] tracking-[0.02em]"
                 style={{ color: "var(--text-secondary)" }}
               >
-                {t(k)}
+                {t("diffDesc")}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* ═══════════════════════════════════════════════════════════════
+            肆 · x402 — Stripe MPP
+            ═══════════════════════════════════════════════════════════════ */}
+        <SectionHeading numeral="肆" title={t("stripeSectionTitle")} />
+
+        <Card className="relative overflow-hidden border-[var(--border)] bg-[var(--bg-card)]">
+          <div
+            className="absolute left-0 top-0 h-full w-[3px]"
+            style={{ background: "#635BFF" }}
+          />
+          <Asanoha
+            className="pointer-events-none absolute inset-0 z-0"
+            opacity={0.025}
+            size={52}
+          />
+          <CardContent className="relative z-10 p-7">
+            <div className="mb-3 flex items-center gap-2.5">
+              <div
+                className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-md"
+                style={{
+                  background: "#635BFF20",
+                  border: "1px solid #635BFF40",
+                  color: "#8B87FF",
+                }}
+              >
+                <FileBadge className="h-4 w-4" />
+              </div>
+              <span
+                className="font-mono text-[10.5px] tracking-[0.2em]"
+                style={{ color: "#8B87FF" }}
+              >
+                HTTP 402 · STRIPE MPP
+              </span>
+            </div>
+            <p
+              className="mb-4 text-[13px] leading-[2.0] tracking-[0.02em]"
+              style={{ color: "var(--text-secondary)", maxWidth: 720 }}
+            >
+              {t("stripeSectionDesc")}
+            </p>
+            <div className="mb-3 grid gap-2 sm:grid-cols-3">
+              {(["stripeFeature1", "stripeFeature2", "stripeFeature3"] as const).map((k) => (
+                <div
+                  key={k}
+                  className="rounded border border-[var(--border)] bg-transparent px-3 py-2 text-[11.5px] leading-[1.7] tracking-[0.03em]"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  {t(k)}
+                </div>
+              ))}
+            </div>
+            <div
+              className="mt-4 rounded border border-[var(--border)] bg-[var(--bg-base)] px-3 py-2 font-mono text-[11px] tracking-[0.05em]"
+              style={{ color: "var(--text-muted)" }}
+            >
+              POST /api/mcp · HTTP 402 · x402-payment: 1.00 USDC · Solana Mainnet
+            </div>
+            <div className="mt-4 flex justify-end">
+              <a
+                href="/mcp"
+                className="inline-flex items-center gap-1 font-mono text-[11.5px] tracking-[0.08em] transition-opacity hover:opacity-80"
+                style={{ color: "#8B87FF" }}
+              >
+                MCP API 文檔 / Docs / ドキュメント
+                <ArrowRight className="h-3 w-3" />
+              </a>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* ═══════════════════════════════════════════════════════════════
+            伍 · Stats + 陸 · Protocols — two columns on desktop
+            ═══════════════════════════════════════════════════════════════ */}
+        <SectionHeading numeral="伍" title={
+          lang === "zh" ? "数字で見る · 實力的證明"
+          : lang === "ja" ? "数字で見る"
+          : "By the Numbers"
+        } />
+
+        <div className="landing-stats-row grid gap-5">
+          <div className="landing-stats grid grid-cols-2 gap-px overflow-hidden rounded-lg bg-[var(--border)] sm:grid-cols-4">
+            {STATS.map((s) => (
+              <div
+                key={s.labelKey}
+                className="bg-[var(--bg-card)] px-4 py-6 text-center transition-colors hover:bg-[var(--bg-card-2)]/60"
+              >
+                <div className="jp-mono text-[26px] font-bold">
+                  <AnimatedNumber
+                    value={s.numValue}
+                    suffix={s.suffix}
+                    decimals={s.numValue % 1 !== 0 ? 1 : 0}
+                    duration={1400}
+                    style={{ color: "var(--gold)", fontFamily: "var(--font-mono)" }}
+                  />
+                </div>
+                <div
+                  className="mt-2 text-[11px] leading-[1.5] tracking-[0.08em]"
+                  style={{ color: "var(--text-muted)" }}
+                >
+                  {t(s.labelKey)}
+                </div>
               </div>
             ))}
           </div>
-          <div
-            className="mt-3 rounded border border-[var(--border)] bg-[var(--bg-base)] px-3 py-2 font-mono text-[10.5px] tracking-[0.05em]"
-            style={{ color: "var(--text-muted)" }}
-          >
-            POST /api/mcp · HTTP 402 · x402-payment: 1.00 USDC · Solana Mainnet
-          </div>
-          <div className="mt-3 flex justify-end">
-            <a
-              href="/mcp"
-              className="inline-flex items-center gap-1 font-mono text-[11px] tracking-[0.06em] transition-opacity hover:opacity-80"
-              style={{ color: "#8B87FF" }}
-            >
-              <ArrowRight className="h-3 w-3" />
-              MCP API 文檔 / Docs / ドキュメント
-            </a>
-          </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      <Separator className="my-6 bg-[var(--border)]" />
+        <SectionHeading numeral="陸" title={t("integratedProtocols")} />
 
-      {/* ═══════════════════════════════════════════════════════════════
-          Stats strip — 4 tiles
-          ═══════════════════════════════════════════════════════════════ */}
-      <div className="stats-grid mb-3 grid grid-cols-2 gap-px overflow-hidden rounded-lg bg-[var(--border)] sm:grid-cols-4">
-        {STATS.map((s) => (
-          <div
-            key={s.labelKey}
-            className="bg-[var(--bg-card)] px-4 py-5 text-center transition-colors hover:bg-[var(--bg-card-2)]/60"
-          >
-            <div className="jp-mono text-[22px] font-bold">
-              <AnimatedNumber
-                value={s.numValue}
-                suffix={s.suffix}
-                decimals={s.numValue % 1 !== 0 ? 1 : 0}
-                duration={1400}
-                style={{ color: "var(--gold)", fontFamily: "var(--font-mono)" }}
-              />
+        <Card className="border-[var(--border)] bg-[var(--bg-card)]">
+          <CardContent className="p-6">
+            <div className="flex flex-wrap gap-2">
+              {PROTOCOLS.map((name) => (
+                <Badge
+                  key={name}
+                  variant="outline"
+                  className="border-[var(--border)] bg-[var(--bg-base)] px-3 py-1.5 font-sans text-[12px] font-normal tracking-[0.03em]"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  {name}
+                </Badge>
+              ))}
             </div>
-            <div
-              className="mt-1 text-[10.5px] leading-[1.5] tracking-[0.06em]"
-              style={{ color: "var(--text-muted)" }}
-            >
-              {t(s.labelKey)}
-            </div>
+          </CardContent>
+        </Card>
+
+        {/* Closing mark */}
+        <div
+          className="landing-closing text-center"
+          style={{ color: "var(--text-muted)" }}
+        >
+          <HairlineDivider width={260} className="mx-auto mb-3" />
+          <div className="text-[11px] tracking-[0.2em]">
+            {t("footerText")}
           </div>
-        ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// 「美人觀印」Composition — bijin gazes toward the 朱印 seal,
+// connected by a fine gold gaze-line with a tiny seal-dot midpoint.
+// Responsive: side-by-side on ≥sm, stacked on mobile.
+// ═══════════════════════════════════════════════════════════════════
+function BijinSealComposition() {
+  return (
+    <div className="bijin-seal-composition" aria-hidden={false}>
+      {/* 和美人 ukiyo-e — facing right, toward the seal */}
+      <div className="bijin-frame">
+        <WaBijinSVG size={240} height={320} />
       </div>
 
-      {/* ═══════════════════════════════════════════════════════════════
-          Protocol ecosystem
-          ═══════════════════════════════════════════════════════════════ */}
-      <Card className="mb-4 border-[var(--border)] bg-[var(--bg-card)]">
-        <CardContent className="p-4">
-          <div
-            className="mb-2.5 font-mono text-[9.5px] uppercase tracking-[0.18em]"
-            style={{ color: "var(--text-muted)" }}
-          >
-            {t("integratedProtocols")}
-          </div>
-          <div className="flex flex-wrap gap-1.5">
-            {PROTOCOLS.map((name) => (
-              <Badge
-                key={name}
-                variant="outline"
-                className="border-[var(--border)] bg-[var(--bg-base)] px-2.5 py-0.5 font-sans text-[11px] font-normal tracking-[0.03em]"
-                style={{ color: "var(--text-secondary)" }}
-              >
-                {name}
-              </Badge>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      <div
-        className="text-center text-[10px] tracking-[0.08em]"
-        style={{ color: "var(--text-muted)" }}
-      >
-        {t("footerText")}
+      {/* 視線 gaze-line connecting bijin → seal */}
+      <div className="bijin-gazeline" aria-hidden>
+        <span className="bijin-gazeline-rule" />
+        <span className="bijin-gazeline-dot" />
+        <span className="bijin-gazeline-rule" />
       </div>
+
+      {/* 朱印 seal — the anchor she gazes toward */}
+      <div className="bijin-seal">
+        <SakuraSeal size={260} />
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Section Heading — 壱/弐/参 numeral + mincho title + full-width
+// hairline rule beneath. Kiyomizu-style section opener.
+// ═══════════════════════════════════════════════════════════════════
+function SectionHeading({
+  numeral,
+  title,
+}: {
+  numeral: string;
+  title: string;
+}) {
+  return (
+    <div className="landing-section-heading">
+      <div className="landing-section-heading-row">
+        <span
+          className="landing-section-numeral jp-heading"
+          aria-hidden
+        >
+          {numeral}
+        </span>
+        <span
+          className="landing-section-numeral-rule"
+          aria-hidden
+        />
+        <h2 className="landing-section-title jp-heading">{title}</h2>
+      </div>
+      <div className="landing-section-fullrule" aria-hidden />
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Hairline divider — gold fade with centered seal dot.
+// ═══════════════════════════════════════════════════════════════════
+function HairlineDivider({
+  width = 220,
+  className = "",
+}: {
+  width?: number;
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn("flex items-center gap-2", className)}
+      style={{ width, maxWidth: "100%" }}
+    >
+      <span
+        className="h-px flex-1"
+        style={{
+          background:
+            "linear-gradient(to right, transparent, var(--gold) 40%, var(--gold) 60%, transparent)",
+          opacity: 0.55,
+        }}
+      />
+      <span
+        className="inline-block h-1.5 w-1.5 rounded-full"
+        style={{ background: "var(--accent)" }}
+      />
+      <span
+        className="h-px flex-1"
+        style={{
+          background:
+            "linear-gradient(to right, transparent, var(--gold) 40%, var(--gold) 60%, transparent)",
+          opacity: 0.55,
+        }}
+      />
     </div>
   );
 }
@@ -703,7 +774,7 @@ function NavLink({
     <a
       href={href}
       className={cn(
-        "jp-heading text-[14px] tracking-[0.18em] transition-colors",
+        "jp-heading text-[13px] tracking-[0.2em] transition-colors",
         accent
           ? "text-[var(--accent)] hover:opacity-75"
           : "text-[var(--text-primary)] hover:text-[var(--accent)]"

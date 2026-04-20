@@ -61,9 +61,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const isDayMode = false;
   const [timeBg, setTimeBg] = useState<TimeBg>(getTimeColor());
 
-  useEffect(() => {
-    document.body.style.background = "#0E0C0A";
-  }, []);
+  // Legacy dark-only forced `body.background = "#0E0C0A"` here, which
+  // clobbered the 和紙 washi cream theme from globals.css. Removed —
+  // body now correctly inherits --bg-base (#EDE4D3).
 
   useEffect(() => {
     const tick = () => setTimeBg(getTimeColor());

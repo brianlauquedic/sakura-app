@@ -29,7 +29,14 @@ function AppContent() {
     <main className="min-h-screen" style={{
       background: "var(--bg-base)",
     }}>
-      <div className="main-container" style={{ maxWidth: 860, margin: "0 auto", padding: "40px 24px" }}>
+      <div
+        className="main-container"
+        style={{
+          maxWidth: showApp ? 860 : 1280,
+          margin: "0 auto",
+          padding: showApp ? "40px 24px" : "0",
+        }}
+      >
         {!showApp ? (
           <WalletConnect
             walletAddress={walletAddress}
@@ -37,7 +44,7 @@ function AppContent() {
             onTryDemo={() => { setIsDemo(true); window.history.pushState({}, "", "/?demo=true"); }}
           />
         ) : (
-          <>
+          <div style={{ padding: "40px 0" }}>
             {/* ── Demo mode banner ── */}
             {isDemo && (
               <div style={{
@@ -163,7 +170,7 @@ function AppContent() {
                 <ActionHistory />
               </ErrorBoundary>
             </div>
-          </>
+          </div>
         )}
       </div>
       <Footer />

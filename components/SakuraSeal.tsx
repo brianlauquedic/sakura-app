@@ -49,48 +49,67 @@ export default function SakuraSeal({
         style={{ display: "block" }}
       >
         <defs>
-          {/* 家紋 Kamon — cherry-blossom crest pattern.
-              Rendered subtle gold on red; the "若隱若現" effect. */}
+          {/* 家紋 Kamon — cherry-blossom crest pattern, larger + slightly
+              more present so it reads as 「若隱若現」gold-leaf kamon
+              rather than invisible noise. Two layers: a sparse large
+              crest grid + a tiny petal fill for texture between crests. */}
           <pattern
             id="sakura-kamon"
             x="0"
             y="0"
-            width="34"
-            height="34"
+            width="48"
+            height="48"
             patternUnits="userSpaceOnUse"
           >
-            <g fill="rgba(230, 201, 101, 0.14)">
-              {/* 5-petal sakura crest */}
-              <circle cx="17" cy="17" r="2.2" />
-              <ellipse cx="17" cy="8" rx="1.8" ry="3.2" />
+            {/* Large 5-petal sakura crest — gold-leaf */}
+            <g
+              fill="rgba(230, 201, 101, 0.26)"
+              stroke="rgba(230, 201, 101, 0.18)"
+              strokeWidth="0.3"
+            >
+              <circle cx="24" cy="24" r="3.2" />
+              <ellipse cx="24" cy="12" rx="2.6" ry="4.6" />
               <ellipse
-                cx="25"
-                cy="13"
-                rx="1.8"
-                ry="3.2"
-                transform="rotate(72 25 13)"
+                cx="35.4"
+                cy="19.4"
+                rx="2.6"
+                ry="4.6"
+                transform="rotate(72 35.4 19.4)"
               />
               <ellipse
-                cx="23"
-                cy="23"
-                rx="1.8"
-                ry="3.2"
-                transform="rotate(144 23 23)"
+                cx="32.7"
+                cy="32.7"
+                rx="2.6"
+                ry="4.6"
+                transform="rotate(144 32.7 32.7)"
               />
               <ellipse
-                cx="11"
-                cy="23"
-                rx="1.8"
-                ry="3.2"
-                transform="rotate(216 11 23)"
+                cx="15.3"
+                cy="32.7"
+                rx="2.6"
+                ry="4.6"
+                transform="rotate(216 15.3 32.7)"
               />
               <ellipse
-                cx="9"
-                cy="13"
-                rx="1.8"
-                ry="3.2"
-                transform="rotate(288 9 13)"
+                cx="12.6"
+                cy="19.4"
+                rx="2.6"
+                ry="4.6"
+                transform="rotate(288 12.6 19.4)"
               />
+            </g>
+            {/* Small offset crest — quarter-turn, fainter, fills between */}
+            <g fill="rgba(230, 201, 101, 0.13)">
+              <circle cx="48" cy="48" r="1.6" />
+              <ellipse cx="48" cy="43" rx="1.2" ry="2.2" />
+              <ellipse cx="53" cy="46.2" rx="1.2" ry="2.2" transform="rotate(72 53 46.2)" />
+              <ellipse cx="51.8" cy="51.8" rx="1.2" ry="2.2" transform="rotate(144 51.8 51.8)" />
+              <ellipse cx="44.2" cy="51.8" rx="1.2" ry="2.2" transform="rotate(216 44.2 51.8)" />
+              <ellipse cx="43" cy="46.2" rx="1.2" ry="2.2" transform="rotate(288 43 46.2)" />
+            </g>
+            <g fill="rgba(230, 201, 101, 0.13)">
+              <circle cx="0" cy="0" r="1.6" />
+              <ellipse cx="0" cy="-5" rx="1.2" ry="2.2" />
             </g>
           </pattern>
 
