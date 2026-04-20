@@ -28,9 +28,9 @@ export const translations = {
     ja: "AI エージェントのために作られ、数学によって強制される。",
   },
   heroSubtitle: {
-    zh: "如 HTTPS 之於加密網絡、SWIFT 之於跨境結算——靠數學成立，不靠政策。",
-    en: "Like HTTPS for the encrypted web. Like SWIFT for cross-border settlement. Held together by math, not policy.",
-    ja: "暗号化 web の HTTPS、国境決済の SWIFT のように——数学が支え、政策ではない。",
+    zh: "SWIFT 是跨境的一層，HTTPS 是加密的一層，Sakura 是代理的一層。",
+    en: "SWIFT is the layer for cross-border. HTTPS is the layer for encryption. Sakura is the layer for agents.",
+    ja: "SWIFT が国境の層、HTTPS が暗号化の層、Sakura がエージェントの層。",
   },
 
   // ── Features (3 core) ─────────────────────────────────────────────
@@ -65,11 +65,11 @@ export const translations = {
   },
 
   // ── Differentiator ────────────────────────────────────────────────
-  diffTitle: { zh: "同一道驗證題，每家錢包都得解。該解一次，不該解四次。", en: "The same verification problem. Every wallet has it. It should be solved once.", ja: "同じ検証問題を、どのウォレットも抱える。解くのは一度でよい。" },
+  diffTitle: { zh: "這道題該解一次，不該解四次。", en: "Solved once. Not four times.", ja: "一度で済ませる問題を、四度解かない。" },
   diffDesc: {
-    zh: "每家代理錢包都要做同一套檢查——已簽意圖、Pyth 價格、150 塊新鮮度、nonce 防重放。各自從零建造，以工程師季度計價，每次協議升級都要重做。\n\nSakura 做成公用。前 \\$10M 整合量免費，之後 0.1% 名義金額自動路由至協議金庫，15% 進 3/5 多簽平台財庫。\n\nSWIFT 日清算 \\$6 兆、Visa Interchange 年捕獲 \\$300 億、HTTPS 憑證三十年按次收費、黃金保管 \\$12 兆基年 0.3%——皆法幣定價、獨立運營、機制自鎖。Sakura 走同路。",
-    en: "Every agentic gate runs the same four checks — signed intent, Pyth price against on-chain state, 150-block slot freshness, nonce replay guard. Built independently by each wallet, the cost is measured in engineer-quarters and recurs on every protocol upgrade.\n\nSakura ships it once. First \\$10M of notional routed by early integrators is fully rebated. Beyond that, 0.1% is routed to the protocol fee vault, 15% to a 3-of-5 multisig-governed treasury.\n\nThe pattern is familiar. SWIFT clears \\$6T in daily settlement. Visa Interchange captures \\$30B annually. HTTPS certificate issuance has operated on cents-per-issuance for three decades. Gold custody prices 0.3% on a \\$12T base. Each is fiat-priced, independently operated, and bound by a mechanism the operators cannot unilaterally override. Sakura is built on the same template.",
-    ja: "エージェントゲートはどれも同じ 4 つを検証する——署名済み意図、オンチェーン状態と Pyth 価格の一致、150 ブロックのスロット新鮮度、ノンス再生防止。各ウォレットが個別に構築すれば、コストはエンジニア四半期単位で発生し、プロトコルアップグレード毎に再発する。\n\nSakura はこれを一度届ける。最初の \\$10M の名目額は第一波統合者に無料、以降は名目額の 0.1% がプロトコル手数料金庫へ、15% が 3/5 マルチシグのトレジャリーへ。\n\nパターンは既知のものである。SWIFT は日々 \\$6 兆を清算する。Visa Interchange は年 \\$300 億を捕獲する。HTTPS 証明書発行は 30 年、1 発行あたり数セントで運営されてきた。金保管は \\$12 兆の資産基盤に年 0.3% を課す。いずれも法定通貨建て、独立運営、運営者が機構を一方的に書き換えられない設計。Sakura は同じテンプレートに基づく。",
+    zh: "每道代理閘門驗證四件事：已簽意圖、Pyth 價格、150 塊新鮮度、nonce 防重放。各自建造，工程師季度計。\n\nSakura 做一次給所有人。前 \\$10M 整合量免費，之後 0.1% 名義金額自動路由至協議金庫。\n\nSWIFT 日清算 \\$6 兆，Visa Interchange 年捕獲 \\$300 億，HTTPS 憑證三十年按次收費，黃金保管 \\$12 兆基年費 0.3%——皆法幣定價、獨立運營、機制自鎖。Sakura 走同一範式。",
+    en: "Every agentic gate runs the same four checks — signed intent, Pyth price, 150-block freshness, replay guard. Built independently, the cost is measured in engineer-quarters.\n\nSakura ships it once, for everyone. First \\$10M of notional from early integrators is rebated. Beyond, 0.1% routes to the protocol fee vault.\n\nSWIFT clears \\$6T daily. Visa Interchange captures \\$30B annually. HTTPS has priced cents per issuance for thirty years. Gold custody prices 0.3% on a \\$12T base. Each is fiat-priced, independently operated, bound by a mechanism operators cannot override. Same template.",
+    ja: "各ゲートは同じ 4 つを検証する——署名済み意図、Pyth 価格、150 ブロック新鮮度、再生防止。個別構築すれば、コストはエンジニア四半期単位。\n\nSakura は一度作り、すべてのウォレットに届ける。第一波統合者の最初の \\$10M の名目額は無料、以降は 0.1% がプロトコル手数料金庫へ。\n\nSWIFT は日々 \\$6 兆を清算。Visa Interchange は年 \\$300 億を捕獲。HTTPS は 30 年、1 発行あたり数セント。金保管は \\$12 兆に年 0.3%。いずれも法定通貨建て、独立運営、運営者が機構を書き換えられない。同じテンプレート。",
   },
 
   // ── Sakura Character Narrative ───────────────────────────────────
@@ -84,9 +84,9 @@ export const translations = {
     ja: "Sakura · Solana alt_bn128 上の Groth16 ペアリング検証器 · プロトコル 1.17+",
   },
   sakuraCharacterDesc: {
-    zh: "Mt.Gox、OKEx、FTX——亞洲散戶用三次本金學會一件事：託管即生死。\n\nAI 代理走到同樣岔口。會話金鑰、白名單、彈窗確認——業界折中一貫是「請相信運營方」。信誓旦旦，屢試屢敗。\n\nSakura 把這題交給數學。用戶以自然語言簽一句邊界，經 Poseidon 壓為 32 位元組承諾上鏈。代理每一次動作都須附一份 Groth16 證明，落不進承諾範圍就不落地。alt_bn128 配對系統呼叫在鏈上驗證。\n\nSWIFT 日清算 \\$6 兆、HTTPS 憑證三十年按次收費、黃金保管 \\$12 兆基年費 0.3%——基礎設施之所以成立，是運營方自己也動不了機制。運營方動不了規則、維護者動不了規則、治理機構亦動不了。這不是約束越界，是數學上無從越界。\n\n有備無患。",
-    en: "Mt.Gox in 2014. OKEx in 2020. FTX in 2022. Retail learned, at three-times-the-principal tuition, that custody is the end.\n\nAI agents arrive at the same fork. Take the keys, or watch. Every middle ground shipped so far — session keys, allowlists, approval popups — is an operator's promise.\n\nSakura hands the question to mathematics. A user signs one natural-language sentence; Poseidon compresses it into a 32-byte commitment on-chain. Every agent action thereafter must carry a Groth16 proof that it falls inside. Solana's alt_bn128 pairing syscall verifies. Proof passes, the DeFi instruction lands atomically. Proof fails, the transaction reverts.\n\nSWIFT clears \\$6T in daily settlement. HTTPS certificate issuance has priced cents per issuance for three decades. Gold custody still charges 0.3% per year against a \\$12T base. Each is infrastructure that holds because its operators cannot unilaterally override the mechanism. Sakura brings the same discipline to agentic execution.\n\nThe operator cannot widen the rule. The maintainers cannot widen it. No future governance body can. Not a commitment to behave — a structural impossibility.",
-    ja: "Mt.Gox、OKEx、FTX——アジアの個人投資家は元本を 3 度失って学んだ：カストディは終わりである。\n\nAI エージェントは同じ分岐点に立つ。鍵を渡すか、見ているだけか。これまでの妥協案——セッションキー、許可リスト、承認ポップアップ——はすべて運用者の約束にすぎない。\n\nSakura はこの問いを数学に委ねる。ユーザーは自然言語で 1 文の境界を署名する。Poseidon が 32 バイトのコミットメントに圧縮しオンチェーンに書き込む。以降エージェントの各動作は Groth16 証明を伴い、範囲外は着地できない。alt_bn128 ペアリングシステムコールがオンチェーンで検証する。\n\nSWIFT は日々 \\$6 兆を清算する。HTTPS 証明書発行は 30 年、1 発行あたり数セントで運営されてきた。金保管は \\$12 兆の資産基盤に年 0.3% を課す。いずれも、運営者が機構を一方的に書き換えられないがゆえに成立するインフラである。Sakura は同じ規律をエージェント実行にもたらす。\n\n運用者も、保守者も、将来のガバナンス機構も、規則を広げられない。越境しないという約束ではなく、構造的に不可能なのである。",
+    zh: "規則可被覆蓋之處，遲早會被覆蓋。Mt.Gox、OKEx、FTX——亞洲散戶用三次本金買來的定律。\n\nAI 代理走到同一岔口。會話金鑰、白名單、彈窗——皆運營層承諾，皆可被運營方覆蓋。\n\nSakura 交給密碼學。一句邊界，Poseidon 壓為承諾上鏈；代理每一動作附 Groth16 證明，越界不落地。\n\nSWIFT 之於跨境清算，HTTPS 之於加密連線，黃金保管之於兆級財富——皆機制自鎖。運營方、維護者、治理機構，皆動不了。\n\n不是約束越界。是越不了界。有備無患。",
+    en: "Rules get overridden wherever operators can override them. Mt.Gox in 2014, OKEx in 2020, FTX in 2022 — retail paid the tuition three times to learn the law.\n\nAgentic DeFi lands at the same fork. Session keys, allowlists, approval popups — all operator promises.\n\nSakura hands the question to cryptography. One natural-language boundary, Poseidon-compressed into a 32-byte commitment on-chain. Every agent action thereafter ships with a Groth16 proof; outside the commitment, it cannot land.\n\nSWIFT for cross-border settlement. HTTPS for encrypted connections. Gold custody for trillion-dollar wealth. Each holds because its mechanism is beyond operator override. Sakura brings that discipline to agentic execution.\n\nNot a commitment to behave. A mathematical impossibility.",
+    ja: "運営者が上書きできる規則は、いずれ上書きされる。Mt.Gox、OKEx、FTX——アジアの個人投資家が三度の元本で学んだ法則である。\n\nAI エージェントは同じ分岐に立つ。セッションキー、許可リスト、承認ポップアップ——いずれも運営層の約束であり、運営者が上書きできる。\n\nSakura はこの問いを暗号に委ねる。自然言語の境界を 1 文。Poseidon がオンチェーンの 32 バイトコミットメントに圧縮する。エージェントの各動作は Groth16 証明を伴い、境界外では着地しない。\n\nSWIFT が国境決済を、HTTPS が暗号化接続を、金保管が兆単位の富を——いずれも機構が運営者の裁量を超えて成立する。Sakura は同じ規律をエージェント実行にもたらす。\n\n越境しないという約束ではない。数学的に越境できない。",
   },
   sakuraMission: {
     zh: "使命：讓自主託管從一項承諾，變成一條定理。",
