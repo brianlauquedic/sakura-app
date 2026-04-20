@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -416,11 +416,11 @@ h2 {
 </head>
 <body>
 
-<!-- Language switcher (fixed) -->
+<!-- Language switcher (fixed) — order: EN · 日本語 · 中文 -->
 <div class="lang-sw">
-  <button onclick="setLang('zh')" id="btn-zh" class="active">中文</button>
-  <button onclick="setLang('en')" id="btn-en">EN</button>
+  <button onclick="setLang('en')" id="btn-en" class="active">EN</button>
   <button onclick="setLang('ja')" id="btn-ja">日本語</button>
+  <button onclick="setLang('zh')" id="btn-zh">中文</button>
 </div>
 
 <div class="deck" id="deck">
@@ -907,8 +907,7 @@ h2 {
 
     <div class="contact-links">
       <a class="contact-link" href="https://www.sakuraaai.com" target="_blank">🌸 sakuraaai.com</a>
-      <a class="contact-link" href="https://github.com/brianlauquedic/sakura-app" target="_blank">⚙️ github.com/brianlauquedic/sakura-app</a>
-      <a class="contact-link" href="mailto:thatbrianlau@gmail.com">✉️ thatbrianlau@gmail.com</a>
+      <a class="contact-link" href="https://x.com/sakuraaijp" target="_blank">𝕏 x.com/sakuraaijp</a>
     </div>
 
     <div class="watermark">SAKURA · 2026</div>
@@ -985,7 +984,7 @@ function setLang(l) {
 
 /* ── Init ── */
 goTo(1);
-setLang('zh');
+setLang('en');
 </script>
 </body>
 </html>
