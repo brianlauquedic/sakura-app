@@ -62,30 +62,9 @@ export default function AppNav() {
 
       {/* Right: Lang + Wallet */}
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        {/* MCP API link */}
-        <Link
-          href="/mcp"
-          style={{
-            fontSize: 11, fontWeight: 600, color: "var(--text-muted)",
-            textDecoration: "none", letterSpacing: "0.08em",
-            padding: "3px 9px", borderRadius: 5,
-            border: "1px solid var(--border)",
-            background: "var(--bg-card)",
-            fontFamily: "var(--font-mono)",
-            transition: "color 0.15s, border-color 0.15s",
-            whiteSpace: "nowrap",
-          }}
-          onMouseEnter={e => {
-            (e.currentTarget as HTMLAnchorElement).style.color = "var(--accent)";
-            (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--accent)";
-          }}
-          onMouseLeave={e => {
-            (e.currentTarget as HTMLAnchorElement).style.color = "var(--text-muted)";
-            (e.currentTarget as HTMLAnchorElement).style.borderColor = "var(--border)";
-          }}
-        >
-          MCP API
-        </Link>
+        {/* Note: MCP API button removed from top nav — the landing
+            subnav already carries 文檔 / 用例 / MCP API, so repeating
+            it here was redundant. */}
         {/* Language switcher */}
         <div style={{ display: "flex", gap: 2, background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 6, padding: 3 }}>
           {LANG_OPTIONS.map(opt => (

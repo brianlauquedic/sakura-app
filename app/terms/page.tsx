@@ -37,11 +37,12 @@ const CONTENT = {
         ],
       },
       {
-        heading: "4. Core Features",
+        heading: "4. Core Mechanism",
         subsections: [
-          { title: "4.1 Shielded Lending", body: "Uses getProgramAccounts (Solana RPC) to scan all Durable Nonce accounts associated with your wallet and flag authority hijacking risks. The free scan is read-only. The $1.00 USDC AI security report is delivered via x402 (HTTP 402 Payment Required). A SHA-256 hash of each report is permanently recorded on Solana via the Memo Program for independent verification. Results are informational only and do not constitute security guarantees." },
-          { title: "4.2 跨協議救援", body: "Constructs multi-step DeFi transactions from natural-language input and simulates them using Solana-native simulateTransaction against live mainnet state, with sigVerify disabled. Simulation is free. Actual execution via Solana Agent Kit (SAK) is initiated only with your explicit confirmation and incurs a 0.3% platform fee collected via Jupiter Platform Fee. Sakura bears no liability for losses arising from executed strategies." },
-          { title: "4.3 Shielded Lending", body: "Monitors lending position health factors on Kamino, MarginFi, and Solend via getProgramAccounts. Monitoring is free. Rescue execution requires your prior authorization via SPL Token Approve — a token-program-level hard spending cap that Sakura cannot exceed. Rescue transactions are executed by SAK lendAsset() only within the authorized amount. A 1% rescue fee is charged on success. Sakura does not guarantee rescue completion; on-chain conditions, network congestion, or insufficient authorized funds may prevent rescue." },
+          { title: "4.1 Intent Signing", body: "You write your agent's action bounds in natural language — per-action cap, allowed protocols, expiry. Seven policy values fold through a two-layer Poseidon tree into a 32-byte commitment, anchored on-chain in a Program Derived Address seeded by your wallet. The original policy values stay in your browser; only the hash reaches the chain. Signing itself does not execute any DeFi action — it only anchors the bound. A one-time 0.1% fee on notional applies at signing, with the first $10M of integrator volume rebated." },
+          { title: "4.2 ZK Proof Generation & Verification", body: "When your agent attempts an action, the Sakura client generates a Groth16 zero-knowledge proof in your browser, attesting that the action falls inside the signed commitment (amount cap, protocol, action type, live Pyth price, slot freshness). The proof is submitted together with the DeFi instruction inside a single Solana v0 atomic transaction. The on-chain verifier checks the proof via the alt_bn128 pairing syscall in ~116k compute units, before any DeFi instruction is allowed to touch user funds. Proofs expire in sixty seconds. A $0.01 per-action fee covers the on-chain verification cost." },
+          { title: "4.3 Atomic Agentic DeFi Execution", body: "The ZK gate and the DeFi instruction share a single v0 atomic transaction — inseparable. If the proof fails to verify, or if the proof passes but the DeFi instruction itself fails, the entire transaction reverts; user funds are never touched. No gap remains in which the proof passes while the action is suspended mid-flight. Every execution leaves a keccak256 fingerprint on-chain; users, auditors, and counterparties can each reconstruct it independently on Solscan. Sakura does not guarantee execution success for the underlying DeFi instruction itself — failure modes specific to Kamino, MarginFi, Jupiter, Marinade, or any other integrated protocol remain the protocol's own." },
+          { title: "4.4 x402 MCP Server", body: "Sakura operates an MCP server at /api/mcp following the HTTP 402 / x402 Machine Payments Protocol. When a client (Claude Desktop, Cursor, VS Code, or any MCP-compatible implementation) calls the endpoint, the server returns 402 together with a $1 USDC payment demand. Once the caller settles atomically on-chain, the tool result returns in the same response cycle. No account, no OAuth, no subscription — authentication is payment." },
         ],
       },
       {
@@ -60,7 +61,7 @@ const CONTENT = {
               "circumvent geographic restrictions or access the Services from a Restricted Jurisdiction.",
             ],
           },
-          { title: "5.3 Fee Model", body: "Sakura uses a pay-per-use model with no subscription required. Shielded Lending position scans are free; AI security reports cost $1.00 USDC per report, paid via x402. cross-protocol rescue simulations are free; execution incurs a 0.3% platform fee via Jupiter. Shielded Lending monitoring is free; a 1% rescue fee is charged only on successful rescue. All fees are collected on-chain and transparent." },
+          { title: "5.3 Fee Model", body: "Sakura operates on pay-per-use: no accounts, no subscriptions, no business-development gate. The fees are: (a) intent signing — a one-time 0.1% fee on notional, rebated up to the first $10M of integrator volume; (b) agent action — $0.01 per verified action, collected on-chain; (c) x402 MCP endpoint — $1 USDC per /api/mcp call, settled atomically via HTTP 402. All fees are collected on-chain and are transparent. The protocol fee vault is governed by a 3-of-5 multisig, subject to program-level hard ceilings (execution_fee_bps ≤ 2%, platform_fee_bps ≤ 100%). The verifying key is baked into the program at deploy time and cannot be altered without redeployment. No token." },
         ],
       },
       {
@@ -164,11 +165,12 @@ const CONTENT = {
         ],
       },
       {
-        heading: "4. 核心功能",
+        heading: "4. 核心機制",
         subsections: [
-          { title: "4.1 Shielded Lending", body: "以 Solana RPC getProgramAccounts 掃描您錢包關聯的所有 Durable Nonce 賬戶，標記 authority 劫持風險。免費掃描為唯讀操作。$1.00 USDC AI 安全報告透過 x402 協議（HTTP 402 Payment Required）支付解鎖。每份報告的 SHA-256 哈希透過 Memo Program 永久上鏈以供獨立驗證。掃描結果僅供參考，不構成安全保證。" },
-          { title: "4.2 跨協議救援", body: "以自然語言輸入解析多步 DeFi 交易，並利用 Solana 原生 simulateTransaction（sigVerify 關閉）在主網真實狀態下進行預執行模擬。模擬免費。透過 Solana Agent Kit（SAK）的實際執行需要您明確確認，並收取 0.3% 平台費（透過 Jupiter Platform Fee 機制）。Sakura 對已執行策略產生的損失不承擔責任。" },
-          { title: "4.3 Shielded Lending", body: "透過 getProgramAccounts 監控 Kamino、MarginFi 及 Solend 的借貸倉位健康因子。監控免費。救援執行需要您事先透過 SPL Token Approve 授權——此為 token program 層面的硬性支出上限，Sakura 不得超出。救援交易由 SAK lendAsset() 在授權金額範圍內執行。救援成功後收取 1% 服務費。Sakura 不保證救援必然成功；鏈上條件、網路擁堵或授權金額不足均可能導致救援無法完成。" },
+          { title: "4.1 意圖簽署", body: "您以自然語言寫下代理的動作邊界——單次金額上限、允許協議集合、過期時間。七項策略值透過 2 層 Poseidon 樹壓縮為 32 位元組承諾，定錨於以您錢包為種子的 Program Derived Address (PDA) 之中。原始策略值始終留在您的瀏覽器內；鏈上僅見雜湊。簽署本身不執行任何 DeFi 動作——僅將邊界定錨。簽署時收取名義金額 0.1% 的一次性費用；整合者前 \\$10M 的整合量免收。" },
+          { title: "4.2 ZK 證明生成與驗證", body: "代理每次嘗試執行動作時，Sakura 客戶端於您的瀏覽器內生成一份 Groth16 零知識證明，證明此次動作落在已簽承諾的邊界之內（金額上限、協議、動作類型、當下 Pyth 價格、slot 新鮮度）。此證明連同 DeFi 指令，提交於單一 Solana v0 原子交易之內。鏈上驗證器透過 alt_bn128 配對 syscall 驗證證明，耗時約 116k compute units——在任何 DeFi 指令被允許觸及用戶資金之前。證明 60 秒即過期。代理每次動作收取 \\$0.01 手續費，用於覆蓋鏈上驗證成本。" },
+          { title: "4.3 原子性代理 DeFi 執行", body: "ZK 閘門與 DeFi 指令同處於單一 v0 原子交易之內——不可分離。若證明驗證失敗，或證明通過但 DeFi 指令本身失敗，整筆交易回滾；用戶資金從未被動過。不存在「證明通過、動作卻懸空」的縫隙。每一次執行在鏈上留下 keccak256 指紋；用戶、審計師、對手方，皆可在 Solscan 上獨立還原。Sakura 不保證底層 DeFi 指令本身的執行成功——Kamino、MarginFi、Jupiter、Marinade 等協議自身的失敗模式，仍然存在，各協議自負。" },
+          { title: "4.4 x402 MCP 伺服器", body: "Sakura 在 /api/mcp 提供遵循 HTTP 402 / x402 Machine Payments Protocol 的 MCP 伺服器。客戶端（Claude Desktop、Cursor、VS Code，或任意 MCP 相容實作）呼叫端點後，伺服器回傳 402 與一筆 \\$1 USDC 付款請求；呼叫方於鏈上原子結算後，工具結果於同一響應週期內返回。無帳號、無 OAuth、無訂閱——認證即支付。" },
         ],
       },
       {
@@ -187,7 +189,7 @@ const CONTENT = {
               "規避地理限制或從受限司法管轄區存取服務。",
             ],
           },
-          { title: "5.3 收費模式", body: "Sakura 採用按使用付費模式，無需訂閱。Shielded Lending 掃描免費；AI 安全報告每份 $1.00 USDC，透過 x402 支付。cross-protocol routing 模擬免費；執行收取 0.3% 平台費（透過 Jupiter）。Shielded Lending 監控免費；僅在救援成功後收取 1% 服務費。所有費用均在鏈上收取，完全透明可查。" },
+          { title: "5.3 收費模式", body: "Sakura 採用按使用付費模式：無帳號、無訂閱、無商務談判。費用結構為：(a) 意圖簽署——名義金額 0.1% 的一次性費用，整合者前 $10M 整合量免收；(b) 代理動作——每次驗證 $0.01，鏈上收取；(c) x402 MCP 端點——每次 /api/mcp 呼叫 $1 USDC，透過 HTTP 402 原子結算。所有費用皆在鏈上收取，完全透明。協議費金庫由 3-of-5 多簽管理，並受 program-level 硬性上限約束（execution_fee_bps ≤ 2%、platform_fee_bps ≤ 100%）。驗證金鑰於部署時寫入程式，非重新部署不可更改。無代幣。" },
         ],
       },
       {
@@ -291,12 +293,12 @@ const CONTENT = {
         ],
       },
       {
-        heading: "4. AI分析機能",
+        heading: "4. 中核機構",
         subsections: [
-          { title: "4.1 ポートフォリオヘルスチェック", body: "Helius RPCから取得した公開オンチェーンデータに基づき、SolanaウォレットのDeFiポジションとリスクプロファイルのAI生成評価を提供します。結果は情報提供のみを目的としています。" },
-          { title: "4.2 セキュリティ分析", body: "GoPlus Security APIにトークンコントラクトアドレスを送信し、最大5つのセキュリティ側面でリスクスコアリングを実施します。GoPlus評価はサードパーティデータであり、SakuraはGoPlus評価を独自に検証せず、その正確性について責任を負いません。" },
-          { title: "4.3 AIアドバイザー（DeFiアシスタント）", body: "Claude AI搭載のDeFi戦略質問AI会話インターフェースです。すべての回答は情報提供のみです。このインターフェースを通じてトランザクションは実行されません。" },
-          { title: "4.4 AIエージェント（リバランスエージェント）", body: "AI生成のポートフォリオリバランス提案を提供します。エージェントはトレードを実行せず、提案のみを生成します。提案に基づく行動はすべてお客様の裁量とリスクで行われます。" },
+          { title: "4.1 意図署名", body: "お客様は、自然言語でエージェントの動作境界を書き下します——アクション 1 回あたりの上限、許可プロトコル集合、有効期限。7 つのポリシー値は、2 層の Poseidon ツリーを経て 32 バイトのコミットメントに畳み込まれ、お客様のウォレットをシードとする Program Derived Address (PDA) にオンチェーン定錨されます。元のポリシー値はお客様のブラウザに留まり、チェーンにはハッシュのみが届きます。署名そのものは、DeFi 動作を一切伴いません——境界を定錨するだけです。名目額の 0.1% の一回限り手数料が署名時に発生します。統合者あたり最初の \\$10M 分はリベートされます。" },
+          { title: "4.2 ZK 証明の生成と検証", body: "エージェントが動作を試みるとき、Sakura クライアントはお客様のブラウザ内で Groth16 ゼロ知識証明を生成します。証明は、当該動作が署名済みコミットメントの境界内に収まっていること（金額上限、プロトコル、動作タイプ、現在の Pyth 価格、スロットの新鮮度）を保証します。証明は、単一の Solana v0 アトミックトランザクション内で DeFi 命令と共に提出されます。オンチェーン検証器は、alt_bn128 ペアリング syscall によって証明を約 116k compute units で検証します——DeFi 命令がユーザー資金に触れるよりも前に、です。証明は 60 秒で失効します。エージェント動作 1 回あたり \\$0.01 の手数料が、オンチェーン検証コストを補填するために課されます。" },
+          { title: "4.3 アトミックなエージェント DeFi 実行", body: "ZK ゲートと DeFi 命令は、単一の v0 アトミックトランザクションの中に同居します——分離不可能です。証明が検証に失敗した場合、あるいは証明が通っても DeFi 命令自体が失敗した場合、トランザクション全体がリバートされます。ユーザー資金が触れられることはありません。「証明は通ったが動作は宙に浮いた」という隙間は、存在しません。各実行は keccak256 指紋をオンチェーンに残し、ユーザー、監査人、取引相手は、Solscan 上で独立に復元することができます。Sakura は、基盤となる DeFi 命令そのものの成功を保証しません——Kamino、MarginFi、Jupiter、Marinade 等、各統合プロトコル固有の失敗モードは、各プロトコルの責に属します。" },
+          { title: "4.4 x402 MCP サーバー", body: "Sakura は /api/mcp にて、HTTP 402 / x402 Machine Payments Protocol に準拠した MCP サーバーを運用します。クライアント（Claude Desktop、Cursor、VS Code、および任意の MCP 互換実装）がエンドポイントを呼び出すと、サーバーは 402 と \\$1 USDC の支払要求を返します。呼び出し側がオンチェーンで原子決済を完了すると、ツールの応答は同一レスポンスサイクル内で戻ります。アカウント不要、OAuth 不要、サブスクリプション不要——認証そのものが決済です。" },
         ],
       },
       {
@@ -315,7 +317,7 @@ const CONTENT = {
               "地理的制限の回避や制限管轄区域からのサービスアクセス。",
             ],
           },
-          { title: "5.3 利用制限", body: "Sakuraはクレジット制を採用しています。無料プランユーザーは3回の無料分析を受け取ります。Proプランサブスクリプションユーザーは請求サイクルごとにクレジットを受け取ります。クレジットが消費されると、次の請求サイクルまたはアップグレードまでAI分析機能が一時停止されます。" },
+          { title: "5.3 料金モデル", body: "Sakura は従量課金制で運用されます——アカウント、サブスクリプション、事業開発交渉、いずれも不要です。手数料構造は以下の通り：(a) 意図署名——名目額の 0.1% を 1 回限り徴収、統合者の最初の $10M 分はリベート；(b) エージェント動作——検証 1 回あたり $0.01 をオンチェーンで徴収；(c) x402 MCP エンドポイント——/api/mcp 呼び出し 1 回あたり $1 USDC、HTTP 402 により原子的に決済。すべての手数料はオンチェーンで透明に徴収されます。プロトコル金庫は 3-of-5 マルチシグによって管理され、プログラムレベルの上限（execution_fee_bps ≤ 2%、platform_fee_bps ≤ 100%）の範囲内で運用されます。検証鍵は展開時にプログラムに焼き込まれ、再展開なしには改変できません。トークンは発行しません。" },
         ],
       },
       {
@@ -452,10 +454,10 @@ export default function TermsPage() {
           </strong>
           {" — "}
           {lang === "zh"
-            ? "Sakura 是 Solana 上第一個原生 AI 守護協議，以匠人精神應對三個真實威脅：Shielded Lending 防禦 Drift $2.85 億同款攻擊向量（以攻擊者的 getProgramAccounts 反守為攻）、cross-protocol routing 以 simulateTransaction 幽靈執行多步 DeFi 策略（在零資本風險下確認精確 token delta）、Shielded Lending 在 400ms 內完成跨協議借貸倉位救援（SPL Token Approve 硬性鎖定 AI 可動用資金上限）。三項不可妥協的設計原則：① 零託管——私鑰永不離開您的設備；② 按使用付費——無訂閱，無帳號，連接即用；③ AI 決策 SHA-256 永久上鏈——任何人可在 Solscan 獨立核驗，無需信任 Sakura 的任何服務器。備えあれば憂いなし——這是架構層面的承諾，不是營銷口號。"
+            ? "Sakura 是 Solana 原生的代理執行邊界層。用戶一次性簽下一句自然語言邊界——例如「代理可在 Kamino 借貸，單次 $500 USDC，為期一週」。這句話被壓縮為 32 位元組 Poseidon 承諾，定錨於 Solana PDA。代理此後的每一次動作，都必須附上一份 Groth16 零知識證明，證明該動作落在承諾之內；此證明由鏈上 alt_bn128 配對 syscall 直接驗證，耗時約 116k compute units，然後 DeFi 指令才得以動用用戶資金。三項架構層面的承諾：① 零託管——私鑰永不離開用戶設備；② 運營方抹除——並非以策略約束運營方，而是數學不容許運營方的覆蓋權存在；③ 源碼 MIT 授權、整合無需許可——無帳號、無 OAuth、無商務談判。備えあれば憂いなし——架構層面的承諾，不是營銷口號。"
             : lang === "ja"
-            ? "SakuraはSolana上初のネイティブAIガーディアンプロトコルで、匠の精神で3つの現実の脅威に対応します：Shielded LendingがDrift $2.85億同型攻撃ベクターを防御（攻撃者のgetProgramAccountsを盾に転用）、跨協議救援がsimulateTransactionでマルチステップDeFi戦略をゴースト実行（資本リスクゼロで正確なtoken deltaを確認）、Shielded Lendingが400ms以内にクロスプロトコル貸出ポジションを救済（SPL Token ApproveがAI使用資金上限をハードロック）。3つの妥協なき設計原則：①ゼロカストディ——秘密鍵はデバイス外に出ない；②使用量課金——サブスクリプション不要、アカウント不要、接続即利用；③AI判断SHA-256永続オンチェーン刻印——誰でもSolscanで独立検証可能、Sakuraのサーバーへの信頼不要。備えあれば憂いなし——アーキテクチャレベルの約束、マーケティングスローガンではありません。"
-            : "Sakura is the first native AI guardian protocol on Solana, responding with Takumi precision to three real threats: Shielded Lending defends against the $285M Drift-class attack vector (repurposing the attacker's own getProgramAccounts as your shield); cross-protocol routing ghost-executes multi-step DeFi strategies with simulateTransaction at zero capital risk (confirming exact token deltas before you commit a dollar); Shielded Lending executes cross-protocol lending rescue within 400ms (SPL Token Approve hard-locking the maximum funds the AI can touch). Three non-negotiable design principles: ① Zero custody — private keys never leave your device; ② Pay-per-use — no subscription, no account, connect and go; ③ AI decisions SHA-256 permanently on-chain — independently verifiable by anyone on Solscan, zero reliance on Sakura's servers. 備えあれば憂いなし — an architectural commitment, not a marketing slogan."}
+            ? "Sakura は、AI エージェントのための Solana ネイティブ実行境界層である。ユーザーは、境界を自然言語で一度だけ署名する——例えば「エージェントは Kamino に、1 回 $500 USDC、1 週間だけ貸せる」。この 1 文は 32 バイトの Poseidon コミットメントへと圧縮され、Solana の PDA に定錨される。エージェントはその後の各動作ごとに、当該動作がコミットメントの内側に収まることを示す Groth16 ゼロ知識証明を添付せねばならない。この証明は、alt_bn128 ペアリング syscall によってオンチェーンで直接検証され、約 116k compute units を要する。検証が通って初めて、DeFi 命令はユーザー資金に触れることが許される。3 つのアーキテクチャ上のコミットメント：① ゼロカストディ——秘密鍵はユーザーのデバイスを離れない；② 運営者の消去——運営者の上書き権は、数学がそれを認めないゆえに、そもそも存在しえない；③ ソースは MIT、統合は許可不要——アカウント、OAuth、事業開発交渉、いずれも不要。備えあれば憂いなし——アーキテクチャレベルの約束であって、マーケティングスローガンではない。"
+            : "Sakura is a Solana-native execution-bounds layer for AI agents. A user signs, once, a natural-language bound — for instance: \"the agent may lend up to $500 USDC into Kamino, for one week.\" The sentence is compressed into a 32-byte Poseidon commitment on-chain. Every subsequent agent action must ship with a Groth16 zero-knowledge proof that the action falls inside that commitment; the proof is verified on-chain by the alt_bn128 pairing syscall in ~116k compute units, before any DeFi instruction is allowed to touch user funds. Three architectural commitments: ① Zero custody — the user's private key never leaves the user's device; ② Operator erasure — the operator class has no override capability because the math does not admit one; ③ MIT-licensed source, permissionless integration — no account, no OAuth, no business-development gate. 備えあれば憂いなし — an architectural commitment, not a marketing slogan."}
         </div>
 
         {/* Global notice */}

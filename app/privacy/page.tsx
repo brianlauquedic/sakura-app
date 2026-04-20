@@ -12,8 +12,8 @@ const CONTENT = {
       {
         heading: "1. Overview",
         body: [
-          `This Privacy Policy ("Policy") describes how Sakura ("Sakura," "we," "us," or "our") collects, uses, stores, and shares information when you access or use Sakura Shielded Lending — our private lending layer on Solana with on-chain Groth16 ZK-verified rescue and its associated Solana-native primitives (cross-protocol CPI routing, alt_bn128 pairing verifier, on-chain audit), including the web application, the lending-pool smart contract, AI analysis features, and all associated interfaces (collectively, the "Services").`,
-          `Sakura is non-custodial. We do not hold custody of your assets. Rescue claims on Sakura Shielded Lending are settled by on-chain Groth16 ZK-proof verification (alt_bn128_pairing syscall), not by human discretion. Any on-chain action Sakura takes on your behalf — cross-protocol rescue, or Kamino repayment — occurs only within your explicit per-transaction signature or your pre-authorized SPL Token Approve spending cap. Your Phantom wallet remains entirely under your control at all times.`,
+          `This Privacy Policy ("Policy") describes how Sakura ("Sakura," "we," "us," or "our") collects, uses, stores, and shares information when you access or use Sakura — our Solana-native execution-bounds layer for AI agents — together with the web application, the on-chain Anchor program, the Groth16 verifier, the x402 MCP server, and all associated interfaces (collectively, the "Services").`,
+          `Sakura is non-custodial. We do not hold custody of your assets. Intent commitments are signed by you and anchored as 32-byte Poseidon hashes on-chain; the underlying policy values never leave your browser. Every agent action that claims to operate inside your bounds must submit a Groth16 proof, verified on-chain by the alt_bn128 pairing syscall, inside the same atomic Solana v0 transaction as the DeFi instruction it accompanies. Sakura's on-chain program has no authority to move funds outside that gate. Your wallet remains entirely under your control at all times.`,
           `By using the Services, you acknowledge that you have read and understood this Policy and consent to the collection and use of your information as described herein. This Policy should be read alongside our Terms of Service.`,
         ],
       },
@@ -135,9 +135,9 @@ const CONTENT = {
       {
         heading: "1. 概述",
         body: [
-          `本隱私政策（「政策」）說明 Sakura（「Sakura」、「我們」或「我方」）在您訪問或使用 Sakura Shielded Lending — 我們位於 Solana 的私密借貸層（由鏈上 Groth16 ZK 證明驗證救援），及其配套 Solana 原生基礎元件（跨協議 CPI 路由、alt_bn128 配對驗證器、鏈上審計）時，如何收集、使用、儲存和分享資訊，包括網頁應用程式、借貸池智能合約、AI 分析功能及所有相關介面（統稱「服務」）。`,
-          `Sakura 為非託管架構。我們不持有您的資產。Sakura Shielded Lending 的救援由鏈上 Groth16 ZK 證明驗證（alt_bn128_pairing 系統呼叫）自動結算，不由任何人工裁決。Sakura 代您執行的任何鏈上動作——跨協議救援、Kamino 自動還款——皆需您逐筆明確簽名，或在您預先授權的 SPL Token Approve 支出上限內進行。您的 Phantom 錢包始終完全由您掌控。`,
-          `使用服務即表示您已閱讀並理解本政策，並同意按照本政策所述方式收集和使用您的資訊。`,
+          `本隱私政策（「政策」）說明 Sakura（「Sakura」、「我們」或「我方」）在您訪問或使用 Sakura——Solana 原生的代理執行邊界層——及其配套網頁應用程式、鏈上 Anchor 程式、Groth16 驗證器、x402 MCP 伺服器及所有相關介面（統稱「服務」）時，如何收集、使用、儲存和分享資訊。`,
+          `Sakura 為非託管架構。我們不持有您的資產。意圖承諾由您親自簽署，並以 32 位元組 Poseidon 雜湊定錨於鏈上；底層的策略值從不離開您的瀏覽器。任何代理宣稱要在您的邊界內動作時，都必須提交一份 Groth16 證明，由鏈上 alt_bn128 配對 syscall 驗證；此證明必須與其所附帶的 DeFi 指令，同處於一筆 Solana v0 原子交易之內。Sakura 的鏈上程式在此閘門之外，沒有任何動用資金的權限。您的錢包始終完全由您掌控。`,
+          `使用服務即表示您已閱讀並理解本政策，並同意按照本政策所述方式收集和使用您的資訊。本政策應與我們的使用條款一併閱讀。`,
         ],
       },
       {
@@ -258,9 +258,9 @@ const CONTENT = {
       {
         heading: "1. 概要",
         body: [
-          `本プライバシーポリシー（「ポリシー」）は、Sakura（「Sakura」「当社」）が Sakura Shielded Lending — Solana上のプライベート・レンディング・レイヤー（オンチェーン Groth16 ZK 証明による救援）— およびその付属のSolanaネイティブ基盤（クロスプロトコル CPI ルーティング、alt_bn128 ペアリング検証、オンチェーン監査）、ウェブアプリケーション、レンディング・プール・スマートコントラクト、AI分析機能、関連インターフェース（総称して「サービス」）へのアクセスまたは利用時に、情報をどのように収集・使用・保存・共有するかを説明します。`,
-          `Sakuraは非カストディアルです。お客様の資産を預かることはありません。Sakura Shielded Lendingの救援請求は、オンチェーンのGroth16 ZK証明検証（alt_bn128_pairingシステムコール）によって自動決済され、人間の裁量で判断されることはありません。Sakuraがお客様に代わって実行するオンチェーン動作——クロスプロトコル救援、Kamino 自動返済——はすべて、お客様の都度署名、または事前に承認されたSPL Token Approveの支出上限内でのみ行われます。Phantomウォレットは常にお客様が完全に管理します。`,
-          `サービスを利用することで、お客様は本ポリシーを読み理解し、記載された方法での情報収集・利用に同意したものとみなされます。`,
+          `本プライバシーポリシー（「ポリシー」）は、Sakura（「Sakura」「当社」）が、Sakura——AI エージェントのための Solana ネイティブ実行境界層——およびその付属のウェブアプリケーション、オンチェーン Anchor プログラム、Groth16 検証器、x402 MCP サーバー、関連インターフェース（総称して「サービス」）へのアクセスまたは利用時に、情報をどのように収集・使用・保存・共有するかを説明します。`,
+          `Sakura は非カストディアルです。お客様の資産を預かることはありません。意図コミットメントはお客様ご自身が署名し、32 バイトの Poseidon ハッシュとしてオンチェーンに定錨されます。元のポリシー値はお客様のブラウザを離れません。エージェントが境界内で動作していると主張するには、Groth16 証明を提出し、オンチェーンの alt_bn128 ペアリング syscall による検証を通過せねばなりません。この証明は、それに伴う DeFi 命令と同じ Solana v0 アトミックトランザクションの中で提出されます。Sakura のオンチェーンプログラムには、このゲートの外で資金を動かす権限はありません。お客様のウォレットは常に、完全にお客様の管理下にあります。`,
+          `サービスを利用することで、お客様は本ポリシーを読み理解し、記載された方法での情報収集・利用に同意したものとみなされます。本ポリシーは、当社の利用規約と併せてお読みください。`,
         ],
       },
       {
