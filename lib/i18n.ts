@@ -930,7 +930,11 @@ export const translations = {
   planProFeature3:     { zh: "MCP API 無限存取", en: "Unlimited MCP API access", ja: "MCP API無制限アクセス" },
   planProFeature4:     { zh: "最高優先級回應", en: "Highest priority responses", ja: "最優先レスポンス" },
   // ── Footer ───────────────────────────────────────────────────────
-  footerTagline:          { zh: "Sakura — 代理的基礎設施，建於 Solana。", en: "Sakura — infrastructure for agents, built on Solana.", ja: "Sakura — エージェントの基盤、Solana に構築。" },
+  footerTagline:          {
+    zh: "Sakura —— 代理式 DeFi 下面的那一個原語。一次動作、一份證明、一筆費用——主權在用戶，不在運營方。建於 Solana。",
+    en: "Sakura — the primitive under agentic DeFi. One action, one proof, one fee — and the user, not the operator, is sovereign. Built on Solana.",
+    ja: "Sakura — エージェント DeFi の下に在る、たった一つのプリミティブ。1 アクション・1 証明・1 手数料——主権は運営者ではなく、ユーザーに在る。Solana 上に構築。",
+  },
   footerProductSection:   { zh: "產品功能", en: "Product", ja: "プロダクト" },
   footerResourcesSection: { zh: "資源", en: "Resources", ja: "リソース" },
   footerCommunitySection: { zh: "社交媒體", en: "Social Media", ja: "ソーシャルメディア" },
