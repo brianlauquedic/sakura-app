@@ -931,9 +931,9 @@ export const translations = {
   planProFeature4:     { zh: "最高優先級回應", en: "Highest priority responses", ja: "最優先レスポンス" },
   // ── Footer ───────────────────────────────────────────────────────
   footerTagline:          {
-    zh: "Sakura —— 代理式 DeFi 下面的那一個原語。一次動作、一份證明、一筆費用——主權在用戶，不在運營方。建於 Solana。",
-    en: "Sakura — the primitive under agentic DeFi. One action, one proof, one fee — and the user, not the operator, is sovereign. Built on Solana.",
-    ja: "Sakura — エージェント DeFi の下に在る、たった一つのプリミティブ。1 アクション・1 証明・1 手数料——主権は運営者ではなく、ユーザーに在る。Solana 上に構築。",
+    zh: "Sakura —— HTTPS 之於握手，Sakura 之於代理動作。一道已簽邊界、一份數學強制的證明、一筆費用。運營方消失，用戶主權，於 Solana 之上。",
+    en: "Sakura — what HTTPS did for the handshake, Sakura does for the agentic action. One signed bound. One math-enforced proof. One fee. The operator, erased. The user, sovereign. On Solana.",
+    ja: "Sakura — HTTPS が握手に為したことを、Sakura はエージェントの動作に為す。1 つの署名境界、1 つの数学強制証明、1 つの手数料。運営者は消え、ユーザーが主権、Solana の上に。",
   },
   footerProductSection:   { zh: "產品功能", en: "Product", ja: "プロダクト" },
   footerResourcesSection: { zh: "資源", en: "Resources", ja: "リソース" },
