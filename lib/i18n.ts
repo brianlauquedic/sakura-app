@@ -35,33 +35,33 @@ export const translations = {
 
   // ── Features (3 core) ─────────────────────────────────────────────
   agentsTitle: {
-    zh: "代理錢包的「安全帶」層 — 錢包廠商每家都需要，由我們先造好",
-    en: "The seatbelt layer every agentic wallet needs — built once, used by all",
-    ja: "エージェントウォレットの「シートベルト」層 — どのウォレットも必要とする、我々が先に作る",
+    zh: "每家代理錢包都要造的這一層。做一次，給所有人。",
+    en: "The layer every agentic wallet has to build. Built once, for everyone.",
+    ja: "どのエージェントウォレットも必要とする層。一度作り、すべてに届ける。",
   },
   agent1Title: { zh: "🌸 一句話就是規則", en: "🌸 One Sentence Becomes the Rule", ja: "🌸 1 文がルールになる" },
   agent1Desc: {
-    zh: "用自然語言寫下邊界：「代理可在 Kamino 放貸，單次最多 $1,000，僅限本週」。這句話和你的錢包地址、金額上限、允許的協議，一起被密碼學壓縮成 32 bytes 鏈上承諾。原始值永遠留在你的瀏覽器——連我們的服務器也看不到你設了多少。鏈上能看到的只有雜湊。代理能看到的只是「是否在邊界內」的布林答案。",
-    en: "Write the rule in plain language: \"the agent may lend up to $1,000 into Kamino, for one week only.\" That sentence, together with your wallet address, your amount cap, and your allowed protocols, is cryptographically compressed into a 32-byte commitment on-chain. The raw values never leave your browser — not even our servers see what you set. The chain only sees the hash. The agent only sees a boolean answer to \"am I inside the bounds?\"",
-    ja: "境界を普通の言葉で書く：「エージェントは Kamino に、1 回 $1,000 まで、1 週間だけ貸せる」。この文と、あなたのウォレットアドレス、金額上限、許可プロトコルは、暗号学的に 32 バイトのコミットメントに圧縮されオンチェーンに書き込まれる。生の値はブラウザから出ない——当社のサーバーでさえあなたが設定した値を見ない。チェーンに見えるのはハッシュだけ。エージェントに見えるのは「境界内か否か」のブール値だけ。",
+    zh: "七項私有值——意圖文字、錢包、nonce、金額上限、USD 上限、協議位圖、動作位圖——經 2 層 Poseidon 壓為 32 bytes 承諾上鏈。原值不離瀏覽器，鏈上僅見雜湊。",
+    en: "Seven private values — intent text, wallet, nonce, amount cap, USD cap, protocol bitmap, action bitmap — fold through a 2-layer Poseidon tree into a 32-byte commitment on-chain. Values stay in the browser; the chain sees only the hash.",
+    ja: "7 つのプライベート値——意図テキスト、ウォレット、ノンス、金額上限、USD 上限、プロトコル、アクション——が 2 層 Poseidon で 32 バイトのコミットメントに畳み込まれる。値はブラウザに留まり、チェーンはハッシュしか見ない。",
   },
   agent2Title: { zh: "🔬 越界數學上不可能", en: "🔬 Exceeding the Rule Becomes Mathematically Impossible", ja: "🔬 規則超過が数学的に不可能になる" },
   agent2Desc: {
-    zh: "代理每次動手都要生成一份零知識證明，不揭露任何私密細節，只論證動作落在你設的邊界內。alt_bn128 配對系統呼叫在鏈上完成驗證——Solana 1.17 為這類產品預留的高速公路，在 Ethereum L1 需要的成本在這條鏈上可忽略不計。",
-    en: "Every agent action must ship with a zero-knowledge proof — no private details revealed, only the fact that the action sits inside the bounds you set. Solana's alt_bn128 pairing syscall verifies it on-chain. What costs dollars per call on Ethereum L1 is economically negligible here — the highway Solana built into protocol 1.17 for exactly this class of product.",
-    ja: "エージェントの各動作は、プライベートな詳細を一切明かさず、境界内に収まることだけを示すゼロ知識証明を伴う。alt_bn128 ペアリングシステムコールがオンチェーンで検証する——Ethereum L1 でドル単位のコストがかかる検証が、このチェーンではほぼ無視できる。Solana 1.17 がこの種の製品のために用意した高速道路である。",
+    zh: "代理每一動作附 Groth16 證明——不揭露細節，只論證動作在邊界內。alt_bn128 配對在鏈上驗證：Ethereum L1 要美元，這條鏈上可忽略。Solana 1.17 為這類產品鋪的高速公路。",
+    en: "Every agent action ships with a Groth16 proof — no details disclosed, only that the action sits inside the bounds. Solana's alt_bn128 pairing verifies on-chain. Dollars per call on Ethereum L1, negligible here. The highway Solana built into protocol 1.17.",
+    ja: "エージェントの各動作は Groth16 証明を伴う——詳細は明かさず、境界内であることだけを示す。alt_bn128 ペアリングがオンチェーン検証。Ethereum L1 ではドル単位、このチェーンでは無視できる。Solana 1.17 がこの種の製品のために敷いた高速道路。",
   },
   agent3Title: { zh: "📜 全過或全不過，無灰色地帶", en: "📜 All or Nothing — No Grey Zone", ja: "📜 全か無か — グレーゾーンなし" },
   agent3Desc: {
-    zh: "閘門驗證和 DeFi 指令放在同一筆原子交易裡——要嘛都成功，要嘛都回滾。中間不存在「證明過了但動作卡住」或「動作做了但證明失效」的縫隙。每次執行都會在鏈上留下一份永久審計記錄，記的是證明的密碼學指紋。你的律師、你的審計師、任何對手方，拿著交易 hash 就能在 Solscan 獨立重建發生過什麼。",
-    en: "The gate check and the DeFi instruction sit inside the same atomic transaction — they both succeed or they both revert. There is no intermediate state where the proof passed but the action stalled, or the action ran but the proof was invalid. Every execution leaves a permanent on-chain audit record — a cryptographic fingerprint of the proof. Your lawyer, your auditor, any counterparty can take the transaction hash and independently reconstruct what happened, on Solscan, with no dependency on us.",
-    ja: "ゲート検証と DeFi 命令は同じアトミックトランザクション内に配置される——共に成功するか、共にリバートする。「証明は通ったがアクションが止まった」「アクションは実行されたが証明が無効だった」という中間状態は存在しない。各実行はオンチェーンに永続監査記録を残す——証明の暗号学的指紋である。あなたの弁護士、監査人、取引相手は、トランザクションハッシュを持って Solscan で何が起きたかを独立に再構築できる。我々への依存はない。",
+    zh: "ZK 閘門與 DeFi 指令同處一筆 v0 原子交易——共生共滅。沒有「證明過但動作失效」的縫隙。每次執行留下 keccak256 指紋；律師、審計師、對手方皆可在 Solscan 獨立還原。",
+    en: "The ZK gate and the DeFi instruction share one atomic v0 transaction — they both land or both revert. No gap where the proof passes but the action stalls. Every execution leaves a keccak256 fingerprint; lawyers, auditors, counterparties can reconstruct it independently on Solscan.",
+    ja: "ZK ゲートと DeFi 命令は同じアトミック v0 トランザクションを共有——共に着地、共にリバート。「証明は通ったが動作が止まった」隙間は存在しない。各実行は keccak256 指紋を残し、弁護士・監査人・取引相手が Solscan で独立に復元可能。",
   },
   agent4Title: { zh: "⚡ 價格不能被偷偷換掉", en: "⚡ Prices Cannot Be Swapped Out", ja: "⚡ 価格を密かに差し替えられない" },
   agent4Desc: {
-    zh: "代理生成證明時必須綁定「當下的 Pyth 價格 + 當下的 Solana slot」——兩者都是證明的公開輸入，無法事後改。鏈上驗證器會親自再查一次 Pyth，要求 slot 完全一致、價格也完全對得上。超過 60 秒的證明在鏈上自動作廢。這道機制堵死了最經典的預言機攻擊路徑：代理拿一個對它有利的舊價格，偽造一份在今天看來「沒越界」的證明。",
-    en: "When the agent generates a proof, it must bind the proof to \"the current Pyth price plus the current Solana slot\" — both become public inputs that cannot be changed after the fact. The on-chain verifier re-reads Pyth itself, requires the slot to match exactly, and requires the price to match exactly. Proofs older than 60 seconds are automatically rejected on-chain. This closes the classic oracle attack path: an agent taking a convenient old price to forge a proof that looks \"in bounds\" today.",
-    ja: "エージェントが証明を生成する際、「現在の Pyth 価格 + 現在の Solana スロット」に証明を結び付けなければならない——両方とも証明の公開入力となり、後から変更不可能。オンチェーン検証器は Pyth を自ら再読し、スロットの完全一致と価格の完全一致を要求する。60 秒を超える証明はオンチェーンで自動拒否される。この仕組みが古典的なオラクル攻撃経路を閉じる：エージェントが都合のよい古い価格を使い、今日の視点で「境界内」に見える証明を偽造する経路。",
+    zh: "證明須綁定當下 Pyth 價格與 slot，兩者皆公開輸入，無法事後篡改。鏈上驗證器親查 Pyth，slot 或價格不符即拒。60 秒即過期。古典的預言機套利路徑——關閉。",
+    en: "Every proof binds to a live Pyth price and slot — both public inputs, unforgeable after the fact. The on-chain verifier re-reads Pyth: slot or price mismatch, rejected. 60-second expiry. The classical oracle-arbitrage path — closed.",
+    ja: "各証明は現在の Pyth 価格とスロットに結び付けられる——両者とも公開入力、事後改竄不可。オンチェーン検証器が Pyth を再読、スロットまたは価格不一致は拒否。60 秒で期限切れ。古典的オラクルアービトラージ経路——閉じられる。",
   },
 
   // ── Differentiator ────────────────────────────────────────────────
@@ -93,22 +93,22 @@ export const translations = {
     en: "Mission: turn self-custody from a promise into a theorem.",
     ja: "使命：自己保管を、約束から定理へ。",
   },
-  sakuraTech1: { zh: "🌸 你的規則，你一個人知道 — 金額上限、協議白名單、有效期限全部留在你的瀏覽器，鏈上只存一個 32 bytes 雜湊", en: "🌸 Only you know the rules — amount caps, protocol whitelist, expiry all stay in your browser; only a 32-byte hash reaches the chain", ja: "🌸 あなただけがルールを知る — 金額上限、プロトコルホワイトリスト、有効期限はブラウザ内に留まり、チェーンには 32 バイトのハッシュのみ" },
-  sakuraTech2: { zh: "🔐 越界數學上不可能 — 代理每次動作附 Groth16 證明，Solana 鏈上 ~116k CU 完成配對驗證", en: "🔐 Exceeding the rule is mathematically impossible — every agent action carries a Groth16 proof, verified on Solana in ~116k CU", ja: "🔐 規則超過は数学的に不可能 — エージェントアクション毎に Groth16 証明を伴い、Solana が ~116k CU でペアリング検証" },
-  sakuraTech3: { zh: "⛩️ 價格不能被偽造 — 證明必須綁定當下 Pyth 價格與 slot，過期 60 秒的證明在鏈上自動拒絕", en: "⛩️ Prices cannot be forged — every proof is bound to a live Pyth price and slot; proofs older than 60 seconds are auto-rejected on-chain", ja: "⛩️ 価格は偽造できない — 各証明は Pyth の現在価格とスロットに結び付けられる；60 秒を超える証明はオンチェーンで自動拒否" },
-  sakuraTech4: { zh: "🔗 全過或全不過 — 閘門通過，DeFi 指令原子執行；閘門失敗，整筆交易回滾；每筆執行鏈上永久留痕", en: "🔗 All or nothing — gate passes, the DeFi instruction lands atomically; gate fails, the whole transaction reverts; every execution leaves an on-chain audit record", ja: "🔗 全部か、全部なしか — ゲート通過で DeFi 命令がアトミックに着地、失敗でトランザクション全体がリバート、各実行はオンチェーンに永続監査記録を残す" },
+  sakuraTech1: { zh: "🌸 規則私有，雜湊上鏈 — 7 項策略值留在瀏覽器，鏈上僅見 32 bytes 承諾", en: "🌸 Rules private, hash on-chain — 7 policy values stay in the browser; the chain sees only a 32-byte commitment", ja: "🌸 ルールは私有、ハッシュはオンチェーン — 7 つのポリシー値はブラウザに、チェーンは 32 バイトのコミットメントだけ" },
+  sakuraTech2: { zh: "🔐 越界不落地 — 代理每一動作附 Groth16 證明，alt_bn128 配對 ~116k CU 驗證", en: "🔐 Out-of-bounds cannot land — every action carries a Groth16 proof, verified by alt_bn128 pairing in ~116k CU", ja: "🔐 越境は着地しない — 各動作は Groth16 証明を伴い、alt_bn128 ペアリングが ~116k CU で検証" },
+  sakuraTech3: { zh: "⛩️ 預言機不可偽 — 證明綁定當下 Pyth 價格與 slot，60 秒即過期", en: "⛩️ The oracle cannot be forged — proofs bind to a live Pyth price and slot; 60-second expiry", ja: "⛩️ オラクルは偽造不能 — 証明は現在の Pyth 価格とスロットに結び付けられ、60 秒で期限切れ" },
+  sakuraTech4: { zh: "🔗 全過或全回滾 — ZK 閘門與 DeFi 指令原子綁定，執行指紋永久上鏈", en: "🔗 All or revert — ZK gate and DeFi instruction atomically bound; execution fingerprint permanent on-chain", ja: "🔗 全通過か全リバート — ZK ゲートと DeFi 命令はアトミックに束ねられ、実行指紋は永続的にオンチェーン" },
   sakuraJapanValue1: { zh: "🌸 有備無患 — 風險發生前，規則已在鏈上", en: "🌸 Prepared Beforehand — The rule is on-chain before risk materializes", ja: "🌸 備えあれば憂いなし — 準備ある者に憂いなし" },
   sakuraJapanValue2: { zh: "⚔️ 匠人精神 — 表面優雅，底層嚴苛", en: "⚔️ Takumi Spirit — Elegant surface, uncompromising core", ja: "⚔️ 匠の精神 — 表面は美しく、底層は厳格に" },
-  sakuraJapanValue3: { zh: "⛩️ 信任之證 — 每個決策哈希上鏈，無需信任，可自行驗證", en: "⛩️ Proof of Trust — Every decision hashed on-chain, trustless by design", ja: "⛩️ 信頼の証 — すべての判断をオンチェーンに刻み、信頼不要の設計" },
+  sakuraJapanValue3: { zh: "⛩️ 信任之證 — 決策上鏈，無需信任，可自行驗證", en: "⛩️ Proof of Trust — Decisions on-chain. Trustless by design.", ja: "⛩️ 信頼の証 — 判断はオンチェーン。信頼不要の設計。" },
 
   // ── (removed) MutualPool.tsx was deleted in v0.3 pivot; dead mutual*
   // keys were removed. UI now rendered by IntentSigner.tsx + ActionHistory.tsx.
 
   // ── Stats ────────────────────────────────────────────────────────
-  statLabel1: { zh: "家主流 Solana 錢包 2026 年將推出代理模式", en: "Major Solana wallets releasing agent modes in 2026", ja: "主要 Solana ウォレットが 2026 年にエージェントモードを公開" },
-  statLabel2: { zh: "千 CU — 單次鏈上 ZK 閘門驗證成本", en: "Thousand CU — cost per on-chain ZK gate verification", ja: "千 CU — オンチェーン ZK ゲート検証毎のコスト" },
-  statLabel3: { zh: "Solana DeFi TVL 可經電路約束代理存取", en: "Solana DeFi TVL addressable via circuit-bounded agents", ja: "Solana DeFi TVL — 回路境界付エージェントでアクセス可能" },
-  statLabel4: { zh: "代理動作須通過數學閘門——無一例外", en: "Agent actions pass the math gate — without exception", ja: "エージェントアクションは数学ゲートを通過する — 例外なし" },
+  statLabel1: { zh: "家主流 Solana 錢包 2026 推出代理模式", en: "Solana wallets shipping agent modes in 2026", ja: "主要 Solana ウォレットが 2026 にエージェント版を公開" },
+  statLabel2: { zh: "千 CU — 單次 ZK 閘門鏈上驗證", en: "thousand CU — per ZK gate verification", ja: "千 CU — ZK ゲート検証毎" },
+  statLabel3: { zh: "Solana DeFi TVL 經代理可達", en: "Solana DeFi TVL reachable via agents", ja: "Solana DeFi TVL — エージェント経由で到達" },
+  statLabel4: { zh: "代理動作通過數學閘門——無一例外", en: "of agent actions pass the math gate — no exceptions", ja: "のエージェント動作が数学ゲートを通過する — 例外なし" },
 
   // ── Trust signals ────────────────────────────────────────────────
   trust1: { zh: "⛩️ 私鑰永不離開你的設備", en: "⛩️ Your private key never leaves your device", ja: "⛩️ 秘密鍵はあなたのデバイスから出ない" },
@@ -148,9 +148,9 @@ export const translations = {
     ja: "x402 · 機械のための決済プロトコル、Solana 上に構築",
   },
   stripeSectionDesc: {
-    zh: "HTTP 於 1989 年定義了機器如何交換信息。Agentic Economy 需要一個對等的協議，定義機器如何交換價值。HTTP 402 Payment Required 是三十餘年來預留而未實施的狀態碼；x402 於 2025 年由 Stripe 重新提出，作為 Machine Payments Protocol 的規範。Sakura 將其實作於 Solana：MCP 客戶端——包括 Claude Desktop、Cursor、VS Code 以及任意第三方代理框架——向 /api/mcp 發出工具調用時，端點回傳 HTTP 402 與一則 USDC 付款要求；調用方以 Solana 鏈上 USDC 原子結算 $1，工具結果於同一響應返回。無帳號、無訂閱、無 OAuth。該端點目前於 devnet 驗證，主網就緒。",
-    en: "HTTP defined how machines exchange information in 1989. The Agentic Economy requires an analogous protocol for how machines exchange value. HTTP 402 Payment Required is a status code reserved for three decades without adoption; in 2025 it was re-proposed by Stripe as the Machine Payments Protocol specification. Sakura implements it on Solana: an MCP client — Claude Desktop, Cursor, VS Code, or any third-party agent framework — invoking a tool at /api/mcp receives an HTTP 402 response carrying a USDC payment demand; the caller settles $1 atomically on-chain via Solana USDC and receives the tool result in the same response cycle. No account, no subscription, no OAuth. The endpoint is currently verified on devnet and mainnet-ready.",
-    ja: "HTTP は 1989 年に機械間の情報交換を定義した。Agentic Economy には、機械が価値を交換する方法を定めた類似のプロトコルが必要である。HTTP 402 Payment Required は 30 年以上採用されずに予約されてきたステータスコードであり、2025 年に Stripe により Machine Payments Protocol 仕様として再提案された。Sakura はこれを Solana 上に実装する：MCP クライアント——Claude Desktop、Cursor、VS Code、または任意のサードパーティエージェントフレームワーク——が /api/mcp でツールを呼び出すと、エンドポイントは HTTP 402 レスポンスと USDC 支払い要求を返す；呼び出し者は Solana USDC で $1 をオンチェーンで原子決済し、同じレスポンスサイクル内でツール結果を受け取る。アカウント、サブスクリプション、OAuth は不要。エンドポイントは現在 devnet で検証済み、メインネット準備完了である。",
+    zh: "HTTP 定義機器如何交換「信息」。x402 定義機器如何交換「價值」——HTTP 402 三十年預留未用，2025 年由 Stripe 重提為 Machine Payments Protocol。Sakura 實作於 Solana：MCP 客戶端呼叫 /api/mcp，端點回傳 402 與 USDC 付款要求；鏈上原子結算 $1，工具結果同響應返回。無帳號、無訂閱、無 OAuth。devnet 已驗證，主網就緒。",
+    en: "HTTP defined how machines exchange information. x402 defines how they exchange value — HTTP 402 was reserved for thirty years without adoption, re-proposed by Stripe in 2025 as the Machine Payments Protocol. Sakura ships it on Solana: an MCP client calls /api/mcp; the endpoint returns 402 with a USDC demand; the caller settles $1 atomically on-chain; the tool result returns in the same response cycle. No account, no subscription, no OAuth. Devnet-verified, mainnet-ready.",
+    ja: "HTTP はマシン間の情報交換を定義した。x402 はマシン間の価値交換を定義する——HTTP 402 は 30 年予約されたまま未採用、2025 年に Stripe が Machine Payments Protocol として再提案。Sakura は Solana で実装する：MCP クライアントが /api/mcp を呼び出し、エンドポイントは 402 と USDC 要求を返す。呼び出し者はオンチェーンで $1 を原子決済、ツール結果は同レスポンス内で返る。アカウント不要、サブスク不要、OAuth 不要。devnet 検証済み、メインネット準備完了。",
   },
   stripeFeature1: {
     zh: "每次 API 調用原子結算 $1.00 USDC · 同一響應週期內返回結果",
@@ -852,7 +852,7 @@ export const translations = {
   planProFeature3:     { zh: "MCP API 無限存取", en: "Unlimited MCP API access", ja: "MCP API無制限アクセス" },
   planProFeature4:     { zh: "最高優先級回應", en: "Highest priority responses", ja: "最優先レスポンス" },
   // ── Footer ───────────────────────────────────────────────────────
-  footerTagline:          { zh: "Sakura — 每家代理錢包都需要的「SSL 憑證」層，於 Solana。", en: "Sakura — the SSL layer every agentic wallet needs, on Solana.", ja: "Sakura — あらゆるエージェントウォレットが必要とする「SSL レイヤー」、Solana 上で。" },
+  footerTagline:          { zh: "Sakura — 代理的基礎設施，建於 Solana。", en: "Sakura — infrastructure for agents, built on Solana.", ja: "Sakura — エージェントの基盤、Solana に構築。" },
   footerProductSection:   { zh: "產品功能", en: "Product", ja: "プロダクト" },
   footerResourcesSection: { zh: "資源", en: "Resources", ja: "リソース" },
   footerCommunitySection: { zh: "社交媒體", en: "Social Media", ja: "ソーシャルメディア" },
