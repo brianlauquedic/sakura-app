@@ -404,22 +404,37 @@ export function buildInitializeProtocolIx(params: {
 export function buildSignIntentIx(params: {
   admin: PublicKey;       // protocol admin (PDA seed)
   user: PublicKey;
+  userUsdcAta: PublicKey; // user's USDC ATA — source of sign fee
+  feeVault: PublicKey;    // protocol fee vault (USDC ATA, PDA-owned)
   intentCommitment: Buffer; // 32 bytes
   expiresAt: bigint;        // i64 Unix timestamp
+  /**
+   * Fee in USDC micro-units ($0.01 = 10_000). Caller is expected to
+   * compute `fee_micro = 0.1% × max_usd_value`. The program enforces
+   * only `0 < fee_micro <= 1_000_000_000` ($1,000 ceiling).
+   */
+  feeMicro: bigint;
 }): TransactionInstruction {
   if (params.intentCommitment.length !== 32) {
     throw new Error(
       `intentCommitment must be 32 bytes, got ${params.intentCommitment.length}`
     );
   }
+  if (params.feeMicro <= 0n || params.feeMicro > 1_000_000_000n) {
+    throw new Error(
+      `feeMicro must be in (0, 1_000_000_000]; got ${params.feeMicro}`
+    );
+  }
   const [protocol] = deriveProtocolPDA(params.admin);
   const [intent] = deriveIntentPDA(params.user);
 
-  const data = Buffer.alloc(8 + 32 + 8);
+  // Data: 8 disc + 32 commitment + 8 expiresAt + 8 feeMicro
+  const data = Buffer.alloc(8 + 32 + 8 + 8);
   let o = 0;
   IX_SIGN_INTENT.copy(data, o); o += 8;
   params.intentCommitment.copy(data, o); o += 32;
-  data.writeBigInt64LE(params.expiresAt, o);
+  data.writeBigInt64LE(params.expiresAt, o); o += 8;
+  data.writeBigUInt64LE(params.feeMicro, o);
 
   return new TransactionInstruction({
     programId: SAKURA_INSURANCE_PROGRAM_ID,
@@ -427,6 +442,9 @@ export function buildSignIntentIx(params: {
       { pubkey: protocol, isSigner: false, isWritable: true },
       { pubkey: intent, isSigner: false, isWritable: true },
       { pubkey: params.user, isSigner: true, isWritable: true },
+      { pubkey: params.userUsdcAta, isSigner: false, isWritable: true },
+      { pubkey: params.feeVault, isSigner: false, isWritable: true },
+      { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
       { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
     ],
     data,
@@ -434,20 +452,39 @@ export function buildSignIntentIx(params: {
 }
 
 /**
- * revoke_intent: user marks their intent inactive.
+ * revoke_intent: user marks their intent inactive. Charges the same
+ * 0.1% fee as sign_intent (declared by caller; honor system).
  */
 export function buildRevokeIntentIx(params: {
+  admin: PublicKey;
   user: PublicKey;
+  userUsdcAta: PublicKey;
+  feeVault: PublicKey;
+  feeMicro: bigint;
 }): TransactionInstruction {
+  if (params.feeMicro <= 0n || params.feeMicro > 1_000_000_000n) {
+    throw new Error(
+      `feeMicro must be in (0, 1_000_000_000]; got ${params.feeMicro}`
+    );
+  }
+  const [protocol] = deriveProtocolPDA(params.admin);
   const [intent] = deriveIntentPDA(params.user);
 
-  const data = Buffer.from(IX_REVOKE_INTENT);
+  // Data: 8 disc + 8 feeMicro
+  const data = Buffer.alloc(8 + 8);
+  let o = 0;
+  IX_REVOKE_INTENT.copy(data, o); o += 8;
+  data.writeBigUInt64LE(params.feeMicro, o);
 
   return new TransactionInstruction({
     programId: SAKURA_INSURANCE_PROGRAM_ID,
     keys: [
+      { pubkey: protocol, isSigner: false, isWritable: true },
       { pubkey: intent, isSigner: false, isWritable: true },
-      { pubkey: params.user, isSigner: true, isWritable: false },
+      { pubkey: params.user, isSigner: true, isWritable: true },
+      { pubkey: params.userUsdcAta, isSigner: false, isWritable: true },
+      { pubkey: params.feeVault, isSigner: false, isWritable: true },
+      { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
     ],
     data,
   });
@@ -473,7 +510,9 @@ export function buildRevokeIntentIx(params: {
 export function buildExecuteWithIntentProofIx(params: {
   admin: PublicKey;
   user: PublicKey;          // intent owner
-  payer: PublicKey;         // pays ActionRecord rent (often = user)
+  payer: PublicKey;         // pays ActionRecord rent + $0.01 fee
+  payerUsdcAta: PublicKey;  // source of $0.01 flat fee
+  feeVault: PublicKey;      // protocol fee vault
   pythPriceAccount: PublicKey;
   actionNonce: bigint;
   actionType: number;       // u8
@@ -499,18 +538,8 @@ export function buildExecuteWithIntentProofIx(params: {
   const [intent] = deriveIntentPDA(params.user);
   const [actionRecord] = deriveActionRecordPDA(intent, params.actionNonce);
 
-  // Layout:
-  //   8  disc
-  //   8  action_nonce        (u64 LE)
-  //   1  action_type         (u8)
-  //   8  action_amount       (u64 LE)
-  //   1  action_target_index (u8)
-  //   8  oracle_price        (u64 LE)
-  //   8  oracle_slot         (u64 LE)
-  //   64 proof_a
-  //   128 proof_b
-  //   64 proof_c
-  // Total = 298 bytes
+  // Layout: 8 disc + 8 nonce + 1 type + 8 amount + 1 target + 8 price +
+  //         8 slot + 64 A + 128 B + 64 C = 298 bytes
   const data = Buffer.alloc(8 + 8 + 1 + 8 + 1 + 8 + 8 + 64 + 128 + 64);
   let o = 0;
   IX_EXECUTE_WITH_INTENT_PROOF.copy(data, o); o += 8;
@@ -531,12 +560,18 @@ export function buildExecuteWithIntentProofIx(params: {
       { pubkey: intent, isSigner: false, isWritable: true },
       { pubkey: params.payer, isSigner: true, isWritable: true },
       { pubkey: actionRecord, isSigner: false, isWritable: true },
+      { pubkey: params.payerUsdcAta, isSigner: false, isWritable: true },
+      { pubkey: params.feeVault, isSigner: false, isWritable: true },
       { pubkey: params.pythPriceAccount, isSigner: false, isWritable: false },
+      { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
       { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
     ],
     data,
   });
 }
+
+/** Flat per-action fee hard-coded in the program (10_000 micro-USDC = $0.01). */
+export const EXECUTE_ACTION_FEE_MICRO = 10_000n;
 
 // ══════════════════════════════════════════════════════════════════════
 // Back-compat instruction-builder aliases

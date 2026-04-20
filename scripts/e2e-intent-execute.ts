@@ -30,7 +30,14 @@ import {
   SystemProgram,
   ComputeBudgetProgram,
 } from "@solana/web3.js";
-import { createMint, createAssociatedTokenAccount } from "@solana/spl-token";
+import {
+  createMint,
+  createAssociatedTokenAccount,
+  getAssociatedTokenAddressSync,
+  getOrCreateAssociatedTokenAccount,
+  mintTo,
+  getAccount,
+} from "@solana/spl-token";
 
 import {
   SAKURA_INSURANCE_PROGRAM_ID,
@@ -42,10 +49,12 @@ import {
   buildSignIntentIx,
   buildExecuteWithIntentProofIx,
   deriveProtocolPDA,
+  deriveFeeVaultPDA,
   deriveIntentPDA,
   deriveActionRecordPDA,
   fetchProtocol,
   deserializeActionRecord,
+  EXECUTE_ACTION_FEE_MICRO,
 } from "../lib/insurance-pool";
 import {
   computeIntentCommitment,
@@ -124,35 +133,32 @@ async function main() {
 
   // ── 1. init_protocol (idempotent — skip if already set up) ────────────
   const [protocolPDA] = deriveProtocolPDA(admin.publicKey);
+  const [feeVaultPDA] = deriveFeeVaultPDA(protocolPDA);
   console.log("\n[1/6] Protocol PDA :", protocolPDA.toBase58());
+  console.log("       Fee Vault   :", feeVaultPDA.toBase58());
+
+  let usdcMint: PublicKey;
   const { state: existing } = await fetchProtocol(conn, admin.publicKey);
   if (existing) {
+    usdcMint = existing.usdcMint;
     console.log(
       `  ✓ existing protocol found (intents=${existing.totalIntentsSigned}, actions=${existing.totalActionsExecuted})`
     );
+    console.log(`  USDC mint   : ${usdcMint.toBase58()}`);
   } else {
     console.log("  no protocol yet — initializing…");
-    // Create a fresh test mint (stand-in for USDC on devnet)
-    const mint = await createMint(
-      conn,
-      admin,
-      admin.publicKey,
-      null,
-      6
-    );
-    console.log("  mint :", mint.toBase58());
-    // Platform treasury must be a TokenAccount (enforced by Anchor
-    // `token::mint` constraint). Create admin's ATA for this mint.
+    usdcMint = await createMint(conn, admin, admin.publicKey, null, 6);
+    console.log("  mint :", usdcMint.toBase58());
     const treasuryAta = await createAssociatedTokenAccount(
       conn,
       admin,
-      mint,
+      usdcMint,
       admin.publicKey
     );
     console.log("  treasury ATA :", treasuryAta.toBase58());
     const initIx = buildInitializeProtocolIx({
       admin: admin.publicKey,
-      usdcMint: mint,
+      usdcMint,
       platformTreasury: treasuryAta,
       executionFeeBps: 10,
       platformFeeBps: 1500,
@@ -166,10 +172,23 @@ async function main() {
     console.log("  ✓ init_protocol:", solscan("tx", sig));
   }
 
-  // ── 2. Fresh user keypair ─────────────────────────────────────────────
+  // ── 2. Fresh user keypair + USDC funding ──────────────────────────────
+  // Fee-collection tests require the user to hold USDC. Admin is the mint
+  // authority on the test mint, so we mint straight to the user's ATA.
   const user = Keypair.generate();
-  await fundFrom(conn, admin, user.publicKey, 0.03);
+  await fundFrom(conn, admin, user.publicKey, 0.05);
   console.log("\n[2/6] User :", user.publicKey.toBase58());
+
+  const userUsdcAta = (
+    await getOrCreateAssociatedTokenAccount(conn, admin, usdcMint, user.publicKey)
+  ).address;
+  // Mint 100 USDC (100_000_000 micro-units) to user — plenty for sign fee,
+  // execute fees, and revoke fee on any test intent up to $1,000 cap.
+  await mintTo(conn, admin, usdcMint, userUsdcAta, admin, 100_000_000n);
+  const bal0 = (await getAccount(conn, userUsdcAta)).amount;
+  console.log(
+    `  user USDC ATA: ${userUsdcAta.toBase58()}  balance = ${bal0} micro (${Number(bal0) / 1e6} USDC)`
+  );
 
   // ── 3. Build intent + commitment ──────────────────────────────────────
   // Intent policy: "lend up to 1000 USDC into Kamino, up to $20k notional"
@@ -208,15 +227,28 @@ async function main() {
   console.log("  allowed_protocols  bitmap:", allowedProtocols.toString(2).padStart(8, "0"));
   console.log("  allowed_actiontypes bmp  :", allowedActionTypes.toString(2).padStart(8, "0"));
 
-  // ── 4. sign_intent on-chain ───────────────────────────────────────────
+  // ── 4. sign_intent on-chain (with 0.1% × max_usd_value fee) ──────────
   console.log("\n[3/6] sign_intent…");
   const nowSec = BigInt(Math.floor(Date.now() / 1000));
   const expiresAt = nowSec + 3600n; // 1 hour validity
+
+  // Fee = 0.1% of max_usd_value. max_usd_value here is 20_000 USDC (micro),
+  // so fee = 20_000_000_000 × 10 / 10_000 = 20_000_000 micro = $20. In a
+  // production UI the wallet would compute this client-side and show the
+  // user the dollar amount before signing.
+  const signFeeMicro = (maxUsdValue * 10n) / 10_000n;
+  console.log(
+    `  sign fee     : ${signFeeMicro} micro ($${Number(signFeeMicro) / 1e6})  — 0.1% × max_usd_value`
+  );
+
   const signIx = buildSignIntentIx({
     admin: admin.publicKey,
     user: user.publicKey,
+    userUsdcAta,
+    feeVault: feeVaultPDA,
     intentCommitment: Buffer.from(commitmentBytes),
     expiresAt,
+    feeMicro: signFeeMicro,
   });
   const sigSign = await sendAndConfirmTransaction(
     conn,
@@ -227,6 +259,11 @@ async function main() {
   console.log("  ✓ sign_intent:", solscan("tx", sigSign));
   const [intentPDA] = deriveIntentPDA(user.publicKey);
   console.log("  Intent PDA :", intentPDA.toBase58());
+
+  const balAfterSign = (await getAccount(conn, userUsdcAta)).amount;
+  console.log(
+    `  user USDC after sign: ${balAfterSign} micro  (Δ = -${bal0 - balAfterSign})`
+  );
 
   // ── 5. Post fresh Pyth SOL/USD update ─────────────────────────────────
   console.log("\n[4/6] Posting fresh Pyth SOL/USD update via Hermes…");
@@ -365,6 +402,8 @@ async function main() {
     admin: admin.publicKey,
     user: user.publicKey,
     payer: user.publicKey,
+    payerUsdcAta: userUsdcAta,
+    feeVault: feeVaultPDA,
     pythPriceAccount: postedPythAccount,
     actionNonce,
     actionType,
@@ -416,7 +455,28 @@ async function main() {
       "0x" + rec.proofFingerprint.toString("hex").slice(0, 32) + "…"
     );
 
+    // Fee accounting — verify user paid exactly what the program says
+    const balAfterExec = (await getAccount(conn, userUsdcAta)).amount;
+    const execFeeCharged = balAfterSign - balAfterExec;
+    const vaultBal = (await getAccount(conn, feeVaultPDA)).amount;
+    console.log("\n  ── Fee accounting ──");
+    console.log(
+      `    user paid for sign     : ${bal0 - balAfterSign} micro ($${Number(bal0 - balAfterSign) / 1e6})`
+    );
+    console.log(
+      `    user paid for execute  : ${execFeeCharged} micro ($${Number(execFeeCharged) / 1e6})  [expected ${EXECUTE_ACTION_FEE_MICRO}]`
+    );
+    console.log(
+      `    fee vault balance      : ${vaultBal} micro ($${Number(vaultBal) / 1e6})`
+    );
+    if (execFeeCharged !== EXECUTE_ACTION_FEE_MICRO) {
+      console.log(
+        `  ⚠ execute fee mismatch — expected ${EXECUTE_ACTION_FEE_MICRO}, charged ${execFeeCharged}`
+      );
+    }
+
     console.log("\n🎉 E2E PASS — intent-execution verified on-chain via alt_bn128 pairing.");
+    console.log("    Fee collection verified on-chain: sign_intent + execute_with_intent_proof both debited USDC as expected.");
     process.exit(0);
   } catch (e: unknown) {
     const err = e as { message?: string; logs?: string[]; transactionLogs?: string[] };

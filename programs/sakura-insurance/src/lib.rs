@@ -24,6 +24,20 @@ pub const EXPECTED_FEED_ID_SOL_USD: [u8; 32] = [
     0x0f, 0x4c, 0xfa, 0xc8, 0xc2, 0x80, 0xb5, 0x6d,
 ];
 
+// ════════════════════════════════════════════════════════════════════════════
+// Protocol economics (v0.3 pricing — see docs/VALUE_CAPTURE.md)
+// ════════════════════════════════════════════════════════════════════════════
+
+/// Flat per-action fee paid at every `execute_with_intent_proof`.
+/// $0.01 expressed in USDC micro-units (USDC has 6 decimals).
+pub const EXECUTE_ACTION_FEE_MICRO: u64 = 10_000; // $0.01
+
+/// Upper bound on a caller-declared sign/revoke fee. Prevents a client-side
+/// bug or a malicious integrator from draining the user's USDC via a
+/// pathologically large declared fee. $1,000 cap is well above the 0.1% of
+/// any realistic intent cap ($1M intent × 0.1% = $1,000).
+pub const MAX_DECLARED_FEE_MICRO: u64 = 1_000_000_000; // $1,000
+
 /// Sakura — The Agentic Consumer Protocol (v0.3)
 ///
 /// An intent-execution protocol for Solana DeFi. Users sign an intent once
@@ -123,9 +137,12 @@ pub mod sakura_insurance {
         ctx: Context<SignIntent>,
         intent_commitment: [u8; 32],
         expires_at: i64,
+        fee_micro: u64,
     ) -> Result<()> {
         require!(!ctx.accounts.protocol.paused, IntentErr::Paused);
         require!(intent_commitment != [0u8; 32], IntentErr::CommitmentMissing);
+        require!(fee_micro > 0, IntentErr::InvalidParam);
+        require!(fee_micro <= MAX_DECLARED_FEE_MICRO, IntentErr::InvalidParam);
 
         let now = Clock::get()?.unix_timestamp;
         require!(expires_at > now, IntentErr::AlreadyExpired);
@@ -133,6 +150,24 @@ pub mod sakura_insurance {
             expires_at - now <= 365 * 24 * 3_600,
             IntentErr::InvalidParam
         );
+
+        // Fee transfer: user's USDC ATA → protocol fee vault.
+        // Caller is expected to compute `fee_micro = 0.1% × max_usd_value`
+        // (where max_usd_value is the user's private intent bound). The
+        // program enforces upper ceiling only — the honor-system is
+        // acceptable because the user is paying themselves; lying only
+        // underpays the protocol, not the user.
+        token::transfer(
+            CpiContext::new(
+                ctx.accounts.token_program.to_account_info(),
+                Transfer {
+                    from: ctx.accounts.user_usdc_ata.to_account_info(),
+                    to: ctx.accounts.fee_vault.to_account_info(),
+                    authority: ctx.accounts.user.to_account_info(),
+                },
+            ),
+            fee_micro,
+        )?;
 
         let intent = &mut ctx.accounts.intent;
         if intent.user == Pubkey::default() {
@@ -161,13 +196,37 @@ pub mod sakura_insurance {
             intent_commitment,
             expires_at,
             signed_at: now,
+            fee_micro,
         });
         Ok(())
     }
 
     /// Revoke an active intent. After revocation, no more actions can be
     /// executed against this intent (Intent.is_active = false).
-    pub fn revoke_intent(ctx: Context<RevokeIntent>) -> Result<()> {
+    ///
+    /// A per-revocation fee is charged at the same rate as sign_intent
+    /// (0.1% of the intent's max_usd_value, declared by the caller).
+    /// The fee captures the operational cost of the revocation event and
+    /// aligns the economics of opening and closing a policy.
+    pub fn revoke_intent(
+        ctx: Context<RevokeIntent>,
+        fee_micro: u64,
+    ) -> Result<()> {
+        require!(fee_micro > 0, IntentErr::InvalidParam);
+        require!(fee_micro <= MAX_DECLARED_FEE_MICRO, IntentErr::InvalidParam);
+
+        token::transfer(
+            CpiContext::new(
+                ctx.accounts.token_program.to_account_info(),
+                Transfer {
+                    from: ctx.accounts.user_usdc_ata.to_account_info(),
+                    to: ctx.accounts.fee_vault.to_account_info(),
+                    authority: ctx.accounts.user.to_account_info(),
+                },
+            ),
+            fee_micro,
+        )?;
+
         let intent = &mut ctx.accounts.intent;
         require!(intent.is_active, IntentErr::IntentInactive);
         intent.is_active = false;
@@ -175,6 +234,7 @@ pub mod sakura_insurance {
         emit!(IntentRevoked {
             user: intent.user,
             actions_executed: intent.actions_executed,
+            fee_micro,
         });
         Ok(())
     }
@@ -392,10 +452,22 @@ pub mod sakura_insurance {
             .checked_add(1)
             .ok_or(IntentErr::Overflow)?;
 
-        // Optional: collect execution fee (if execution_fee_bps > 0)
-        // action_amount × execution_fee_bps / 10_000 in USDC-equivalent
-        // For MVP, we skip fee collection — it can be added by the client
-        // via a separate transfer in the same atomic tx.
+        // Flat execution fee: $0.01 per verified action.
+        // Rationale: the gate's value is proportional to the number of
+        // actions passing through it, not the notional size of each.
+        // A flat fee eliminates the fork-bait at large notionals that
+        // a percentage model would create. See docs/VALUE_CAPTURE.md.
+        token::transfer(
+            CpiContext::new(
+                ctx.accounts.token_program.to_account_info(),
+                Transfer {
+                    from: ctx.accounts.payer_usdc_ata.to_account_info(),
+                    to: ctx.accounts.fee_vault.to_account_info(),
+                    authority: ctx.accounts.payer.to_account_info(),
+                },
+            ),
+            EXECUTE_ACTION_FEE_MICRO,
+        )?;
 
         emit!(ActionExecuted {
             intent: intent.key(),
@@ -407,6 +479,7 @@ pub mod sakura_insurance {
             oracle_slot,
             action_nonce,
             actions_executed: intent.actions_executed,
+            fee_micro: EXECUTE_ACTION_FEE_MICRO,
         });
         Ok(())
     }
@@ -469,6 +542,7 @@ pub struct SignIntent<'info> {
         mut,
         seeds = [b"sakura_intent_v3", protocol.admin.as_ref()],
         bump = protocol.bump,
+        has_one = fee_vault,
     )]
     pub protocol: Box<Account<'info, IntentProtocol>>,
 
@@ -484,11 +558,32 @@ pub struct SignIntent<'info> {
     #[account(mut)]
     pub user: Signer<'info>,
 
+    /// User's USDC ATA — source of the 0.1% sign fee.
+    #[account(
+        mut,
+        token::mint = protocol.usdc_mint,
+        token::authority = user,
+    )]
+    pub user_usdc_ata: Box<Account<'info, TokenAccount>>,
+
+    /// Protocol fee vault — destination of the sign fee.
+    #[account(mut)]
+    pub fee_vault: Box<Account<'info, TokenAccount>>,
+
+    pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
 }
 
 #[derive(Accounts)]
 pub struct RevokeIntent<'info> {
+    #[account(
+        mut,
+        seeds = [b"sakura_intent_v3", protocol.admin.as_ref()],
+        bump = protocol.bump,
+        has_one = fee_vault,
+    )]
+    pub protocol: Box<Account<'info, IntentProtocol>>,
+
     #[account(
         mut,
         seeds = [b"sakura_intent_account", user.key().as_ref()],
@@ -497,7 +592,21 @@ pub struct RevokeIntent<'info> {
     )]
     pub intent: Box<Account<'info, Intent>>,
 
+    #[account(mut)]
     pub user: Signer<'info>,
+
+    /// User's USDC ATA — source of the 0.1% revoke fee.
+    #[account(
+        mut,
+        token::mint = protocol.usdc_mint,
+        token::authority = user,
+    )]
+    pub user_usdc_ata: Box<Account<'info, TokenAccount>>,
+
+    #[account(mut)]
+    pub fee_vault: Box<Account<'info, TokenAccount>>,
+
+    pub token_program: Program<'info, Token>,
 }
 
 #[derive(Accounts)]
@@ -507,6 +616,7 @@ pub struct ExecuteWithIntentProof<'info> {
         mut,
         seeds = [b"sakura_intent_v3", protocol.admin.as_ref()],
         bump = protocol.bump,
+        has_one = fee_vault,
     )]
     pub protocol: Box<Account<'info, IntentProtocol>>,
 
@@ -517,8 +627,8 @@ pub struct ExecuteWithIntentProof<'info> {
     )]
     pub intent: Box<Account<'info, Intent>>,
 
-    /// Payer sponsors rent for ActionRecord. Does NOT gate execution —
-    /// the ZK proof is the only authority source.
+    /// Payer sponsors rent for ActionRecord AND the flat execution fee.
+    /// Does NOT gate execution — the ZK proof is the only authority source.
     #[account(mut)]
     pub payer: Signer<'info>,
 
@@ -535,6 +645,18 @@ pub struct ExecuteWithIntentProof<'info> {
     )]
     pub action_record: Box<Account<'info, ActionRecord>>,
 
+    /// Payer's USDC ATA — source of the flat $0.01 execution fee.
+    #[account(
+        mut,
+        token::mint = protocol.usdc_mint,
+        token::authority = payer,
+    )]
+    pub payer_usdc_ata: Box<Account<'info, TokenAccount>>,
+
+    /// Protocol fee vault — destination of the execution fee.
+    #[account(mut)]
+    pub fee_vault: Box<Account<'info, TokenAccount>>,
+
     /// Pyth `PriceUpdateV2` account. Handler enforces:
     ///   • account.owner == PYTH_RECEIVER_PROGRAM_ID    (spoofing guard)
     ///   • price_message.feed_id == EXPECTED_FEED_ID_SOL_USD (wrong-asset guard)
@@ -543,6 +665,7 @@ pub struct ExecuteWithIntentProof<'info> {
     /// CHECK: owner + layout validated by handler
     pub pyth_price_account: UncheckedAccount<'info>,
 
+    pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
 }
 
@@ -625,12 +748,14 @@ pub struct IntentSigned {
     pub intent_commitment: [u8; 32],
     pub expires_at: i64,
     pub signed_at: i64,
+    pub fee_micro: u64,
 }
 
 #[event]
 pub struct IntentRevoked {
     pub user: Pubkey,
     pub actions_executed: u64,
+    pub fee_micro: u64,
 }
 
 #[event]
@@ -644,6 +769,7 @@ pub struct ActionExecuted {
     pub oracle_slot: u64,
     pub action_nonce: u64,
     pub actions_executed: u64,
+    pub fee_micro: u64,
 }
 
 // ══════════════════════════════════════════════════════════════════════════

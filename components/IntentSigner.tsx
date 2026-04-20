@@ -36,8 +36,11 @@ import {
   buildProtocolsBitmap,
   buildRevokeIntentIx,
   buildSignIntentIx,
+  deriveProtocolPDA,
+  deriveFeeVaultPDA,
   SAKURA_INSURANCE_PROGRAM_ID,
 } from "@/lib/insurance-pool";
+import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 import {
   computeIntentCommitment,
   pubkeyToFieldBytes,
@@ -182,11 +185,34 @@ export default function IntentSigner() {
       const expiresAt =
         BigInt(Math.floor(Date.now() / 1000)) + BigInt(hours) * 3600n;
 
+      // Sign fee: 0.1% of max_usd_value. Computed client-side since
+      // max_usd_value is private and the on-chain program cannot verify
+      // the amount — it only enforces the $1,000 ceiling.
+      const signFeeMicro = (maxUsdMicro * 10n) / 10_000n;
+
+      // Derive protocol's USDC mint + fee vault, and the user's ATA
+      // against that mint. Mint is fetched from the deployed protocol
+      // state — at this point IntentSigner assumes a canonical Sakura
+      // mint (set via env, on devnet the test-USDC mint).
+      const usdcMintStr = process.env.NEXT_PUBLIC_SAKURA_USDC_MINT;
+      if (!usdcMintStr) {
+        throw new Error(
+          "NEXT_PUBLIC_SAKURA_USDC_MINT env var not set."
+        );
+      }
+      const usdcMint = new PublicKey(usdcMintStr);
+      const [protocolPda] = deriveProtocolPDA(admin);
+      const [feeVault] = deriveFeeVaultPDA(protocolPda);
+      const userUsdcAta = getAssociatedTokenAddressSync(usdcMint, user);
+
       const signIx = buildSignIntentIx({
         admin,
         user,
+        userUsdcAta,
+        feeVault,
         intentCommitment: Buffer.from(bytesBE32),
         expiresAt,
+        feeMicro: signFeeMicro,
       });
 
       const conn = new Connection(RPC, "confirmed");
@@ -476,7 +502,40 @@ function RevokeButton({ disabled }: { disabled?: boolean }) {
       setRevoking(true);
       setResult({ kind: "idle" });
       const user = new PublicKey(walletAddress);
-      const ix = buildRevokeIntentIx({ user });
+
+      // Reload the stored intent secrets so we know the original
+      // max_usd_value — the revoke fee is computed on the same base as
+      // the sign fee (0.1% of max_usd_value).
+      const cached = localStorage.getItem(`sakura:intent:${walletAddress}`);
+      if (!cached) {
+        throw new Error(
+          "No cached intent secrets found. Sign an intent first, or clear state and retry."
+        );
+      }
+      const secrets = JSON.parse(cached) as { maxUsdValueMicro: string };
+      const revokeFeeMicro =
+        (BigInt(secrets.maxUsdValueMicro) * 10n) / 10_000n;
+
+      const adminStr = process.env.NEXT_PUBLIC_SAKURA_PROTOCOL_ADMIN;
+      const usdcMintStr = process.env.NEXT_PUBLIC_SAKURA_USDC_MINT;
+      if (!adminStr || !usdcMintStr) {
+        throw new Error(
+          "Missing NEXT_PUBLIC_SAKURA_PROTOCOL_ADMIN or NEXT_PUBLIC_SAKURA_USDC_MINT."
+        );
+      }
+      const admin = new PublicKey(adminStr);
+      const usdcMint = new PublicKey(usdcMintStr);
+      const [protocolPda] = deriveProtocolPDA(admin);
+      const [feeVault] = deriveFeeVaultPDA(protocolPda);
+      const userUsdcAta = getAssociatedTokenAddressSync(usdcMint, user);
+
+      const ix = buildRevokeIntentIx({
+        admin,
+        user,
+        userUsdcAta,
+        feeVault,
+        feeMicro: revokeFeeMicro,
+      });
 
       const conn = new Connection(RPC, "confirmed");
       const { blockhash } = await conn.getLatestBlockhash();

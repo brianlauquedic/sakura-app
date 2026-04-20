@@ -36,7 +36,10 @@ import {
 import {
   SAKURA_INSURANCE_PROGRAM_ID,
   buildSignIntentIx,
+  deriveProtocolPDA,
+  deriveFeeVaultPDA,
 } from "@/lib/insurance-pool";
+import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 import {
   computeIntentCommitment,
   pubkeyToFieldBytes,
@@ -134,11 +137,27 @@ export async function POST(req: NextRequest) {
       BigInt(Math.floor(Date.now() / 1000)) +
       BigInt(params.expiresInHours) * 3600n;
 
+    // Fee = 0.1% of max_usd_value (honor system — the chain does not see
+    // max_usd_value since it is private, but enforces an upper ceiling).
+    const feeMicro = (params.maxUsdValue * 10n) / 10_000n;
+
+    const usdcMintEnv = process.env.SAKURA_USDC_MINT;
+    if (!usdcMintEnv) {
+      throw new Error("Server not configured (SAKURA_USDC_MINT missing)");
+    }
+    const usdcMint = new PublicKey(usdcMintEnv);
+    const [protocolPda] = deriveProtocolPDA(admin);
+    const [feeVault] = deriveFeeVaultPDA(protocolPda);
+    const userUsdcAta = getAssociatedTokenAddressSync(usdcMint, user);
+
     const signIx = buildSignIntentIx({
       admin,
       user,
+      userUsdcAta,
+      feeVault,
       intentCommitment: Buffer.from(commitmentBytes),
       expiresAt,
+      feeMicro,
     });
 
     // Build v0 tx (Blinks require v0). The user is the sole signer.
