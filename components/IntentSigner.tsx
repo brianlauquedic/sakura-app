@@ -97,11 +97,15 @@ interface IntentSecrets {
 // Option tables
 // ───────────────────────────────────────────────────────────────────
 
+// Top-4 Solana DeFi by Grid gridRank + product-fit (2026-04-22):
+//   Jupiter (Lend product rank 88 — highest), Raydium (DEX rank 44),
+//   Kamino (Lending rank 32), Jito (LST rank 31).
+// MarginFi / Marinade / Sanctum / Solend kept in enum for forward
+// compatibility but not surfaced in UI. See commit history for rationale.
 const PROTOCOL_LABELS = [
-  { id: ProtocolId.Kamino, label: "Kamino" },
-  { id: ProtocolId.MarginFi, label: "MarginFi" },
   { id: ProtocolId.Jupiter, label: "Jupiter" },
-  { id: ProtocolId.Marinade, label: "Marinade" },
+  { id: ProtocolId.Raydium, label: "Raydium" },
+  { id: ProtocolId.Kamino, label: "Kamino" },
   { id: ProtocolId.Jito, label: "Jito" },
 ];
 

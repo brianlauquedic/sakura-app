@@ -133,7 +133,9 @@ export enum ProtocolId {
   Jito = 5,
   Drift = 6,
   Zeta = 7,
-  // 8..31 reserved
+  /** Added 2026-04 — Raydium direct swap route (bypasses Jupiter aggregator). */
+  Raydium = 8,
+  // 9..31 reserved
 }
 
 /** Build an allowed_protocols bitmap from a list of ProtocolId values. */

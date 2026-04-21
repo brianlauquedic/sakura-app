@@ -224,20 +224,72 @@ function buildMemoLendingStub(
   };
 }
 
-export async function buildKaminoLendIx(p: BuildActionParams): Promise<ActionIxBundle> {
-  return buildMemoLendingStub(p, ProtocolId.Kamino, ActionType.Lend);
+// Kamino + Jupiter Lend adapters route through lib/adapters/ —
+// currently Memo-backed audit-trail stubs; klend-sdk / @jup-ag/lend
+// CPI integration documented in those files and planned for a
+// follow-up commit. The dispatcher signature is stable, so the switch
+// from Memo → CPI is invisible to callers.
+
+async function wrapKaminoAction(
+  p: BuildActionParams,
+  fn: "buildKaminoLend" | "buildKaminoBorrow" | "buildKaminoRepay" | "buildKaminoWithdraw",
+  action: ActionType
+): Promise<ActionIxBundle> {
+  const mod = await import("./adapters/kamino");
+  const inputMint = p.inputMint ?? new (await import("@solana/web3.js")).PublicKey(
+    "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+  );
+  const ixs = await mod[fn]({ user: p.user, mint: inputMint, amountMicro: p.actionAmountMicro });
+  return {
+    instructions: ixs,
+    addressLookupTables: [],
+    description: `Kamino ${ActionType[action]} ${p.actionAmountMicro} ${inputMint.toBase58().slice(0, 6)}`,
+    estimatedComputeUnits: 180_000,
+  };
 }
-export async function buildKaminoRepayIx(p: BuildActionParams): Promise<ActionIxBundle> {
-  return buildMemoLendingStub(p, ProtocolId.Kamino, ActionType.Repay);
+
+export async function buildKaminoLendIx(p: BuildActionParams): Promise<ActionIxBundle> {
+  return wrapKaminoAction(p, "buildKaminoLend", ActionType.Lend);
 }
 export async function buildKaminoBorrowIx(p: BuildActionParams): Promise<ActionIxBundle> {
-  return buildMemoLendingStub(p, ProtocolId.Kamino, ActionType.Borrow);
+  return wrapKaminoAction(p, "buildKaminoBorrow", ActionType.Borrow);
 }
-export async function buildMarginFiLendIx(p: BuildActionParams): Promise<ActionIxBundle> {
-  return buildMemoLendingStub(p, ProtocolId.MarginFi, ActionType.Lend);
+export async function buildKaminoRepayIx(p: BuildActionParams): Promise<ActionIxBundle> {
+  return wrapKaminoAction(p, "buildKaminoRepay", ActionType.Repay);
 }
-export async function buildMarginFiRepayIx(p: BuildActionParams): Promise<ActionIxBundle> {
-  return buildMemoLendingStub(p, ProtocolId.MarginFi, ActionType.Repay);
+export async function buildKaminoWithdrawIx(p: BuildActionParams): Promise<ActionIxBundle> {
+  return wrapKaminoAction(p, "buildKaminoWithdraw", ActionType.Withdraw);
+}
+
+async function wrapJupiterLendAction(
+  p: BuildActionParams,
+  fn: "buildJupiterLendLend" | "buildJupiterLendBorrow" | "buildJupiterLendRepay" | "buildJupiterLendWithdraw",
+  action: ActionType
+): Promise<ActionIxBundle> {
+  const mod = await import("./adapters/jupiter-lend");
+  const inputMint = p.inputMint ?? new (await import("@solana/web3.js")).PublicKey(
+    "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+  );
+  const ixs = await mod[fn]({ user: p.user, mint: inputMint, amountMicro: p.actionAmountMicro });
+  return {
+    instructions: ixs,
+    addressLookupTables: [],
+    description: `Jupiter Lend ${ActionType[action]} ${p.actionAmountMicro} ${inputMint.toBase58().slice(0, 6)}`,
+    estimatedComputeUnits: 150_000,
+  };
+}
+
+export async function buildJupiterLendIx(p: BuildActionParams): Promise<ActionIxBundle> {
+  return wrapJupiterLendAction(p, "buildJupiterLendLend", ActionType.Lend);
+}
+export async function buildJupiterLendBorrowIx(p: BuildActionParams): Promise<ActionIxBundle> {
+  return wrapJupiterLendAction(p, "buildJupiterLendBorrow", ActionType.Borrow);
+}
+export async function buildJupiterLendRepayIx(p: BuildActionParams): Promise<ActionIxBundle> {
+  return wrapJupiterLendAction(p, "buildJupiterLendRepay", ActionType.Repay);
+}
+export async function buildJupiterLendWithdrawIx(p: BuildActionParams): Promise<ActionIxBundle> {
+  return wrapJupiterLendAction(p, "buildJupiterLendWithdraw", ActionType.Withdraw);
 }
 // ══════════════════════════════════════════════════════════════════════
 // Marinade / Jito staking
@@ -285,11 +337,31 @@ export async function buildActionIxs(
   protocolId: ProtocolId,
   params: BuildActionParams
 ): Promise<ActionIxBundle> {
-  // Swap always goes through Jupiter, regardless of "target protocol"
+  // Swap routes to Jupiter aggregator (default) or Raydium direct route.
   if (actionType === ActionType.Swap) {
     if (!params.inputMint || !params.outputMint) {
       throw new Error("Swap requires inputMint + outputMint");
     }
+    if (protocolId === ProtocolId.Raydium) {
+      const { buildRaydiumSwapIxs } = await import("./adapters/raydium");
+      const r = await buildRaydiumSwapIxs({
+        connection: params.connection,
+        user: params.user,
+        inputMint: params.inputMint,
+        outputMint: params.outputMint,
+        inputAmount: params.actionAmountMicro,
+        slippageBps: params.slippageBps,
+      });
+      return {
+        instructions: r.instructions,
+        addressLookupTables: r.addressLookupTables,
+        description: `Raydium direct ${params.actionAmountMicro} ${params.inputMint
+          .toBase58()
+          .slice(0, 6)}→${params.outputMint.toBase58().slice(0, 6)} via pools ${r.routePoolIds.join(",")}`,
+        estimatedComputeUnits: 250_000,
+      };
+    }
+    // Default: Jupiter aggregator
     return buildJupiterSwapIxs({
       ...params,
       inputMint: params.inputMint,
@@ -299,23 +371,36 @@ export async function buildActionIxs(
 
   const key = `${ActionType[actionType]}:${ProtocolId[protocolId]}`;
   switch (key) {
+    // ── Kamino (4 actions) ───────────────────────────────────────────
     case "Lend:Kamino":
       return buildKaminoLendIx(params);
-    case "Lend:MarginFi":
-      return buildMarginFiLendIx(params);
-    case "Repay:Kamino":
-      return buildKaminoRepayIx(params);
-    case "Repay:MarginFi":
-      return buildMarginFiRepayIx(params);
     case "Borrow:Kamino":
       return buildKaminoBorrowIx(params);
-    case "Stake:Marinade":
-      return buildMarinadeStakeIx(params);
+    case "Repay:Kamino":
+      return buildKaminoRepayIx(params);
+    case "Withdraw:Kamino":
+      return buildKaminoWithdrawIx(params);
+    // ── Jupiter Lend (4 actions — distinct from Jupiter Swap above) ──
+    case "Lend:Jupiter":
+      return buildJupiterLendIx(params);
+    case "Borrow:Jupiter":
+      return buildJupiterLendBorrowIx(params);
+    case "Repay:Jupiter":
+      return buildJupiterLendRepayIx(params);
+    case "Withdraw:Jupiter":
+      return buildJupiterLendWithdrawIx(params);
+    // ── Jito LST (Stake + Unstake mapped to Withdraw) ─────────────────
     case "Stake:Jito":
       return buildJitoStakeIx(params);
     case "Withdraw:Jito":
       // Jito has no "Withdraw" concept — maps to liquid unstake semantically
       return buildJitoUnstakeIx(params);
+    // ── Deprecated protocols (still in enum for bitmap compat) ───────
+    // Marinade / MarginFi removed from dispatcher 2026-04-22 — not in
+    // the top-4 by Grid gridRank. Their Memo stubs remain callable via
+    // lib/adapters/ if needed, but the dispatcher no longer surfaces them.
+    case "Stake:Marinade":
+      return buildMarinadeStakeIx(params);
     default:
       throw new Error(
         `Unsupported (action, protocol) combination: ${key}. ` +
