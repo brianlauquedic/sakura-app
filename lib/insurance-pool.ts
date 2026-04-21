@@ -105,22 +105,36 @@ export const PYTH_SOL_USD_DEVNET = new PublicKey(
 
 // ── C-full dual oracle (Pyth + Switchboard) ──
 
-/** Switchboard On-Demand program ID (mainnet + devnet — same ID). */
+/**
+ * Switchboard On-Demand program IDs, verified against
+ * `@switchboard-xyz/on-demand` SDK `utils/index.js`:
+ *   ON_DEMAND_DEVNET_PID  = Aio4gaXjXzJNVLtzwtNVmSqGKpANtXhybbkhtAC94ji2
+ *   ON_DEMAND_MAINNET_PID = SBondMDrcV3K4kxZR1HNVT7osZxAHVHgYXL5Ze1oMUv
+ * The Sakura Anchor program hardcodes the devnet PID; keep this
+ * constant pointing at the devnet PID until the program is migrated
+ * to mainnet (see docs/SQUADS_MIGRATION_RUNBOOK.md).
+ */
 export const SWITCHBOARD_PROGRAM_ID = new PublicKey(
+  "Aio4gaXjXzJNVLtzwtNVmSqGKpANtXhybbkhtAC94ji2"
+);
+export const SWITCHBOARD_PROGRAM_ID_MAINNET = new PublicKey(
   "SBondMDrcV3K4kxZR1HNVT7osZxAHVHgYXL5Ze1oMUv"
 );
 
 /**
- * Canonical Switchboard On-Demand SOL/USD pull-feed PDA.
+ * Canonical Switchboard On-Demand SOL/USD pull-feed account.
  *
- * ⚠️ TODO BEFORE MAINNET DEPLOY:
- * Replace with the actual pull-feed account pubkey for your chosen
- * SOL/USD feed from https://ondemand.switchboard.xyz/solana/mainnet
- * or /solana/devnet respectively. The address below is a PLACEHOLDER
- * (the system program ID so caller errors are obvious at runtime).
+ * The devnet feed was verified on 2026-04-22 by reading the PullFeed
+ * `feed_hash` via getAccountInfo; it matches the value hardcoded on
+ * the Sakura Anchor side (`EXPECTED_SWITCHBOARD_FEED_HASH_SOL_USD`).
+ *
+ * ⚠️ TODO: populate MAINNET feed pubkey before mainnet deploy by
+ * querying https://ondemand.switchboard.xyz/solana/mainnet for the
+ * canonical SOL/USD feed and replacing the system-program placeholder
+ * below.
  */
 export const SWITCHBOARD_SOL_USD_DEVNET = new PublicKey(
-  "11111111111111111111111111111111"
+  "GgGVgSLWAyL9Xf4fGaAQQCkmWetBjX7PCNz8kTK97DKB"
 );
 export const SWITCHBOARD_SOL_USD_MAINNET = new PublicKey(
   "11111111111111111111111111111111"

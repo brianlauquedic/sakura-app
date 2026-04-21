@@ -68,24 +68,38 @@ pub const MAX_PYTH_EMA_DEVIATION_BPS: u64 = 200;
 // C-full · Dual oracle (Pyth + Switchboard) constants
 // ────────────────────────────────────────────────────────────────────────
 
-/// Switchboard On-Demand program ID (same on mainnet + devnet).
-/// Source: https://docs.switchboard.xyz/solana/on-demand/program-ids
+/// Switchboard On-Demand program ID — DEVNET build.
+///
+/// NOTE: Switchboard On-Demand uses different program IDs per cluster,
+/// verified against `@switchboard-xyz/on-demand` SDK `utils/index.js`:
+///   · devnet:  Aio4gaXjXzJNVLtzwtNVmSqGKpANtXhybbkhtAC94ji2
+///   · mainnet: SBondMDrcV3K4kxZR1HNVT7osZxAHVHgYXL5Ze1oMUv
+/// Since the on-chain binary is currently devnet-only, we hardcode the
+/// devnet PID. Mainnet migration (per docs/SQUADS_MIGRATION_RUNBOOK.md)
+/// will require swapping this constant and redeploying under a new
+/// program address.
 pub const SWITCHBOARD_PROGRAM_ID: Pubkey =
-    solana_program::pubkey!("SBondMDrcV3K4kxZR1HNVT7osZxAHVHgYXL5Ze1oMUv");
+    solana_program::pubkey!("Aio4gaXjXzJNVLtzwtNVmSqGKpANtXhybbkhtAC94ji2");
 
 /// Expected Switchboard feed hash for the canonical SOL/USD pull feed.
 ///
-/// ╔══════════════════════════════════════════════════════════════════╗
-/// ║  ⚠️  TODO BEFORE MAINNET DEPLOY ⚠️                                 ║
-/// ║  Populate with the real 32-byte feed hash from:                   ║
-/// ║    https://ondemand.switchboard.xyz/solana/mainnet/feed/SOL_USD   ║
-/// ║                                                                   ║
-/// ║  Until populated, this ALL-ZEROS sentinel guarantees every        ║
-/// ║  execute_with_intent_proof will revert on the feed_hash check —   ║
-/// ║  safe-by-default. Must be overridden before the dual-oracle path  ║
-/// ║  is useful.                                                       ║
-/// ╚══════════════════════════════════════════════════════════════════╝
-pub const EXPECTED_SWITCHBOARD_FEED_HASH_SOL_USD: [u8; 32] = [0u8; 32];
+/// Read directly from the on-chain `PullFeedAccountData` at devnet feed
+/// pubkey `GgGVgSLWAyL9Xf4fGaAQQCkmWetBjX7PCNz8kTK97DKB` on 2026-04-22
+/// via getAccountInfo → bytes[8..40]:
+///   b756d471b1686eda5df3ecb501957bf940ef54bb274ea9e7a517c368ddf3a4cb
+///
+/// NOTE: the feed_hash is derived from the feed's OracleJob config and
+/// is stable across updates as long as the job spec doesn't change.
+/// If Switchboard republishes the canonical SOL/USD feed under a new
+/// job spec, this constant must be re-derived from the new feed PDA.
+/// Mainnet migration must also re-read the hash from the mainnet
+/// canonical SOL/USD feed (which will likely differ).
+pub const EXPECTED_SWITCHBOARD_FEED_HASH_SOL_USD: [u8; 32] = [
+    0xb7, 0x56, 0xd4, 0x71, 0xb1, 0x68, 0x6e, 0xda,
+    0x5d, 0xf3, 0xec, 0xb5, 0x01, 0x95, 0x7b, 0xf9,
+    0x40, 0xef, 0x54, 0xbb, 0x27, 0x4e, 0xa9, 0xe7,
+    0xa5, 0x17, 0xc3, 0x68, 0xdd, 0xf3, 0xa4, 0xcb,
+];
 
 /// Maximum allowed divergence between Pyth and Switchboard, in basis points.
 /// 100 bps = 1%.
