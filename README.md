@@ -17,7 +17,7 @@ execute.
 [![Tests](https://img.shields.io/badge/invariant%20tests-8%20passing-green)](./__tests__/)
 [![No Token](https://img.shields.io/badge/token-none-lightgrey)](./docs/VALUE_CAPTURE.md)
 
-[→ Live demo (no wallet needed)](https://sakura.app/?demo=true) ·
+[→ Live demo (no wallet needed)](https://www.sakuraaai.com/?demo=true) ·
 [→ Full E2E on devnet in 30s](./scripts/e2e-intent-execute.ts) ·
 [→ Submission · Colosseum Frontier 2026](https://frontier.colosseum.org/)
 
