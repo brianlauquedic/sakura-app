@@ -138,6 +138,13 @@ async function hashIntentText(text: string): Promise<bigint> {
 // immediately sees this is simulated, not a real wallet.
 const DEMO_USER_PUBKEY = "11111111111111111111111111111111";
 
+// Devnet fallbacks for the two deployment-bound env vars. These are
+// public on-chain addresses — not secrets — so hardcoding a fallback
+// is safe and prevents the sign flow from crashing when the Vercel
+// env vars aren't set. Override in production via `vercel env add`.
+const DEVNET_PROTOCOL_ADMIN = "2iCWnS1J8WYZn4reo9YD76qZiiZ39t2c1oGM3dyYwHNg";
+const DEVNET_USDC_MINT       = "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU";
+
 export default function IntentSigner() {
   const { walletAddress, getProvider, isDemo } = useWallet();
 
@@ -196,15 +203,10 @@ export default function IntentSigner() {
       setStatus({ kind: "error", message: "偵測不到錢包 Provider。" });
       return;
     }
+    // Admin Pubkey: prefer env, fall back to the devnet protocol admin
+    // (public on-chain info, not a secret). No hard error in either mode.
     const adminStr =
-      process.env.NEXT_PUBLIC_SAKURA_PROTOCOL_ADMIN ?? DEMO_USER_PUBKEY;
-    if (!isDemo && !process.env.NEXT_PUBLIC_SAKURA_PROTOCOL_ADMIN) {
-      setStatus({
-        kind: "error",
-        message: "未設置 NEXT_PUBLIC_SAKURA_PROTOCOL_ADMIN 環境變量。",
-      });
-      return;
-    }
+      process.env.NEXT_PUBLIC_SAKURA_PROTOCOL_ADMIN ?? DEVNET_PROTOCOL_ADMIN;
 
     try {
       setStatus({ kind: "computing" });
@@ -280,10 +282,10 @@ export default function IntentSigner() {
         return;
       }
 
-      const usdcMintStr = process.env.NEXT_PUBLIC_SAKURA_USDC_MINT;
-      if (!usdcMintStr) {
-        throw new Error("未設置 NEXT_PUBLIC_SAKURA_USDC_MINT 環境變量。");
-      }
+      // USDC mint: prefer env, fall back to the devnet USDC mint used
+      // by our on-chain IntentProtocol. Both are public.
+      const usdcMintStr =
+        process.env.NEXT_PUBLIC_SAKURA_USDC_MINT ?? DEVNET_USDC_MINT;
       const usdcMint = new PublicKey(usdcMintStr);
       const [protocolPda] = deriveProtocolPDA(admin);
       const [feeVault] = deriveFeeVaultPDA(protocolPda);
