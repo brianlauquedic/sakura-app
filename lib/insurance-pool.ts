@@ -466,7 +466,15 @@ export function buildSignIntentIx(params: {
   let o = 0;
   IX_SIGN_INTENT.copy(data, o); o += 8;
   params.intentCommitment.copy(data, o); o += 32;
-  data.writeBigInt64LE(params.expiresAt, o); o += 8;
+  // expiresAt is declared i64 on-chain but is always a positive Unix
+  // timestamp in practice. Some browser Buffer polyfills omit
+  // `writeBigInt64LE` while keeping `writeBigUInt64LE`; writing a
+  // non-negative bigint as unsigned is bit-identical to signed and
+  // avoids the "writeBigInt64LE is not a function" runtime error.
+  if (params.expiresAt < 0n) {
+    throw new Error(`expiresAt must be >= 0; got ${params.expiresAt}`);
+  }
+  data.writeBigUInt64LE(params.expiresAt, o); o += 8;
   data.writeBigUInt64LE(params.feeMicro, o);
 
   return new TransactionInstruction({
