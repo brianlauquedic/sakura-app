@@ -290,6 +290,47 @@ textarea:focus-visible,
 }
 
 /* ══════════════════════════════════════════════════════════
+   Demo-mode frame · mirrors landing's temple-card aesthetic:
+   朱色 鉤括弧 L-corner brackets + subtle washi plinth, so the
+   ?demo=true experience visually belongs to the same Kyoto
+   temple design language as the landing page rather than
+   looking like a generic "SaaS form" page.
+   ══════════════════════════════════════════════════════════ */
+.demo-frame {
+  position: relative;
+  padding: 22px 18px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--bg-card);
+}
+.demo-frame::before,
+.demo-frame::after {
+  content: "";
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border: 1.5px solid var(--accent);
+  pointer-events: none;
+}
+.demo-frame::before {
+  top: -1px;
+  left: -1px;
+  border-right: none;
+  border-bottom: none;
+}
+.demo-frame::after {
+  bottom: -1px;
+  right: -1px;
+  border-left: none;
+  border-top: none;
+}
+@media (max-width: 640px) {
+  .demo-frame { padding: 16px 12px; }
+  .demo-frame::before,
+  .demo-frame::after { width: 14px; height: 14px; }
+}
+
+/* ══════════════════════════════════════════════════════════
    SealStampOverlay · 朱印の落下 (intent-signed finality moment)
    Pure CSS, plays for ~1.4s after mount. Auto-removed by the React
    component after ~2.2s via setTimeout.

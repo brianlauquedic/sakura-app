@@ -45,24 +45,51 @@ function AppContent() {
           />
         ) : (
           <div style={{ padding: "40px 0" }}>
-            {/* ── Demo mode banner ── */}
+            {/* ── Demo mode banner · 清水寺-style hairline + kanji ── */}
             {isDemo && (
               <div style={{
-                background: "linear-gradient(90deg, rgba(255,60,0,0.15), rgba(255,140,0,0.15))",
-                border: "1px solid rgba(255,100,0,0.4)",
-                borderRadius: 8, padding: "8px 16px", marginBottom: 20,
-                display: "flex", alignItems: "center", gap: 10,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 18,
+                marginBottom: 36,
+                padding: "6px 0",
               }}>
-                <span style={{ fontSize: 14 }}>🎬</span>
                 <span style={{
-                  fontSize: 12, fontWeight: 600, letterSpacing: "0.12em",
-                  color: "#FF6A00", fontFamily: "var(--font-mono)",
+                  flex: 1,
+                  height: 1,
+                  background: "linear-gradient(to right, transparent, var(--gold) 60%, var(--gold))",
+                  opacity: 0.45,
+                }} />
+                <span style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 10,
+                  padding: "4px 14px",
+                  border: "1px solid var(--accent-mid)",
+                  background: "var(--accent-soft)",
+                  borderRadius: 2,
+                  fontFamily: "var(--font-heading)",
+                  fontSize: 11,
+                  letterSpacing: "0.28em",
+                  color: "var(--accent)",
+                  whiteSpace: "nowrap",
                 }}>
-                  DEMO MODE
+                  <span style={{
+                    display: "inline-block",
+                    width: 5,
+                    height: 5,
+                    borderRadius: "50%",
+                    background: "var(--accent)",
+                  }} />
+                  DEMO · 體驗用 · 無需錢包
                 </span>
-                <span style={{ fontSize: 11, color: "var(--text-muted)", letterSpacing: "0.04em" }}>
-                  — preset data, no wallet required
-                </span>
+                <span style={{
+                  flex: 1,
+                  height: 1,
+                  background: "linear-gradient(to left, transparent, var(--gold) 60%, var(--gold))",
+                  opacity: 0.45,
+                }} />
               </div>
             )}
 
@@ -162,7 +189,7 @@ function AppContent() {
             </div>
 
             {/* ── Agentic Consumer Protocol — Intent Execution ── */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+            <div className={isDemo ? "demo-frame" : undefined} style={{ display: "flex", flexDirection: "column", gap: 20 }}>
               <ErrorBoundary fallbackLabel="Intent Signer">
                 <IntentSigner />
               </ErrorBoundary>

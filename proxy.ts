@@ -336,7 +336,12 @@ export async function proxy(req: NextRequest) {
   response.headers.set("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload");
   response.headers.set(
     "Content-Security-Policy",
-    "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https: wss:;"
+    // `wasm-unsafe-eval` is required by snarkjs / circomlibjs (Poseidon)
+    // to compile the WebAssembly modules used for intent commitment
+    // hashing on the client. Without it, the sign-intent flow errors at
+    // WebAssembly.compile(). This is a standard, narrowly-scoped directive
+    // (only enables WASM, not general eval).
+    "default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https: wss:;"
   );
 
   return response;

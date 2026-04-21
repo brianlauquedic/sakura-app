@@ -133,8 +133,13 @@ async function hashIntentText(text: string): Promise<bigint> {
 // Main component
 // ═══════════════════════════════════════════════════════════════════
 
+// Demo-mode placeholder user Pubkey. System Program (32 zeros) is a
+// deliberately recognizable sentinel so anyone inspecting the state
+// immediately sees this is simulated, not a real wallet.
+const DEMO_USER_PUBKEY = "11111111111111111111111111111111";
+
 export default function IntentSigner() {
-  const { walletAddress, getProvider } = useWallet();
+  const { walletAddress, getProvider, isDemo } = useWallet();
 
   const [intentText, setIntentText] = useState(
     "Lend up to 1000 USDC into Kamino or MarginFi, $10k max per action."
@@ -177,17 +182,23 @@ export default function IntentSigner() {
     });
 
   const handleSign = useCallback(async () => {
-    if (!walletAddress) {
+    // Demo mode: no real wallet, no real tx. The Poseidon commitment
+    // math still runs locally so users see the actual ZK primitive in
+    // action — only the chain-submit + wallet-sign steps are simulated.
+    const effectiveWallet = walletAddress ?? (isDemo ? DEMO_USER_PUBKEY : null);
+
+    if (!effectiveWallet) {
       setStatus({ kind: "error", message: "請先連接錢包。" });
       return;
     }
-    const provider = getProvider();
-    if (!provider) {
+    const provider = isDemo ? null : getProvider();
+    if (!isDemo && !provider) {
       setStatus({ kind: "error", message: "偵測不到錢包 Provider。" });
       return;
     }
-    const adminStr = process.env.NEXT_PUBLIC_SAKURA_PROTOCOL_ADMIN;
-    if (!adminStr) {
+    const adminStr =
+      process.env.NEXT_PUBLIC_SAKURA_PROTOCOL_ADMIN ?? DEMO_USER_PUBKEY;
+    if (!isDemo && !process.env.NEXT_PUBLIC_SAKURA_PROTOCOL_ADMIN) {
       setStatus({
         kind: "error",
         message: "未設置 NEXT_PUBLIC_SAKURA_PROTOCOL_ADMIN 環境變量。",
@@ -197,7 +208,7 @@ export default function IntentSigner() {
 
     try {
       setStatus({ kind: "computing" });
-      const user = new PublicKey(walletAddress);
+      const user = new PublicKey(effectiveWallet);
       const admin = new PublicKey(adminStr);
 
       const maxAmountMicro = BigInt(maxAmountTokens) * 1_000_000n;
@@ -231,6 +242,44 @@ export default function IntentSigner() {
       // Fee = 0.1% × max_usd_value (honor system, enforced by $1000 ceiling on-chain)
       const signFeeMicro = (maxUsdMicro * 10n) / 10_000n;
 
+      // ── DEMO SHORT-CIRCUIT ──
+      // Simulate the wallet-sign + chain-submit phases with realistic
+      // timing so the user still experiences the rhythm of awaiting →
+      // confirming → success (and the SealStampOverlay still fires).
+      // The Poseidon commitment above is REAL — only the signature is
+      // a synthetic bs58-looking string derived from the commitment.
+      if (isDemo) {
+        setStatus({ kind: "awaiting-signature" });
+        await new Promise((r) => setTimeout(r, 600));
+        // Demo signature: 88 bs58-looking chars derived deterministically
+        // from the commitment's own bytes. Not a valid Solana signature
+        // (never submitted on-chain), but shape-accurate for UI display.
+        const BS58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+        let demoSig = "";
+        for (let i = 0; i < 88; i++) {
+          const b = bytesBE32[i % bytesBE32.length];
+          demoSig += BS58[b % 58];
+        }
+        setStatus({ kind: "confirming", signature: demoSig });
+        await new Promise((r) => setTimeout(r, 500));
+        const secrets: IntentSecrets = {
+          intentText,
+          maxAmountMicro: maxAmountMicro.toString(),
+          maxUsdValueMicro: maxUsdMicro.toString(),
+          allowedProtocols: Number(allowedProtocols),
+          allowedActionTypes: Number(allowedActionTypes),
+          nonce: nonce.toString(),
+          intentTextHashDecimal: intentTextHash.toString(),
+          expiresAt: expiresAt.toString(),
+          commitmentHex: hex,
+          signedAt: Date.now(),
+          signature: demoSig,
+        };
+        localStorage.setItem("sakura:intent:demo", JSON.stringify(secrets));
+        setStatus({ kind: "success", signature: demoSig });
+        return;
+      }
+
       const usdcMintStr = process.env.NEXT_PUBLIC_SAKURA_USDC_MINT;
       if (!usdcMintStr) {
         throw new Error("未設置 NEXT_PUBLIC_SAKURA_USDC_MINT 環境變量。");
@@ -261,9 +310,11 @@ export default function IntentSigner() {
 
       setStatus({ kind: "awaiting-signature" });
       let signature: string;
-      if ("signAndSendTransaction" in provider) {
+      // Non-null: demo branch returned earlier; real flow guarantees `provider`.
+      const realProvider = provider!;
+      if ("signAndSendTransaction" in realProvider) {
         const result = await (
-          provider as unknown as {
+          realProvider as unknown as {
             signAndSendTransaction: (
               t: VersionedTransaction
             ) => Promise<{ signature: string }>;
@@ -272,7 +323,7 @@ export default function IntentSigner() {
         signature = result.signature;
       } else {
         const signed = await (
-          provider as unknown as {
+          realProvider as unknown as {
             signTransaction: (
               t: VersionedTransaction
             ) => Promise<VersionedTransaction>;
@@ -317,6 +368,7 @@ export default function IntentSigner() {
   }, [
     walletAddress,
     getProvider,
+    isDemo,
     intentText,
     maxAmountTokens,
     maxUsdDollars,
@@ -442,7 +494,7 @@ export default function IntentSigner() {
         {/* Primary action */}
         <Button
           onClick={handleSign}
-          disabled={isBusy || !walletAddress}
+          disabled={isBusy || (!walletAddress && !isDemo)}
           size="lg"
           className="w-full font-serif text-[15px] tracking-[0.08em]"
           style={{
@@ -486,9 +538,17 @@ export default function IntentSigner() {
           <StatusBanner
             tone="success"
             icon={<CheckCircle2 className="h-4 w-4" />}
-            title="意圖已上鏈簽署"
-            linkLabel={`${status.signature.slice(0, 12)}…`}
-            href={`https://solscan.io/tx/${status.signature}?cluster=devnet`}
+            title={isDemo ? "意圖已簽署（Demo · 模擬上鏈）" : "意圖已上鏈簽署"}
+            linkLabel={
+              isDemo
+                ? `${status.signature.slice(0, 12)}… · demo sig`
+                : `${status.signature.slice(0, 12)}…`
+            }
+            href={
+              isDemo
+                ? undefined
+                : `https://solscan.io/tx/${status.signature}?cluster=devnet`
+            }
           />
         )}
         {status.kind === "error" && (
@@ -628,6 +688,11 @@ function StatusBanner({
             {linkLabel}
             <ExternalLink className="h-3 w-3" />
           </a>
+        )}
+        {linkLabel && !href && (
+          <span className="mt-1 inline-block font-mono text-[11px] opacity-70">
+            {linkLabel}
+          </span>
         )}
       </div>
     </div>
