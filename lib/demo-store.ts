@@ -22,6 +22,7 @@
  */
 
 export const DEMO_ACTIONS_KEY = "sakura:demo:actions";
+export const DEMO_INTENT_REVOKED_KEY = "sakura:demo:intent-revoked";
 export const DEMO_ACTION_EVENT = "sakura:demo-action";
 
 /** Real, publicly verifiable devnet execute_with_intent_proof signatures
@@ -98,6 +99,33 @@ export function appendDemoAction(
 export function clearDemoActions() {
   if (typeof window === "undefined") return;
   localStorage.removeItem(DEMO_ACTIONS_KEY);
+  window.dispatchEvent(new CustomEvent(DEMO_ACTION_EVENT));
+}
+
+// ── Intent revocation (demo-mode mirror of the on-chain revoke_intent) ──
+// Storing the revocation timestamp (rather than a bool) lets ActionHistory
+// inject a synthetic "revoked at HH:MM" pseudo-row into the audit trail.
+
+export function getDemoIntentRevokedAt(): number | null {
+  if (typeof window === "undefined") return null;
+  const raw = localStorage.getItem(DEMO_INTENT_REVOKED_KEY);
+  if (!raw) return null;
+  const n = Number(raw);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+export function setDemoIntentRevoked(tsMs = Date.now()) {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(DEMO_INTENT_REVOKED_KEY, String(tsMs));
+  window.dispatchEvent(new CustomEvent(DEMO_ACTION_EVENT));
+}
+
+/** Called automatically when a new demo intent is signed — a fresh
+ *  intent naturally clears any prior revocation (since this is a NEW
+ *  intent, not the old-revoked one). */
+export function clearDemoIntentRevoked() {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem(DEMO_INTENT_REVOKED_KEY);
   window.dispatchEvent(new CustomEvent(DEMO_ACTION_EVENT));
 }
 

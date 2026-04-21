@@ -20,8 +20,10 @@ import {
 } from "lucide-react";
 import {
   getDemoActions,
+  getDemoIntentRevokedAt,
   DEMO_ACTION_EVENT,
   DEMO_ACTIONS_KEY,
+  DEMO_INTENT_REVOKED_KEY,
   solscanTxUrl,
 } from "@/lib/demo-store";
 import { useWallet } from "@/contexts/WalletContext";
@@ -66,6 +68,11 @@ interface ActionRow {
    *  `pda` → Solscan account URL; demo rows link to one of the 5 bench
    *  signatures from docs/bench/2026-04-21-cu.json. */
   permalink?: string;
+  /** Pseudo-row type for demo-mode lifecycle events (currently only
+   *  "revoke"). Real chain rows never set this. */
+  pseudoKind?: "revoke";
+  /** Pseudo-row timestamp (unix seconds). Used only when pseudoKind set. */
+  pseudoTs?: bigint;
 }
 
 // Base58 encoder for the memcmp filter (avoids pulling bs58).
@@ -102,6 +109,7 @@ const DEMO_USER_PUBKEY = "11111111111111111111111111111111";
  */
 function readDemoHistory(): { intent: IntentState | null; rows: ActionRow[] } {
   const entries = getDemoActions();
+  const revokedAtMs = getDemoIntentRevokedAt();
   if (entries.length === 0) return { intent: null, rows: [] };
 
   const userPk = new PublicKey(DEMO_USER_PUBKEY);
@@ -110,22 +118,28 @@ function readDemoHistory(): { intent: IntentState | null; rows: ActionRow[] } {
   );
   const latest = newestFirst[0]!;
   const now = BigInt(Math.floor(Date.now() / 1000));
+
+  // Revocation logic: if revokedAtMs is set AND later than the latest
+  // sign, the intent is revoked. (If user signed AFTER revoke, the new
+  // sign supersedes — clearDemoIntentRevoked is called automatically
+  // in handleSign's demo branch, so this case should also correctly
+  // resolve to "active".)
+  const latestSignedAtMs = Number(latest.ts) * 1000;
+  const isRevoked = revokedAtMs !== null && revokedAtMs > latestSignedAtMs;
+
   const intent: IntentState = {
     user: userPk,
     intentCommitment: Buffer.from(latest.commitmentHex, "hex"),
     signedAt: BigInt(latest.ts),
-    // Demo intents have a fixed 24h horizon from the most recent sign.
     expiresAt: BigInt(latest.ts) + 24n * 3_600n > now
       ? BigInt(latest.ts) + 24n * 3_600n
       : now + 3_600n,
     actionsExecuted: BigInt(entries.length),
-    isActive: true,
+    isActive: !isRevoked,
     bump: 255,
   };
 
   const rows: ActionRow[] = newestFirst.map((e, idx) => ({
-    // Deterministic PDA-ish identifier (not a real Pubkey — purely
-    // a React key). Use the demo signature to guarantee uniqueness.
     pda: `demo:${e.demoSignature.slice(0, 16)}:${idx}`,
     permalink: solscanTxUrl(e.benchRefSignature),
     state: {
@@ -141,6 +155,31 @@ function readDemoHistory(): { intent: IntentState | null; rows: ActionRow[] } {
       bump: 255,
     },
   }));
+
+  // If revoked, prepend a pseudo-row marking the revocation event on
+  // the audit trail. This is intentionally not a real ActionRecord —
+  // it's a UI affordance that visually stamps "intent revoked here".
+  if (isRevoked) {
+    const revokeTs = BigInt(Math.floor(revokedAtMs / 1000));
+    rows.unshift({
+      pda: `demo:revoke:${revokedAtMs}`,
+      pseudoKind: "revoke",
+      pseudoTs: revokeTs,
+      state: {
+        intent: userPk,
+        actionNonce: 0n,
+        actionType: 0,
+        actionAmount: 0n,
+        actionTargetIndex: 0,
+        oraclePriceUsdMicro: 0n,
+        oracleSlot: 0n,
+        ts: revokeTs,
+        proofFingerprint: Buffer.alloc(32, 0),
+        bump: 0,
+      },
+    });
+  }
+
   return { intent, rows };
 }
 
@@ -221,7 +260,9 @@ export default function ActionHistory() {
     if (!isDemo) return;
     const onSameTab = () => refresh();
     const onCrossTab = (e: StorageEvent) => {
-      if (e.key === DEMO_ACTIONS_KEY) refresh();
+      if (e.key === DEMO_ACTIONS_KEY || e.key === DEMO_INTENT_REVOKED_KEY) {
+        refresh();
+      }
     };
     window.addEventListener(DEMO_ACTION_EVENT, onSameTab);
     window.addEventListener("storage", onCrossTab);
@@ -401,6 +442,30 @@ function SummaryItem({
 }
 
 function ActionRowView({ row }: { row: ActionRow }) {
+  // Pseudo-row for the demo revoke event: renders as a muted 朱色 banner
+  // inside the audit trail rather than a normal action row. Marks a
+  // lifecycle discontinuity between before-revoke and after-revoke rows.
+  if (row.pseudoKind === "revoke") {
+    const tsMs = Number(row.pseudoTs ?? 0n) * 1000;
+    return (
+      <div className="flex items-center gap-2 rounded-md border border-dashed border-[var(--accent-mid)] bg-[var(--accent-soft)] px-3 py-2 font-mono text-[11px] text-[var(--accent)]">
+        <CircleSlash className="h-3.5 w-3.5 flex-shrink-0" />
+        <span className="font-sans font-semibold tracking-[0.1em]">
+          意圖已撤銷
+        </span>
+        <span className="text-[var(--text-muted)]">·</span>
+        <span className="text-[var(--text-muted)]">
+          {new Date(tsMs).toLocaleString(undefined, {
+            month: "short",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
+        </span>
+      </div>
+    );
+  }
+
   const s = row.state;
   const tsMs = Number(s.ts) * 1000;
   const priceUsd = Number(s.oraclePriceUsdMicro) / 1e6;

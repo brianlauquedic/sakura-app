@@ -31,12 +31,21 @@ interface SealStampOverlayProps {
   onDone?: () => void;
   /** Skip animation (e.g. `?noStamp=true` query param for screen recording). */
   disabled?: boolean;
+  /**
+   * "sign" (default) — the seal DROPS with overshoot + impact flash,
+   *   signaling finality of a newly-committed intent.
+   * "revoke" — the seal appears, SHAKES briefly, a diagonal red strike
+   *   cuts across it, then desaturates + fades — signaling the user
+   *   revoked their own intent.
+   */
+  mode?: "sign" | "revoke";
 }
 
 export default function SealStampOverlay({
   show,
   onDone,
   disabled = false,
+  mode = "sign",
 }: SealStampOverlayProps) {
   // Keep a fresh ref to `onDone` without putting it in the main effect's
   // dependency list — otherwise a new inline arrow from the parent would
@@ -71,18 +80,24 @@ export default function SealStampOverlay({
 
   if (!show || disabled) return null;
 
+  const overlayClass =
+    mode === "revoke" ? "seal-stamp-overlay revoke" : "seal-stamp-overlay";
+  const dropClass =
+    mode === "revoke" ? "seal-stamp-drop revoke" : "seal-stamp-drop";
+
   return (
-    <div
-      className="seal-stamp-overlay"
-      aria-hidden="true"
-      // Use a key derived from `show` so remounts cleanly reset the
-      // animation if the caller toggles show off→on rapidly.
-    >
+    <div className={overlayClass} aria-hidden="true">
       <div className="seal-stamp-flash" />
       <div className="seal-stamp-wrapper">
         <div className="seal-stamp-ring" />
-        <div className="seal-stamp-drop">
+        <div className={dropClass}>
           <SakuraSeal size={320} animate={false} />
+          {mode === "revoke" && (
+            <>
+              <div className="seal-stamp-strike" />
+              <div className="seal-stamp-revoke-caption">REVOKED · 撤銷</div>
+            </>
+          )}
         </div>
       </div>
     </div>

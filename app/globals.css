@@ -468,6 +468,114 @@ textarea:focus-visible,
   }
 }
 
+/* ══════════════════════════════════════════════════════════
+   Revoke variant · the seal appears, trembles, is struck
+   through by a diagonal 朱色 line, desaturates, then fades.
+   Counterpart to the "sign" finality moment.
+   ══════════════════════════════════════════════════════════ */
+.seal-stamp-overlay.revoke {
+  animation: seal-overlay-fade 2400ms ease-out forwards;
+}
+.seal-stamp-drop.revoke {
+  animation: seal-revoke 2400ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  position: relative;
+}
+@keyframes seal-revoke {
+  0% {
+    transform: scale(0.92);
+    opacity: 0;
+    filter: saturate(1) brightness(1);
+  }
+  15% {
+    transform: scale(1.02);
+    opacity: 1;
+    filter: saturate(1) brightness(1);
+  }
+  /* Shake: 4 quick oscillations */
+  22% { transform: scale(1.0) translateX(-6px) rotate(-1.2deg); }
+  28% { transform: scale(1.0) translateX(6px)  rotate(1.2deg);  }
+  34% { transform: scale(1.0) translateX(-4px) rotate(-0.8deg); }
+  40% { transform: scale(1.0) translateX(4px)  rotate(0.8deg);  }
+  46% { transform: scale(1.0) translateX(0)    rotate(0);       }
+  /* Desaturate + darken */
+  65% {
+    transform: scale(1.0);
+    opacity: 0.85;
+    filter: saturate(0.15) brightness(0.75);
+  }
+  90% {
+    transform: scale(1.0);
+    opacity: 0.6;
+    filter: saturate(0) brightness(0.6);
+  }
+  100% {
+    transform: scale(1.0);
+    opacity: 0;
+    filter: saturate(0) brightness(0.5);
+  }
+}
+
+/* Diagonal 朱色 strike line that sweeps across the seal at impact. */
+.seal-stamp-strike {
+  position: absolute;
+  top: 50%;
+  left: -10%;
+  width: 120%;
+  height: 4px;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(201, 49, 42, 0.92) 20%,
+    rgba(201, 49, 42, 0.92) 80%,
+    transparent 100%
+  );
+  transform-origin: center center;
+  transform: translateY(-50%) rotate(-18deg) scaleX(0);
+  animation: seal-strike 2400ms cubic-bezier(0.45, 0, 0.2, 1) forwards;
+  box-shadow: 0 0 12px rgba(201, 49, 42, 0.5);
+  pointer-events: none;
+}
+@keyframes seal-strike {
+  0%, 20% {
+    transform: translateY(-50%) rotate(-18deg) scaleX(0);
+    opacity: 0;
+  }
+  30% {
+    transform: translateY(-50%) rotate(-18deg) scaleX(1);
+    opacity: 1;
+  }
+  80% {
+    transform: translateY(-50%) rotate(-18deg) scaleX(1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(-50%) rotate(-18deg) scaleX(1);
+    opacity: 0;
+  }
+}
+
+/* REVOKED caption below the seal */
+.seal-stamp-revoke-caption {
+  position: absolute;
+  bottom: -42px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-heading, "Noto Serif JP", serif);
+  font-size: 13px;
+  letter-spacing: 0.4em;
+  color: rgba(201, 49, 42, 0.92);
+  text-transform: uppercase;
+  white-space: nowrap;
+  opacity: 0;
+  animation: seal-revoke-caption 2400ms ease-out forwards;
+}
+@keyframes seal-revoke-caption {
+  0%, 30% { opacity: 0; transform: translateX(-50%) translateY(8px); }
+  40%     { opacity: 1; transform: translateX(-50%) translateY(0);   }
+  85%     { opacity: 1; transform: translateX(-50%) translateY(0);   }
+  100%    { opacity: 0; transform: translateX(-50%) translateY(0);   }
+}
+
 
 @keyframes shimmer {
   0%   { background-position: -200% 0; }

@@ -11,7 +11,11 @@
 
 import { useCallback, useEffect, useState } from "react";
 import SealStampOverlay from "@/components/SealStampOverlay";
-import { appendDemoAction } from "@/lib/demo-store";
+import {
+  appendDemoAction,
+  clearDemoIntentRevoked,
+  setDemoIntentRevoked,
+} from "@/lib/demo-store";
 import {
   Connection,
   PublicKey,
@@ -315,6 +319,9 @@ export default function IntentSigner() {
           demoSignature: demoSig,
           commitmentHex: hexClean,
         });
+        // Signing a new intent naturally clears any previous revocation —
+        // the new commitment supersedes the old, revoked one.
+        clearDemoIntentRevoked();
 
         setStatus({ kind: "success", signature: demoSig });
         return;
@@ -744,28 +751,53 @@ function StatusBanner({
 // Fee = 0.1% × max_usd_value (pulled from cached localStorage secrets).
 // ───────────────────────────────────────────────────────────────────
 function RevokeRow({ disabled }: { disabled?: boolean }) {
-  const { walletAddress, getProvider } = useWallet();
+  const { walletAddress, getProvider, isDemo } = useWallet();
   const [revoking, setRevoking] = useState(false);
   const [result, setResult] = useState<
     { kind: "idle" } | { kind: "ok"; sig: string } | { kind: "err"; msg: string }
   >({ kind: "idle" });
+  const [revokeOverlay, setRevokeOverlay] = useState(false);
 
   const handleRevoke = async () => {
-    if (!walletAddress) return;
-    const provider = getProvider();
-    if (!provider) return;
+    const effectiveWallet =
+      walletAddress ?? (isDemo ? DEMO_USER_PUBKEY : null);
+    if (!effectiveWallet) return;
 
     const confirmed = window.confirm(
       "撤銷當前意圖？代理將無法再對此意圖執行任何動作。你可以之後重新簽署。"
     );
     if (!confirmed) return;
 
+    // ── DEMO SHORT-CIRCUIT ──
+    // Mirrors the on-chain revoke_intent: flips the intent's active flag.
+    // History rows stay (they're immutable audit entries); IntentSummary
+    // re-renders as "revoked"; a new sign will clear the revoked flag
+    // automatically (see handleSign's demo branch).
+    if (isDemo && !walletAddress) {
+      try {
+        setRevoking(true);
+        setResult({ kind: "idle" });
+        await new Promise((r) => setTimeout(r, 500));
+        setDemoIntentRevoked(Date.now());
+        setRevokeOverlay(true);
+        const demoRevokeSig =
+          "DemoRevoke" + Math.floor(Date.now() / 1000).toString(36);
+        setResult({ kind: "ok", sig: demoRevokeSig });
+      } finally {
+        setRevoking(false);
+      }
+      return;
+    }
+
+    const provider = getProvider();
+    if (!provider) return;
+
     try {
       setRevoking(true);
       setResult({ kind: "idle" });
-      const user = new PublicKey(walletAddress);
+      const user = new PublicKey(effectiveWallet);
 
-      const cached = localStorage.getItem(`sakura:intent:${walletAddress}`);
+      const cached = localStorage.getItem(`sakura:intent:${effectiveWallet}`);
       if (!cached) {
         throw new Error(
           "本機找不到意圖密鑰。請先簽署一次意圖，或清除狀態後重試。"
@@ -775,13 +807,10 @@ function RevokeRow({ disabled }: { disabled?: boolean }) {
       const revokeFeeMicro =
         (BigInt(secrets.maxUsdValueMicro) * 10n) / 10_000n;
 
-      const adminStr = process.env.NEXT_PUBLIC_SAKURA_PROTOCOL_ADMIN;
-      const usdcMintStr = process.env.NEXT_PUBLIC_SAKURA_USDC_MINT;
-      if (!adminStr || !usdcMintStr) {
-        throw new Error(
-          "缺少 NEXT_PUBLIC_SAKURA_PROTOCOL_ADMIN 或 NEXT_PUBLIC_SAKURA_USDC_MINT 環境變量。"
-        );
-      }
+      const adminStr =
+        process.env.NEXT_PUBLIC_SAKURA_PROTOCOL_ADMIN ?? DEVNET_PROTOCOL_ADMIN;
+      const usdcMintStr =
+        process.env.NEXT_PUBLIC_SAKURA_USDC_MINT ?? DEVNET_USDC_MINT;
       const admin = new PublicKey(adminStr);
       const usdcMint = new PublicKey(usdcMintStr);
       const [protocolPda] = deriveProtocolPDA(admin);
@@ -826,7 +855,7 @@ function RevokeRow({ disabled }: { disabled?: boolean }) {
         signature = await conn.sendRawTransaction(signed.serialize());
       }
 
-      localStorage.removeItem(`sakura:intent:${walletAddress}`);
+      localStorage.removeItem(`sakura:intent:${effectiveWallet}`);
       setResult({ kind: "ok", sig: signature });
     } catch (e: unknown) {
       setResult({
@@ -838,35 +867,49 @@ function RevokeRow({ disabled }: { disabled?: boolean }) {
     }
   };
 
+  const revokeDisabled = disabled || revoking || (!walletAddress && !isDemo);
   return (
-    <div className="flex items-center justify-between gap-3 py-1">
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        onClick={handleRevoke}
-        disabled={disabled || revoking || !walletAddress}
-        className="text-[12px] text-[var(--text-muted)] hover:text-[var(--text-primary)]"
-      >
-        <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
-        {revoking ? "撤銷中…" : "撤銷當前意圖"}
-      </Button>
-      {result.kind === "ok" && (
-        <a
-          href={`https://solscan.io/tx/${result.sig}?cluster=devnet`}
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex items-center gap-1 font-mono text-[11px] text-[var(--green)] hover:underline"
+    <>
+      <SealStampOverlay
+        show={revokeOverlay}
+        mode="revoke"
+        onDone={() => setRevokeOverlay(false)}
+      />
+      <div className="flex items-center justify-between gap-3 py-1">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={handleRevoke}
+          disabled={revokeDisabled}
+          className="text-[12px] text-[var(--text-muted)] hover:text-[var(--text-primary)]"
         >
-          <CheckCircle2 className="h-3 w-3" />
-          已撤銷 {result.sig.slice(0, 8)}…
-        </a>
-      )}
-      {result.kind === "err" && (
-        <span className="font-mono text-[11px] text-[var(--red)]">
-          {result.msg}
-        </span>
-      )}
-    </div>
+          <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
+          {revoking ? "撤銷中…" : "撤銷當前意圖"}
+        </Button>
+        {result.kind === "ok" && !isDemo && (
+          <a
+            href={`https://solscan.io/tx/${result.sig}?cluster=devnet`}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1 font-mono text-[11px] text-[var(--green)] hover:underline"
+          >
+            <CheckCircle2 className="h-3 w-3" />
+            已撤銷 {result.sig.slice(0, 8)}…
+          </a>
+        )}
+        {result.kind === "ok" && isDemo && (
+          <span className="inline-flex items-center gap-1 font-mono text-[11px] text-[var(--text-muted)]">
+            <CheckCircle2 className="h-3 w-3" />
+            已撤銷（Demo · 模擬）
+          </span>
+        )}
+        {result.kind === "err" && (
+          <span className="font-mono text-[11px] text-[var(--red)]">
+            {result.msg}
+          </span>
+        )}
+      </div>
+    </>
   );
 }
