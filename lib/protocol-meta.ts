@@ -16,51 +16,50 @@ export interface ProtocolMeta {
   label: string;
   /** Tagline shown under the name. */
   tagline: string;
-  /** Single kanji to stamp inside the 朱印 seal — picked for its
-   *  semantic match to the protocol's primary action. */
-  sealKanji: string;
+  /** Path under /public/ to the protocol's real logo (mounted inside
+   *  the 朱印 seal frame and cream-tinted by LogoSeal). */
+  logoSrc: string;
   /** Drives which APR fields to read off `/api/protocol-aprs`. */
   aprKind: AprDisplayKind;
 }
 
-// ── 朱印 (vermillion seal) Public registry ──────────────────────────
+// ── Public registry ─────────────────────────────────────────────────
 //
-// All four protocols share Sakura's brand vermillion (#C9312A — see
-// app/globals.css `--accent`). The kanji inside each seal differentiates
-// them: chosen so the primary on-chain action of the protocol is
-// directly readable as a Japanese seal-script character.
+// Sakura's brand vermillion 朱印 frame wraps each protocol's REAL logo
+// (cream-tinted via LogoSeal so every brand reads cleanly on the red
+// field). The frame is the "Sakura presents" gesture; the inner mark
+// preserves protocol identity.
 //
-//   聚 (jù)  — gather / aggregate     → Jupiter (DEX aggregator)
-//   換 (huàn) — exchange / swap       → Raydium (AMM swap)
-//   貸 (dài)  — lend                   → Kamino (lending market)
-//   鎖 (suǒ)  — lock / stake           → Jito (LST staking)
+// Logo files in /public/logos/ — fetched 2026-04 from each project's
+// own CDN / Coingecko (jupiter.svg from jup.ag, kamino.svg from
+// cdn.kamino.finance, raydium.jpg + jito.png from coingecko).
 export const PROTOCOL_META: ProtocolMeta[] = [
   {
     id: ProtocolId.Jupiter,
     label: "Jupiter",
     tagline: "DEX 聚合 · Lend 借貸",
-    sealKanji: "聚",
+    logoSrc: "/logos/jupiter.svg",
     aprKind: "lend-only",
   },
   {
     id: ProtocolId.Raydium,
     label: "Raydium",
     tagline: "AMM 直接路由",
-    sealKanji: "換",
+    logoSrc: "/logos/raydium.jpg",
     aprKind: "swap-fee",
   },
   {
     id: ProtocolId.Kamino,
     label: "Kamino",
     tagline: "Solana #2 借貸市場",
-    sealKanji: "貸",
+    logoSrc: "/logos/kamino.svg",
     aprKind: "lend-borrow",
   },
   {
     id: ProtocolId.Jito,
     label: "Jito",
     tagline: "JitoSOL 流動性質押",
-    sealKanji: "鎖",
+    logoSrc: "/logos/jito.png",
     aprKind: "stake",
   },
 ];

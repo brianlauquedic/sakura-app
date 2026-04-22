@@ -12,6 +12,7 @@
 import { useCallback, useEffect, useState } from "react";
 import SealStampOverlay from "@/components/SealStampOverlay";
 import NumeralSeal from "@/components/NumeralSeal";
+import LogoSeal from "@/components/LogoSeal";
 import {
   appendDemoAction,
   clearDemoIntentRevoked,
@@ -818,7 +819,19 @@ function ProtocolCard({
           : "border-[var(--border)] bg-transparent text-[var(--text-secondary)] hover:border-[var(--border-light)] hover:bg-[var(--bg-card-2)]/40 hover:text-[var(--text-primary)]"
       )}
     >
-      <SealMark kanji={meta.sealKanji} active={active} size={56} />
+      <span
+        className="inline-flex shrink-0 items-center justify-center"
+        style={{
+          transform: active ? "rotate(-4deg) scale(1.04)" : "rotate(-2deg)",
+          transition: "transform 220ms cubic-bezier(.2,.8,.2,1), filter 220ms ease",
+          filter: active
+            ? "drop-shadow(0 4px 10px rgba(201,49,42,0.32))"
+            : "drop-shadow(0 1px 4px rgba(201,49,42,0.18))",
+        }}
+        aria-hidden="true"
+      >
+        <LogoSeal logoSrc={meta.logoSrc} label={meta.label} size={56} />
+      </span>
 
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="flex items-center gap-1.5">
