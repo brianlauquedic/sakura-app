@@ -27,8 +27,13 @@ const MANDATE_PROGRAM_DEVNET  = "AnszeCRFsBKmT5fBY9WywxGsZZZob8ZPFYqboYXpuYLp";
 const MANDATE_PROGRAM_MAINNET = process.env.MANDATE_PROGRAM_MAINNET ?? MANDATE_PROGRAM_DEVNET;
 
 const USDC_MAINNET = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
-// Devnet USDC (minted by Circle; widely recognized):
-const USDC_DEVNET  = "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU";
+// Devnet USDC: Sakura's devnet protocol is initialized with an
+// admin-controlled test mint (see protocol PDA's usdc_mint field),
+// NOT Circle's canonical 4zMMC…DncDU. Web UI must match the on-chain
+// protocol mint for ATA derivation — otherwise sign_intent fails with
+// "account not found" on the user's USDC ATA.
+// Mainnet migration will switch back to Circle's canonical USDC.
+const USDC_DEVNET  = "7rEhvYrGGT41FQrCt3zNx8Bko9TFVvytYWpP1mqhtLi3";
 
 export function getNetwork(): SolanaNetwork {
   const raw = (process.env.SOLANA_NETWORK ?? "mainnet-beta").toLowerCase();

@@ -93,8 +93,13 @@ export const TOKEN_PROGRAM_ID = new PublicKey(
 export const USDC_MINT_MAINNET = new PublicKey(
   "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
 );
+// NOTE: this is the admin-controlled TEST USDC mint that the current
+// devnet Sakura protocol was initialized with (see protocol PDA's
+// usdc_mint field on-chain). It is NOT the canonical Circle devnet
+// USDC (4zMMC…DncDU). Integrators on devnet must use the mint the
+// protocol was deployed against, not Circle's.
 export const USDC_MINT_DEVNET = new PublicKey(
-  "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU"
+  "7rEhvYrGGT41FQrCt3zNx8Bko9TFVvytYWpP1mqhtLi3"
 );
 
 // Pyth SOL/USD price feed on devnet (the static account — v0.3 E2E posts
