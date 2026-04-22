@@ -45,7 +45,7 @@ export const PROTOCOL_META: ProtocolMeta[] = [
     id: ProtocolId.Raydium,
     label: "Raydium",
     tagline: "AMM 直接路由",
-    logoSrc: "/logos/raydium.jpg",
+    logoSrc: "/logos/raydium.png",
     aprKind: "swap-fee",
   },
   {
