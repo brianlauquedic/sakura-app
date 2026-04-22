@@ -1063,6 +1063,84 @@ export const translations = {
   pulsePressureMedium:   { zh: "中等壓力", en: "Medium Pressure", ja: "中程度の圧力" },
   pulsePressureHigh:     { zh: "高壓力", en: "High Pressure", ja: "高圧力" },
   pulsePressureCritical: { zh: "極高壓力", en: "Critical Pressure", ja: "危機的圧力" },
+
+  // ═══════════════════════════════════════════════════════════════════
+  // IntentSigner · Sign-Intent Card (app-mode core form)
+  // ═══════════════════════════════════════════════════════════════════
+  siTitle: {
+    zh: "簽一次意圖",
+    en: "Sign an Intent",
+    ja: "意図の署名",
+  },
+  siSubtitle: {
+    zh: "一句話寫下代理權限邊界，鏈上只存 32 位元組雜湊。",
+    en: "Describe the agent's bounds in one sentence. Only a 32-byte hash lands on-chain.",
+    ja: "一文でエージェントの権限境界を書き下す。オンチェーンに刻まれるのは 32 バイトのハッシュのみ。",
+  },
+  siIntentLabel:    { zh: "意圖 Intent", en: "Intent", ja: "意図 Intent" },
+  siIntentPlaceholder: {
+    zh: "代理可在 Kamino 借貸，單次最多 $500 USDC，為期一週。",
+    en: "Agent may lend up to $500 USDC into Kamino, for one week.",
+    ja: "エージェントは Kamino に最大 $500 USDC を 1 週間だけ貸せる。",
+  },
+  siCapTokensLabel: { zh: "單次上限（代幣）", en: "Per-action cap · Tokens", ja: "単回上限（トークン）" },
+  siCapUsdLabel:    { zh: "單次上限（美元）", en: "Per-action cap · USD",    ja: "単回上限（ドル）" },
+  siExpiryLabel:    { zh: "有效期（小時）",   en: "Validity · Hours",        ja: "有効期間（時間）" },
+  siProtocolsLabel: { zh: "允許協議 Allowed protocols", en: "Allowed protocols", ja: "許可プロトコル Allowed protocols" },
+  siActionsLabel:   { zh: "允許動作 Allowed actions",   en: "Allowed actions",   ja: "許可アクション Allowed actions" },
+  siAprLabelPrefix: { zh: "APR ·", en: "APR ·", ja: "APR ·" },
+
+  // Phase indicators
+  siPhaseComputing: { zh: "計算 Poseidon 承諾中…", en: "Computing Poseidon commitment…", ja: "Poseidon コミットメントを計算中…" },
+  siPhaseAwait:     { zh: "等待錢包簽名…",         en: "Awaiting wallet signature…",    ja: "ウォレットの署名を待機中…" },
+  siPhaseConfirm:   { zh: "鏈上確認中…",           en: "Confirming on-chain…",          ja: "オンチェーンで確認中…" },
+  siBtnSign:        { zh: "簽署意圖", en: "Sign Intent", ja: "意図を署名する" },
+
+  // Success seal overlay titles
+  siSealTitle:     { zh: "意圖已上鏈簽署",              en: "Intent signed on-chain",                ja: "意図をオンチェーンに署名しました" },
+  siSealTitleDemo: { zh: "意圖已簽署（Demo · 模擬上鏈）", en: "Intent signed (Demo · simulated on-chain)", ja: "意図を署名しました（Demo · 模擬オンチェーン）" },
+
+  // Errors
+  siErrNoWallet:   { zh: "請先連接錢包。",          en: "Please connect your wallet first.",    ja: "先にウォレットを接続してください。" },
+  siErrNoProvider: { zh: "偵測不到錢包 Provider。", en: "Wallet provider not detected.",         ja: "ウォレット プロバイダーを検出できません。" },
+  siErrNoProto:    { zh: "至少選擇一個協議。",       en: "Select at least one protocol.",        ja: "少なくとも 1 つのプロトコルを選択してください。" },
+  siErrNoAction:   { zh: "至少選擇一個動作。",       en: "Select at least one action.",          ja: "少なくとも 1 つのアクションを選択してください。" },
+
+  // Footer + fee note
+  siFooterProgram: { zh: "Program · {p}", en: "Program · {p}", ja: "Program · {p}" },
+  siFooterFee: {
+    zh: "簽名費 0.1% × max_usd_value",
+    en: "Signing fee · 0.1% × max_usd_value",
+    ja: "署名手数料 · 0.1% × max_usd_value",
+  },
+
+  // Revoke flow
+  siRevokeConfirm: {
+    zh: "撤銷當前意圖？代理將無法再對此意圖執行任何動作。你可以之後重新簽署。",
+    en: "Revoke the current intent? The agent will no longer be able to execute any action under it. You may sign a new one later.",
+    ja: "現在の意図を撤回しますか？エージェントは今後この意図に基づくいかなる動作も実行できなくなります。後から新しい意図を署名できます。",
+  },
+  siRevokeNoKey: {
+    zh: "本機找不到意圖密鑰。請先簽署一次意圖，或清除狀態後重試。",
+    en: "No intent key found locally. Please sign an intent first, or clear local state and retry.",
+    ja: "ローカルに意図キーが見つかりません。まず意図を署名するか、ローカル状態をクリアしてから再試行してください。",
+  },
+  siBtnRevoke:    { zh: "撤銷當前意圖", en: "Revoke current intent", ja: "現在の意図を撤回" },
+  siBtnRevoking:  { zh: "撤銷中…",      en: "Revoking…",              ja: "撤回中…" },
+  siRevoked:      { zh: "已撤銷 {sig}…", en: "Revoked {sig}…",        ja: "撤回済み {sig}…" },
+  siRevokedDemo:  { zh: "已撤銷（Demo · 模擬）", en: "Revoked (Demo · simulated)", ja: "撤回済み（Demo · シミュレーション）" },
+
+  // Protocol taglines — referenced from lib/protocol-meta.ts via `taglineKey`
+  metaJupiterTagline: { zh: "DEX 聚合 · Lend 借貸",    en: "DEX aggregator · Lending",     ja: "DEX アグリゲータ · 貸付" },
+  metaRaydiumTagline: { zh: "AMM 直接路由",            en: "Direct AMM route",             ja: "AMM 直接ルート" },
+  metaKaminoTagline:  { zh: "Solana #2 借貸市場",      en: "Solana's #2 lending market",   ja: "Solana 第 2 位の貸付市場" },
+  metaJitoTagline:    { zh: "JitoSOL 流動性質押",      en: "JitoSOL liquid staking",       ja: "JitoSOL リキッドステーキング" },
+
+  // APR labels (small-caps footer line on each protocol card)
+  aprLendOnly:   { zh: "Lend APY",     en: "Lend APY",     ja: "貸付 APY" },
+  aprLendBorrow: { zh: "Lend / Borrow", en: "Lend / Borrow", ja: "貸付 / 借入" },
+  aprStake:      { zh: "Stake APY",    en: "Stake APY",    ja: "ステーク APY" },
+  aprSwapFee:    { zh: "Pool fee",     en: "Pool fee",     ja: "プール手数料" },
 } as const;
 
 export type TranslationKey = keyof typeof translations;

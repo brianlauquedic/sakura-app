@@ -1,23 +1,16 @@
-/**
- * lib/protocol-meta.ts — display metadata for the 4 龙头 protocols.
- *
- * Hoisted to module scope per React best-practice
- * `rendering-hoist-jsx` — these are static structures with no
- * per-render cost. Logos are inline SVG (no external requests, no
- * broken-image risk during a live demo).
- */
-
 import { ProtocolId } from "./insurance-pool";
+import type { TranslationKey } from "./i18n";
 
 export type AprDisplayKind = "lend-borrow" | "lend-only" | "stake" | "swap-fee";
 
 export interface ProtocolMeta {
   id: ProtocolId;
   label: string;
-  /** Tagline shown under the name. */
-  tagline: string;
-  /** Path under /public/ to the protocol's real logo (mounted inside
-   *  the 朱印 seal frame and cream-tinted by LogoSeal). */
+  /** i18n key for the tagline shown under the protocol name.
+   *  Resolves to zh/en/ja via `useLang().t(taglineKey)`. */
+  taglineKey: TranslationKey;
+  /** Path under /public/ to the protocol's real logo (cream-tinted
+   *  inside the 朱印 seal frame by LogoSeal). */
   logoSrc: string;
   /** Drives which APR fields to read off `/api/protocol-aprs`. */
   aprKind: AprDisplayKind;
@@ -29,36 +22,32 @@ export interface ProtocolMeta {
 // (cream-tinted via LogoSeal so every brand reads cleanly on the red
 // field). The frame is the "Sakura presents" gesture; the inner mark
 // preserves protocol identity.
-//
-// Logo files in /public/logos/ — fetched 2026-04 from each project's
-// own CDN / Coingecko (jupiter.svg from jup.ag, kamino.svg from
-// cdn.kamino.finance, raydium.jpg + jito.png from coingecko).
 export const PROTOCOL_META: ProtocolMeta[] = [
   {
     id: ProtocolId.Jupiter,
     label: "Jupiter",
-    tagline: "DEX 聚合 · Lend 借貸",
+    taglineKey: "metaJupiterTagline",
     logoSrc: "/logos/jupiter.svg",
     aprKind: "lend-only",
   },
   {
     id: ProtocolId.Raydium,
     label: "Raydium",
-    tagline: "AMM 直接路由",
+    taglineKey: "metaRaydiumTagline",
     logoSrc: "/logos/raydium.png",
     aprKind: "swap-fee",
   },
   {
     id: ProtocolId.Kamino,
     label: "Kamino",
-    tagline: "Solana #2 借貸市場",
+    taglineKey: "metaKaminoTagline",
     logoSrc: "/logos/kamino.svg",
     aprKind: "lend-borrow",
   },
   {
     id: ProtocolId.Jito,
     label: "Jito",
-    tagline: "JitoSOL 流動性質押",
+    taglineKey: "metaJitoTagline",
     logoSrc: "/logos/jito.png",
     aprKind: "stake",
   },
@@ -75,10 +64,11 @@ export interface ProtocolAprsResponse {
   cacheAge?: number;
 }
 
-/** Two-line APR display: a big right-aligned value + a tiny uppercase label. */
+/** Two-line APR display: a big right-aligned value + a tiny
+ *  i18n-aware label key (caller resolves via `t(labelKey)`). */
 export interface AprDisplay {
-  value: string; // e.g. "5.56%" or "5.56% / 7.18%"
-  label: string; // e.g. "Lend APY" or "Lend / Borrow"
+  value: string;           // e.g. "5.56%" or "5.56% / 7.18%"
+  labelKey: TranslationKey; // e.g. "aprLendOnly"
 }
 
 /**
@@ -93,22 +83,22 @@ export function formatAprDisplay(
   switch (meta.aprKind) {
     case "lend-only":
       return aprs.JupiterLend
-        ? { value: `${aprs.JupiterLend.lendApy.toFixed(2)}%`, label: "Lend APY" }
-        : { value: "—", label: "Lend APY" };
+        ? { value: `${aprs.JupiterLend.lendApy.toFixed(2)}%`, labelKey: "aprLendOnly" }
+        : { value: "—", labelKey: "aprLendOnly" };
     case "lend-borrow":
       return aprs.Kamino
         ? {
             value: `${aprs.Kamino.lendApy.toFixed(2)}% / ${aprs.Kamino.borrowApy.toFixed(2)}%`,
-            label: "Lend / Borrow",
+            labelKey: "aprLendBorrow",
           }
-        : { value: "— / —", label: "Lend / Borrow" };
+        : { value: "— / —", labelKey: "aprLendBorrow" };
     case "stake":
       return aprs.Jito
-        ? { value: `${aprs.Jito.stakeApy.toFixed(2)}%`, label: "Stake APY" }
-        : { value: "—", label: "Stake APY" };
+        ? { value: `${aprs.Jito.stakeApy.toFixed(2)}%`, labelKey: "aprStake" }
+        : { value: "—", labelKey: "aprStake" };
     case "swap-fee":
       return aprs.Raydium
-        ? { value: `${aprs.Raydium.feePct.toFixed(2)}%`, label: "Pool fee" }
-        : { value: "—", label: "Pool fee" };
+        ? { value: `${aprs.Raydium.feePct.toFixed(2)}%`, labelKey: "aprSwapFee" }
+        : { value: "—", labelKey: "aprSwapFee" };
   }
 }

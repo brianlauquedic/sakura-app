@@ -54,9 +54,11 @@ import {
 import {
   PROTOCOL_META,
   formatAprDisplay,
+  type AprDisplay,
   type ProtocolAprsResponse,
   type ProtocolMeta,
 } from "@/lib/protocol-meta";
+import { useLang } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -211,6 +213,7 @@ const DEVNET_USDC_MINT       = "7rEhvYrGGT41FQrCt3zNx8Bko9TFVvytYWpP1mqhtLi3";
 
 export default function IntentSigner() {
   const { walletAddress, getProvider, isDemo } = useWallet();
+  const { t } = useLang();
 
   const [intentText, setIntentText] = useState(
     "Lend up to 1000 USDC into Kamino or MarginFi, $10k max per action."
@@ -260,12 +263,12 @@ export default function IntentSigner() {
     const effectiveWallet = walletAddress ?? (isDemo ? DEMO_USER_PUBKEY : null);
 
     if (!effectiveWallet) {
-      setStatus({ kind: "error", message: "請先連接錢包。" });
+      setStatus({ kind: "error", message: t("siErrNoWallet") });
       return;
     }
     const provider = isDemo ? null : getProvider();
     if (!isDemo && !provider) {
-      setStatus({ kind: "error", message: "偵測不到錢包 Provider。" });
+      setStatus({ kind: "error", message: t("siErrNoProvider") });
       return;
     }
     // Admin Pubkey: prefer env, fall back to the devnet protocol admin
@@ -286,8 +289,8 @@ export default function IntentSigner() {
       const allowedActionTypes = BigInt(
         buildActionTypesBitmap(Array.from(selectedActions))
       );
-      if (allowedProtocols === 0n) throw new Error("至少選擇一個協議。");
-      if (allowedActionTypes === 0n) throw new Error("至少選擇一個動作。");
+      if (allowedProtocols === 0n) throw new Error(t("siErrNoProto"));
+      if (allowedActionTypes === 0n) throw new Error(t("siErrNoAction"));
 
       const nonce = BigInt(Date.now());
       const intentTextHash = await hashIntentText(intentText);
@@ -506,10 +509,10 @@ export default function IntentSigner() {
           </div>
           <div>
             <CardTitle className="font-serif text-xl tracking-[0.04em]">
-              簽一次意圖
+              {t("siTitle")}
             </CardTitle>
             <CardDescription className="mt-0.5 text-[13px] leading-relaxed text-[var(--text-secondary)]">
-              一句話寫下代理權限邊界，鏈上只存 32 位元組雜湊。
+              {t("siSubtitle")}
             </CardDescription>
           </div>
         </div>
@@ -521,7 +524,7 @@ export default function IntentSigner() {
         {/* Intent text */}
         <div className="space-y-2.5">
           <Label className="font-mono text-[11px] uppercase tracking-[0.06em] text-[var(--text-muted)]">
-            意圖 Intent
+            {t("siIntentLabel")}
           </Label>
           <Textarea
             value={intentText}
@@ -530,28 +533,28 @@ export default function IntentSigner() {
             maxLength={500}
             disabled={isBusy}
             className="resize-y border-[var(--border)] bg-[var(--bg-base)] px-4 py-3 font-mono text-[13px] leading-relaxed text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
-            placeholder="代理可在 Kamino 借貸，單次最多 $500 USDC，為期一週。"
+            placeholder={t("siIntentPlaceholder")}
           />
         </div>
 
         {/* Numeric inputs — 3 columns */}
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
           <NumField
-            label="單次上限（代幣）"
+            label={t("siCapTokensLabel")}
             value={maxAmountTokens}
             onChange={setMaxAmountTokens}
             disabled={isBusy}
             min={1}
           />
           <NumField
-            label="單次上限（美元）"
+            label={t("siCapUsdLabel")}
             value={maxUsdDollars}
             onChange={setMaxUsdDollars}
             disabled={isBusy}
             min={1}
           />
           <NumField
-            label="有效期（小時）"
+            label={t("siExpiryLabel")}
             value={hours}
             onChange={setHours}
             disabled={isBusy}
@@ -564,14 +567,14 @@ export default function IntentSigner() {
         <div className="space-y-3">
           <div className="flex items-baseline justify-between gap-2">
             <Label className="font-mono text-[11px] uppercase tracking-[0.06em] text-[var(--text-muted)]">
-              允許協議 Allowed protocols
+              {t("siProtocolsLabel")}
             </Label>
             {aprsSource && (
               <span
                 className="font-mono text-[10px] tracking-[0.06em] text-[var(--text-muted)]"
                 title="Live mainnet APR source"
               >
-                APR · {aprsSource}
+                {t("siAprLabelPrefix")} {aprsSource}
               </span>
             )}
           </div>
@@ -593,7 +596,7 @@ export default function IntentSigner() {
         {/* Actions — matching 朱印 tiles, 3-col on desktop */}
         <div className="space-y-3">
           <Label className="font-mono text-[11px] uppercase tracking-[0.06em] text-[var(--text-muted)]">
-            允許動作 Allowed actions
+            {t("siActionsLabel")}
           </Label>
           <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-6">
             {ACTION_LABELS.map(({ id, label, kanji }) => (
@@ -625,19 +628,19 @@ export default function IntentSigner() {
           {status.kind === "computing" && (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              計算 Poseidon 承諾中…
+              {t("siPhaseComputing")}
             </>
           )}
           {status.kind === "awaiting-signature" && (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              等待錢包簽名…
+              {t("siPhaseAwait")}
             </>
           )}
           {status.kind === "confirming" && (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              鏈上確認中…
+              {t("siPhaseConfirm")}
             </>
           )}
           {(status.kind === "idle" ||
@@ -645,7 +648,7 @@ export default function IntentSigner() {
             status.kind === "success") && (
             <>
               <ShieldCheck className="mr-2 h-5 w-5" />
-              簽署意圖
+              {t("siBtnSign")}
             </>
           )}
         </Button>
@@ -658,7 +661,7 @@ export default function IntentSigner() {
           <StatusBanner
             tone="success"
             icon={<CheckCircle2 className="h-4 w-4" />}
-            title={isDemo ? "意圖已簽署（Demo · 模擬上鏈）" : "意圖已上鏈簽署"}
+            title={isDemo ? t("siSealTitleDemo") : t("siSealTitle")}
             linkLabel={
               isDemo
                 ? `${status.signature.slice(0, 12)}… · demo sig`
@@ -682,10 +685,10 @@ export default function IntentSigner() {
 
       <CardFooter className="relative z-10 justify-between border-t border-[var(--border)] bg-[var(--bg-card-2)]/40 px-8 py-4 sm:px-20">
         <span className="font-mono text-[10px] tracking-[0.06em] text-[var(--text-muted)]">
-          Program · {SAKURA_INSURANCE_PROGRAM_ID.toBase58().slice(0, 10)}…
+          {t("siFooterProgram", { p: SAKURA_INSURANCE_PROGRAM_ID.toBase58().slice(0, 10) + "…" })}
         </span>
         <span className="font-mono text-[10px] tracking-[0.06em] text-[var(--text-muted)]">
-          簽名費 0.1% × max_usd_value
+          {t("siFooterFee")}
         </span>
       </CardFooter>
     </Card>
@@ -806,11 +809,13 @@ function ProtocolCard({
 }: {
   meta: ProtocolMeta;
   active: boolean;
-  apr: { value: string; label: string } | null;
+  apr: AprDisplay | null;
   loading: boolean;
   onClick: () => void;
   disabled?: boolean;
 }) {
+  const { t } = useLang();
+  const aprLabel = apr ? t(apr.labelKey) : "";
   return (
     <button
       type="button"
@@ -850,9 +855,9 @@ function ProtocolCard({
         )}
       </span>
 
-      {/* Tagline — centered, single line */}
+      {/* Tagline — centered, single line (i18n via taglineKey) */}
       <span className="w-full truncate font-mono text-[10.5px] tracking-[0.02em] text-[var(--text-muted)]">
-        {meta.tagline}
+        {t(meta.taglineKey)}
       </span>
 
       {/* APR value + label — centered, bottom-pinned */}
@@ -862,13 +867,13 @@ function ProtocolCard({
         ) : (
           <span
             className="font-mono text-[14px] font-semibold tabular-nums text-[var(--text-primary)]"
-            title={apr?.label}
+            title={aprLabel}
           >
             {apr?.value ?? "—"}
           </span>
         )}
         <span className="font-mono text-[10px] uppercase tracking-[0.06em] text-[var(--text-muted)]">
-          {apr?.label ?? "\u00A0"}
+          {aprLabel || "\u00A0"}
         </span>
       </div>
     </button>
@@ -970,6 +975,7 @@ function StatusBanner({
 // ───────────────────────────────────────────────────────────────────
 function RevokeRow({ disabled }: { disabled?: boolean }) {
   const { walletAddress, getProvider, isDemo } = useWallet();
+  const { t } = useLang();
   const [revoking, setRevoking] = useState(false);
   const [result, setResult] = useState<
     { kind: "idle" } | { kind: "ok"; sig: string } | { kind: "err"; msg: string }
@@ -981,9 +987,7 @@ function RevokeRow({ disabled }: { disabled?: boolean }) {
       walletAddress ?? (isDemo ? DEMO_USER_PUBKEY : null);
     if (!effectiveWallet) return;
 
-    const confirmed = window.confirm(
-      "撤銷當前意圖？代理將無法再對此意圖執行任何動作。你可以之後重新簽署。"
-    );
+    const confirmed = window.confirm(t("siRevokeConfirm"));
     if (!confirmed) return;
 
     // ── DEMO SHORT-CIRCUIT ──
@@ -1017,9 +1021,7 @@ function RevokeRow({ disabled }: { disabled?: boolean }) {
 
       const cached = localStorage.getItem(`sakura:intent:${effectiveWallet}`);
       if (!cached) {
-        throw new Error(
-          "本機找不到意圖密鑰。請先簽署一次意圖，或清除狀態後重試。"
-        );
+        throw new Error(t("siRevokeNoKey"));
       }
       const secrets = JSON.parse(cached) as { maxUsdValueMicro: string };
       const revokeFeeMicro =
@@ -1103,7 +1105,7 @@ function RevokeRow({ disabled }: { disabled?: boolean }) {
           className="text-[12px] text-[var(--text-muted)] hover:text-[var(--text-primary)]"
         >
           <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
-          {revoking ? "撤銷中…" : "撤銷當前意圖"}
+          {revoking ? t("siBtnRevoking") : t("siBtnRevoke")}
         </Button>
         {result.kind === "ok" && !isDemo && (
           <a
@@ -1113,13 +1115,13 @@ function RevokeRow({ disabled }: { disabled?: boolean }) {
             className="inline-flex items-center gap-1 font-mono text-[11px] text-[var(--green)] hover:underline"
           >
             <CheckCircle2 className="h-3 w-3" />
-            已撤銷 {result.sig.slice(0, 8)}…
+            {t("siRevoked", { sig: result.sig.slice(0, 8) })}
           </a>
         )}
         {result.kind === "ok" && isDemo && (
           <span className="inline-flex items-center gap-1 font-mono text-[11px] text-[var(--text-muted)]">
             <CheckCircle2 className="h-3 w-3" />
-            已撤銷（Demo · 模擬）
+            {t("siRevokedDemo")}
           </span>
         )}
         {result.kind === "err" && (
