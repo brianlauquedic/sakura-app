@@ -52,7 +52,7 @@ const CONTENT: Record<Lang, {
         badgeColor: "#C9312A",
         title: "五個最常見的錯法",
         subtitle: "簽意圖的時候最容易踩的坑——先認得它們",
-        intro: "AI 代理會忠實執行你簽下的每一個字。這意味著：你寫得越模糊，代理的自由度越大；你勾得越寬，代理能動的地方越多。下面這五種錯，是 Sakura 團隊反覆在早期使用者身上看到的——把它們記住，你已經避開 80% 的麻煩。",
+        intro: "AI 代理會忠實執行你簽下的每一個字。這意味著：你寫得越模糊，代理的自由度越大；你勾得越寬，代理能動的地方越多。下面這五種錯，是 Sakura 團隊反覆在早期使用者身上看到的——將它們牢記於心，八成麻煩便已不再發生。",
         steps: [
           { step: "壱", title: "描述寫得太抽象", desc: "糟糕例子：「代理做一些有收益的事」。AI 對「有收益」有自己的理解——你以為它會 Lend，它可能認為「Borrow 然後 Swap 再 Lend」也算。好的例子：「代理可以把最多 \$500 USDC 存入 Kamino 或 Jupiter Lend，每週結算一次」。具體，可查證，界線清楚。" },
           { step: "弐", title: "勾選了「反正也沒差」的協議", desc: "為了省事把 4 個龍頭協議（Jupiter、Raydium、Kamino、Jito）全部勾上。問題是：每個協議的失敗模式不同——Kamino 是借貸市場（清算風險）、Jito 是流動質押（LST 脫鉤風險）、Jupiter Swap 是聚合（MEV / 滑點）、Jupiter Lend 是借貸（清算 + 利息）、Raydium 是直接 AMM（滑點）。一個沒做功課的勾選 = 同意代理在你不理解的風險裡做決定。原則：只勾你親自用過、知道風險特徵的協議。不熟的不勾，損失有限。" },
@@ -126,10 +126,10 @@ const CONTENT: Record<Lang, {
         badgeColor: "#C9312A",
         title: "Five Most Common Mistakes",
         subtitle: "The traps users fall into when signing intent — recognize them first",
-        intro: "An AI agent faithfully executes every word you sign. Which means: the vaguer you write, the more latitude the agent has; the broader you tick, the more terrain it can touch. The five mistakes below are what the Sakura team repeatedly sees in early users — internalize them and you have avoided 80% of the trouble.",
+        intro: "An AI agent faithfully executes every word you sign. Which means: the vaguer you write, the more latitude the agent has; the broader you tick, the more terrain it can touch. The five mistakes below are what the Sakura team repeatedly sees in early users — commit them to memory, and four-fifths of the trouble is already behind you.",
         steps: [
           { step: "I", title: "Writing the description too abstractly", desc: "Bad example: \"Agent does something profitable.\" The AI has its own interpretation of \"profitable\" — you meant Lend, but it may read \"Borrow then Swap then Lend\" as also profitable. Good example: \"Agent may lend up to \$500 USDC into Kamino or Jupiter Lend, settled weekly.\" Specific, verifiable, clearly bounded." },
-          { step: "II", title: "Ticking protocols \"just in case\"", desc: "For convenience, all 4 龙头 protocols (Jupiter, Raydium, Kamino, Jito) get checked. Problem: every protocol has a different failure mode — Kamino is a lending market (liquidation risk), Jito is liquid staking (LST-depeg risk), Jupiter Swap is a swap aggregator (MEV / slippage), Jupiter Lend is collateralised borrowing (liquidation + interest), Raydium is direct AMM swap (slippage). An uninformed tick equals consent to the agent making decisions inside risks you do not understand. Principle: tick only protocols you have personally used and whose risk profile you know. Skip what you don't recognize — the loss upside is bounded." },
+          { step: "II", title: "Ticking protocols \"just in case\"", desc: "For convenience, all four flagship protocols (Jupiter, Raydium, Kamino, Jito) get checked. Problem: every protocol has a different failure mode — Kamino is a lending market (liquidation risk), Jito is liquid staking (LST-depeg risk), Jupiter Swap is a swap aggregator (MEV / slippage), Jupiter Lend is collateralised borrowing (liquidation + interest), Raydium is direct AMM swap (slippage). An uninformed tick is consent to the agent making decisions inside risks you do not understand. Principle: tick only protocols you have personally used and whose risk profile you know. Skip what you do not recognize — the loss upside stays bounded." },
           { step: "III", title: "Setting the expiry too long", desc: "Signing for 180 days in one go. Markets can turn over in 180 days — the APY, protocol risk, and agent strategy you found reasonable today may all be stale 6 months later. You cannot modify rules mid-intent; only revoke and re-sign (~\$1 each). Principle: first use ≤ 24 hours; once familiar, extend to 7 days; never sign over 30 days on a first attempt." },
           { step: "IV", title: "Single-action cap = total USD cap", desc: "Single-action cap \$1,000, total USD cap also \$1,000 — this is consenting to the AI \"using it all in one go.\" If the AI misjudges, you are fully exposed in a single action. Principle: single-action cap ≤ total ÷ 5. This forces the agent into at least 5 independent actions to exhaust the authorization — giving you time to see something wrong and revoke." },
           { step: "V", title: "Ticking Borrow without thinking it through", desc: "Thinking \"Borrow just for flexibility.\" Problem: Borrow creates interest debt and liquidation risk. If the agent thinks borrowing for arbitrage is profitable and misfires — your account loses money AND carries an unpaid debt that may be liquidated. Principle: Borrow deserves a separate deliberation. Newcomers, leave it unchecked; experienced users, mentally rehearse the failure case before ticking it." },
@@ -167,7 +167,7 @@ const CONTENT: Record<Lang, {
           { level: "✅ Sakura GUARANTEES", color: "#5A7A4A", desc: "Stale or spoofed oracle prices → transaction reverts. Sakura verifies both Pyth AND Switchboard independently: feed_id, slot, 150-block freshness, Pyth spot-vs-EMA ≤ 2%, and Pyth-vs-Switchboard ≤ 1%. Any one out of bounds rejects the action." },
           { level: "❌ Sakura DOES NOT guarantee", color: "#C9312A", desc: "Sakura does not protect the underlying DeFi protocols themselves. If Kamino is exploited, Sakura's proof remains valid — your funds inside Kamino are still affected. Choosing the protocol is choosing the underlying risk." },
           { level: "✅ Sakura GUARANTEES", color: "#5A7A4A", desc: "The Sakura team cannot steal your money. The fee_vault is a PDA account; the contract has no \"admin withdrawal\" instruction. Even if the entire team disappears tomorrow, vault funds can only flow via pre-defined rules." },
-          { level: "❌ Sakura DOES NOT guarantee", color: "#C9312A", desc: "If Pyth AND Switchboard are simultaneously manipulated and their prices agree on a wrong value, Sakura only verifies \"prices came from these two oracles\" — not \"the oracles are correct.\" Achieving this requires compromising two independent publisher networks at once — a much higher bar than single-oracle attack, but not impossible." },
+          { level: "❌ Sakura DOES NOT guarantee", color: "#C9312A", desc: "If Pyth AND Switchboard are simultaneously manipulated and their prices agree on a wrong value, Sakura only verifies \"prices came from these two oracles\" — not \"the oracles are correct.\" Achieving this requires compromising two independent publisher networks at once — a far higher bar than a single-oracle attack, but not impossible." },
         ],
       },
     ],
@@ -192,7 +192,7 @@ const CONTENT: Record<Lang, {
     introSealKanji: "署",
     introSealLine: "🌸 Sakura · 一度の署名 · 数学が番をする",
     introHeadline: "エージェントモードを開く前に、正しく行わねばならぬことは、ただ 1 つ——良い意図に署名すること。",
-    introBody: "Sakura は、あなた自身が設定し、誰にも迂回されぬ安全ゲートである。1 度の署名で境界をオンチェーンに定錨。以後、エージェントが行う各動作は、境界の内側にあることを数学的に証明せねばならぬ——さもなければ、Solana 自身が、実行の前にトランザクションを拒み、資金はあなたのウォレットから出ることすらない。監視アプリは要らぬ。第三者を信じる必要もない。あなたこそが主権、数学はその執行にすぎぬ。",
+    introBody: "Sakura は、あなた自身が設定し、誰にも迂回されぬ安全ゲートである。1 度の署名で境界をオンチェーンに定錨する。以後、エージェントが行う各動作は、境界の内側にあることを数学的に証明せねばならぬ——然もなくば、Solana 自身が、実行の前にトランザクション全体を拒み、資金はあなたのウォレットから出ることすらない。監視アプリは要らぬ。第三者を信じる必要もない。あなたこそが主権、数学はその執行にすぎぬ。",
     sections: [
       {
         id: "five-mistakes",
@@ -203,7 +203,7 @@ const CONTENT: Record<Lang, {
         intro: "AI エージェントは、あなたが署名した一字一句を忠実に実行する。すなわち、曖昧に書くほどエージェントの裁量は広がり、広く選ぶほど触れられる地盤が増える。下記の五つは、Sakura チームが初期ユーザーの中で繰り返し見てきた誤りである——これらを覚えれば、厄介事の八割は既に回避されている。",
         steps: [
           { step: "壱", title: "説明が抽象的すぎる", desc: "悪い例：「エージェントは利益の出ることをする」。AI は「利益」を独自に解釈する——あなたは Lend のつもりでも、AI は「Borrow → Swap → Lend」も利益だと解釈するかもしれぬ。良い例：「エージェントは最大 \$500 USDC を Kamino または Jupiter Lend に貸せる、週次精算」。具体的で、検証可能で、境界が明確。" },
-          { step: "弐", title: "「ついでに」とプロトコルを選びすぎる", desc: "手間を省くために 4 つの龍頭プロトコル（Jupiter、Raydium、Kamino、Jito）すべてにチェックを入れる。問題：各プロトコルは、失敗モードが互いに異なる——Kamino は貸付市場（清算リスク）、Jito は流動性ステーキング（LST デペッグリスク）、Jupiter Swap はアグリゲータ（MEV・スリッページ）、Jupiter Lend は担保付き借入（清算 + 利息）、Raydium は直接 AMM（スリッページ）。不勉強な選択は、エージェントが、あなたの理解せぬリスクの中で判断を下すことへの同意である。原則：自分で使ったことがあり、リスクプロファイルを知っているプロトコルだけを選ぶ。不慣れなものは外せ——損失の上限が有限のままである。" },
+          { step: "弐", title: "「ついでに」とプロトコルを選びすぎる", desc: "手間を省くために、4 つの旗艦プロトコル（Jupiter、Raydium、Kamino、Jito）すべてにチェックを入れる。問題：各プロトコルは、失敗モードが互いに異なる——Kamino は貸付市場（清算リスク）、Jito は流動性ステーキング（LST デペッグリスク）、Jupiter Swap はアグリゲータ（MEV・スリッページ）、Jupiter Lend は担保付き借入（清算 + 利息）、Raydium は直接 AMM（スリッページ）。不勉強な選択は、エージェントが、あなたの理解せぬリスクの中で判断を下すことへの同意である。原則：自分で使ったことがあり、リスクプロファイルを知っているプロトコルだけを選ぶ。不慣れなものは外せ——損失の上限が有限のままである。" },
           { step: "参", title: "期限を長くしすぎる", desc: "一度に 180 日分署名する。180 日あれば市場は激変しうる——当時合理的と見えた APY、プロトコルリスク、エージェント戦略は、6 ヶ月後にはすべて陳腐化していることがある。意図の期間中はルールを変更できない。取り消して再署名するしかない（1 回あたり約 \$1）。原則：初回使用 ≤ 24 時間。慣れたら 7 日に延ばす。初回で 30 日を超えてはならぬ。" },
           { step: "肆", title: "1 回の上限 = 累計 USD 上限", desc: "1 回の上限 \$1,000、累計 USD 上限も \$1,000——これは AI に「一気に全額使ってよい」と許可することと同義である。AI が判断を誤れば、あなたは 1 回の動作で全額を曝す。原則：1 回の上限 ≤ 累計 ÷ 5。これにより、エージェントは許可を使い切るのに少なくとも 5 回の独立動作を要する——あなたは途中で不具合を察知し、取り消す時間を得る。" },
           { step: "伍", title: "深く考えずに Borrow を選ぶ", desc: "「柔軟性のために」と Borrow を選ぶ。問題：Borrow は利子債務と清算リスクを生む。エージェントが「借りて裁定取引すれば得」と判断し失敗すれば——あなたのアカウントは損失を出すだけでなく、未払の債務を抱え、清算される可能性がある。原則：Borrow は単独で慎重に検討する。初心者は選ばぬ方が良い——損失が限定的になる。熟達者でも、選ぶ前に「戦略が失敗したらどうなるか」を頭の中で演練せよ。" },
@@ -241,7 +241,7 @@ const CONTENT: Record<Lang, {
           { level: "✅ Sakura の保証", color: "#5A7A4A", desc: "陳腐化したり偽造されたオラクル価格 → トランザクションはリバートする。Sakura は Pyth と Switchboard の二つを独立に検証：feed_id、slot、150 ブロック新鮮度、Pyth 現物 vs EMA ≤ 2%、Pyth vs Switchboard ≤ 1%。どれか 1 つでも境界を越えれば、その動作は拒絶される。" },
           { level: "❌ Sakura の保証外", color: "#C9312A", desc: "Sakura は基礎となる DeFi プロトコル自体を保護せぬ。Kamino が侵害されれば、Sakura の証明は依然として有効だが、Kamino 内の資金は影響を受ける。プロトコルを選ぶことは、基礎リスクを選ぶことと同義。" },
           { level: "✅ Sakura の保証", color: "#5A7A4A", desc: "Sakura チームがあなたの資金を盗むことはできぬ。fee_vault は PDA アカウント、契約には「管理者引き出し」命令が存在せぬ——チーム全員が明日姿を消しても、金庫の資金は事前に定めた規則でしか流出せぬ。" },
-          { level: "❌ Sakura の保証外", color: "#C9312A", desc: "Pyth と Switchboard が同時に操作され、両者が一致して誤った価格を示す場合、Sakura は「価格が両オラクルから来たこと」のみ検証し、「オラクル自身が真実を語っているか」は検証せぬ。この攻撃には二つの独立した発行者ネットワークを同時に破る必要があり——単一オラクル攻撃よりも遥かに高い閾値だが、絶対ではない。" },
+          { level: "❌ Sakura の保証外", color: "#C9312A", desc: "Pyth と Switchboard が同時に操作され、両者が一致して誤った価格を示す場合、Sakura は「価格が両オラクルから来たこと」のみ検証し、「オラクル自身が真実を語っているか」までは検証せぬ。この攻撃には二つの独立した発行者ネットワークを同時に破る必要があり——単一オラクル攻撃よりも遥かに高い閾値だが、絶対とは言えぬ。" },
         ],
       },
     ],

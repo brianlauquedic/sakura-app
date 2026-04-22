@@ -47,7 +47,7 @@ const CONTENT: Record<Lang, {
         name: "execute_with_proof",
         badge: "TOOL II · AGENT EXECUTION",
         badgeColor: "#B8932A",
-        desc: "代理提交一個已綁定 Groth16 證明的 DeFi 動作：客戶端於瀏覽器（或後端 snarkjs）本地生成證明，透過此工具提交至 Sakura MCP 伺服器。伺服器將 execute_with_intent_proof 驗證指令與代理提供的 DeFi 指令打包至同一筆 Solana v0 原子交易，提交至主網。鏈上 alt_bn128 配對驗證於 ~116k CU 完成；通過後 DeFi 指令才落地。返回：tx signature、action_nonce、keccak256 指紋。",
+        desc: "代理提交一個已綁定 Groth16 證明的 DeFi 動作：客戶端於瀏覽器（或後端 snarkjs）本地生成證明，透過此工具提交至 Sakura MCP 伺服器。伺服器將 execute_with_intent_proof 驗證指令與代理提供的 DeFi 指令打包至同一筆 Solana v0 原子交易，提交至主網。同一筆交易內同時讀取 Pyth × Switchboard 雙預言機、取中位數結算 USD 上限、跨所偏差超 100 bps 即拒絕。鏈上 alt_bn128 配對驗證於 ~116k CU 完成，整條 execute 路徑實測均值 ~204k CU；通過後 DeFi 指令才落地。返回：tx signature、action_nonce、keccak256 指紋、雙預言機中位數。",
         endpoint: "tool: execute_with_proof · params: intent_commitment, proof, public_inputs, defi_instruction",
       },
       {
@@ -61,9 +61,9 @@ const CONTENT: Record<Lang, {
     quickstartTitle: "四步接入",
     steps: [
       { step: "1", title: "準備 Solana 錢包並持有 USDC", desc: "確保您的呼叫錢包持有足夠 USDC（每次 x402 付費工具呼叫 $1.00；sign_intent 另收 0.1% 名義金額一次性費用）。Phantom、OKX、任意 Solana 錢包皆可——無需註冊帳號、無需 KYC。" },
-      { step: "2", title: "發送 $1.00 USDC 至 Sakura Fee Wallet", desc: "每次工具呼叫前，從您的錢包向 Sakura Fee Wallet 發送 $1.00 USDC（SPL Token Transfer）。保留 tx signature——這是您的 x402 支付憑證。sign_intent 一次性 0.1% 費用自動在簽署指令中鏈上扣除。" },
+      { step: "2", title: "以一次 HTTP 402 探知當前 Fee Wallet，再發送 $1.00 USDC", desc: "每次工具呼叫前，先對 /api/mcp 發一次不帶支付憑證的請求——伺服器會以 HTTP 402 回應，並在 X-Payment-Recipient header 中附上當前 Fee Wallet 位址。按該位址發送 $1.00 USDC（SPL Token Transfer），保留 tx signature——這是您的 x402 支付憑證。此動態探知避免硬編碼位址，運營方可無感輪替。sign_intent 的 0.1% 一次性費用另於簽署指令中自動鏈上扣除。" },
       { step: "3", title: "請求 Header 附上支付憑證", desc: "在 MCP JSON-RPC 請求中附上 header：x-payment: <tx_signature> · x-wallet: <your_wallet>。Sakura 後端即時核驗鏈上支付紀錄，確認金額、收款方、付款方皆正確。防重放保護：每個 tx signature 僅可使用一次。" },
-      { step: "4", title: "接收結果 · 鏈上指紋 · 獨立可驗證", desc: "工具呼叫返回完整結果：sign_intent 返回承諾 PDA、execute_with_proof 返回 tx + keccak256 指紋、verify_action 返回 ActionRecord 完整欄位。每一項結果皆對應鏈上一筆交易或一個 PDA——任何人可在 Solscan 獨立核驗，無需信任 Sakura 伺服器。這是 Verifiable Compute 的直接實現。" },
+      { step: "4", title: "接收結果 · 鏈上指紋 · 獨立可驗證", desc: "工具呼叫返回完整結果：sign_intent 返回承諾 PDA、execute_with_proof 返回 tx + keccak256 指紋 + Pyth × Switchboard 雙預言機中位數、verify_action 返回 ActionRecord 完整欄位。每一項結果皆對應鏈上一筆交易或一個 PDA——任何人可在 Solscan 獨立核驗，無需信任 Sakura 伺服器。對抗性壓測 15/15 不變式全部成立（docs/bench/2026-04-22-stress.json）。這是 Verifiable Compute 的直接實現。" },
     ],
     codeTitle: "示例代碼",
     feeTitle: "費用結構",
@@ -101,7 +101,7 @@ const CONTENT: Record<Lang, {
         name: "execute_with_proof",
         badge: "TOOL II · AGENT EXECUTION",
         badgeColor: "#B8932A",
-        desc: "The agent submits a DeFi action bundled with a Groth16 proof: the client generates the proof locally (browser snarkjs or backend) and submits to the Sakura MCP server. The server bundles the execute_with_intent_proof verification instruction and the DeFi instruction into a single Solana v0 atomic transaction and submits to mainnet. The alt_bn128 pairing check completes in ~116k CU on-chain; the DeFi instruction only lands after the proof passes. Returns: tx signature, action_nonce, keccak256 fingerprint.",
+        desc: "The agent submits a DeFi action bundled with a Groth16 proof: the client generates the proof locally (browser snarkjs or backend) and submits to the Sakura MCP server. The server bundles the execute_with_intent_proof verification instruction and the DeFi instruction into a single Solana v0 atomic transaction and submits to mainnet. Inside that same transaction, Pyth and Switchboard are read together; the USD cap settles against their median and is rejected when cross-oracle deviation exceeds 100 bps. The alt_bn128 pairing check clears in ~116k CU, and the full execute path measures a mean of ~204k CU; the DeFi instruction only lands after the proof passes. Returns: tx signature, action_nonce, keccak256 fingerprint, dual-oracle median.",
         endpoint: "tool: execute_with_proof · params: intent_commitment, proof, public_inputs, defi_instruction",
       },
       {
@@ -114,10 +114,10 @@ const CONTENT: Record<Lang, {
     ],
     quickstartTitle: "Four Steps to Integrate",
     steps: [
-      { step: "1", title: "Prepare a Solana wallet holding USDC", desc: "Ensure your calling wallet holds sufficient USDC ($1.00 per x402 tool call; sign_intent additionally charges a one-time 0.1% fee on notional). Phantom, OKX, or any Solana wallet works — no account creation or KYC." },
-      { step: "2", title: "Send $1.00 USDC to the Sakura Fee Wallet", desc: "Before each tool call, transfer $1.00 USDC (SPL Token Transfer) from your wallet to the Sakura Fee Wallet. Save the tx signature — this is your x402 payment proof. The sign_intent one-time 0.1% fee is deducted on-chain inside the sign instruction automatically." },
+      { step: "1", title: "Prepare a Solana wallet holding USDC", desc: "Ensure your calling wallet holds sufficient USDC ($1.00 per x402 tool call; sign_intent additionally charges a one-time 0.1% fee on notional). Phantom, OKX, or any Solana wallet works — no account creation, no KYC." },
+      { step: "2", title: "Discover the Fee Wallet via HTTP 402, then send $1.00 USDC", desc: "Before each tool call, first issue an unpaid request to /api/mcp. The server answers with HTTP 402 and an X-Payment-Recipient header carrying the current Fee Wallet. Transfer $1.00 USDC (SPL Token Transfer) to that address and retain the tx signature — your x402 payment proof. This dynamic-discovery pattern avoids hard-coded addresses; the operator can rotate the wallet without breaking integrators. The sign_intent one-time 0.1% fee is deducted on-chain inside the sign instruction automatically." },
       { step: "3", title: "Attach the payment proof as a header", desc: "Include the headers in your MCP JSON-RPC request: x-payment: <tx_signature> · x-wallet: <your_wallet>. The Sakura backend verifies the on-chain payment in real time — amount, recipient, sender all checked. Replay protection: each tx signature may be used only once." },
-      { step: "4", title: "Receive the result · On-chain fingerprint · Independently verifiable", desc: "The tool call returns its full result: sign_intent returns the commitment PDA; execute_with_proof returns the tx signature + keccak256 fingerprint; verify_action returns the complete ActionRecord fields. Every result corresponds to an on-chain transaction or PDA — anyone can verify it independently on Solscan, without trusting the Sakura server. This is Verifiable Compute, implemented." },
+      { step: "4", title: "Receive the result · On-chain fingerprint · Independently verifiable", desc: "The tool call returns its full result: sign_intent returns the commitment PDA; execute_with_proof returns the tx signature, keccak256 fingerprint, and the Pyth × Switchboard median used to clear the USD cap; verify_action returns the complete ActionRecord fields. Every result corresponds to an on-chain transaction or PDA — anyone can verify it independently on Solscan, without trusting a Sakura server. The adversarial stress archive records 15/15 invariants held (docs/bench/2026-04-22-stress.json). This is Verifiable Compute, implemented." },
     ],
     codeTitle: "Example Code",
     feeTitle: "Fee Structure",
@@ -155,7 +155,7 @@ const CONTENT: Record<Lang, {
         name: "execute_with_proof",
         badge: "ツール II · エージェント実行",
         badgeColor: "#B8932A",
-        desc: "エージェントが、Groth16 証明と束ねた DeFi 動作を提出する——クライアントはローカル（ブラウザの snarkjs、またはバックエンド）で証明を生成し、Sakura MCP サーバーに提出する。サーバーは、execute_with_intent_proof の検証命令と DeFi 命令を、単一の Solana v0 アトミックトランザクションに束ね、メインネットに提出する。オンチェーンの alt_bn128 ペアリング検証は約 116k CU で完了する——証明が通過してはじめて、DeFi 命令は着地する。戻り値：tx signature、action_nonce、keccak256 指紋。",
+        desc: "エージェントが、Groth16 証明と束ねた DeFi 動作を提出します——クライアントはローカル（ブラウザの snarkjs、またはバックエンド）で証明を生成し、Sakura MCP サーバーに提出します。サーバーは、execute_with_intent_proof の検証命令と DeFi 命令を、単一の Solana v0 アトミックトランザクションに束ね、メインネットに提出します。同じトランザクション内で Pyth と Switchboard を同時に読み、USD 上限はその中央値で決済され、乖離が 100 bps を超えれば拒絶されます。オンチェーンの alt_bn128 ペアリング検証は約 116k CU、execute 経路全体の実測平均は約 204k CU——証明が通過してはじめて、DeFi 命令は着地します。戻り値：tx signature、action_nonce、keccak256 指紋、双予言機の中央値。",
         endpoint: "tool: execute_with_proof · params: intent_commitment, proof, public_inputs, defi_instruction",
       },
       {
@@ -168,10 +168,10 @@ const CONTENT: Record<Lang, {
     ],
     quickstartTitle: "4 ステップで統合",
     steps: [
-      { step: "1", title: "USDC を保有する Solana ウォレットを準備", desc: "呼び出し側のウォレットに十分な USDC があることを確認する（x402 付費ツール呼び出し 1 回あたり $1.00、sign_intent には別途名目額の 0.1% の一回限り手数料）。Phantom、OKX、その他任意の Solana ウォレットが使える——アカウント作成不要、KYC 不要。" },
-      { step: "2", title: "Sakura Fee Wallet に $1.00 USDC を送金", desc: "各ツール呼び出しの前に、ウォレットから Sakura Fee Wallet へ $1.00 USDC を SPL Token Transfer として送金する。tx signature を保存すること——これが x402 の支払い証明である。sign_intent の一回限り 0.1% 手数料は、sign 命令の内部で自動的にオンチェーン控除される。" },
-      { step: "3", title: "リクエストヘッダーに支払い証明を付す", desc: "MCP JSON-RPC リクエストに、次のヘッダーを付す：x-payment: <tx_signature> · x-wallet: <your_wallet>。Sakura バックエンドは、オンチェーンの支払い記録を即時に検証する——金額、受取人、送金人がすべて確認される。再生防止：各 tx signature は 1 度限り使用可能。" },
-      { step: "4", title: "結果を受け取る · オンチェーン指紋 · 独立検証可能", desc: "ツール呼び出しは、完全な結果を返す——sign_intent はコミットメント PDA を、execute_with_proof は tx signature と keccak256 指紋を、verify_action は ActionRecord の全フィールドを返す。各結果は、オンチェーンの 1 トランザクションまたは 1 PDA に対応する——誰もが Solscan で独立に検証でき、Sakura のサーバーを信頼する必要はない。これが Verifiable Compute の実装である。" },
+      { step: "1", title: "USDC を保有する Solana ウォレットを準備", desc: "呼び出し側のウォレットに十分な USDC があることを確認します（x402 付費ツール呼び出し 1 回あたり $1.00、sign_intent には別途名目額の 0.1% の一回限り手数料）。Phantom、OKX、その他任意の Solana ウォレットが使えます——アカウント作成不要、KYC 不要。" },
+      { step: "2", title: "HTTP 402 で Fee Wallet を探知し、$1.00 USDC を送金", desc: "各ツール呼び出しの前に、まず支払い証明なしで /api/mcp を叩きます。サーバーは HTTP 402 を返し、X-Payment-Recipient ヘッダーに現在の Fee Wallet アドレスを提示します。そのアドレスに $1.00 USDC を SPL Token Transfer として送金し、tx signature を保存してください——これが x402 の支払い証明です。このダイナミック探知方式により、アドレスを決め打ちせずに済み、運営側は予告なくウォレットをローテーションできます。sign_intent の 0.1% 手数料は、sign 命令の内部で自動的にオンチェーン控除されます。" },
+      { step: "3", title: "リクエストヘッダーに支払い証明を付す", desc: "MCP JSON-RPC リクエストに、次のヘッダーを付します：x-payment: <tx_signature> · x-wallet: <your_wallet>。Sakura バックエンドは、オンチェーンの支払い記録を即時に検証します——金額、受取人、送金人がすべて確認されます。再生防止：各 tx signature は 1 度限り使用可能です。" },
+      { step: "4", title: "結果を受け取る · オンチェーン指紋 · 独立検証可能", desc: "ツール呼び出しは、完全な結果を返します——sign_intent はコミットメント PDA を、execute_with_proof は tx signature、keccak256 指紋、および USD 上限の決済に用いた Pyth × Switchboard の中央値を、verify_action は ActionRecord の全フィールドを返します。各結果は、オンチェーンの 1 トランザクションまたは 1 PDA に対応します——誰もが Solscan で独立に検証でき、Sakura のサーバーを信頼する必要はありません。対抗ストレステストの記録（docs/bench/2026-04-22-stress.json）では、15/15 の不変式がすべて成立しています。これが Verifiable Compute の実装です。" },
     ],
     codeTitle: "サンプルコード",
     feeTitle: "料金体系",
@@ -190,10 +190,18 @@ const CONTENT: Record<Lang, {
   },
 };
 
-const CURL_EXAMPLE = `# Step 1: Send $1.00 USDC payment (save the tx signature)
-# Step 2: Call the MCP tool with your payment proof
+const CURL_EXAMPLE = `# Step 1: Discover the current Sakura fee wallet (public, unauthenticated).
+#   Any unpaid tools/call returns HTTP 402 with X-Payment-Recipient set.
+curl -i -X POST https://www.sakuraaai.com/api/mcp \\
+  -H "Content-Type: application/json" \\
+  -d '{"jsonrpc":"2.0","id":0,"method":"tools/call","params":{"name":"verify_action"}}' \\
+  | grep -i "X-Payment-Recipient"
+# → X-Payment-Recipient: <SAKURA_FEE_WALLET>   ← send $1.00 USDC here
 
-curl -X POST https://sakura-app.vercel.app/api/mcp \\
+# Step 2: Transfer $1.00 USDC on mainnet to that address, save the tx signature.
+
+# Step 3: Replay the call, this time with your payment proof.
+curl -X POST https://www.sakuraaai.com/api/mcp \\
   -H "Content-Type: application/json" \\
   -H "x-payment: <YOUR_TX_SIGNATURE>" \\
   -H "x-wallet: <YOUR_WALLET_ADDRESS>" \\
@@ -216,9 +224,28 @@ import {
   getAssociatedTokenAddressSync,
 } from "@solana/spl-token";
 
-// Step 1: Pay $1.00 USDC to the Sakura Fee Wallet
+// Canonical mainnet USDC (Circle). On devnet, substitute the test mint
+// documented in /testing (7rEhvYrGGT41FQrCt3zNx8Bko9TFVvytYWpP1mqhtLi3).
 const USDC_MINT = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
-const SAKURA_FEE_WALLET = "<SAKURA_FEE_WALLET_ADDRESS>";
+
+// Discover the current fee wallet dynamically — an unpaid tools/call
+// returns HTTP 402 with the recipient in the X-Payment-Recipient header.
+// Never hard-code; the operator may rotate the address without notice.
+async function discoverSakuraFeeWallet(): Promise<string> {
+  const res = await fetch("https://www.sakuraaai.com/api/mcp", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ jsonrpc: "2.0", id: 0, method: "tools/call",
+                          params: { name: "verify_action" } }),
+  });
+  if (res.status !== 402) throw new Error("Expected HTTP 402 on unpaid call");
+  const recipient = res.headers.get("X-Payment-Recipient");
+  if (!recipient || recipient === "not-configured")
+    throw new Error("Sakura fee wallet not advertised — endpoint misconfigured");
+  return recipient;
+}
+
+const SAKURA_FEE_WALLET = await discoverSakuraFeeWallet();
 
 async function callSakuraTool(
   toolName: "sign_intent" | "execute_with_proof" | "verify_action",
@@ -290,11 +317,22 @@ export default function McpPage() {
         <div style={{
           display: "inline-flex", alignItems: "center", gap: 8,
           background: "rgba(99,91,255,0.08)", border: "1px solid rgba(99,91,255,0.25)",
-          borderRadius: 20, padding: "5px 14px", marginBottom: 24,
+          borderRadius: 20, padding: "5px 14px", marginBottom: 10,
         }}>
           <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#635BFF", display: "inline-block" }} />
           <span style={{ fontSize: 11, color: "#8B87FF", fontWeight: 500, letterSpacing: 1.5, fontFamily: "var(--font-mono)" }}>
             {c.badge}
+          </span>
+        </div>
+        <div style={{
+          display: "inline-block", marginLeft: 8, marginBottom: 24,
+          background: "rgba(184,147,42,0.10)", border: "1px solid rgba(184,147,42,0.35)",
+          borderRadius: 20, padding: "4px 12px",
+        }}>
+          <span style={{ fontSize: 10, color: "#B8932A", letterSpacing: "0.14em", fontFamily: "var(--font-mono)" }}>
+            {lang === "zh" ? "◐ DEVNET TODAY · MAINNET AT AUDIT COMPLETION"
+             : lang === "ja" ? "◐ 現在 DEVNET 稼働 · 監査完了後に MAINNET"
+             : "◐ DEVNET TODAY · MAINNET AT AUDIT COMPLETION"}
           </span>
         </div>
 

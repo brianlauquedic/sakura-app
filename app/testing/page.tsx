@@ -91,7 +91,7 @@ const CONTENT: Record<Lang, {
       {
         step: "伍",
         title: "簽第一份意圖",
-        body: "在「簽一次意圖」區塊填：意圖文字寫「代理可以在 Kamino 或 MarginFi 存入 USDC，每週結算」；單次上限 10；總 USD 上限 10（這樣簽名費只扣 $0.01）；勾 Kamino + MarginFi；勾 Lend；期限 24 小時。點「簽署意圖」→ Phantom 彈窗確認 → 等 3-5 秒。",
+        body: "在「簽一次意圖」區塊填：意圖文字寫「代理可以在 Kamino 或 Jupiter Lend 存入 USDC，每週結算」；單次上限 10；總 USD 上限 10（這樣簽名費只扣 $0.01）；勾 Kamino + Jupiter；勾 Lend；期限 24 小時。點「簽署意圖」→ Phantom 彈窗確認 → 等 3-5 秒。",
         screenshot: undefined, // TODO: 填好的表單 + Phantom 確認彈窗
       },
       {
@@ -145,7 +145,7 @@ const CONTENT: Record<Lang, {
     ],
 
     nextTitle: "下一步",
-    nextBody: "你剛剛完成的是技術驗證：簽一次意圖，確認鏈上記錄。真正「簽一份好意圖」的策略層面（該勾多少協議？期限設多長？5 個最常踩的坑？）— 見完整散戶指南：",
+    nextBody: "你剛剛完成的是技術驗證的第一段：把邊界上鏈。真正觸發雙預言機閘門的環節（Pyth × Switchboard 取中位數、跨所偏差 ≤ 100 bps）會在 agent 第一次呼叫 execute_with_intent_proof 時發生——整條 execute 路徑實測均值 ~204k CU，對抗性壓測 15/15 不變式全部成立（docs/bench/2026-04-22-stress.json）。至於如何「簽一份好意圖」的策略層面（勾幾家協議？期限設多長？5 個最常踩的坑？）——見完整散戶指南：",
     nextGuideLink: "→ 使用手冊 · 如何簽一份好的意圖",
 
     contact: "卡在某一步？",
@@ -193,7 +193,7 @@ const CONTENT: Record<Lang, {
       {
         step: "V",
         title: "Sign your first intent",
-        body: "In the \"Sign Intent\" block: intent text = \"agent may deposit USDC into Kamino or MarginFi, weekly settlement\"; single-action cap = 10; total USD cap = 10 (keeps sign fee at $0.01); check Kamino + MarginFi; check Lend; expiry 24 hours. Click \"Sign Intent\" → Phantom popup → approve → wait 3-5 seconds.",
+        body: "In the \"Sign Intent\" block: intent text = \"agent may deposit USDC into Kamino or Jupiter Lend, weekly settlement\"; single-action cap = 10; total USD cap = 10 (keeps sign fee at $0.01); check Kamino + Jupiter; check Lend; expiry 24 hours. Click \"Sign Intent\" → Phantom popup → approve → wait 3-5 seconds.",
         screenshot: undefined,
       },
       {
@@ -247,7 +247,7 @@ const CONTENT: Record<Lang, {
     ],
 
     nextTitle: "Next",
-    nextBody: "You just verified the technical flow: sign once, confirm on-chain. For the strategy of \"signing a GOOD intent\" (how many protocols to tick, how long to set the expiry, the 5 most common mistakes) — see the full retail user guide:",
+    nextBody: "You just verified the first half of the flow: anchoring bounds on-chain. The dual-oracle gate (Pyth × Switchboard median, ≤100 bps cross-oracle deviation) engages the moment an agent calls execute_with_intent_proof — the full execute path measures a mean of ~204k CU, and the adversarial stress archive records 15/15 invariants held (docs/bench/2026-04-22-stress.json). For the strategy side of \"signing a good intent\" (how many protocols to tick, how long to set expiry, the five most common mistakes), see the full retail user guide:",
     nextGuideLink: "→ User Guide · How to sign a good intent",
 
     contact: "Stuck on a step?",
@@ -264,7 +264,7 @@ const CONTENT: Record<Lang, {
     subtitle: "自分の Phantom ウォレットを用いて、Solana devnet 上で実際に意図に署名する方法。空ウォレットからオンチェーン確認まで、順を追って。",
     introKanji: "試",
     introTitle: "本チュートリアルは Phantom ブラウザ拡張のみ対象。",
-    introBody: "他のウォレット（OKX、Backpack、Solflare など）は Solana の devnet 切替機能を持たぬため、この流れを完走できぬ。Phantom をインストールせずに試したい場合は、末尾の「代替経路」を参照。",
+    introBody: "他のウォレット（OKX、Backpack、Solflare など）は Solana の devnet 切替機能を備えないため、この流れを完走できません。Phantom をインストールせずに試したい場合は、末尾の「代替経路」をご参照ください。",
     phantomOnlyNote: "⚠️ モバイル Phantom は非対応。本チュートリアルはデスクトップ拡張限定。",
 
     steps: [
@@ -295,7 +295,7 @@ const CONTENT: Record<Lang, {
       {
         step: "伍",
         title: "最初の意図に署名",
-        body: "「意図署名」ブロックに入力：意図文「エージェントは Kamino または MarginFi に USDC を預けられる、週次精算」；1 回の上限 = 10；累計 USD 上限 = 10（署名手数料を $0.01 に抑える）；Kamino と MarginFi にチェック；Lend にチェック；期限 24 時間。「意図署名」をクリック → Phantom のポップアップ → 承認 → 3-5 秒待つ。",
+        body: "「意図署名」ブロックに入力：意図文「エージェントは Kamino または Jupiter Lend に USDC を預けられる、週次精算」；1 回の上限 = 10；累計 USD 上限 = 10（署名手数料を $0.01 に抑える）；Kamino と Jupiter にチェック；Lend にチェック；期限 24 時間。「意図署名」をクリック → Phantom のポップアップ → 承認 → 3-5 秒待つ。",
         screenshot: undefined,
       },
       {
@@ -324,32 +324,32 @@ const CONTENT: Record<Lang, {
 
     gotchaTitle: "注意点 & よくある質問",
     gotchaUsdcTitle: "Phantom は受け取った 100 USDC を表示しない",
-    gotchaUsdcBody: "Phantom UI の仕様であり、資金が届いていないわけではない。Sakura の devnet は admin が発行したテスト USDC（mint アドレス 7rEh…Li3）を使っており、Circle の canonical devnet USDC ではない。Phantom は認識している token しか自動表示せぬ。実際の残高は 100% オンチェーン上に存在する。Solscan で ATA を確認すれば Amount フィールドに見える：https://solscan.io/account/<ATA>?cluster=devnet。署名時には Sakura が自動でこの ATA から引き落とすので、Phantom の表示に依存しない。",
+    gotchaUsdcBody: "Phantom UI の仕様であり、資金が届いていないわけではありません。Sakura の devnet は admin が発行したテスト USDC（mint アドレス 7rEh…Li3）を用いており、Circle の canonical devnet USDC ではありません。Phantom は認識しているトークンしか自動表示しないため、未知の mint は画面に現れません。実際の残高は 100% オンチェーン上に存在します。Solscan で ATA を開けば Amount フィールドに見えます：https://solscan.io/account/<ATA>?cluster=devnet。署名時には Sakura が自動でこの ATA から引き落とすため、Phantom の表示には依存しません。",
     gotchaOthers: [
       {
-        q: "Connect Wallet を押しても何も起こらぬ",
-        a: "Phantom 拡張が無効か未インストールの可能性。右上で Phantom アイコンを確認。インストール済なのにポップアップが出ぬ場合は、ページを強制再読込（Cmd+Shift+R）。",
+        q: "Connect Wallet を押しても何も起こらない",
+        a: "Phantom 拡張が無効か未インストールの可能性があります。右上で Phantom アイコンをご確認ください。インストール済みなのにポップアップが出ない場合は、ページを強制再読込（Cmd+Shift+R）してください。",
       },
       {
         q: "署名時に Phantom が「Failed to decode」を出す",
-        a: "通常、Phantom が Mainnet のまま。ネットワークドロップダウンが「Solana Devnet」になっていることを確認。切替えてから再試行。",
+        a: "通常、Phantom が Mainnet のままになっています。ネットワークドロップダウンが「Solana Devnet」と表示されているかご確認の上、切り替えてから再試行してください。",
       },
       {
-        q: "署名後 30 秒経っても UI が緑にならぬ",
-        a: "強制再読込。それでも変化なければ、tx リンクをクリックして Solscan を確認。Solscan が SUCCESS でも Sakura UI が反映せぬ場合は、フロントエンドの状態キャッシュ。もう一度再読込。",
+        q: "署名後 30 秒経っても UI が緑にならない",
+        a: "強制再読込をお試しください。それでも変化がなければ、tx リンクをクリックして Solscan をご確認ください。Solscan が SUCCESS でも Sakura UI に反映されない場合は、フロントエンドの状態キャッシュが原因です。もう一度再読込を。",
       },
       {
         q: "faucet が 429 rate limit を返す",
-        a: "1 アドレスにつき 24 時間に 1 回、1 IP につき 5 回まで。別アドレスを使うか、24 時間待つか、チームに DM して手動で送金を依頼する。",
+        a: "1 アドレスにつき 24 時間に 1 回、1 IP につき 5 回までです。別アドレスを使うか、24 時間お待ちいただくか、チームに DM にて手動送金をご依頼ください。",
       },
       {
-        q: "署名手数料は $0.01 のはずだが Phantom ポップアップが別の値を出す",
-        a: "署名手数料 = 0.1% × 累計 USD 上限。上限 10 なら $0.01、上限 1000 なら $1。ポップアップは USDC 引落 + PDA レント（約 0.002 SOL）を表示する。",
+        q: "署名手数料は $0.01 のはずだが Phantom ポップアップが別の値を表示する",
+        a: "署名手数料 = 0.1% × 累計 USD 上限。上限 10 なら $0.01、上限 1000 なら $1 です。ポップアップには USDC 引落額 + PDA レント（約 0.002 SOL）が表示されます。",
       },
     ],
 
     nextTitle: "次のステップ",
-    nextBody: "たった今終えたのは技術的な動作確認：意図を 1 度署名し、オンチェーンを確認。「良い意図を署名する」戦略面（プロトコルを幾つ選ぶか、期限はどれ位か、よく犯される 5 つの誤り）については、個人投資家向け完全ガイドを：",
+    nextBody: "ただいま完了したのは、技術的な動作確認の前半——境界をオンチェーンに定錨する段階です。双予言機の関門（Pyth × Switchboard の中央値、乖離 100 bps 以内）が発動するのは、エージェントが execute_with_intent_proof を初めて呼び出す瞬間——execute 経路全体の実測平均は約 204k CU、対抗ストレステストの記録（docs/bench/2026-04-22-stress.json）では 15/15 の不変式がすべて成立しています。「良い意図を署名する」戦略面（プロトコルを幾つ選ぶか、期限をどう設定するか、最も多く踏まれる 5 つの誤り）については、個人投資家向け完全ガイドをご参照ください：",
     nextGuideLink: "→ 使用手冊 · 良い意図の署名方法",
 
     contact: "途中で詰まったら：",

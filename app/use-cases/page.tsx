@@ -84,7 +84,7 @@ const USE_CASES: SectionEntry[] = [
         title: {
           zh: "Phantom 代理模式：直接接 Sakura，省掉 4 個工程師月",
           en: "Phantom Agent Mode: integrate Sakura, skip four engineer-months",
-          ja: "Phantom のエージェントモード：Sakura を接続し、4 エンジニア月を節約する",
+          ja: "Phantom のエージェントモード——Sakura を統合し、エンジニア 4 人月を節約する",
         },
         persona: {
           zh: "錢包工程團隊",
@@ -121,12 +121,12 @@ const USE_CASES: SectionEntry[] = [
         context: {
           zh: "代理模式是 2026 年 Solana 錢包的同質化戰場。會話金鑰輪替、allowlist、授權彈窗——四家錢包能做的事情幾乎沒有差別，都在同一層運營承諾上競爭。獲客故事蒼白，用戶選哪家靠 UI 手感，不靠結構差異。",
           en: "Agent mode is the commoditization battleground for Solana wallets in 2026. Session-key rotation, allowlists, approval popups — the four wallets are almost indistinguishable, competing on the same layer of operator promises. The acquisition story reads thin. Users choose on UI feel, not on structural difference.",
-          ja: "エージェントモードは、2026 年の Solana ウォレットにとっての均質化の戦場である。セッションキーのローテーション、許可リスト、承認ポップアップ——4 社のウォレットは、ほぼ区別がつかないまま、同じ運営者の約束のレイヤーで競争している。獲得のナラティブは薄く、ユーザーは UI の手触りで選ぶのであって、構造的な違いでは選ばない。",
+          ja: "エージェントモードは、2026 年の Solana ウォレットにとっての均質化の戦場である。セッションキーのローテーション、許可リスト、承認ポップアップ——4 社のウォレットは、ほぼ区別がつかぬまま、同じ運営者の約束というレイヤーで競合する。獲得のナラティブは薄く、ユーザーは UI の手触りで選ぶのであって、構造的な違いで選ぶのではない。",
         },
         outcome: {
           zh: "接 Sakura 後，Backpack 可以用結構性命題做差異化：「在我們的代理模式下，代理的任何動作都無法越過您已簽的邊界——這由 Solana 鏈上 alt_bn128 配對驗證強制，不是由我們的伺服器承諾。用戶即是主權。」這不是行銷文案——Solscan 上每一筆代理動作都留有 keccak256 指紋，用戶可隨時獨立核驗。這是同業難複製的獲客信號。",
           en: "By integrating Sakura, Backpack differentiates on a structural claim: \"In our agent mode, the agent cannot act outside the bounds you signed — enforced by on-chain alt_bn128 pairing verification, not by our server's promise. The user is the sovereign.\" This is not marketing copy — every agent action leaves a keccak256 fingerprint on Solscan, independently verifiable at any time. A user-acquisition signal peers cannot easily replicate.",
-          ja: "Sakura を統合することで、Backpack は構造的な命題で差異化できる——「当社のエージェントモードにおいて、エージェントはお客様が署名した境界の外では動けない。これは、オンチェーンの alt_bn128 ペアリング検証が強制するのであって、当社サーバーの約束ではない。ユーザーこそが、主権である」。これはマーケティングコピーではない——各エージェント動作は Solscan に keccak256 指紋を残し、いつでも独立に検証できる。競合が容易には真似できない、ユーザー獲得シグナル。",
+          ja: "Sakura を統合することで、Backpack は構造的な命題で差異化できる——「当社のエージェントモードにおいて、エージェントはお客様が署名した境界の外では動けない。これは、オンチェーンの alt_bn128 ペアリング検証が強制するのであって、当社サーバーの約束ではない。ユーザーこそが、主権である」。これはマーケティングコピーではない——各エージェント動作は Solscan に keccak256 指紋を残し、いつでも独立に検証できる。競合が容易には真似できぬ、ユーザー獲得シグナルである。",
         },
         tag: {
           zh: "產品差異化",
@@ -154,14 +154,14 @@ const USE_CASES: SectionEntry[] = [
           ja: "AI エージェント開発者",
         },
         context: {
-          zh: "開發者希望做一個 AI 代理，每日自動在 Kamino / Jupiter Lend / Jito 之間為用戶再平衡 USDC + SOL 收益倉位（Solana 借貸與 LST 的四大龍頭裡的三個）。問題：用戶不會為了一個還不知道能賺多少的 AI 代理，把任意金額的簽名權限交出去。必須有一個結構性的上限——但 allowlist / session key 並不夠硬。",
-          en: "A developer wants to build an AI agent that daily rebalances the user's USDC + SOL yield positions across Kamino, Jupiter Lend, and Jito (three of Solana's four 龙头 lending + LST protocols). The problem: no user will sign over unbounded authority to an agent whose ROI is not yet proven. A structural ceiling is required — but allowlists and session keys are not hard enough.",
-          ja: "ある開発者は、Kamino / Jupiter Lend / Jito の間で（Solana の貸付と LST の主要 4 プロトコルのうちの 3 つ）、ユーザーの USDC と SOL の利回りポジションを日次でリバランスする AI エージェントを構築したいと考えている。問題は、ROI がまだ実証されていないエージェントに、ユーザーが無制限の署名権を渡すことは決してない、ということである。構造的な上限が必要だが、許可リストやセッションキーでは硬さが足りない。",
+          zh: "開發者希望做一個 AI 代理，每日自動在 Kamino / Jupiter Lend / Jito 之間為用戶再平衡 USDC + SOL 收益倉位（皆為 Solana 借貸與 LST 的旗艦協議）。問題：用戶不會為了一個還不知道能賺多少的 AI 代理，把任意金額的簽名權限交出去。必須有一個結構性的上限——但 allowlist / session key 並不夠硬。",
+          en: "A developer wants to build an AI agent that daily rebalances the user's USDC + SOL yield positions across Kamino, Jupiter Lend, and Jito — each a flagship in Solana's lending and liquid-staking stack. The problem: no user will sign over unbounded authority to an agent whose ROI is not yet proven. A structural ceiling is required — and allowlists and session keys are not hard enough.",
+          ja: "ある開発者は、Kamino / Jupiter Lend / Jito の間で、ユーザーの USDC と SOL の利回りポジションを日次でリバランスする AI エージェントを構築したいと考えている（いずれも Solana の貸付および LST における旗艦プロトコルである）。問題は、ROI がまだ実証されていないエージェントに、ユーザーが無制限の署名権を渡すことは決してない、ということである。構造的な上限は必要だが、許可リストやセッションキーでは硬さが足りない。",
         },
         outcome: {
-          zh: "以 Sakura SDK 整合：用戶簽一次意圖——「代理每次可移動最多 $500 USDC，僅限 Kamino / Jupiter / Raydium / Jito 這四大龍頭，為期 30 天」。代理每次執行前，用 lib/adapters 組裝對應協議的真 mainnet CPI 指令（13 個格子已驗證），透過 SDK 於瀏覽器本地 600ms 生成 Groth16 證明，打包至 v0 原子交易。鏈上驗證 126k CU（實測）。用戶的上限由數學而非軟體保證——結構上不可逾越。",
-          en: "Integrate via Sakura SDK: the user signs one intent — \"the agent may move up to $500 USDC per action, limited to the four 龙头 (Kamino / Jupiter / Raydium / Jito), for thirty days.\" Before each execution, the agent assembles the protocol-specific real mainnet CPI via lib/adapters (13 cells verified). The SDK generates a Groth16 proof locally in ~600ms and bundles it into a v0 atomic transaction. On-chain verification costs ~126k CU (measured). The user's cap is guaranteed by math, not by software — structurally unexceedable.",
-          ja: "Sakura SDK を用いて統合する——ユーザーは、1 度の意図署名を行う。「エージェントは、Kamino / Jupiter / Raydium / Jito の 4 つの龍頭に限り、1 回最大 $500 USDC、30 日間に限って動かしてよい」。エージェントは各実行前に、lib/adapters で各プロトコルの本物のメインネット CPI 命令を組み立てる（13 セル検証済み）。SDK はブラウザ内で約 600ms の Groth16 証明を生成し、v0 アトミックトランザクションに束ねる。オンチェーン検証はおよそ 126k CU（実測）。ユーザーの上限は、ソフトウェアではなく、数学によって保証される——構造上、越えられない。",
+          zh: "以 Sakura SDK 整合：用戶簽一次意圖——「代理每次可移動最多 $500 USDC，僅限 Kamino / Jupiter / Raydium / Jito 四家旗艦協議，為期 30 天」。代理每次執行前，以 lib/adapters 組裝對應協議的真 mainnet CPI 指令（12 個動作格已驗證），透過 SDK 於瀏覽器本地 600ms 生成 Groth16 證明，打包至 v0 原子交易。鏈上 alt_bn128 配對驗證 ~116k CU；整條 execute 路徑實測均值 ~204k CU，同一筆交易取 Pyth × Switchboard 中位數，跨所偏差 ≤ 100 bps。用戶的上限由數學而非軟體保證——結構上不可逾越。",
+          en: "Integrate via Sakura SDK. The user signs one intent: \"the agent may move up to $500 USDC per action, limited to four flagship protocols (Kamino / Jupiter / Raydium / Jito), for thirty days.\" Before each execution, the agent assembles the protocol-specific real mainnet CPI through lib/adapters (twelve action cells verified). The SDK generates a Groth16 proof locally in ~600ms and bundles it into a v0 atomic transaction. The on-chain alt_bn128 pairing check clears in ~116k CU; the full execute path measures a mean of ~204k CU, and the USD cap settles against the median of Pyth and Switchboard within a 100 bps cross-oracle band. The user's cap is guaranteed by math, not by software — structurally unexceedable.",
+          ja: "Sakura SDK を用いて統合する。ユーザーは、1 度の意図署名を行う——「エージェントは、Kamino / Jupiter / Raydium / Jito の旗艦 4 プロトコルに限り、1 回最大 $500 USDC、30 日間に限って動かしてよい」。エージェントは各実行前に、lib/adapters で各プロトコルの本物のメインネット CPI 命令を組み立てる（12 アクションセル検証済み）。SDK はブラウザ内で約 600ms の Groth16 証明を生成し、v0 アトミックトランザクションに束ねる。オンチェーンの alt_bn128 ペアリング検証は約 116k CU、execute 経路全体の実測平均は約 204k CU。同一トランザクション内で Pyth × Switchboard の中央値を取り、乖離は 100 bps 以内——越えれば通らない。ユーザーの上限は、ソフトウェアではなく、数学によって保証される——構造上、越えられない。",
         },
         tag: {
           zh: "代理整合",
@@ -187,7 +187,7 @@ const USE_CASES: SectionEntry[] = [
         },
         outcome: {
           zh: "DAO 在 multisig 簽一次意圖：七項策略值（金額 / USD 上限 / 協議位圖 / 動作位圖 / 過期 / nonce / 意圖文字）經 Poseidon 上鏈。每次代理動作鏈上驗證後才落地；越界鏈上拒絕——任何越界嘗試都在 Solscan 上留痕，治理紀錄可獨立還原。事後若有爭議，審計師以 snarkjs 獨立重驗每一筆 Groth16 證明，結論不依賴 DAO 任何一方。這是「程式化信託」（programmatic fiduciary duty）的實作範本。",
-          en: "The DAO multisig signs one intent: seven policy values (amount / USD cap / protocol bitmap / action bitmap / expiry / nonce / intent text) folded through Poseidon, anchored on-chain. Each agent action lands only after on-chain verification; any out-of-bounds attempt is rejected on-chain and leaves a trace on Solscan that governance can reconstruct. If a dispute arises later, an auditor independently re-verifies every Groth16 proof with snarkjs; the conclusion does not rely on any DAO faction. This is programmatic fiduciary duty, as implementation.",
+          en: "The DAO multisig signs one intent: seven policy values (amount / USD cap / protocol bitmap / action bitmap / expiry / nonce / intent text) folded through Poseidon, anchored on-chain. Each agent action lands only after on-chain verification; any out-of-bounds attempt is rejected on-chain and leaves a trace on Solscan that governance can reconstruct. If a dispute arises later, an auditor independently re-verifies every Groth16 proof with snarkjs; the conclusion does not depend on any DAO faction. Programmatic fiduciary duty, made concrete.",
           ja: "DAO のマルチシグが、1 度の意図に署名する。7 つのポリシー値（金額 / USD 上限 / プロトコルビットマップ / アクションビットマップ / 有効期限 / ノンス / 意図テキスト）が Poseidon を経てオンチェーンに定錨される。各エージェント動作は、オンチェーン検証を通過して初めて着地する。境界外の試みはその場で拒絶され、Solscan に痕跡を残し、ガバナンス記録として独立に復元可能である。後日紛争が生じた場合、監査人は snarkjs で各 Groth16 証明を独立に再検証する——結論は、DAO のいかなる派閥からも独立する。これは、プログラム化された信認義務（programmatic fiduciary duty）の、実装としての範型である。",
         },
         tag: {
@@ -279,9 +279,19 @@ export default function UseCasesPage() {
           }}>
             {p.back}
           </Link>
-          <div style={{ marginBottom: 20 }}>
+          <div style={{ marginBottom: 10 }}>
             <span style={{ fontSize: 11, color: "var(--accent)", letterSpacing: "0.15em", fontFamily: "var(--font-mono)" }}>
               {p.badge}
+            </span>
+          </div>
+          <div style={{
+            background: "rgba(184,147,42,0.10)", border: "1px solid rgba(184,147,42,0.35)",
+            borderRadius: 20, padding: "3px 12px", marginBottom: 20, display: "inline-block",
+          }}>
+            <span style={{ fontSize: 10, color: "#B8932A", letterSpacing: "0.14em", fontFamily: "var(--font-mono)" }}>
+              {l === "zh" ? "◐ DEVNET TODAY · MAINNET AT AUDIT COMPLETION"
+               : l === "ja" ? "◐ 現在 DEVNET 稼働 · 監査完了後に MAINNET"
+               : "◐ DEVNET TODAY · MAINNET AT AUDIT COMPLETION"}
             </span>
           </div>
           <h1 style={{
@@ -314,10 +324,10 @@ export default function UseCasesPage() {
             </div>
             <div style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.9 }}>
               {lang === "zh"
-                ? "Sakura 是代理錢包、代理開發者、審計/合規機構三方共用的一層：用戶以一句話簽下代理的動作邊界，Poseidon 壓縮為 32 位元組承諾上鏈；代理每一次動作都附 Groth16 證明，由 Solana alt_bn128 配對 syscall 於 ~116k CU 驗證；越界鏈上拒絕、在場鏈上留痕、爭議可鏈上還原。用戶即是主權。數學只是強制執行。"
+                ? "Sakura 是代理錢包、代理開發者、審計/合規機構三方共用的一層：用戶以一句話簽下代理的動作邊界，Poseidon 壓縮為 32 位元組承諾上鏈；代理每一次動作都附 Groth16 證明，由 Solana alt_bn128 配對 syscall 於 ~116k CU 驗證，USD 上限在同一筆交易內取 Pyth × Switchboard 雙預言機中位數、跨所偏差 ≤ 100 bps 方能放行；越界鏈上拒絕、在場鏈上留痕、爭議可鏈上還原。對抗性壓測 15/15 不變式全部成立。用戶即是主權。數學只是強制執行。"
                 : lang === "ja"
-                ? "Sakura は、エージェントウォレット、エージェント開発者、監査/コンプライアンス機関の三者が共有する 1 つのレイヤーである——ユーザーは 1 文でエージェントの動作境界を署名し、Poseidon が 32 バイトのコミットメントに圧縮してオンチェーンに定錨する。エージェントの各動作は Groth16 証明を伴い、Solana の alt_bn128 ペアリング syscall が約 116k CU で検証する。境界外はオンチェーンで拒絶され、動作はオンチェーンに痕跡を残し、紛争はオンチェーンで復元できる。ユーザーこそが主権。数学はその執行にすぎぬ。"
-                : "Sakura is the single layer shared by three roles — wallet integrator, agent developer, auditor/compliance: the user signs the agent's action bounds in a single sentence, Poseidon compresses them into a 32-byte commitment on-chain; every agent action ships with a Groth16 proof, verified by Solana's alt_bn128 pairing syscall in ~116k CU; out-of-bounds is rejected on-chain, in-bounds leaves a fingerprint on-chain, disputes reconstructed on-chain. The user is the sovereign. The math, merely the enforcement."}
+                ? "Sakura は、エージェントウォレット、エージェント開発者、監査/コンプライアンス機関の三者が共有する 1 つのレイヤーである——ユーザーは 1 文でエージェントの動作境界を署名し、Poseidon が 32 バイトのコミットメントに圧縮してオンチェーンに定錨する。エージェントの各動作は Groth16 証明を伴い、Solana の alt_bn128 ペアリング syscall が約 116k CU で検証する。USD 上限は、同一トランザクション内で Pyth × Switchboard 双預言機の中央値で決済され、乖離 100 bps 以内を越えれば通らない。境界外はオンチェーンで拒絶され、動作はオンチェーンに痕跡を残し、紛争はオンチェーンで復元できる。対抗ストレステストでは 15/15 の不変式がすべて成立している。ユーザーこそが主権。数学はその執行にすぎない。"
+                : "Sakura is the single layer shared by three roles — wallet integrator, agent developer, auditor/compliance. The user signs the agent's action bounds in a single sentence; Poseidon compresses them into a 32-byte commitment on-chain. Every agent action ships with a Groth16 proof, verified by Solana's alt_bn128 pairing syscall in ~116k CU. The USD cap settles in the same transaction against the median of Pyth and Switchboard, within a 100 bps cross-oracle band. Out-of-bounds is rejected on-chain; in-bounds leaves a fingerprint on-chain; disputes reconstruct on-chain. The adversarial stress archive records 15/15 invariants held. The user is sovereign. The math, merely the enforcement."}
             </div>
           </div>
         </div>

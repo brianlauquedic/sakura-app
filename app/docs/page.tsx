@@ -31,7 +31,7 @@ const CONTENT: Record<Lang, {
         subtitle: "Phantom / Backpack / Abstract / Infinex 如何接入 Sakura",
         intro: "錢包接入 Sakura 的商業動機只有一條：省下自己蓋這一層的工程成本。這一層該解一次，不該解四次。前 $10M 整合量免收路由費，之後 0.1% 名義金額自動路由至協議金庫；接入流程完全許可免除——沒有商務談判、沒有 BD 流程、沒有配額審批。四個步驟，從安裝 SDK 到用戶第一次簽署意圖，工程日曆上是一週，不是一個季度。",
         steps: [
-          { step: "1", title: "安裝 SDK · 串接錢包 provider", desc: "yarn add @sakura/solana-sdk。引入 IntentSigner React 元件，將您的錢包 provider（Phantom、Backpack、OKX 皆可）傳入。SDK 預設連線 Solana mainnet-beta；devnet 切換只需一個 prop。無需任何 API key，無需 OAuth，無需在 Sakura 註冊任何帳號。" },
+          { step: "1", title: "安裝 SDK · 串接錢包介面", desc: "yarn add @sakura/solana-sdk。引入 IntentSigner React 元件，將您的錢包介面（Phantom、Backpack、OKX 皆可）傳入。SDK 在 cluster 參數預留切換位（目前合約於 devnet 活躍、審計完成後移至 mainnet-beta）。無需任何 API key，無需 OAuth，無需在 Sakura 註冊任何帳號。" },
           { step: "2", title: "渲染意圖簽署介面", desc: "在您的代理模式設定頁面渲染 <IntentSigner />。用戶以自然語言寫下代理的動作邊界——例如「代理可在 Kamino 借貸，單次 $500 USDC，為期一週」。SDK 解析為七項策略值（意圖文字、錢包、nonce、金額上限、USD 上限、協議位圖、動作位圖）。原始值始終留在瀏覽器，不經過 Sakura 的任何伺服器。" },
           { step: "3", title: "簽署 · 承諾上鏈", desc: "用戶確認後，SDK 透過 2 層 Poseidon 樹將七項值壓縮為 32 位元組承諾；發起 sign_intent 指令，承諾寫入以用戶錢包為種子的 Program Derived Address (PDA)。一次性 0.1% 費用自動從 SPL Token approve 的 USDC 扣除，路由至協議金庫——前 $10M 整合量免收。用戶看到的，只是一次錢包簽名。" },
           { step: "4", title: "審計整合 · 收取 rebate", desc: "整合後，您的錢包位址登記在 Sakura 白名單中，首 $10M 整合量自動 rebate 至您預先聲明的 USDC 錢包。之後 0.1% 繼續流入協議金庫（85% 營運、15% 平台）。Solscan 上每一筆意圖簽署的 tx 都留有 keccak256 指紋——您、您的審計師、您的監管方，都可以獨立核驗任何一筆，無需透過 Sakura。" },
@@ -44,10 +44,10 @@ const CONTENT: Record<Lang, {
         badgeColor: "#B8932A",
         title: "🤖 代理開發者",
         subtitle: "AI 代理如何生成 Groth16 證明、提交動作",
-        intro: "代理執行任何動作之前，都必須先證明該動作落在用戶已簽的邊界之內。Sakura 的客戶端在用戶瀏覽器內於 600ms 以內生成 Groth16 證明，鏈上驗證器於 ~116k CU 完成配對驗證——每次動作約 \$0.0001 鏈上成本。不揭露任何私有策略值，只論證「這個動作，合規」。",
+        intro: "代理執行任何動作之前，都必須先證明該動作落在用戶已簽的邊界之內。Sakura 的客戶端在用戶瀏覽器內於 600ms 以內生成 Groth16 證明，鏈上驗證器於 ~116k CU 完成配對驗證、整條 execute 路徑實測均值 ~204k CU——每次動作約 \$0.01 鏈上成本。不揭露任何私有策略值，只論證「這個動作，合規」。USD 上限由 Pyth × Switchboard 雙預言機於同一筆交易內取中位數結算、跨所偏差 ≤ 100 bps 方能放行。",
         steps: [
-          { step: "1", title: "從 lib/adapters 組裝未簽名 DeFi 指令", desc: "Sakura 內建 4 個 Solana 龍頭協議的 mainnet adapter（lib/adapters/{jito,raydium,kamino,jupiter-lend}.ts）共 13 個動作格子全部產生真 CPI 指令——Jupiter（Swap + Lend × 4）、Raydium（Swap）、Kamino（Lend / Borrow / Repay / Withdraw）、Jito（Stake / Unstake）。任何人皆可執行 npx tsx scripts/verify-{jito,raydium,kamino,jupiter-lend}-adapter.ts 一鍵獨立復現驗證。Sakura SDK 提供 buildActionWitness() 函式，接受 adapter 返回的 TransactionInstruction，自動抽取 action_type、action_target、action_amount 三個核心欄位，作為 Groth16 電路的 public inputs。" },
-          { step: "2", title: "於瀏覽器生成 Groth16 證明", desc: "SDK 呼叫 generateProof({ witness, privateValues })，透過 snarkjs 於瀏覽器本地生成 Groth16 證明。證明內容只揭示「此動作在已簽邊界內」，不揭示任何策略值。電路強制五項約束：承諾雜湊一致、金額上限、協議白名單、動作類型白名單、USD 上限（以 Pyth 當下價結算）。瀏覽器端耗時約 600ms。" },
+          { step: "1", title: "從 lib/adapters 組裝未簽名 DeFi 指令", desc: "Sakura 內建 4 個 Solana 旗艦協議的 mainnet adapter（lib/adapters/{jito,raydium,kamino,jupiter-lend}.ts）共 12 個動作格子全部產生真 CPI 指令——Jupiter（Swap + Lend/Borrow/Repay/Withdraw）、Raydium（Swap）、Kamino（Lend / Borrow / Repay / Withdraw）、Jito（Stake / Unstake）。任何人皆可執行 npx tsx scripts/verify-{jito,raydium,kamino,jupiter-lend}-adapter.ts 一鍵獨立復現驗證。Sakura SDK 提供 buildActionWitness() 函式，接受 adapter 返回的 TransactionInstruction，自動抽取 action_type、action_target、action_amount 三個核心欄位，作為 Groth16 電路的 public inputs。" },
+          { step: "2", title: "於瀏覽器生成 Groth16 證明", desc: "SDK 呼叫 generateProof({ witness, privateValues })，透過 snarkjs 於瀏覽器本地生成 Groth16 證明。證明內容只揭示「此動作在已簽邊界內」，不揭示任何策略值。電路強制五項約束：承諾雜湊一致、金額上限、協議白名單、動作類型白名單、USD 上限（以 Pyth × Switchboard 中位數結算，跨所偏差 ≤ 100 bps、Pyth slot 於 150 塊新鮮度內）。瀏覽器端耗時約 600ms。" },
           { step: "3", title: "組裝 v0 原子交易 · ZK 閘門與 DeFi 指令同捆", desc: "透過 buildAtomicTx({ proof, defiIx }) 將驗證指令（execute_with_intent_proof）與 DeFi 指令打包至同一筆 Solana v0 交易。兩者共生共滅——若證明驗證失敗或 DeFi 指令失敗，整筆交易回滾。不存在「證明通過但動作懸空」的縫隙。代理每次動作結算 \$0.01，用於覆蓋鏈上驗證成本。" },
           { step: "4", title: "提交 · 於 Solscan 留下審計指紋", desc: "交易提交至 mainnet。成功後，ActionRecord PDA 以 (intent_commitment, action_nonce) 為種子建立，keccak256 動作指紋永久上鏈。Solscan 上，用戶、審計師、對手方皆可獨立還原這次動作——意圖是什麼、證明是否通過、DeFi 指令是什麼、何時落地。Sakura 不持有任何一方的信任，只作為鏈上閘門。" },
         ],
@@ -64,7 +64,7 @@ const CONTENT: Record<Lang, {
           { step: "1", title: "從 Solscan 檢索 ActionRecord PDA", desc: "在 Solscan 搜尋被審計錢包位址，過濾 Sakura program ID（AnszeCRFsBKmT5fBY9WywxGsZZZob8ZPFYqboYXpuYLp）。每一筆 execute_with_intent_proof 交易會建立一個 ActionRecord PDA，以 (intent_commitment, action_nonce) 為種子。下載全部 ActionRecord 帳戶資料——這是該錢包所有代理動作的完整時間軸。" },
           { step: "2", title: "解析 keccak256 動作指紋", desc: "每個 ActionRecord 包含：32 位元組意圖承諾、action_nonce、action_type、action_target、action_amount、landed slot、keccak256 執行指紋。指紋是 (intent, nonce, type, target, amount, slot) 的 keccak256 雜湊——您可以獨立計算並比對，驗證沒有任何事後竄改。" },
           { step: "3", title: "下載公開 verifying key", desc: "Sakura 的 Groth16 verifying key 在合約部署時烘焙進 zk_verifying_key.rs；非重新部署無法更改。您可以從 GitHub（MIT 授權）或直接從已部署的合約帳戶下載 vkey。驗證金鑰的 SHA-256 雜湊應與部署 commit 的 CI artifact 雜湊一致——任何不一致都是紅旗。" },
-          { step: "4", title: "snarkjs 獨立驗證證明", desc: "使用標準 snarkjs（任何版本）對每一筆被審計動作執行 snarkjs.groth16.verify(vkey, publicSignals, proof)。若您重建的 Poseidon 承諾與鏈上儲存的一致、證明通過驗證、且 Pyth slot 在 150 塊新鮮度內——這次動作在數學上確實落在簽署邊界內。審計結論獨立於 Sakura 任何伺服器，亦獨立於任何代理運營方。" },
+          { step: "4", title: "snarkjs 獨立驗證證明", desc: "使用標準 snarkjs（任何版本）對每一筆被審計動作執行 snarkjs.groth16.verify(vkey, publicSignals, proof)。若您重建的 Poseidon 承諾與鏈上儲存的一致、證明通過驗證、Pyth slot 在 150 塊新鮮度內、且 Pyth × Switchboard 跨所中位數偏差 ≤ 100 bps——這次動作在數學上確實落在簽署邊界內。審計結論獨立於 Sakura 任何伺服器，亦獨立於任何代理運營方。對抗性壓力測試已歸檔 15/15 不變式全部成立（docs/bench/2026-04-22-stress.json）。" },
         ],
         risks: [],
       },
@@ -92,7 +92,7 @@ const CONTENT: Record<Lang, {
         subtitle: "How Phantom / Backpack / Abstract / Infinex integrate Sakura",
         intro: "The business case for a wallet integrating Sakura is one line: you avoid the engineering cost of building this layer yourself. It should be solved once, not four times. The first \$10M of integrator notional is rebated; thereafter 0.1% routes automatically to the protocol fee vault. There is no business-development gate, no quota approval, no negotiation. Four steps from SDK install to the user's first signed intent — roughly a week on the engineering calendar, not a quarter.",
         steps: [
-          { step: "1", title: "Install SDK · wire your wallet provider", desc: "yarn add @sakura/solana-sdk. Import the IntentSigner React component and pass in your wallet provider (Phantom, Backpack, OKX — any). The SDK defaults to Solana mainnet-beta; switching to devnet is a single prop. No API key. No OAuth. No registration with Sakura." },
+          { step: "1", title: "Install SDK · wire your wallet provider", desc: "yarn add @sakura/solana-sdk. Import the IntentSigner React component and pass in your wallet provider (Phantom, Backpack, OKX — any). The cluster is a single prop; the program is active on devnet today and moves to mainnet-beta on audit completion. No API key. No OAuth. No registration with Sakura." },
           { step: "2", title: "Render the intent-signing interface", desc: "Drop <IntentSigner /> into your agent-mode settings page. The user writes the agent's bounds in natural language — for instance: \"the agent may lend up to \$500 USDC into Kamino, for one week.\" The SDK parses the sentence into seven policy values (intent text, wallet, nonce, amount cap, USD cap, protocol bitmap, action bitmap). The raw values stay in the browser; they never touch a Sakura server." },
           { step: "3", title: "Sign · anchor the commitment on-chain", desc: "Once the user confirms, the SDK folds the seven values through a two-layer Poseidon tree into a 32-byte commitment and submits sign_intent. The commitment is written to a Program Derived Address seeded by the user's wallet. A one-time 0.1% fee is deducted from the user's approved USDC and routed to the protocol fee vault — rebated for the integrator's first \$10M of notional. From the user's side: a single wallet signature." },
           { step: "4", title: "Audit integration · collect rebate", desc: "Post-integration, your wallet address is registered in Sakura's rebate whitelist; the first \$10M of integrator notional automatically rebates to the USDC address you declared. Beyond that, 0.1% flows into the protocol fee vault (85% operations, 15% platform treasury). Every intent-sign tx leaves a keccak256 fingerprint on Solscan — you, your auditor, your regulator can each reconstruct any transaction independently, without ever calling a Sakura server.",
@@ -106,10 +106,10 @@ const CONTENT: Record<Lang, {
         badgeColor: "#B8932A",
         title: "🤖 Agent Developer",
         subtitle: "How an AI agent generates a Groth16 proof and submits an action",
-        intro: "Before the agent does anything, it must prove the action falls inside the user's signed bounds. The Sakura client generates a Groth16 proof in the user's browser in under 600 ms; the on-chain verifier completes the pairing check in ~116k compute units — roughly \$0.0001 per call. No private policy value is disclosed. Only: this action, in bounds.",
+        intro: "Before the agent does anything, it must prove the action falls inside the user's signed bounds. The Sakura client generates a Groth16 proof in the user's browser in under 600 ms; the on-chain verifier completes the pairing check in ~116k compute units — and the full execute path clocks a measured mean of ~204k CU, roughly \$0.01 per call. No private policy value is disclosed. Only: this action, in bounds. The USD cap settles against the median of Pyth and Switchboard prices in the same transaction, and only if the two oracles sit within 100 bps of each other.",
         steps: [
-          { step: "1", title: "Assemble an unsigned DeFi instruction via lib/adapters", desc: "Sakura ships native mainnet adapters for the four Solana 龙头 (lib/adapters/{jito,raydium,kamino,jupiter-lend}.ts) covering 13 action cells with real on-chain CPI — Jupiter (Swap + Lend × 4), Raydium (Swap), Kamino (Lend / Borrow / Repay / Withdraw), Jito (Stake / Unstake). Anyone can independently reproduce the verifications via npx tsx scripts/verify-{jito,raydium,kamino,jupiter-lend}-adapter.ts. The Sakura SDK provides buildActionWitness() which accepts the adapter's TransactionInstruction and extracts the three core fields required as circuit public inputs: action_type, action_target, action_amount." },
-          { step: "2", title: "Generate the Groth16 proof in-browser", desc: "Call generateProof({ witness, privateValues }). snarkjs generates the Groth16 proof locally. The proof asserts \"this action sits inside the signed commitment\" without revealing any policy value. The circuit enforces five constraints: commitment hash match, amount cap, protocol allowlist, action-type allowlist, USD cap (resolved against live Pyth price). Browser-side generation runs at ~600 ms." },
+          { step: "1", title: "Assemble an unsigned DeFi instruction via lib/adapters", desc: "Sakura ships native mainnet adapters for four flagship Solana protocols (lib/adapters/{jito,raydium,kamino,jupiter-lend}.ts) covering 12 action cells, each producing real on-chain CPI — Jupiter (Swap + Lend/Borrow/Repay/Withdraw), Raydium (Swap), Kamino (Lend / Borrow / Repay / Withdraw), Jito (Stake / Unstake). Anyone can independently reproduce the verifications via npx tsx scripts/verify-{jito,raydium,kamino,jupiter-lend}-adapter.ts. The Sakura SDK provides buildActionWitness() which accepts the adapter's TransactionInstruction and extracts the three core fields required as circuit public inputs: action_type, action_target, action_amount." },
+          { step: "2", title: "Generate the Groth16 proof in-browser", desc: "Call generateProof({ witness, privateValues }). snarkjs generates the Groth16 proof locally. The proof asserts \"this action sits inside the signed commitment\" without revealing any policy value. The circuit enforces five constraints: commitment hash match, amount cap, protocol allowlist, action-type allowlist, USD cap (settled against the median of Pyth and Switchboard, within 100 bps cross-oracle deviation, Pyth slot inside a 150-block freshness window). Browser-side generation runs at ~600 ms." },
           { step: "3", title: "Bundle the v0 atomic transaction", desc: "Call buildAtomicTx({ proof, defiIx }) to bundle the verification instruction (execute_with_intent_proof) and the DeFi instruction into a single Solana v0 transaction. They share a fate: if the proof fails to verify, or if the DeFi instruction itself fails, the entire transaction reverts. There is no gap in which the proof passes while the action hangs mid-flight. Each agent action settles at \$0.01, covering on-chain verification cost." },
           { step: "4", title: "Submit · leave an audit fingerprint on Solscan", desc: "Submit the transaction to mainnet. On success, an ActionRecord PDA is created, seeded by (intent_commitment, action_nonce); a keccak256 fingerprint of the action is anchored on-chain permanently. On Solscan, the user, an auditor, and a counterparty can each independently reconstruct the action — what the intent was, whether the proof passed, what the DeFi instruction was, when it landed. Sakura holds no one's trust; it acts only as an on-chain gate." },
         ],
@@ -121,12 +121,12 @@ const CONTENT: Record<Lang, {
         badgeColor: "#5A7A4A",
         title: "🔍 Auditor / Compliance / Institutional",
         subtitle: "How legal counsel, auditors, and institutional compliance independently verify",
-        intro: "Sakura's value proposition is not \"trust us.\" It is \"you do not need to trust us.\" Every agent action leaves a keccak256 fingerprint on Solana; every intent signing leaves a Poseidon commitment; every Groth16 proof has its public inputs on-chain. You do not need any access to a Sakura server to fully reconstruct the execution path. This is Verifiable Compute at its architectural limit.",
+        intro: "Sakura's value proposition is not \"trust us.\" It is \"you do not need to trust us.\" Every agent action leaves a keccak256 fingerprint on Solana; every intent signing leaves a Poseidon commitment; every Groth16 proof has its public inputs on-chain. You do not need any access to a Sakura server to fully reconstruct the execution path. This is Verifiable Compute, in the strongest form the architecture admits.",
         steps: [
           { step: "1", title: "Retrieve ActionRecord PDAs from Solscan", desc: "On Solscan, search the audited wallet and filter on Sakura's program ID (AnszeCRFsBKmT5fBY9WywxGsZZZob8ZPFYqboYXpuYLp). Each execute_with_intent_proof transaction creates an ActionRecord PDA seeded by (intent_commitment, action_nonce). Download all such account records — this is the complete timeline of agent actions for that wallet." },
           { step: "2", title: "Parse the keccak256 action fingerprint", desc: "Each ActionRecord holds: the 32-byte intent commitment, action_nonce, action_type, action_target, action_amount, landed slot, and a keccak256 execution fingerprint. The fingerprint is the keccak256 hash of (intent, nonce, type, target, amount, slot). You can compute it independently and compare — any discrepancy is evidence of post-hoc tampering." },
           { step: "3", title: "Download the public verifying key", desc: "The Groth16 verifying key is baked into zk_verifying_key.rs at deploy time; it cannot be altered without redeployment. Download the vkey from GitHub (MIT-licensed) or directly from the deployed program account. The vkey's SHA-256 should match the CI artifact hash recorded against the deploy commit — any mismatch is a red flag." },
-          { step: "4", title: "Verify with snarkjs — independently", desc: "Run snarkjs.groth16.verify(vkey, publicSignals, proof) on every audited action using any standard version of snarkjs. If your reconstructed Poseidon commitment matches the one on-chain, the proof verifies, and the Pyth slot is within the 150-block freshness window, then the action mathematically did fall inside the signed bounds. The audit conclusion is independent of any Sakura server and of any agent operator." },
+          { step: "4", title: "Verify with snarkjs — independently", desc: "Run snarkjs.groth16.verify(vkey, publicSignals, proof) on every audited action using any standard version of snarkjs. If your reconstructed Poseidon commitment matches the one on-chain, the proof verifies, the Pyth slot sits within the 150-block freshness window, and the Pyth × Switchboard median deviation is inside 100 bps — then the action mathematically did fall inside the signed bounds. The audit conclusion is independent of any Sakura server, and of any agent operator. The adversarial stress archive (docs/bench/2026-04-22-stress.json) records 15/15 invariants held, every hostile attempt reverted as expected." },
         ],
         risks: [],
       },
@@ -154,7 +154,7 @@ const CONTENT: Record<Lang, {
         subtitle: "Phantom / Backpack / Abstract / Infinex が Sakura を接続する方法",
         intro: "ウォレットが Sakura を接続するビジネス上の動機は、1 つである——この層を自社で構築する工数を省くこと。この問題は一度解かれるべきであり、四度解かれるべきではない。統合者の最初の \$10M 分はリベート、以降は 0.1% の名目額が自動的にプロトコル金庫へ流れる。事業開発交渉、BD プロセス、枠の承認、いずれも存在しない。SDK のインストールから、ユーザーが最初の意図に署名するまで、エンジニアリングカレンダー上はおよそ 1 週間——四半期ではない。",
         steps: [
-          { step: "1", title: "SDK をインストール · ウォレット provider を接続", desc: "yarn add @sakura/solana-sdk。IntentSigner React コンポーネントをインポートし、ウォレット provider（Phantom、Backpack、OKX のいずれでも）を渡す。SDK は既定で Solana mainnet-beta に接続。devnet への切替は 1 つの prop のみ。API キー不要、OAuth 不要、Sakura への登録不要。" },
+          { step: "1", title: "SDK をインストール · ウォレット provider を接続", desc: "yarn add @sakura/solana-sdk。IntentSigner React コンポーネントをインポートし、ウォレット provider（Phantom、Backpack、OKX のいずれでも）を渡す。cluster は 1 つの prop で切り替える——現在、コントラクトは devnet で稼働中、監査完了後に mainnet-beta へ移行する。API キー不要、OAuth 不要、Sakura への登録不要。" },
           { step: "2", title: "意図署名 UI をレンダリング", desc: "エージェントモード設定ページに <IntentSigner /> を配置。ユーザーは、エージェントの動作境界を自然言語で書き下す——たとえば「エージェントは Kamino に、1 回 \$500 USDC、1 週間だけ貸せる」。SDK はこれを 7 つのポリシー値（意図テキスト、ウォレット、ノンス、金額上限、USD 上限、プロトコルビットマップ、アクションビットマップ）に解析する。元の値はブラウザに留まり、Sakura のサーバーには一切届かない。" },
           { step: "3", title: "署名 · コミットメントをオンチェーンに定錨", desc: "ユーザーが確定すると、SDK は 7 つの値を 2 層 Poseidon ツリーで 32 バイトのコミットメントに畳み込み、sign_intent 命令を発行。コミットメントはユーザーのウォレットをシードとする PDA に書き込まれる。名目額の 0.1% の一回限り手数料は、approve された USDC から自動的に控除され、プロトコル金庫へルーティングされる——統合者の最初の \$10M 分は免除。ユーザーの側から見えるのは、ただ 1 回のウォレット署名。" },
           { step: "4", title: "統合監査 · リベートを受領", desc: "統合完了後、貴社ウォレットアドレスは Sakura のリベートホワイトリストに登録される。統合者の最初の \$10M 分は、事前に宣言した USDC アドレスへ自動リベートされる。以降、0.1% はプロトコル金庫に流れる（運営 85%、プラットフォーム 15%）。各意図署名トランザクションは、Solscan 上に keccak256 指紋を残す——貴社、監査人、規制当局は、Sakura のサーバーを経由せずに、任意の 1 件を独立に復元できる。" },
@@ -167,10 +167,10 @@ const CONTENT: Record<Lang, {
         badgeColor: "#B8932A",
         title: "🤖 エージェント開発者",
         subtitle: "AI エージェントが Groth16 証明を生成し、動作を提出する方法",
-        intro: "エージェントが何らかの動作を行う前に、その動作がユーザー署名済みの境界内にあることを証明せねばならない。Sakura クライアントは、ブラウザ内で 600ms 以内に Groth16 証明を生成する。オンチェーン検証器は、ペアリング検証を約 116k CU で完了する——呼び出し 1 回あたりおよそ \$0.0001。プライベートなポリシー値は一切開示されない。開示されるのは、ただ一つの命題——「この動作は、境界内」。",
+        intro: "エージェントが何らかの動作を行う前に、その動作がユーザー署名済みの境界内にあることを証明せねばならない。Sakura クライアントは、ブラウザ内で 600ms 以内に Groth16 証明を生成する。オンチェーン検証器は、ペアリング検証を約 116k CU で完了し、execute 経路全体の実測平均は約 204k CU——呼び出し 1 回あたりおよそ \$0.01。プライベートなポリシー値は一切開示されない。開示されるのは、ただ一つの命題——「この動作は、境界内」。USD 上限は、同一トランザクション内で Pyth × Switchboard の中央値によって決済され、両者の乖離が 100 bps 以内であって初めて通過する。",
         steps: [
-          { step: "1", title: "lib/adapters で未署名 DeFi 命令を組み立てる", desc: "Sakura は Solana の 4 龍頭プロトコル向けのメインネット adapter（lib/adapters/{jito,raydium,kamino,jupiter-lend}.ts）を内蔵しており、計 13 アクションセルすべてが本物の CPI 命令を生成する——Jupiter（Swap + Lend × 4）、Raydium（Swap）、Kamino（Lend / Borrow / Repay / Withdraw）、Jito（Stake / Unstake）。誰でも npx tsx scripts/verify-{jito,raydium,kamino,jupiter-lend}-adapter.ts を実行して独立に再現検証できる。Sakura SDK は buildActionWitness() 関数を提供し、adapter から返される TransactionInstruction を受け取り、回路の public inputs として必要な 3 つのコア欄位——action_type、action_target、action_amount——を自動抽出する。" },
-          { step: "2", title: "ブラウザ内で Groth16 証明を生成", desc: "generateProof({ witness, privateValues }) を呼び出す。snarkjs がブラウザローカルで Groth16 証明を生成する。証明は「この動作は署名済みコミットメントの内側にある」ことだけを主張し、いかなるポリシー値も開示しない。回路が強制する制約は 5 項目——コミットメントハッシュの一致、金額上限、プロトコル許可リスト、動作タイプ許可リスト、USD 上限（Pyth の現行価格に基づく）。ブラウザ側の生成時間は約 600 ms。" },
+          { step: "1", title: "lib/adapters で未署名 DeFi 命令を組み立てる", desc: "Sakura は Solana の旗艦 4 プロトコル向けメインネット adapter（lib/adapters/{jito,raydium,kamino,jupiter-lend}.ts）を内蔵しており、計 12 アクションセルすべてが本物の CPI 命令を生成する——Jupiter（Swap + Lend/Borrow/Repay/Withdraw）、Raydium（Swap）、Kamino（Lend / Borrow / Repay / Withdraw）、Jito（Stake / Unstake）。誰でも npx tsx scripts/verify-{jito,raydium,kamino,jupiter-lend}-adapter.ts を実行して独立に再現検証できる。Sakura SDK は buildActionWitness() 関数を提供し、adapter から返される TransactionInstruction を受け取り、回路の public inputs として必要な 3 つのコア欄位——action_type、action_target、action_amount——を自動抽出する。" },
+          { step: "2", title: "ブラウザ内で Groth16 証明を生成", desc: "generateProof({ witness, privateValues }) を呼び出す。snarkjs がブラウザローカルで Groth16 証明を生成する。証明は「この動作は署名済みコミットメントの内側にある」ことだけを主張し、いかなるポリシー値も開示しない。回路が強制する制約は 5 項目——コミットメントハッシュの一致、金額上限、プロトコル許可リスト、動作タイプ許可リスト、USD 上限（Pyth × Switchboard の中央値で決済、乖離 100 bps 以内、Pyth slot は 150 ブロックの新鮮度内）。ブラウザ側の生成時間は約 600 ms。" },
           { step: "3", title: "v0 アトミックトランザクションに束ねる", desc: "buildAtomicTx({ proof, defiIx }) を呼び出し、検証命令（execute_with_intent_proof）と DeFi 命令を、単一の Solana v0 トランザクションに束ねる。両者は運命を共にする——証明が検証に失敗するか、あるいは DeFi 命令が失敗した場合、トランザクション全体がリバートされる。「証明は通ったが動作は宙に浮いた」という隙間は、存在しない。各エージェント動作は \$0.01 で決済され、オンチェーン検証コストを補填する。" },
           { step: "4", title: "提出 · Solscan に監査指紋を残す", desc: "トランザクションをメインネットに提出する。成功すると、(intent_commitment, action_nonce) をシードとする ActionRecord PDA が作成され、動作の keccak256 指紋がオンチェーンに永久に定錨される。Solscan 上、ユーザー、監査人、取引相手は、各々独立にこの動作を復元できる——意図は何であったか、証明は通過したか、DeFi 命令は何であったか、いつ着地したか。Sakura は誰の信頼も保持しない。オンチェーンのゲートとしてのみ、機能する。" },
         ],
@@ -182,12 +182,12 @@ const CONTENT: Record<Lang, {
         badgeColor: "#5A7A4A",
         title: "🔍 監査 / コンプライアンス / 機関",
         subtitle: "弁護士、監査人、機関コンプライアンスが独立に検証する方法",
-        intro: "Sakura の価値提案は「我々を信じよ」ではない。「我々を信じる必要はない」である。各エージェント動作は、Solana に keccak256 指紋を残す。各意図署名は、Poseidon コミットメントを残す。各 Groth16 証明は、その public inputs をオンチェーンに残す。Sakura のサーバーに一切アクセスせずとも、実行経路は完全に復元できる。これが Verifiable Compute のアーキテクチャ上の最高保証である。",
+        intro: "Sakura の価値提案は「我々を信じよ」ではない。「我々を信じる必要はない」である。各エージェント動作は、Solana に keccak256 指紋を残す。各意図署名は、Poseidon コミットメントを残す。各 Groth16 証明は、その public inputs をオンチェーンに残す。Sakura のサーバーに一切アクセスせずとも、実行経路は完全に復元できる。これが、アーキテクチャの許す最も強い形の Verifiable Compute である。",
         steps: [
           { step: "1", title: "Solscan から ActionRecord PDA を取得", desc: "Solscan で監査対象のウォレットを検索し、Sakura のプログラム ID（AnszeCRFsBKmT5fBY9WywxGsZZZob8ZPFYqboYXpuYLp）でフィルタリングする。各 execute_with_intent_proof トランザクションは、(intent_commitment, action_nonce) をシードとする ActionRecord PDA を作成する。すべての ActionRecord アカウントデータをダウンロードする——これが、当該ウォレットにおけるエージェント動作の完全なタイムラインである。" },
           { step: "2", title: "keccak256 動作指紋を解析", desc: "各 ActionRecord には以下が含まれる：32 バイト意図コミットメント、action_nonce、action_type、action_target、action_amount、着地 slot、keccak256 実行指紋。指紋は、(intent, nonce, type, target, amount, slot) の keccak256 ハッシュである。独立に計算して比較可能——いかなる不一致も、事後改竄の証拠である。" },
           { step: "3", title: "公開 verifying key をダウンロード", desc: "Sakura の Groth16 検証鍵は、デプロイ時に zk_verifying_key.rs に焼き込まれる。再デプロイなしには変更できない。鍵は GitHub（MIT ライセンス）から、あるいはデプロイ済みのプログラムアカウントから直接取得できる。鍵の SHA-256 は、デプロイコミットに対する CI artifact のハッシュと一致するはずである——いかなる不一致も、レッドフラッグである。" },
-          { step: "4", title: "snarkjs で独立に検証", desc: "任意のバージョンの snarkjs を用いて、各監査対象動作について snarkjs.groth16.verify(vkey, publicSignals, proof) を実行する。貴方が再構成した Poseidon コミットメントがオンチェーンのものと一致し、証明が検証を通過し、かつ Pyth slot が 150 ブロックの新鮮度内にあれば——当該動作は数学的に、署名済みの境界内に収まっていた。この監査結論は、Sakura の任意のサーバーから、そしていかなるエージェント運営者からも、独立している。" },
+          { step: "4", title: "snarkjs で独立に検証", desc: "任意のバージョンの snarkjs を用いて、各監査対象動作について snarkjs.groth16.verify(vkey, publicSignals, proof) を実行する。再構成した Poseidon コミットメントがオンチェーンのものと一致し、証明が検証を通過し、Pyth slot が 150 ブロックの新鮮度内にあり、かつ Pyth × Switchboard の中央値乖離が 100 bps 以内に収まっていれば——当該動作は数学的に、署名済みの境界内に収まっていた。この監査結論は、Sakura の任意のサーバーから、そしていかなるエージェント運営者からも、独立している。対抗ストレステストの記録（docs/bench/2026-04-22-stress.json）には、15/15 の不変式がすべて成立し、敵対的試行はすべて期待通りリバートされたことが残されている。" },
         ],
         risks: [],
       },
@@ -221,10 +221,20 @@ export default function DocsPage() {
           </Link>
           <div style={{
             background: "var(--accent-soft)", border: "1px solid var(--accent-mid)",
-            borderRadius: 20, padding: "4px 14px", marginBottom: 20, display: "inline-block",
+            borderRadius: 20, padding: "4px 14px", marginBottom: 10, display: "inline-block",
           }}>
             <span style={{ fontSize: 11, color: "var(--accent)", letterSpacing: "0.15em", fontFamily: "var(--font-mono)" }}>
               {c.badge}
+            </span>
+          </div>
+          <div style={{
+            background: "rgba(184,147,42,0.10)", border: "1px solid rgba(184,147,42,0.35)",
+            borderRadius: 20, padding: "3px 12px", marginBottom: 20, marginLeft: 8, display: "inline-block",
+          }}>
+            <span style={{ fontSize: 10, color: "#B8932A", letterSpacing: "0.14em", fontFamily: "var(--font-mono)" }}>
+              {lang === "zh" ? "◐ DEVNET TODAY · MAINNET AT AUDIT COMPLETION"
+               : lang === "ja" ? "◐ 現在 DEVNET 稼働 · 監査完了後に MAINNET"
+               : "◐ DEVNET TODAY · MAINNET AT AUDIT COMPLETION"}
             </span>
           </div>
           <h1 style={{ fontSize: 32, fontWeight: 300, letterSpacing: "0.06em", fontFamily: "var(--font-heading)", marginBottom: 12 }}>

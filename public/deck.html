@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sakura — Solana's AI Security Layer</title>
+<title>Sakura — Solana's Execution-Bounds Verifier for AI Agents</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;600;700&family=Noto+Sans+JP:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -431,14 +431,14 @@ h2 {
   <div class="slide cover active" id="slide-1">
     <div class="eyebrow">SAKURA · COLOSSEUM FRONTIER HACKATHON 2026</div>
     <h1>
-      <span data-zh="Solana 的" data-en="Solana's" data-ja="Solana の">Solana 的</span><br>
-      <em><span data-zh="AI 安全層" data-en="AI Security Layer" data-ja="AI セキュリティレイヤー">AI 安全層</span></em>
+      <span data-zh="Solana 上，為 AI 代理而建的" data-en="Solana's" data-ja="Solana 上の、AI エージェントのための">Solana 上，為 AI 代理而建的</span><br>
+      <em><span data-zh="執行邊界驗證層" data-en="Execution-Bounds Verifier" data-ja="実行境界検証層">執行邊界驗證層</span></em>
     </h1>
-    <p class="tagline" data-zh="消費者主權，數學為證。" data-en="Consumer sovereignty, enforced by math." data-ja="消費者主権、数学によって証明される。">消費者主權，數學為證。</p>
-    <p class="subtagline" data-zh="四個消費者錢包即將搭載 agent。在那之前，某個代理需要一條無法被運營商推翻的規則。Sakura 就是那條規則。" data-en="Four consumer wallets are about to ship agent mode. Before they do, someone has to render &quot;out of bounds&quot; a mathematical impossibility — not a policy. Sakura is that primitive." data-ja="4つのコンシューマーウォレットがエージェントモードを搭載する。その前に、「境界超過」を政策ではなく数学的不可能性として実装する必要がある。Sakura はその原語だ。">
-      四個消費者錢包即將搭載 agent。在那之前，某個代理需要一條無法被運營商推翻的規則。Sakura 就是那條規則。
+    <p class="tagline" data-zh="為 AI 代理而建。由數學強制執行。" data-en="Built for AI agents. Enforced by math." data-ja="AI エージェントのために造られ、数学が執行する。">為 AI 代理而建。由數學強制執行。</p>
+    <p class="subtagline" data-zh="四個消費者錢包即將搭載代理模式。在那之前，代理之上必須有一層無法被運營商推翻的規則。Sakura 就是那一層——一條在數學上無從構造「越界」的底層原語。" data-en="Four consumer wallets are about to ship agent mode. Before they do, the agent must sit under a rule the operator cannot override. Sakura is that layer — a primitive in which &quot;out of bounds&quot; is not blocked, but mathematically unconstructible." data-ja="4 つのコンシューマーウォレットがエージェントモードを搭載する。その前に、エージェントの上には、運営者が覆せない規則の層が要る。Sakura はその層である——「境界超過」が、阻止されるのではなく、数学的に構築不可能となるプリミティブだ。">
+      四個消費者錢包即將搭載代理模式。在那之前，代理之上必須有一層無法被運營商推翻的規則。Sakura 就是那一層——一條在數學上無從構造「越界」的底層原語。
     </p>
-    <div class="badge">Built on Solana · Claude Sonnet 4.6 · MIT-Licensed Primitive · Colosseum Frontier 2026</div>
+    <div class="badge">Built on Solana · MIT-Licensed Primitive · Devnet Today · Mainnet on Audit Completion · Colosseum Frontier 2026</div>
   </div>
 
   <!-- ══════════════════════════════════════════════════════
@@ -483,7 +483,7 @@ h2 {
   <div class="slide" id="slide-3">
     <div class="section-label" data-zh="時 · 窗口" data-en="時 · WINDOW" data-ja="時 · ウィンドウ">時 · 窗口</div>
     <h2 data-zh="窗口在 2026 年 H1 關閉。" data-en="The window closes in H1 2026." data-ja="ウィンドウは 2026 年 H1 に閉じる。">窗口在 2026 年 H1 關閉。</h2>
-    <p class="subtitle" data-zh="到 2026 年 H1 結束時，四個消費者錢包——Phantom、Backpack、Abstract、Infinex——全部將搭載 agent 模式。Solana DeFi TVL 超過 $4B。5 百萬亞洲散戶，從「簽批每一筆」躍遷到「簽一次意圖，讓代理為我執行」。在那中間，缺失的是強制執行意圖邊界的原語。Sakura 就是那個原語，窗口關閉前必須上線。" data-en="By the end of H1 2026, four consumer wallets — Phantom, Backpack, Abstract, Infinex — will have shipped agent mode. Solana DeFi TVL exceeds $4B. Five million Asian retail users are about to step from &quot;approve every transaction&quot; to &quot;sign once, let the agent execute.&quot; The missing primitive is the one that enforces the intent's boundary. Sakura is that primitive, and it ships before the window closes." data-ja="2026年H1が終わる頃には、4つのコンシューマーウォレット——Phantom、Backpack、Abstract、Infinex——がエージェントモードを搭載する。Solana DeFi TVL は 40 億ドルを超える。500万人のアジアのリテールが「すべての取引を承認する」から「一度意図に署名し、エージェントに実行させる」へ跳躍する。その間に欠けているのは、意図の境界を強制執行する原語だ。Sakura はその原語で、ウィンドウが閉じる前に出荷する。">
+    <p class="subtitle" data-zh="到 2026 年 H1 結束時，四個消費者錢包——Phantom、Backpack、Abstract、Infinex——全部將搭載 agent 模式。Solana DeFi TVL 超過 $4B。5 百萬亞洲散戶，從「簽批每一筆」躍遷到「簽一次意圖，讓代理為我執行」。在那中間，缺失的是強制執行意圖邊界的原語。Sakura 就是那個原語，窗口關閉前必須上線。" data-en="By the end of H1 2026, four consumer wallets — Phantom, Backpack, Abstract, Infinex — will have shipped agent mode. Solana DeFi TVL exceeds $4B. Five million Asian retail users are about to step from &quot;approve every transaction&quot; to &quot;sign once, let the agent execute.&quot; The missing primitive is the one that enforces the intent's boundary. Sakura is that primitive, and it ships before the window closes." data-ja="2026 年 H1 が終わる頃には、4 つのコンシューマーウォレット——Phantom、Backpack、Abstract、Infinex——がエージェントモードを搭載します。Solana DeFi TVL は 40 億ドルを超え、500 万人のアジアのリテールが「すべての取引を承認する」から「一度意図に署名し、エージェントに実行させる」へと飛躍します。その間に欠けているのは、意図の境界を強制する一つのプリミティブ。Sakura は、そのプリミティブです——ウィンドウが閉じる前に出荷します。">
       到 2026 年 H1 結束時，四個消費者錢包——Phantom、Backpack、Abstract、Infinex——全部將搭載 agent 模式。Solana DeFi TVL 超過 $4B。5 百萬亞洲散戶，從「簽批每一筆」躍遷到「簽一次意圖，讓代理為我執行」。在那中間，缺失的是強制執行意圖邊界的原語。Sakura 就是那個原語，窗口關閉前必須上線。
     </p>
 
@@ -525,7 +525,7 @@ h2 {
       <div>
         <p class="subtitle" style="margin-bottom:18px" data-zh="不在錢包 UI——UI 會被四個錢包各自重寫。" data-en="Not the wallet UI — UIs will be rewritten by each of the four wallets." data-ja="ウォレット UI ではない——UI は 4 つのウォレットそれぞれに書き直される。">不在錢包 UI——UI 會被四個錢包各自重寫。</p>
         <p class="subtitle" style="margin-bottom:18px" data-zh="不在推理模型——Claude、GPT、Gemini 會互相壓價到接近零。" data-en="Not the reasoning model — Claude, GPT, Gemini will commoditize each other toward zero." data-ja="推論モデルでもない——Claude、GPT、Gemini は互いにゼロへとコモディティ化する。">不在推理模型——Claude、GPT、Gemini 會互相壓價到接近零。</p>
-        <p class="subtitle" data-zh="不在 DeFi 協議——Kamino、MarginFi、Jupiter 都是高度 commodity。" data-en="Not the DeFi protocol — Kamino, MarginFi, Jupiter are already deeply commoditized." data-ja="DeFi プロトコルでもない——Kamino、MarginFi、Jupiter はすでに深くコモディティ化している。">不在 DeFi 協議——Kamino、MarginFi、Jupiter 都是高度 commodity。</p>
+        <p class="subtitle" data-zh="不在 DeFi 協議——Jupiter、Raydium、Kamino、Jito 四大旗艦協議早已高度同質化。" data-en="Not the DeFi protocol — Jupiter, Raydium, Kamino, Jito, the four flagships, are already deeply commoditised." data-ja="DeFi プロトコルでもない——Jupiter、Raydium、Kamino、Jito という 4 つの旗艦プロトコルは、既に深くコモディティ化している。">不在 DeFi 協議——Jupiter、Raydium、Kamino、Jito 四大旗艦協議早已高度同質化。</p>
       </div>
       <div class="card accent" style="padding:28px">
         <div style="font-size:11px;letter-spacing:3px;color:var(--rose-soft);margin-bottom:14px;font-family:'Noto Serif JP',serif;" data-zh="答案：原語層" data-en="ANSWER: THE PRIMITIVE LAYER" data-ja="答え：原語層">答案：原語層</div>
@@ -548,8 +548,8 @@ h2 {
   <div class="slide" id="slide-5">
     <div class="section-label" data-zh="桜 · 原語" data-en="桜 · SAKURA" data-ja="桜 · 原語">桜 · 原語</div>
     <h2 data-zh="Sakura 是一條在執行之前落位的規則。" data-en="Sakura is a rule that lands before execution." data-ja="Sakura は実行の前に着地する規則。">Sakura 是一條在執行之前落位的規則。</h2>
-    <p class="subtitle" data-zh="用戶用一句話寫下代理的權限範圍。Sakura 把這句話和 6 個私有策略值——錢包、nonce、USD 上限、金額上限、協議白名單、動作白名單——經 Poseidon 樹折合成一個 32-byte 承諾，鏈上簽發。之後每筆代理動作必須附帶一個 Groth16 ZK 證明，證明該動作在簽下的邊界內。驗證由 Solana 的 alt_bn128 配對系統調用原生完成，真實 DeFi 指令在同一筆 v0 交易裡執行——共過或共回滾。" data-en="The user writes the agent's permission boundary in one sentence. Sakura folds that sentence plus six private policy values — wallet, nonce, USD cap, amount cap, protocol whitelist, action whitelist — through a Poseidon tree into a 32-byte commitment and signs it on-chain. Every subsequent agent action must carry a Groth16 ZK proof that the action sits inside the signed bounds. Verification runs on Solana's native alt_bn128 pairing syscall; the real DeFi instruction executes in the same v0 transaction — all pass or all revert." data-ja="ユーザーはエージェントの権限境界を一文で書く。Sakura はその一文と 6 つのプライベートポリシー値——ウォレット、nonce、USDキャップ、金額キャップ、プロトコルホワイトリスト、アクションホワイトリスト——を Poseidon ツリーで 32 バイトのコミットメントに折りたたみ、オンチェーンに署名する。その後、すべてのエージェント動作は Groth16 ZK 証明を伴わなければならない——その動作が署名された境界の内側にあることの証明。検証は Solana のネイティブ alt_bn128 ペアリングシステムコールで走り、実際の DeFi 命令は同じ v0 トランザクション内で実行される——すべて通るか、すべて巻き戻る。">
-      用戶用一句話寫下代理的權限範圍。Sakura 把這句話和 6 個私有策略值——錢包、nonce、USD 上限、金額上限、協議白名單、動作白名單——經 Poseidon 樹折合成一個 32-byte 承諾，鏈上簽發。之後每筆代理動作必須附帶一個 Groth16 ZK 證明，證明該動作在簽下的邊界內。驗證由 Solana 的 alt_bn128 配對系統調用原生完成，真實 DeFi 指令在同一筆 v0 交易裡執行——共過或共回滾。
+    <p class="subtitle" data-zh="用戶用一句話寫下代理的權限範圍。Sakura 把這句話連同七項私有策略值——意圖文本、錢包、nonce、單次金額上限、USD 上限、協議白名單位元圖、動作白名單位元圖——經 Poseidon 樹折疊為一個 32-byte 承諾上鏈。之後每筆代理動作必須附帶一個 Groth16 ZK 證明，證明該動作落在已簽邊界之內；同一筆 Solana v0 原子交易內，Pyth 與 Switchboard 雙預言機取中位數結算 USD 上限，跨所偏差超過 100 bp 即拒絕。驗證由 alt_bn128 配對 syscall 原生完成，真實 DeFi 指令於同一筆交易執行——共過或共回滾。" data-en="The user writes the agent's permission boundary in a single sentence. Sakura folds that sentence together with seven private policy values — intent text, wallet, nonce, per-action cap, USD cap, protocol-allowlist bitmap, action-allowlist bitmap — through a Poseidon tree into a 32-byte commitment anchored on-chain. Every subsequent agent action ships a Groth16 proof that the action sits inside the signed bound; inside the same Solana v0 atomic transaction, Pyth and Switchboard are read together, the USD cap settles against their median, and cross-oracle deviation exceeding 100 bps rejects the action. Verification runs natively on the alt_bn128 pairing syscall; the real DeFi instruction executes in the same transaction — all pass or all revert." data-ja="ユーザーはエージェントの権限境界を 1 文で書き下ろす。Sakura は、その 1 文と 7 つのプライベートポリシー値——意図テキスト、ウォレット、nonce、1 回あたりの上限、USD 上限、プロトコル許可リストのビットマップ、アクション許可リストのビットマップ——を、Poseidon ツリーで 32 バイトのコミットメントへと畳み込み、オンチェーンに定錨する。以後、すべてのエージェント動作は、署名済み境界の内側に収まることを示す Groth16 証明を伴う。同一の Solana v0 アトミックトランザクション内で、Pyth と Switchboard から価格を同時に読み、その中央値で USD 上限を決済し、乖離が 100 bps を超えれば拒絶される。検証は alt_bn128 ペアリング syscall によってネイティブに行われ、実際の DeFi 命令は同じトランザクション内で実行される——すべて通るか、すべて巻き戻る。">
+      用戶用一句話寫下代理的權限範圍。Sakura 把這句話連同七項私有策略值——意圖文本、錢包、nonce、單次金額上限、USD 上限、協議白名單位元圖、動作白名單位元圖——經 Poseidon 樹折疊為一個 32-byte 承諾上鏈。之後每筆代理動作必須附帶一個 Groth16 ZK 證明，證明該動作落在已簽邊界之內；同一筆 Solana v0 原子交易內，Pyth 與 Switchboard 雙預言機取中位數結算 USD 上限，跨所偏差超過 100 bp 即拒絕。驗證由 alt_bn128 配對 syscall 原生完成，真實 DeFi 指令於同一筆交易執行——共過或共回滾。
     </p>
 
     <div class="feature-card">
@@ -610,14 +610,21 @@ h2 {
         <div class="icon">③</div>
         <div class="content">
           <h4>alt_bn128 syscall</h4>
-          <p data-zh="~130k CU in-program verify。不用獨立 verifier 程式，不用 CPI 中介。直接調用 Solana runtime 原生系統調用。" data-en="~130k CU in-program verify. No standalone verifier program, no CPI intermediary. Directly calls Solana runtime's native syscall." data-ja="~130k CU の in-program 検証。独立 verifier プログラム不要、CPI 仲介不要。Solana runtime のネイティブ syscall を直接呼び出す。">~130k CU in-program verify。不用獨立 verifier 程式，不用 CPI 中介。直接調用 Solana runtime 原生系統調用。</p>
+          <p data-zh="配對驗證 ~116k CU（alt_bn128 原生 syscall，無獨立 verifier 程式、無 CPI 中介）；整條 execute_with_intent_proof 路徑實測均值 ~204k CU。" data-en="Pairing check ~116k CU (native alt_bn128 syscall — no standalone verifier program, no CPI intermediary). Full execute_with_intent_proof path: measured mean ~204k CU." data-ja="ペアリング検証 ~116k CU（ネイティブ alt_bn128 syscall。独立 verifier プログラム不要、CPI 仲介不要）。execute_with_intent_proof 経路全体の実測平均は ~204k CU。">配對驗證 ~116k CU（alt_bn128 原生 syscall，無獨立 verifier 程式、無 CPI 中介）；整條 execute_with_intent_proof 路徑實測均值 ~204k CU。</p>
         </div>
       </div>
       <div class="tech-item">
         <div class="icon">④</div>
         <div class="content">
+          <h4>Pyth ∩ Switchboard</h4>
+          <p data-zh="同一筆交易內讀取 Pyth + Switchboard 雙預言機，取中位數結算 USD 上限。跨所偏差 ≤ 100 bp 方放行；Pyth 讀取另於 150 塊新鮮度窗口內。價格被單側操縱即拒絕。" data-en="Both Pyth and Switchboard read inside the same transaction; the USD cap settles against their median. The action passes only if cross-oracle deviation stays within 100 bps, and the Pyth reading falls inside a 150-block freshness window. Single-oracle manipulation reverts the action." data-ja="同一トランザクション内で Pyth と Switchboard の双方を読み取り、USD 上限はその中央値で決済。乖離が 100 bps 以内で、かつ Pyth 読取が 150 ブロックの新鮮度窓内のときのみ通過。片側のオラクルが操作された場合、動作はリバート。">同一筆交易內讀取 Pyth + Switchboard 雙預言機，取中位數結算 USD 上限。跨所偏差 ≤ 100 bp 方放行；Pyth 讀取另於 150 塊新鮮度窗口內。價格被單側操縱即拒絕。</p>
+        </div>
+      </div>
+      <div class="tech-item">
+        <div class="icon">⑤</div>
+        <div class="content">
           <h4>v0 tx · atomic</h4>
-          <p data-zh="驗證 + DeFi 指令綁在同一筆 v0 tx。總 CU ~500k，在 Solana 1.4M per-tx 上限內有 10× 餘量。" data-en="Verify + DeFi instruction bound in one v0 tx. Total ~500k CU, 10× headroom within Solana's 1.4M per-tx ceiling." data-ja="検証 + DeFi 命令を同一 v0 tx に束ねる。合計 ~500k CU、Solana の 1.4M per-tx 上限内に 10× の余裕。">驗證 + DeFi 指令綁在同一筆 v0 tx。總 CU ~500k，在 Solana 1.4M per-tx 上限內有 10× 餘量。</p>
+          <p data-zh="ZK 閘門 + 雙預言機閘門 + DeFi 指令同處一筆 v0 原子交易。任一閘門失敗，整筆回滾。1,909 非線性約束、pot11 受信設置、對抗性壓測 15/15 不變式全部成立。" data-en="The ZK gate, the dual-oracle gate, and the DeFi instruction share one v0 atomic transaction. Any gate failure reverts the whole. 1,909 non-linear constraints, pot11 trusted setup, adversarial stress archive: 15/15 invariants held." data-ja="ZK ゲート、双予言機ゲート、DeFi 命令は 1 つの v0 アトミックトランザクションの中に同居する。いずれかのゲートが失敗すれば、全体がリバートする。非線形制約 1,909、pot11 信頼セットアップ、対抗ストレステストの記録では 15/15 の不変式がすべて成立。">ZK 閘門 + 雙預言機閘門 + DeFi 指令同處一筆 v0 原子交易。任一閘門失敗，整筆回滾。1,909 非線性約束、pot11 受信設置、對抗性壓測 15/15 不變式全部成立。</p>
         </div>
       </div>
     </div>
@@ -635,7 +642,7 @@ h2 {
        ══════════════════════════════════════════════════════ -->
   <div class="slide" id="slide-7">
     <div class="section-label" data-zh="四神 · 四守護" data-en="四神 · FOUR GUARDIANS" data-ja="四神 · 四守護">四神 · 四守護</div>
-    <h2 data-zh="四個原語，每一個回答一個運營商信任假設。" data-en="Four primitives, each answering one operator-trust assumption." data-ja="4 つの原語、それぞれ 1 つの運営者信頼前提に応える。">四個原語，每一個回答一個運營商信任假設。</h2>
+    <h2 data-zh="四個原語，每一個撤銷一條運營商信任假設。" data-en="Four primitives, each retiring one operator-trust assumption." data-ja="4 つのプリミティブ、それぞれが 1 つの運営者信頼前提を退ける。">四個原語，每一個撤銷一條運營商信任假設。</h2>
 
     <div class="cards col-4" style="margin-top:26px">
       <div class="card">
@@ -655,13 +662,13 @@ h2 {
       </div>
       <div class="card">
         <div class="kanji-mark">価</div>
-        <h3 data-zh="Payment Rail" data-en="Payment Rail" data-ja="ペイメントレール">Payment Rail</h3>
-        <p data-zh="x402 + Stripe MPP 雙通道。每次 intent-signed action $0.01。無訂閱、無賬戶、無託管。" data-en="x402 + Stripe MPP dual rail. $0.01 per intent-signed action. No subscription, no account, no custody." data-ja="x402 + Stripe MPP のデュアルレール。intent-signed アクションごとに $0.01。サブスク不要、アカウント不要、カストディ不要。">x402 + Stripe MPP 雙通道。每次 intent-signed action $0.01。無訂閱、無賬戶、無託管。</p>
+        <h3 data-zh="x402 Payment Rail" data-en="x402 Payment Rail" data-ja="x402 ペイメントレール">x402 Payment Rail</h3>
+        <p data-zh="一次簽發意圖收名義金額 0.1%（首 $10M 整合量免收、單次硬封頂 $1,000），代理動作每次 $0.01，MCP 呼叫每次 $1 USDC，全部鏈上原子結算。無訂閱、無賬戶、無託管。" data-en="One-time 0.1% on notional per intent sign (first $10M integrator volume rebated, capped at $1,000), $0.01 per agent action, $1 USDC per MCP call — all settled atomically on-chain. No subscription, no account, no custody." data-ja="意図 1 回の署名につき名目額の 0.1%（統合者最初の $10M リベート、1 回あたり $1,000 上限）、エージェント動作 1 回あたり $0.01、MCP 呼び出し 1 回あたり $1 USDC——すべてオンチェーンでアトミックに決済。サブスク不要、アカウント不要、カストディ不要。">一次簽發意圖收名義金額 0.1%（首 $10M 整合量免收、單次硬封頂 $1,000），代理動作每次 $0.01，MCP 呼叫每次 $1 USDC，全部鏈上原子結算。無訂閱、無賬戶、無託管。</p>
       </div>
     </div>
 
     <div class="quote-block">
-      <p data-zh="四個原語不是四個功能，是四個運營商信任假設的撤銷。每撤銷一個，消費者主權往下紮一層。" data-en="Four primitives are not four features — they are four operator-trust assumptions revoked. Each revocation roots consumer sovereignty one layer deeper." data-ja="4 つの原語は 4 つの機能ではない——撤回された 4 つの運営者信頼前提だ。撤回するたびに、消費者主権はもう一層深く根を張る。">四個原語不是四個功能，是四個運營商信任假設的撤銷。每撤銷一個，消費者主權往下紮一層。</p>
+      <p data-zh="四個原語不是四個功能，而是四條運營商信任假設的撤銷。每撤銷一條，消費者主權便往下紮一層。" data-en="Four primitives are not four features — they are four operator-trust assumptions retired. Each retirement roots consumer sovereignty one layer deeper." data-ja="4 つのプリミティブは、4 つの機能ではありません——退けられた 4 つの運営者信頼前提です。ひとつ退けるたびに、消費者主権はもう一層、深く根を張ります。">四個原語不是四個功能，而是四條運營商信任假設的撤銷。每撤銷一條，消費者主權便往下紮一層。</p>
     </div>
 
     <div class="watermark">SAKURA · 2026</div>
@@ -673,9 +680,9 @@ h2 {
        ══════════════════════════════════════════════════════ -->
   <div class="slide" id="slide-8">
     <div class="section-label" data-zh="堀 · 護城河" data-en="堀 · MOAT" data-ja="堀 · モート">堀 · 護城河</div>
-    <h2 data-zh="不是錢包。不是模型。是原語。" data-en="Not a wallet. Not a model. A primitive." data-ja="ウォレットでもモデルでもない。原語だ。">不是錢包。不是模型。是原語。</h2>
-    <p class="subtitle" data-zh="Sakura 是 MIT 授權的鏈上原語，不是產品包裝。四個錢包都可以直接集成。任何 Solana DeFi 協議都可以 CPI。任何 AI agent（Claude、GPT、Gemini）都可以作為 intent-signer 客戶端。我們不跟 Phantom 競爭，我們讓 Phantom 更安全；不跟 Claude 競爭，我們讓 Claude 在邊界內行動；不跟 Kamino 競爭，我們讓 Kamino 被代理安全調用。" data-en="Sakura is an MIT-licensed on-chain primitive, not a product skin. All four wallets can integrate directly. Any Solana DeFi protocol can CPI in. Any AI agent (Claude, GPT, Gemini) can be the intent-signer client. We don't compete with Phantom — we make Phantom safer. Not Claude — we let Claude act inside a bound. Not Kamino — we let Kamino be safely agent-invoked." data-ja="Sakura は MIT ライセンスのオンチェーン原語であり、プロダクトスキンではない。4 つのウォレットはすべて直接統合できる。あらゆる Solana DeFi プロトコルが CPI で接続できる。あらゆる AI エージェント（Claude、GPT、Gemini）が intent-signer クライアントになれる。我々は Phantom と競争しない——Phantom をより安全にする。Claude とも——Claude が境界の中で動作できるようにする。Kamino とも——Kamino がエージェントから安全に呼び出せるようにする。">
-      Sakura 是 MIT 授權的鏈上原語，不是產品包裝。四個錢包都可以直接集成。任何 Solana DeFi 協議都可以 CPI。任何 AI agent（Claude、GPT、Gemini）都可以作為 intent-signer 客戶端。我們不跟 Phantom 競爭，我們讓 Phantom 更安全；不跟 Claude 競爭，我們讓 Claude 在邊界內行動；不跟 Kamino 競爭，我們讓 Kamino 被代理安全調用。
+    <h2 data-zh="不是錢包。不是模型。是原語。" data-en="Not a wallet. Not a model. A primitive." data-ja="ウォレットでもモデルでもない。プリミティブです。">不是錢包。不是模型。是原語。</h2>
+    <p class="subtitle" data-zh="Sakura 是 MIT 授權的鏈上原語，不是產品皮殼。四家錢包皆可直接整合；任一 Solana DeFi 協議皆可 CPI 接入；任一 AI 代理（Claude、GPT、Gemini）皆可作為 intent-signer 客戶端。我們不與 Phantom 競爭——我們讓 Phantom 更安全；不與 Claude 競爭——我們讓 Claude 在邊界內行動；不與 Kamino 競爭——我們讓 Kamino 被代理安全調用。" data-en="Sakura is an MIT-licensed on-chain primitive, not a product skin. All four wallets can integrate directly; any Solana DeFi protocol can CPI in; any AI agent (Claude, GPT, Gemini) can be the intent-signer client. We do not compete with Phantom — we make Phantom safer. Not Claude — we let Claude act inside a bound. Not Kamino — we let Kamino be safely agent-invoked." data-ja="Sakura は MIT ライセンスのオンチェーン・プリミティブであり、プロダクトの外皮ではありません。4 つのウォレットはすべて直接統合でき、あらゆる Solana DeFi プロトコルが CPI で接続でき、あらゆる AI エージェント（Claude、GPT、Gemini）が intent-signer クライアントになれます。私たちは Phantom と競合しません——Phantom をより安全にします。Claude とも競合しません——Claude が境界の内側で動作できるようにします。Kamino とも競合しません——Kamino がエージェントから安全に呼び出せるようにします。">
+      Sakura 是 MIT 授權的鏈上原語，不是產品皮殼。四家錢包皆可直接整合；任一 Solana DeFi 協議皆可 CPI 接入；任一 AI 代理（Claude、GPT、Gemini）皆可作為 intent-signer 客戶端。我們不與 Phantom 競爭——我們讓 Phantom 更安全；不與 Claude 競爭——我們讓 Claude 在邊界內行動；不與 Kamino 競爭——我們讓 Kamino 被代理安全調用。
     </p>
 
     <table class="comp-table">
@@ -725,7 +732,7 @@ h2 {
     </div>
 
     <div class="quote-block" style="margin-top:14px;background:rgba(192,57,43,0.06)">
-      <p data-zh="<b>原語可被任何 Solana DeFi 龍頭調用——已驗證。</b><br>4 個龍頭 × 13 個動作 mainnet CPI 全綠：Jupiter (Swap+Lend×4) · Raydium · Kamino × 4 · Jito × 2。<code style=&quot;background:rgba(0,0,0,0.06);padding:2px 6px;border-radius:3px;font-size:0.92em&quot;>npx tsx scripts/verify-*-adapter.ts</code> 任何人可獨立復現。" data-en="<b>The primitive plugs into any top Solana DeFi protocol — verified.</b><br>4 leaders × 13 actions, real mainnet CPI all green: Jupiter (Swap+Lend×4) · Raydium · Kamino × 4 · Jito × 2. Reproduce independently with <code style=&quot;background:rgba(0,0,0,0.06);padding:2px 6px;border-radius:3px;font-size:0.92em&quot;>npx tsx scripts/verify-*-adapter.ts</code>." data-ja="<b>原語はあらゆる Solana DeFi の龍頭プロトコルに接続可能——検証済み。</b><br>4 つの龍頭 × 13 アクション、メインネット CPI すべてグリーン：Jupiter (Swap+Lend×4) · Raydium · Kamino × 4 · Jito × 2。<code style=&quot;background:rgba(0,0,0,0.06);padding:2px 6px;border-radius:3px;font-size:0.92em&quot;>npx tsx scripts/verify-*-adapter.ts</code> で独立に再現可能。"><b>原語可被任何 Solana DeFi 龍頭調用——已驗證。</b><br>4 個龍頭 × 13 個動作 mainnet CPI 全綠：Jupiter (Swap+Lend×4) · Raydium · Kamino × 4 · Jito × 2。<code style="background:rgba(0,0,0,0.06);padding:2px 6px;border-radius:3px;font-size:0.92em">npx tsx scripts/verify-*-adapter.ts</code> 任何人可獨立復現。</p>
+      <p data-zh="<b>原語可被任何 Solana DeFi 旗艦協議調用——已驗證。</b><br>4 個旗艦協議 × 12 個動作格，mainnet CPI 全綠：Jupiter（Swap + Lend/Borrow/Repay/Withdraw）· Raydium（Swap）· Kamino × 4 · Jito × 2。<code style=&quot;background:rgba(0,0,0,0.06);padding:2px 6px;border-radius:3px;font-size:0.92em&quot;>npx tsx scripts/verify-*-adapter.ts</code> 任何人可獨立復現。" data-en="<b>The primitive plugs into any flagship Solana DeFi protocol — verified.</b><br>Four flagships × 12 action cells, real mainnet CPI, all green: Jupiter (Swap + Lend/Borrow/Repay/Withdraw) · Raydium (Swap) · Kamino × 4 · Jito × 2. Reproduce independently: <code style=&quot;background:rgba(0,0,0,0.06);padding:2px 6px;border-radius:3px;font-size:0.92em&quot;>npx tsx scripts/verify-*-adapter.ts</code>." data-ja="<b>プリミティブはあらゆる Solana DeFi の旗艦プロトコルに接続可能——検証済み。</b><br>4 つの旗艦 × 12 アクションセル、メインネット CPI すべてグリーン：Jupiter（Swap + Lend/Borrow/Repay/Withdraw）· Raydium（Swap）· Kamino × 4 · Jito × 2。<code style=&quot;background:rgba(0,0,0,0.06);padding:2px 6px;border-radius:3px;font-size:0.92em&quot;>npx tsx scripts/verify-*-adapter.ts</code> で独立に再現可能。"><b>原語可被任何 Solana DeFi 旗艦協議調用——已驗證。</b><br>4 個旗艦協議 × 12 個動作格，mainnet CPI 全綠：Jupiter（Swap + Lend/Borrow/Repay/Withdraw）· Raydium（Swap）· Kamino × 4 · Jito × 2。<code style="background:rgba(0,0,0,0.06);padding:2px 6px;border-radius:3px;font-size:0.92em">npx tsx scripts/verify-*-adapter.ts</code> 任何人可獨立復現。</p>
     </div>
 
     <div class="watermark">SAKURA · 2026</div>
@@ -737,22 +744,19 @@ h2 {
        ══════════════════════════════════════════════════════ -->
   <div class="slide" id="slide-9">
     <div class="section-label" data-zh="算 · TAM" data-en="算 · CEILING" data-ja="算 · TAM">算 · TAM</div>
-    <h2 data-zh="$4B Solana DeFi TVL × 策略強制執行。" data-en="$4B Solana DeFi TVL × policy-enforced execution." data-ja="40 億ドル Solana DeFi TVL × ポリシー強制執行。">$4B Solana DeFi TVL × 策略強制執行。</h2>
+    <h2 data-zh="$4B × 4 × 0.1% — Y1 路由費上限。" data-en="$4B × 4 × 0.1% — Y1 routing-fee ceiling." data-ja="$4B × 4 × 0.1%——Y1 ルーティング手数料の上限。">$4B × 4 × 0.1% — Y1 路由費上限。</h2>
 
-    <div class="tam-compute"><span class="tc-num">$4B</span>    <span data-zh="Solana DeFi TVL，代理可達" data-en="Solana DeFi TVL reachable via agents" data-ja="エージェント経由で到達可能な Solana DeFi TVL">Solana DeFi TVL, reachable via agents</span>
- <span class="tc-line">×</span>  <span class="tc-num">4</span>    <span data-zh="消費者錢包 H1 2026 出貨 agent 模式" data-en="consumer wallets shipping agent mode, H1 2026" data-ja="2026H1 にエージェントモードを出荷するコンシューマーウォレット">consumer wallets shipping agent mode, H1 2026</span>
- <span class="tc-line">×</span>  <span class="tc-num">10%</span>  <span data-zh="動作需要代理邊界的比例" data-en="fraction of actions requiring agent-bound policy" data-ja="エージェント境界ポリシーが必要な動作の割合">fraction of actions requiring agent-bound policy</span>
- <span class="tc-line">×</span>  <span class="tc-num">0.25%</span>  <span data-zh="策略強制執行抽成（Y1 保守）" data-en="take on policy-enforced action notional (Y1)" data-ja="ポリシー強制執行アクション想定元本取分（Y1）">take on policy-enforced action notional (Y1)</span>
+    <div class="tam-compute"><span class="tc-num">$4B</span>    <span data-zh="Solana DeFi 中，代理可達的 TVL" data-en="Solana DeFi TVL reachable via agents" data-ja="エージェント経由で到達可能な Solana DeFi の TVL">Solana DeFi TVL reachable via agents</span>
+ <span class="tc-line">×</span>  <span class="tc-num">4</span>    <span data-zh="2026 H1 出貨代理模式的主流錢包數" data-en="major wallets shipping agent mode, H1 2026" data-ja="2026H1 に代理モードを出荷する主要ウォレット数">major wallets shipping agent mode, H1 2026</span>
+ <span class="tc-line">×</span>  <span class="tc-num">0.1%</span>  <span data-zh="整合量超過首 $10M（rebate）後之路由費" data-en="routing fee on integrator notional beyond first $10M (rebated)" data-ja="統合量 $10M（リベート）以降に適用するルーティング手数料">routing fee on integrator notional beyond first $10M (rebated)</span>
  <span class="tc-line">────────────</span>
-<span class="tc-num">≈ $40M</span>   <span data-zh="Y1 在 Sakura 原語上的年化" data-en="annualized on the Sakura primitive, Y1" data-ja="Sakura 原語上の年換算、Y1">annualized on the Sakura primitive, Y1</span>
+<span class="tc-num">$4M–12M</span>   <span data-zh="Y1 路由費年化上限（僅路由；未計入 x402 與保險池浮存金）" data-en="Y1 routing-fee ARR ceiling (routing only; excludes x402 settlement and insurance-pool float)" data-ja="Y1 ルーティング手数料 ARR 上限（ルーティングのみ；x402 決済および保険プールのフロートは含まない）">Y1 routing-fee ARR ceiling (routing only)</span>
 
-<span class="tc-line">+</span>  <span class="tc-num">$0.01</span>  <span data-zh="每次 intent-signed action（x402 / MPP）" data-en="per intent-signed action (x402 / MPP)" data-ja="intent-signed アクションごと（x402 / MPP）">per intent-signed action (x402 / MPP)</span>
- <span class="tc-line">×</span>  <span class="tc-num">100M</span>   <span data-zh="次/年 @ 代理動作基線 10%" data-en="actions/year @ 10% of 1B agent-action baseline" data-ja="年間アクション数（10億のエージェントアクションベースラインの 10%）">actions/year @ 10% of 1B agent-action baseline</span>
- <span class="tc-line">────────────</span>
-<span class="tc-num">≈ $1M</span>    <span data-zh="Y1 per-call 收入下限" data-en="Y1 per-call revenue floor" data-ja="Y1 コール単価収益フロア">Y1 per-call revenue floor</span></div>
+<span class="tc-line">+</span>  <span class="tc-num">$0.01</span>  <span data-zh="× 代理動作／次（on-chain verify 成本覆蓋）" data-en="× per verified agent action (covers on-chain verification cost)" data-ja="× 検証済みエージェント動作 1 回あたり（オンチェーン検証コスト補填）">× per verified agent action</span>
+ <span class="tc-line">+</span>  <span class="tc-num">$1</span>   <span data-zh="USDC × 每次 x402 MCP 呼叫（HTTP 402 原子結算）" data-en="USDC × per x402 MCP call (HTTP 402, atomic settlement)" data-ja="USDC × x402 MCP 呼び出し 1 回あたり（HTTP 402 原子決済）">USDC × per x402 MCP call</span></div>
 
-    <p class="tam-note" data-zh="以上是 Y1 保守估算。市場穿透 25%、協議費 0.5%，Y3 TAM 觸達 $400M+。這是一個隨著每個錢包發佈 agent 模式而線性擴張的市場——四個錢包不是四個客戶，是四個分發渠道。" data-en="These are Y1 conservative estimates. At 25% market penetration and 0.5% protocol fee, Y3 TAM reaches $400M+. This is a market that expands linearly as each wallet ships agent mode — the four wallets aren't four customers, they're four distribution rails." data-ja="これは Y1 の保守的な推定。市場浸透 25%、プロトコル手数料 0.5% で、Y3 TAM は 4 億ドル超。これは各ウォレットがエージェントモードを出荷するごとに線形に拡大する市場だ——4 つのウォレットは 4 つの顧客ではなく、4 つの分配レールだ。">
-      以上是 Y1 保守估算。市場穿透 25%、協議費 0.5%，Y3 TAM 觸達 $400M+。這是一個隨著每個錢包發佈 agent 模式而線性擴張的市場——四個錢包不是四個客戶，是四個分發渠道。
+    <p class="tam-note" data-zh="以上是 Y1 路由費的純計算上限。此算式不依賴於兩百家代理 DeFi 應用中誰能活下來——成立的條件只有一個，即驗證層被呼叫；至於誰呼叫，不問。錢包每新增一家上線代理模式，驗證層的分母同步放大——四家錢包不是四個客戶，是四條分發軌道。" data-en="This is the Y1 routing-fee ceiling, arithmetic only. The calculation does not turn on which of the two hundred agentic-DeFi applications survives — it holds on one condition, and one only: that the verifier layer is called. It does not ask who calls. Each additional wallet shipping agent mode enlarges the denominator — four wallets are not four customers, they are four distribution rails." data-ja="これは Y1 のルーティング手数料における、純粋な算術上限である。この計算は、二百ものエージェント DeFi アプリのどれが生き残るかには依存しない。成立の条件はただ一つ——検証層が呼び出されること。誰が呼び出すか、そこは問わない。ウォレットが 1 社代理モードを出荷するたびに、検証層の分母は同期的に拡大する——4 社のウォレットは 4 人の顧客ではなく、4 本の分配レールだ。">
+      以上是 Y1 路由費的純計算上限。此算式不依賴於兩百家代理 DeFi 應用中誰能活下來——成立的條件只有一個，即驗證層被呼叫；至於誰呼叫，不問。錢包每新增一家上線代理模式，驗證層的分母同步放大——四家錢包不是四個客戶，是四條分發軌道。
     </p>
 
     <div class="watermark">SAKURA · 2026</div>
@@ -770,23 +774,23 @@ h2 {
     </p>
 
     <div class="price-grid">
-      <div class="price-card">
-        <span class="price-icon">✍️</span>
-        <h3 data-zh="Intent Signing" data-en="Intent Signing" data-ja="Intent 署名">Intent Signing</h3>
-        <span class="price-num">$0.01</span>
-        <p data-zh="每次意圖簽發。x402 機器支付，鏈上結算。" data-en="Per intent signature. x402 machine payment, on-chain settlement." data-ja="意図署名ごと。x402 マシン決済、オンチェーン決済。">每次意圖簽發。x402 機器支付，鏈上結算。</p>
-      </div>
       <div class="price-card highlight">
-        <span class="price-icon">⛩️</span>
-        <h3 data-zh="Policy Enforcement" data-en="Policy Enforcement" data-ja="ポリシー強制">Policy Enforcement</h3>
-        <span class="price-num">0.25%</span>
-        <p data-zh="每筆強制執行動作的名目值抽成。收 Kamino / Jupiter / Marinade 這一側，不收用戶。" data-en="Take on notional of each enforced action. Charged protocol-side (Kamino / Jupiter / Marinade), not user-side." data-ja="各強制執行アクションの想定元本に対する取分。プロトコル側（Kamino / Jupiter / Marinade）から徴収、ユーザーからではない。">每筆強制執行動作的名目值抽成。收 Kamino / Jupiter / Marinade 這一側，不收用戶。</p>
+        <span class="price-icon">✍️</span>
+        <h3 data-zh="Intent Signing" data-en="Intent Signing" data-ja="意図署名">Intent Signing</h3>
+        <span class="price-num">0.1%</span>
+        <p data-zh="一次性，於名義金額收取，鏈上原子結算。整合者前 $10M 整合量免收（rebate）。無論名義金額多寡，單次簽發硬封頂 $1,000。無賬號、無商務談判、無訂閱。" data-en="One-time on notional, settled on-chain. First $10M of integrator volume rebated. Absolute cap of $1,000 per sign, regardless of notional. No account, no BD gate, no subscription." data-ja="名目額に対して 1 回限り徴収、オンチェーンで決済。統合者の最初の $10M 分はリベート。名目額の如何を問わず、1 回の署名につき絶対上限 $1,000。アカウント不要、事業開発交渉不要、サブスクリプション不要。">一次性，於名義金額收取，鏈上原子結算。整合者前 $10M 整合量免收（rebate）。無論名義金額多寡，單次簽發硬封頂 $1,000。無賬號、無商務談判、無訂閱。</p>
       </div>
       <div class="price-card">
-        <span class="price-icon">💱</span>
-        <h3 data-zh="Stripe MPP 法幣橋" data-en="Stripe MPP Fiat Bridge" data-ja="Stripe MPP 法定通貨橋">Stripe MPP 法幣橋</h3>
-        <span class="price-num">0.5%</span>
-        <p data-zh="法幣結算時的 MPP 通道費。僅當代理行為觸發法幣支付路徑時才產生。" data-en="MPP bridge fee when fiat settlement is required. Incurred only when the agent action triggers a fiat-pay path." data-ja="法定通貨決済時の MPP ブリッジ手数料。エージェント動作が法定通貨支払い経路をトリガーする場合にのみ発生。">法幣結算時的 MPP 通道費。僅當代理行為觸發法幣支付路徑時才產生。</p>
+        <span class="price-icon">🤖</span>
+        <h3 data-zh="Agent Action" data-en="Agent Action" data-ja="エージェント動作">Agent Action</h3>
+        <span class="price-num">$0.01</span>
+        <p data-zh="每一次 ZK + 雙預言機驗證通過的代理動作扣 $0.01，覆蓋鏈上驗證成本。代理若無動作，用戶不付任何費用。" data-en="Charged per agent action that clears both the ZK gate and the dual-oracle gate — covers the on-chain verification cost. No action, no fee." data-ja="ZK ゲートと双予言機ゲートを通過したエージェント動作 1 回あたりに課金——オンチェーン検証コストを補填する。動作がなければ、課金はない。">每一次 ZK + 雙預言機驗證通過的代理動作扣 $0.01，覆蓋鏈上驗證成本。代理若無動作，用戶不付任何費用。</p>
+      </div>
+      <div class="price-card">
+        <span class="price-icon">📮</span>
+        <h3 data-zh="x402 MCP Call" data-en="x402 MCP Call" data-ja="x402 MCP 呼び出し">x402 MCP Call</h3>
+        <span class="price-num">$1 USDC</span>
+        <p data-zh="每次 /api/mcp 端點的工具呼叫，透過 HTTP 402 協議結算。Claude Desktop、Cursor、VS Code 或任意 MCP 客戶端皆可——認證即支付。" data-en="Per tool call to the /api/mcp endpoint, settled via the HTTP 402 protocol. Claude Desktop, Cursor, VS Code, or any MCP-compatible client — authentication is payment." data-ja="/api/mcp エンドポイントへのツール呼び出し 1 回あたり、HTTP 402 プロトコルで決済。Claude Desktop、Cursor、VS Code、あるいは任意の MCP 互換クライアント——認証そのものが決済。">每次 /api/mcp 端點的工具呼叫，透過 HTTP 402 協議結算。Claude Desktop、Cursor、VS Code 或任意 MCP 客戶端皆可——認證即支付。</p>
       </div>
     </div>
 
@@ -834,28 +838,28 @@ h2 {
        ══════════════════════════════════════════════════════ -->
   <div class="slide" id="slide-12">
     <div class="section-label" data-zh="実 · 進度" data-en="実 · TRACTION" data-ja="実 · 進捗">実 · 進度</div>
-    <h2 data-zh="代碼已上線，原語已驗證。" data-en="Code shipped. Primitive verified." data-ja="コードは出荷済み。原語は検証済み。">代碼已上線，原語已驗證。</h2>
+    <h2 data-zh="代碼已上線，原語已驗證。" data-en="Code shipped. Primitive verified." data-ja="コード出荷済み。プリミティブ検証済み。">代碼已上線，原語已驗證。</h2>
 
     <div class="cards col-3" style="margin-top:26px">
       <div class="card">
         <div class="kanji-mark">壱</div>
         <h3 data-zh="已出貨" data-en="Shipped" data-ja="出荷済み">已出貨</h3>
-        <p data-zh="Sakura v7 原語（sign_intent + execute_with_intent_proof）、circom 電路、snarkjs prover、Solana Anchor 程式——全部為 Colosseum 2026 上線。" data-en="Sakura v7 primitive (sign_intent + execute_with_intent_proof), circom circuit, snarkjs prover, Solana Anchor program — all shipped for Colosseum 2026." data-ja="Sakura v7 原語（sign_intent + execute_with_intent_proof）、circom 回路、snarkjs prover、Solana Anchor プログラム——すべて Colosseum 2026 に向けて出荷。">Sakura v7 原語（sign_intent + execute_with_intent_proof）、circom 電路、snarkjs prover、Solana Anchor 程式——全部為 Colosseum 2026 上線。</p>
+        <p data-zh="Sakura v7 原語（sign_intent + execute_with_intent_proof）、circom 電路、snarkjs prover、Solana Anchor 程式——全部為 Colosseum 2026 上線。" data-en="Sakura v7 primitive (sign_intent + execute_with_intent_proof), circom circuit, snarkjs prover, Solana Anchor program — all shipped for Colosseum 2026." data-ja="Sakura v7 プリミティブ（sign_intent + execute_with_intent_proof）、circom 回路、snarkjs prover、Solana Anchor プログラム——すべて Colosseum 2026 に向けて出荷。">Sakura v7 原語（sign_intent + execute_with_intent_proof）、circom 電路、snarkjs prover、Solana Anchor 程式——全部為 Colosseum 2026 上線。</p>
       </div>
       <div class="card">
         <div class="kanji-mark">弐</div>
         <h3 data-zh="Mainnet CPI 已就緒" data-en="Mainnet CPI Ready" data-ja="メインネット CPI 準備済み">Mainnet CPI 已就緒</h3>
-        <p data-zh="<b>4 個 Solana 龍頭 × 13 個動作</b>，全部產生真 mainnet ix（零 Memo stub）：<b>Jupiter</b>（Swap + Lend × 4）· <b>Raydium</b>（Swap）· <b>Kamino</b>（Lend / Borrow / Repay / Withdraw）· <b>Jito</b>（Stake / Unstake）。每協議獨立 verifier 腳本，任何人可一鍵復現。" data-en="<b>4 Solana leaders × 13 actions</b>, all produce real mainnet ixs (zero Memo stubs): <b>Jupiter</b> (Swap + Lend × 4) · <b>Raydium</b> (Swap) · <b>Kamino</b> (Lend / Borrow / Repay / Withdraw) · <b>Jito</b> (Stake / Unstake). One-command verifier per protocol, anyone can reproduce." data-ja="<b>4 つの Solana 龍頭 × 13 アクション</b>、すべて真のメインネット ix を生成（Memo スタブゼロ）：<b>Jupiter</b>（Swap + Lend × 4）· <b>Raydium</b>（Swap）· <b>Kamino</b>（Lend / Borrow / Repay / Withdraw）· <b>Jito</b>（Stake / Unstake）。プロトコルごとに独立した verifier スクリプト、誰でも再現可能。"><b>4 個 Solana 龍頭 × 13 個動作</b>，全部產生真 mainnet ix（零 Memo stub）：<b>Jupiter</b>（Swap + Lend × 4）· <b>Raydium</b>（Swap）· <b>Kamino</b>（Lend / Borrow / Repay / Withdraw）· <b>Jito</b>（Stake / Unstake）。每協議獨立 verifier 腳本，任何人可一鍵復現。</p>
+        <p data-zh="<b>4 個 Solana 旗艦協議 × 12 個動作格</b>，全部產生真 mainnet ix（零 Memo stub）：<b>Jupiter</b>（Swap + Lend/Borrow/Repay/Withdraw）· <b>Raydium</b>（Swap）· <b>Kamino</b>（Lend / Borrow / Repay / Withdraw）· <b>Jito</b>（Stake / Unstake）。每協議獨立 verifier 腳本，任何人可一鍵復現。" data-en="<b>4 flagship Solana protocols × 12 action cells</b>, all produce real mainnet ixs (zero Memo stubs): <b>Jupiter</b> (Swap + Lend/Borrow/Repay/Withdraw) · <b>Raydium</b> (Swap) · <b>Kamino</b> (Lend / Borrow / Repay / Withdraw) · <b>Jito</b> (Stake / Unstake). One-command verifier per protocol, anyone can reproduce." data-ja="<b>4 つの旗艦 Solana プロトコル × 12 アクションセル</b>、すべて真のメインネット ix を生成（Memo スタブゼロ）：<b>Jupiter</b>（Swap + Lend/Borrow/Repay/Withdraw）· <b>Raydium</b>（Swap）· <b>Kamino</b>（Lend / Borrow / Repay / Withdraw）· <b>Jito</b>（Stake / Unstake）。プロトコルごとに独立した verifier スクリプト、誰でも再現可能。"><b>4 個 Solana 旗艦協議 × 12 個動作格</b>，全部產生真 mainnet ix（零 Memo stub）：<b>Jupiter</b>（Swap + Lend/Borrow/Repay/Withdraw）· <b>Raydium</b>（Swap）· <b>Kamino</b>（Lend / Borrow / Repay / Withdraw）· <b>Jito</b>（Stake / Unstake）。每協議獨立 verifier 腳本，任何人可一鍵復現。</p>
       </div>
       <div class="card">
         <div class="kanji-mark">参</div>
-        <h3 data-zh="鏈上實測" data-en="On-chain measured" data-ja="オンチェーン実測">鏈上實測</h3>
-        <p data-zh="In-program Groth16 verify CU <b>實測 126k</b>（devnet · 5/5 runs · alt_bn128 syscall），在 Solana 1.4M per-tx 上限內有 <b>11× 餘量</b>。原子 v0 bundle <b>鏈上已驗證可行</b>。" data-en="In-program Groth16 verify CU <b>measured 126k</b> (devnet · 5/5 runs · alt_bn128 syscall) — <b>11× headroom</b> within Solana's 1.4M per-tx ceiling. Atomic v0 bundle <b>on-chain-verified feasible</b>." data-ja="In-program Groth16 verify CU <b>実測 126k</b>（devnet · 5/5 成功 · alt_bn128 syscall）、Solana の 1.4M per-tx 上限内に <b>11× の余裕</b>。アトミック v0 bundle は<b>オンチェーン検証済みで実現可能</b>。">In-program Groth16 verify CU <b>實測 126k</b>（devnet · 5/5 runs · alt_bn128 syscall），在 Solana 1.4M per-tx 上限內有 <b>11× 餘量</b>。原子 v0 bundle <b>鏈上已驗證可行</b>。</p>
+        <h3 data-zh="鏈上實測 + 對抗性壓測" data-en="On-chain measured + adversarial stress" data-ja="オンチェーン実測 + 対抗ストレス">鏈上實測 + 對抗性壓測</h3>
+        <p data-zh="Groth16 配對驗證 <b>實測 ~116k CU</b>、整條 execute 路徑實測均值 <b>~204k CU</b>（devnet · alt_bn128 syscall），Solana 1.4M per-tx 上限內 <b>~6× 餘量</b>。對抗性壓測歸檔：<b>15/15 不變式全部成立</b>，每一次敵對嘗試皆按預期回滾（docs/bench/2026-04-22-stress.json）。電路 1,909 非線性約束 · pot11 受信設置。" data-en="Groth16 pairing check: <b>measured ~116k CU</b>; full execute path mean <b>~204k CU</b> (devnet, alt_bn128 syscall) — <b>~6× headroom</b> within Solana's 1.4M per-tx ceiling. Adversarial stress archive: <b>15/15 invariants held</b>, every hostile attempt reverted as expected (docs/bench/2026-04-22-stress.json). Circuit: 1,909 non-linear constraints · pot11 trusted setup." data-ja="Groth16 ペアリング検証：<b>実測 ~116k CU</b>、execute 経路全体の実測平均 <b>~204k CU</b>（devnet、alt_bn128 syscall）。Solana の 1.4M per-tx 上限内に <b>~6× の余裕</b>。対抗ストレステストの記録：<b>15/15 の不変式がすべて成立</b>、敵対的試行はすべて期待通りリバート（docs/bench/2026-04-22-stress.json）。回路：非線形制約 1,909・pot11 信頼セットアップ。">Groth16 配對驗證 <b>實測 ~116k CU</b>、整條 execute 路徑實測均值 <b>~204k CU</b>（devnet · alt_bn128 syscall），Solana 1.4M per-tx 上限內 <b>~6× 餘量</b>。對抗性壓測歸檔：<b>15/15 不變式全部成立</b>，每一次敵對嘗試皆按預期回滾（docs/bench/2026-04-22-stress.json）。電路 1,909 非線性約束 · pot11 受信設置。</p>
       </div>
     </div>
 
     <div class="quote-block">
-      <p data-zh="我們不是「正在做」。原語是已驗證的工程事實。Colosseum 2026 現場，任何人可以在 Solscan 獨立核驗每一筆 execute_with_intent_proof 的執行指紋——並用 <code style=&quot;background:rgba(0,0,0,0.06);padding:2px 6px;border-radius:3px;font-size:0.92em&quot;>npx tsx scripts/verify-{jito,raydium,kamino,jupiter-lend}-adapter.ts</code> 重跑全部 13 個 mainnet 動作。" data-en="We aren't &quot;in progress.&quot; The primitive is a verified engineering fact. At Colosseum 2026, anyone can independently inspect every execute_with_intent_proof fingerprint on Solscan — and rerun all 13 mainnet actions with <code style=&quot;background:rgba(0,0,0,0.06);padding:2px 6px;border-radius:3px;font-size:0.92em&quot;>npx tsx scripts/verify-{jito,raydium,kamino,jupiter-lend}-adapter.ts</code>." data-ja="我々は「進行中」ではない。原語は検証済みのエンジニアリング事実だ。Colosseum 2026 の会場で、誰でも Solscan 上で execute_with_intent_proof の実行指紋を独立検証できる——そして <code style=&quot;background:rgba(0,0,0,0.06);padding:2px 6px;border-radius:3px;font-size:0.92em&quot;>npx tsx scripts/verify-{jito,raydium,kamino,jupiter-lend}-adapter.ts</code> で 13 のメインネットアクションすべてを再実行できる。">我們不是「正在做」。原語是已驗證的工程事實。Colosseum 2026 現場，任何人可以在 Solscan 獨立核驗每一筆 execute_with_intent_proof 的執行指紋——並用 <code style="background:rgba(0,0,0,0.06);padding:2px 6px;border-radius:3px;font-size:0.92em">npx tsx scripts/verify-{jito,raydium,kamino,jupiter-lend}-adapter.ts</code> 重跑全部 13 個 mainnet 動作。</p>
+      <p data-zh="我們不是「正在做」。原語已是可驗證的工程事實——程式於 Solana devnet 活躍運作，mainnet 以第三方審計完成為前提。Colosseum 2026 現場，任何人可在 Solscan 獨立核驗每一筆 execute_with_intent_proof 的執行指紋，並以 <code style=&quot;background:rgba(0,0,0,0.06);padding:2px 6px;border-radius:3px;font-size:0.92em&quot;>npx tsx scripts/verify-{jito,raydium,kamino,jupiter-lend}-adapter.ts</code> 重跑全部 12 個 mainnet 動作。" data-en="We are not &quot;in progress.&quot; The primitive is already a verifiable engineering fact — the program runs live on Solana devnet; mainnet follows on third-party audit completion. At Colosseum 2026, anyone can independently inspect every execute_with_intent_proof fingerprint on Solscan, and rerun all 12 mainnet actions with <code style=&quot;background:rgba(0,0,0,0.06);padding:2px 6px;border-radius:3px;font-size:0.92em&quot;>npx tsx scripts/verify-{jito,raydium,kamino,jupiter-lend}-adapter.ts</code>." data-ja="我々は「進行中」ではない。プリミティブは既に検証可能な工学的事実である——プログラムは Solana devnet 上で稼働中、mainnet は第三者監査の完了を前提とする。Colosseum 2026 の会場で、誰でも Solscan 上で execute_with_intent_proof の実行指紋を独立に検証でき、<code style=&quot;background:rgba(0,0,0,0.06);padding:2px 6px;border-radius:3px;font-size:0.92em&quot;>npx tsx scripts/verify-{jito,raydium,kamino,jupiter-lend}-adapter.ts</code> で 12 のメインネットアクションすべてを再実行できる。">我們不是「正在做」。原語已是可驗證的工程事實——程式於 Solana devnet 活躍運作，mainnet 以第三方審計完成為前提。Colosseum 2026 現場，任何人可在 Solscan 獨立核驗每一筆 execute_with_intent_proof 的執行指紋，並以 <code style="background:rgba(0,0,0,0.06);padding:2px 6px;border-radius:3px;font-size:0.92em">npx tsx scripts/verify-{jito,raydium,kamino,jupiter-lend}-adapter.ts</code> 重跑全部 12 個 mainnet 動作。</p>
     </div>
 
     <div class="watermark">SAKURA · 2026</div>
@@ -867,9 +871,9 @@ h2 {
        ══════════════════════════════════════════════════════ -->
   <div class="slide dark" id="slide-13">
     <div class="section-label" data-zh="道 · 道統" data-en="道 · ETHOS" data-ja="道 · エトス">道 · 道統</div>
-    <h2 data-zh="和美人守護數學。" data-en="A 和美人 guarding math." data-ja="和美人が数学を守る。">和美人守護數學。</h2>
-    <p class="subtitle" data-zh="我們把三條日式價值鍛進產品：有備無患、匠人精神、信任之證。這不是美學，是工程紀律。" data-en="We forged three Japanese values into the product: preparation, takumi craft, proof of trust. Not aesthetic — engineering discipline." data-ja="我々は 3 つの日本的価値をプロダクトに鍛え込んだ：備え、匠の精神、信頼の証。美学ではない——エンジニアリングの規律だ。">
-      我們把三條日式價值鍛進產品：有備無患、匠人精神、信任之證。這不是美學，是工程紀律。
+    <h2 data-zh="和の美人が、数学を守る。" data-en="A yamato nadeshiko, guarding math." data-ja="大和撫子が、数学を守る。">和の美人が，數學守る。</h2>
+    <p class="subtitle" data-zh="我們把三條日式價值鍛進產品：有備無患、匠之精神、信任之證。這不是美學，是工程紀律。" data-en="Three Japanese values are forged into the product: preparation, takumi, proof of trust. Not aesthetic — engineering discipline." data-ja="当社は 3 つの日本的価値をプロダクトに鍛え込みました——備え、匠、信頼の証。美学ではなく、エンジニアリングの規律です。">
+      我們把三條日式價值鍛進產品：有備無患、匠之精神、信任之證。這不是美學，是工程紀律。
     </p>
 
     <div class="cards col-3" style="margin-top:26px">
