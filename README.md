@@ -4,16 +4,18 @@
 
 A ZK circuit that verifies every agentic DeFi action against a
 user-signed intent — before the action is allowed to touch user
-funds. Solana's `alt_bn128` pairing syscall executes the verification
-in **126,221 compute units** (measured on devnet, 5/5 runs,
-2026-04-21; see
-[`docs/bench/2026-04-21-cu.json`](docs/bench/2026-04-21-cu.json)),
-roughly one hundredth of a cent per call. A failing proof reverts the
-surrounding transaction before the underlying DeFi instruction can
-execute.
+funds. Solana's `alt_bn128` pairing syscall executes the gate in
+**~204,460 compute units per transaction** (C-full, Pyth ∩ Switchboard
+dual-oracle median-gated; mean of 5/5 devnet runs 2026-04-22, see
+[`docs/bench/2026-04-22-cfull-cu.json`](docs/bench/2026-04-22-cfull-cu.json)).
+Of that, ~76k goes to posting the fresh Switchboard price update
+and ~128k to the Sakura `execute_with_intent_proof` handler itself
+(Groth16 pairing + oracle checks + `ActionRecord` PDA init).
+A failing proof reverts the entire transaction before the underlying
+DeFi instruction can execute.
 
 [![Program](https://img.shields.io/badge/devnet%20program-AnszeCRFs…YLp-brightgreen?logo=solana)](https://solscan.io/account/AnszeCRFsBKmT5fBY9WywxGsZZZob8ZPFYqboYXpuYLp?cluster=devnet)
-[![Verification](https://img.shields.io/badge/alt__bn128-126%2C221%20CU-blue)](./docs/bench/2026-04-21-cu.json)
+[![Verification](https://img.shields.io/badge/dual__oracle_gate-204%2C460_CU-blue)](./docs/bench/2026-04-22-cfull-cu.json)
 [![Tests](https://img.shields.io/badge/invariant%20tests-8%20passing-green)](./__tests__/)
 [![No Token](https://img.shields.io/badge/token-none-lightgrey)](./docs/VALUE_CAPTURE.md)
 

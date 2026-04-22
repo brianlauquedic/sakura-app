@@ -257,11 +257,22 @@ const tx = new VersionedTransaction(
 // instructions (gate + DeFi) land or revert atomically.
 ```
 
-That is the whole integration. The gate adds ~126,221 CU for the
-pairing plus ~60,000 CU for Pyth re-parse + PDA init; a 400k CU
-limit comfortably absorbs it and leaves room for a realistic DeFi
-instruction. The DeFi instruction your wallet passes in remains
-fully under your control.
+That is the whole integration. On a C-full (dual-oracle) tx, the
+total compute cost measured on devnet on 2026-04-22 is
+**204,460 CU mean across 5 runs** (range 200,462–209,431; see
+`docs/bench/2026-04-22-cfull-cu.json`). Of that:
+
+- ~76k CU  — Switchboard `PullFeedSubmitResponse` (the fresh price post)
+- ~128k CU — Sakura `execute_with_intent_proof` handler, which
+  internally performs the Groth16 `alt_bn128` pairing check, the
+  Pyth + Switchboard re-parse, the cross-oracle ≤1% deviation
+  check, and the `ActionRecord` PDA init
+
+A `ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 })`
+comfortably absorbs this and leaves ~190k CU headroom for a
+realistic DeFi instruction (Kamino deposit, Jupiter swap, Marinade
+stake are all <60k CU). The DeFi instruction your wallet passes in
+remains fully under your control.
 
 ### Proof-generation latency — what to budget for
 

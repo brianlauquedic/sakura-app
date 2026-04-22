@@ -1,0 +1,48 @@
+{
+  "network": "devnet",
+  "program": "AnszeCRFsBKmT5fBY9WywxGsZZZob8ZPFYqboYXpuYLp",
+  "runs": [
+    {
+      "run": 1,
+      "cu": 200462,
+      "sig": "66V5wwohBiPqNKfx29B7TmyQGcasJ8P2WbrvG7uEAEw4fHo5HqX7R6ENevE2yyrAYobayD6eoZofjwZnBDgusFtB",
+      "pythSlot": "457199498"
+    },
+    {
+      "run": 2,
+      "cu": 205618,
+      "sig": "RB5Y3y7cW4dQHgdbNcVMqZdTaDaJ5i4s5xzdZAw1CctdJe2w3BtX9YdjTWSdxhoqYUpavrRPKQ5RMGscYaDphsU",
+      "pythSlot": "457199548"
+    },
+    {
+      "run": 3,
+      "cu": 209431,
+      "sig": "2rjBRh2XEtH1PQX5otqSXZXQdedVkSXG3FCccLr5FrZScQQWt5CscbXHxK7i8xBJrJWC9DDhgA7KqvQSeLsitp77",
+      "pythSlot": "457199600"
+    },
+    {
+      "run": 4,
+      "cu": 204834,
+      "sig": "sVqi4fLUnc5h1m8mATa5hn4Q4vLJbnYmkzQm7JZbdpvSZeWQExSEGbRra7rvYBZWCGjpAhxMTHuxCyC1GzFjt5b",
+      "pythSlot": "457199651"
+    },
+    {
+      "run": 5,
+      "cu": 201956,
+      "sig": "38MpRiZVqXGz9qXyV23fKfXrQzb9E8tpu5hWYNdQEyaDPgD95jaXyPBZmE2uSDs1Zo1scymUjtuWQNScJTWFyDt3",
+      "pythSlot": "457199701"
+    }
+  ],
+  "summary": {
+    "successful": 5,
+    "total": 5,
+    "min": 200462,
+    "max": 209431,
+    "mean": 204460,
+    "headroom_1_4M": 1195540
+  },
+  "admin": "2iCWnS1J8WYZn4reo9YD76qZiiZ39t2c1oGM3dyYwHNg",
+  "user": "4XnSaTbTyxASbewxKwdNR6Wb1RY6EZbRV1SGQHoN2YDz",
+  "sol_cost_lamports": 130708935,
+  "timestamp": "2026-04-22T02:35:21.650Z"
+}

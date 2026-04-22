@@ -9,7 +9,28 @@
   · Real devnet constants populated: `SWITCHBOARD_PROGRAM_ID = Aio4gaXj…ji2`, feed hash `b756d471…a4cb` (read from on-chain feed `GgGV…KB`)
   · e2e + bench scripts integrated with median computation
 
-**Remaining:** `anchor build && anchor deploy --provider.cluster devnet`, one successful e2e run, then rerun `bench-verify-cu` to measure post-C-full CU (expected ~145–215k vs C-lite ~126k).
+**Remaining:** none — **E2E verified on devnet 2026-04-22**. A single
+`execute_with_intent_proof` landed under full Pyth ∩ Switchboard
+median-gating at tx
+[`4PbTHGuN…XykX9r`](https://solscan.io/tx/4PbTHGuNihtReYBHmNcF4AGqHBGCPGRos4Tmbi1dGtL1vrEVu2MqrJint3utaiWH2xgcUuCv3krZ3GST8RkXyk9r?cluster=devnet):
+Pyth 87,164,116 μUSD, SB 87,150,000 μUSD (1 bps divergence), median
+87,157,058 μUSD written to `ActionRecord.oracle_price_usd_micro`,
+fees collected correctly ($20 sign + $0.01 execute).
+
+**Measured CU** (5/5 runs, 2026-04-22, devnet; see
+`docs/bench/2026-04-22-cfull-cu.json`):
+
+| Metric | C-lite (2026-04-21) | C-full (2026-04-22) | Δ |
+|---|---|---|---|
+| min  | 125,021 | 200,462 | +75,441 |
+| mean | ~126,221 | 204,460 | +78,239 |
+| max  | 128,021 | 209,431 | +81,410 |
+
+The +78k CU Δ is within the spec's ~15.5k-CU estimate for the
+handler-side work (Switchboard parse + deviation check + median
+verify) **plus** the ~76k cost of the Switchboard `PullFeedSubmitResponse`
+update ix itself, which now runs in the same atomic v0 tx as
+`execute_with_intent_proof` (to guarantee feed freshness at gate time).
 
 **Mainnet migration:** requires `SWITCHBOARD_PROGRAM_ID` swap (devnet `Aio4gaXj…ji2` → mainnet `SBond…YLp`), populating `SWITCHBOARD_SOL_USD_MAINNET` pubkey + corresponding feed hash, then redeploy via Squads time-locked admin path per `docs/SQUADS_MIGRATION_RUNBOOK.md`.
 
