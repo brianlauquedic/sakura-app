@@ -1,6 +1,8 @@
 # Sakura
 
-**Cryptographic bounds on what an AI agent can do with your money.**
+**Built for AI agents. Enforced by math.**
+
+Cryptographic bounds on what an AI agent can do with your money — a Solana-native execution-bounds verifier that turns "out of bounds" from a policy into a mathematical impossibility.
 
 A ZK circuit that verifies every agentic DeFi action against a
 user-signed intent — before the action is allowed to touch user
@@ -15,6 +17,7 @@ A failing proof reverts the entire transaction before the underlying
 DeFi instruction can execute.
 
 [![Program](https://img.shields.io/badge/devnet%20program-AnszeCRFs…YLp-brightgreen?logo=solana)](https://solscan.io/account/AnszeCRFsBKmT5fBY9WywxGsZZZob8ZPFYqboYXpuYLp?cluster=devnet)
+[![Status](https://img.shields.io/badge/status-devnet_today_·_mainnet_on_audit-B8932A)](#trust-model-precisely-stated)
 [![Verification](https://img.shields.io/badge/dual__oracle_gate-204%2C460_CU-blue)](./docs/bench/2026-04-22-cfull-cu.json)
 [![Invariants](https://img.shields.io/badge/adversarial_stress-15%2F15_reverted-success)](./docs/bench/2026-04-22-stress.json)
 [![Tests](https://img.shields.io/badge/invariant%20tests-8%20passing-green)](./__tests__/)
@@ -60,14 +63,16 @@ Every subsequent agent action flows through the same six-check gate:
 ```
 
 The oracle public input to the Groth16 proof is not the raw Pyth
-price — it is the **median of Pyth and Switchboard** (arithmetic
-mean with two oracles). Defeating the gate would require
-simultaneously compromising Pyth's publisher network *and*
-Switchboard's, two organizationally and infrastructurally
-independent oracle systems.
+price — it is the **median of Pyth and Switchboard**, admitted only
+when the cross-oracle deviation stays within 100 basis points.
+Defeating the gate would require simultaneously compromising Pyth's
+publisher network *and* Switchboard's, two organizationally and
+infrastructurally independent oracle systems, and doing so in
+sufficient lockstep to keep their reported prices within one per
+cent of each other.
 
 The failing case is the important one. Nothing downstream of the gate
-executes until all four checks land. Every action on a Sakura-gated
+executes until all six checks land. Every action on a Sakura-gated
 wallet is either mathematically in-bounds or it did not happen.
 
 ---
@@ -193,8 +198,6 @@ There is no operator because there is nothing for an operator to
 do — the math decides whether each action lands, and the math was
 parameterized by the user and only the user.
 
-**The user IS the sovereign. The math is just the enforcement.**
-
 The target user is the retail holder of USDC on Solana who turns an
 agent on for the same reason they turn on auto-pay: to outsource a
 repeatable decision. What retail crypto has been asking for, badly
@@ -207,28 +210,34 @@ agentic context.
 ## The infrastructure thesis — *one verifier, not four*
 
 The verifier layer every agentic wallet needs is the same verifier
-layer. It checks four things on every gate call: that the action
-satisfies the signed intent, that the oracle price came from Pyth
-and matches the current account state, that the slot is within a
-150-block freshness window, and that the action nonce has not been
-replayed. Each of Phantom's, Backpack's, Abstract's, and Infinex's
-engineering organizations will need to implement, audit, maintain,
-and operationally defend those four checks independently. The
-all-in cost of doing so, based on analogous historical builds — a
-first-party ZK prover, a Pyth integration layer, a replay-guard
-audit — is measured in engineer-quarters rather than engineer-weeks,
-and re-incurs on every Solana protocol upgrade.
+layer. It imposes six checks on every gate call: that the action
+satisfies the signed intent via Groth16 pairing; that the Pyth
+price came from the expected feed and matches the current account
+state; that the Pyth slot sits within a 150-block freshness window;
+that Pyth's spot-versus-EMA deviation stays within 2%; that the
+Pyth-versus-Switchboard cross-oracle deviation stays within 100
+basis points, with the USD cap settled against the median of the
+two; and that the action nonce has not been replayed. Each of
+Phantom's, Backpack's, Abstract's, and Infinex's engineering
+organizations will need to implement, audit, maintain, and
+operationally defend those six checks independently. The all-in
+cost of doing so, based on analogous historical builds — a
+first-party ZK prover, a dual-oracle integration layer, a
+replay-guard audit — is measured in engineer-quarters rather than
+engineer-weeks, and re-incurs on every Solana protocol upgrade.
 
 The thesis underlying Sakura is that the correct number of
 independent implementations of this layer is **one**. The correct
-economic structure is a fee of **0.1% of notional** at the gate,
-routed automatically from the integrator to the protocol's fee
-vault. The correct governance structure is a 3-of-5 multisig with
-authority to tune two parameters — `execution_fee_bps` and
-`platform_fee_bps` — within program-level hard ceilings (2% and
-100% respectively), and no authority to alter the verifying key or
-withdraw from the vault outside the fee split. The correct token
-structure is **no token**.
+economic structure is a fee of **0.1% of notional** at the gate
+(first \$10M of integrator volume rebated, absolute cap of \$1,000
+per sign regardless of notional), routed automatically from the
+integrator to the protocol's fee vault, supplemented by \$0.01
+per verified agent action and \$1 USDC per x402 MCP call. The
+correct governance structure is a 3-of-5 multisig with authority to
+tune two parameters — `execution_fee_bps` and `platform_fee_bps` —
+within program-level hard ceilings (2% and 100% respectively), and
+no authority to alter the verifying key or withdraw from the vault
+outside the fee split. The correct token structure is **no token**.
 
 ### The historical analogues
 
@@ -258,7 +267,7 @@ integrated than any rebuild attempt; the economics follow.
 
 ## Why this composition is only possible now
 
-Five pieces of Solana-adjacent infrastructure matured between
+Six pieces of Solana-adjacent infrastructure matured between
 mid-2024 and early 2026:
 
 | Layer | Inflection point |
@@ -266,8 +275,8 @@ mid-2024 and early 2026:
 | Solana `alt_bn128` pairing syscall | Protocol 1.17, shipped Q3 2024 |
 | Light Protocol `groth16-solana` crate | Production release, Q1 2025 |
 | Pyth Pull Oracle `PriceUpdateV2` | Feed-id-scoped accounts, Q2 2025 |
-| Solana Agent Kit v2 | Plugin surface used for token + price utilities; Sakura's adapter layer (`lib/adapters/`) integrates the four 龙头 directly — Jupiter (Swap + Lend × 4), Raydium, Kamino × 4, Jito × 2 = 13 mainnet CPI cells, all reproducible via `npx tsx scripts/verify-{jito,raydium,kamino,jupiter-lend}-adapter.ts` |
-| Claude Sonnet 4.6 Agent Skills | Composable skill pipelines with structured output, Q1 2026 |
+| Switchboard On-Demand | Pull-feed architecture with in-transaction price post, Q4 2025 |
+| Solana Agent Kit v2 | Plugin surface used for token + price utilities; Sakura's adapter layer (`lib/adapters/`) integrates four flagship protocols directly — Jupiter (Swap + Lend / Borrow / Repay / Withdraw), Raydium (Swap), Kamino (Lend / Borrow / Repay / Withdraw), Jito (Stake / Unstake) = **12 mainnet CPI cells**, all reproducible via `npx tsx scripts/verify-{jito,raydium,kamino,jupiter-lend}-adapter.ts` |
 | Stripe x402 (HTTP 402 re-proposal) | Machine Payments Protocol, Q3 2025 |
 
 None of the six, in isolation, addresses the containment problem
@@ -287,8 +296,8 @@ opened in early 2026. It is the window Sakura is in.
 
 The protocol consists of three artifacts: a Circom circuit, an
 Anchor program, and a TypeScript client. The circuit
-(`circuits/src/intent_proof.circom`) compiles to 1,909 non-linear
-constraints and fits the Phase 1 trusted setup at `pot13`. Every
+(`circuits/src/intent_proof.circom`) compiles to **1,909 non-linear
+constraints** and fits the Phase 1 trusted setup at `pot11`. Every
 numeric input is `Num2Bits`-bounded against BN254 field wraparound,
 and the five constraint families the circuit enforces are:
 
@@ -309,11 +318,17 @@ time-locked-governance instructions — `initialize_protocol`,
 `propose_admin_action`, `execute_admin_action`. The verifying key is
 baked into `programs/sakura-insurance/src/zk_verifying_key.rs` at
 deploy time and cannot be altered without redeployment.
-`execute_with_intent_proof` performs four distinct safety checks in
-sequence: Groth16 pairing verification via the `alt_bn128` syscall,
-Pyth `PriceUpdateV2` account re-parsing, slot-freshness enforcement
-at 150 slots, and `ActionRecord` PDA creation seeded by the
-`(intent, action_nonce)` pair.
+`execute_with_intent_proof` performs six distinct safety checks in
+sequence: Groth16 pairing verification via the `alt_bn128` syscall
+(~116k CU); Pyth `PriceUpdateV2` account re-parsing; slot-freshness
+enforcement at 150 slots; a Pyth spot-versus-EMA deviation check;
+a Switchboard `feed_hash` binding and cross-oracle deviation check
+(median of Pyth and Switchboard, ≤ 100 bps deviation); and
+`ActionRecord` PDA creation seeded by the `(intent, action_nonce)`
+pair. Across 150 adversarial runs covering six hostile scenarios,
+15 of 15 invariants held — every hostile attempt reverted as
+expected (see
+[`docs/bench/2026-04-22-stress.json`](docs/bench/2026-04-22-stress.json)).
 
 The TypeScript client (`lib/insurance-pool.ts`, `lib/zk-proof.ts`,
 `lib/sak-executor.ts`) provides instruction builders, PDA derivers,
@@ -372,6 +387,14 @@ npx tsx scripts/e2e-intent-execute.ts
 npm run dev
 # Application: http://localhost:3000
 ```
+
+**Non-developer path** — try the live devnet flow with nothing but a
+Phantom wallet. A step-by-step trilingual walkthrough (install Phantom,
+switch to devnet, claim 0.05 SOL + 100 test USDC from the built-in
+faucet at [`/api/faucet`](./app/api/faucet/route.ts), sign your first
+intent) lives at [`https://www.sakuraaai.com/testing`](https://www.sakuraaai.com/testing).
+Faucet is rate-limited to one claim per address and five per IP per
+24 hours, via Upstash Redis.
 
 ---
 
@@ -433,7 +456,17 @@ fee-taking token protocols as of 2026.
 
 ## Further reading
 
-- [`docs/FOR_USERS.md`](./docs/FOR_USERS.md) — **retail user guide · 繁體中文** · how to sign a good intent without regretting it (the one thing a retail user actually does)
+**Live site (trilingual · zh / en / ja):**
+
+- [`/testing`](https://www.sakuraaai.com/testing) — Phantom-only devnet walkthrough from zero to first on-chain intent
+- [`/guide`](https://www.sakuraaai.com/guide) — retail user manual: how to sign a good intent and the five common mistakes
+- [`/docs`](https://www.sakuraaai.com/docs) — three integration paths (wallet integrator, agent developer, auditor / compliance)
+- [`/use-cases`](https://www.sakuraaai.com/use-cases) — six integration scenarios across three roles
+- [`/mcp`](https://www.sakuraaai.com/mcp) — MCP API reference, x402 payment flow, example code
+
+**Repository (depth):**
+
+- [`docs/FOR_USERS.md`](./docs/FOR_USERS.md) — retail user guide (longer-form, markdown source of the live `/guide`)
 - [`docs/FOR_BUILDERS.md`](./docs/FOR_BUILDERS.md) — integration guide for wallet engineering teams
 - [`docs/VALUE_CAPTURE.md`](./docs/VALUE_CAPTURE.md) — revenue model, unit economics, and the no-token decision
 - [`docs/PITCH.md`](./docs/PITCH.md) — pitch scripts (60s / 3min / 8min)
