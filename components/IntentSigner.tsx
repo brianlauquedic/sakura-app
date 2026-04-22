@@ -51,7 +51,7 @@ import {
 } from "@/lib/zk-proof";
 import {
   PROTOCOL_META,
-  formatAprBlurb,
+  formatAprDisplay,
   type ProtocolAprsResponse,
   type ProtocolMeta,
 } from "@/lib/protocol-meta";
@@ -113,13 +113,22 @@ interface IntentSecrets {
 // at module scope so React's render path stays cheap.
 const PROTOCOL_LABELS = PROTOCOL_META;
 
-const ACTION_LABELS = [
-  { id: ActionType.Lend, label: "Lend" },
-  { id: ActionType.Repay, label: "Repay" },
-  { id: ActionType.Swap, label: "Swap" },
-  { id: ActionType.Stake, label: "Stake" },
-  { id: ActionType.Withdraw, label: "Withdraw" },
-  { id: ActionType.Borrow, label: "Borrow" },
+// Action 朱印 kanji — each chosen so the seal-script character literally
+// names the on-chain action. Shares the brand vermillion with protocol
+// seals so the visual language is one consistent system.
+//   預 (yù)  — deposit / entrust   → Lend
+//   借 (jiè) — borrow               → Borrow
+//   還 (huán) — return / repay      → Repay
+//   換 (huàn) — exchange            → Swap
+//   結 (jié) — bind / lock-stake    → Stake (kept distinct from Jito's 鎖)
+//   出 (chū) — withdraw / take out  → Withdraw
+const ACTION_LABELS: Array<{ id: ActionType; label: string; kanji: string }> = [
+  { id: ActionType.Lend,     label: "Lend",     kanji: "預" },
+  { id: ActionType.Borrow,   label: "Borrow",   kanji: "借" },
+  { id: ActionType.Repay,    label: "Repay",    kanji: "還" },
+  { id: ActionType.Swap,     label: "Swap",     kanji: "換" },
+  { id: ActionType.Stake,    label: "Stake",    kanji: "結" },
+  { id: ActionType.Withdraw, label: "Withdraw", kanji: "出" },
 ];
 
 // ───────────────────────────────────────────────────────────────────
@@ -543,8 +552,8 @@ export default function IntentSigner() {
           />
         </div>
 
-        {/* Protocols */}
-        <div className="space-y-2">
+        {/* Protocols — 朱印 cards, 2-col grid for breathing room */}
+        <div className="space-y-2.5">
           <div className="flex items-baseline justify-between gap-2">
             <Label className="font-mono text-[11px] uppercase tracking-[0.14em] text-[var(--text-muted)]">
               允許協議 Allowed protocols
@@ -558,13 +567,13 @@ export default function IntentSigner() {
               </span>
             )}
           </div>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 md:grid-cols-4">
+          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
             {PROTOCOL_LABELS.map((meta) => (
               <ProtocolCard
                 key={meta.id}
                 meta={meta}
                 active={selectedProtocols.has(meta.id)}
-                aprBlurb={formatAprBlurb(meta, aprs)}
+                apr={formatAprDisplay(meta, aprs)}
                 loading={aprsLoading && !aprs}
                 onClick={() => toggleProtocol(meta.id)}
                 disabled={isBusy}
@@ -573,16 +582,17 @@ export default function IntentSigner() {
           </div>
         </div>
 
-        {/* Actions */}
-        <div className="space-y-2">
+        {/* Actions — matching 朱印 tiles, 3-col on desktop */}
+        <div className="space-y-2.5">
           <Label className="font-mono text-[11px] uppercase tracking-[0.14em] text-[var(--text-muted)]">
             允許動作 Allowed actions
           </Label>
-          <div className="flex flex-wrap gap-2">
-            {ACTION_LABELS.map(({ id, label }) => (
-              <Pill
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {ACTION_LABELS.map(({ id, label, kanji }) => (
+              <ActionTile
                 key={id}
                 label={label}
+                kanji={kanji}
                 active={selectedActions.has(id)}
                 onClick={() => toggleAction(id)}
                 disabled={isBusy}
@@ -712,17 +722,150 @@ function NumField({
   );
 }
 
+/**
+ * 朱印 seal — vermillion stamp with a single kanji character. Hand-rotated
+ * a touch for the inked-by-hand feel; classic double-frame inset.
+ * Hoisted to module scope (zero render cost on re-renders).
+ */
+function ShuinSeal({ kanji, active }: { kanji: string; active: boolean }) {
+  return (
+    <span
+      aria-hidden="true"
+      className="relative inline-flex shrink-0 items-center justify-center"
+      style={{
+        width: 56,
+        height: 56,
+        background: "var(--accent)",
+        borderRadius: 8,
+        transform: active ? "rotate(-3deg)" : "rotate(-2deg)",
+        transition: "transform 200ms ease, box-shadow 200ms ease",
+        boxShadow: active
+          ? "0 2px 0 rgba(0,0,0,0.10), 0 4px 14px rgba(201,49,42,0.35)"
+          : "0 1px 0 rgba(0,0,0,0.08), 0 2px 6px rgba(201,49,42,0.20)",
+      }}
+    >
+      {/* Inner ink-frame — the classic 朱印 double border */}
+      <span
+        className="absolute"
+        style={{
+          top: 4,
+          left: 4,
+          right: 4,
+          bottom: 4,
+          border: "1.5px solid rgba(255,255,255,0.55)",
+          borderRadius: 4,
+          pointerEvents: "none",
+        }}
+      />
+      <span
+        style={{
+          color: "#FFFFFF",
+          fontSize: 30,
+          fontWeight: 700,
+          fontFamily: '"Noto Serif JP", "Hiragino Mincho ProN", serif',
+          lineHeight: 1,
+          letterSpacing: 0,
+          textShadow: "0 0 1px rgba(255,255,255,0.25)",
+        }}
+      >
+        {kanji}
+      </span>
+    </span>
+  );
+}
+
+/** Smaller 朱印 seal used inside action tiles (40px instead of 56px). */
+function ShuinSealSmall({ kanji, active }: { kanji: string; active: boolean }) {
+  return (
+    <span
+      aria-hidden="true"
+      className="relative inline-flex shrink-0 items-center justify-center"
+      style={{
+        width: 40,
+        height: 40,
+        background: "var(--accent)",
+        borderRadius: 6,
+        transform: active ? "rotate(-3deg)" : "rotate(-2deg)",
+        transition: "transform 200ms ease, box-shadow 200ms ease",
+        boxShadow: active
+          ? "0 1px 0 rgba(0,0,0,0.10), 0 3px 10px rgba(201,49,42,0.32)"
+          : "0 1px 0 rgba(0,0,0,0.06), 0 1px 4px rgba(201,49,42,0.18)",
+      }}
+    >
+      <span
+        className="absolute"
+        style={{
+          top: 3,
+          left: 3,
+          right: 3,
+          bottom: 3,
+          border: "1.25px solid rgba(255,255,255,0.55)",
+          borderRadius: 3,
+          pointerEvents: "none",
+        }}
+      />
+      <span
+        style={{
+          color: "#FFFFFF",
+          fontSize: 22,
+          fontWeight: 700,
+          fontFamily: '"Noto Serif JP", "Hiragino Mincho ProN", serif',
+          lineHeight: 1,
+          letterSpacing: 0,
+        }}
+      >
+        {kanji}
+      </span>
+    </span>
+  );
+}
+
+function ActionTile({
+  label,
+  kanji,
+  active,
+  onClick,
+  disabled,
+}: {
+  label: string;
+  kanji: string;
+  active: boolean;
+  onClick: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-pressed={active}
+      className={cn(
+        "flex w-full items-center gap-3 rounded-xl border px-3.5 py-3 text-left transition-all",
+        "min-h-[64px] disabled:cursor-not-allowed disabled:opacity-50",
+        active
+          ? "border-[var(--accent)]/60 bg-[var(--accent-soft)] text-[var(--text-primary)] shadow-sm"
+          : "border-[var(--border)] bg-transparent text-[var(--text-secondary)] hover:border-[var(--border-light)] hover:bg-[var(--bg-card-2)]/40 hover:text-[var(--text-primary)]"
+      )}
+    >
+      <ShuinSealSmall kanji={kanji} active={active} />
+      <span className="font-mono text-[13px] font-semibold tracking-[0.04em] text-[var(--text-primary)]">
+        {label}
+      </span>
+    </button>
+  );
+}
+
 function ProtocolCard({
   meta,
   active,
-  aprBlurb,
+  apr,
   loading,
   onClick,
   disabled,
 }: {
   meta: ProtocolMeta;
   active: boolean;
-  aprBlurb: string | null;
+  apr: { value: string; label: string } | null;
   loading: boolean;
   onClick: () => void;
   disabled?: boolean;
@@ -734,46 +877,47 @@ function ProtocolCard({
       disabled={disabled}
       aria-pressed={active}
       className={cn(
-        "group flex min-w-[200px] flex-col items-start gap-1 rounded-xl border px-3 py-2.5 text-left transition-all",
-        "disabled:cursor-not-allowed disabled:opacity-50",
+        "group flex w-full items-center gap-4 rounded-xl border px-4 py-3.5 text-left transition-all",
+        "min-h-[88px] disabled:cursor-not-allowed disabled:opacity-50",
         active
-          ? "bg-[var(--accent-soft)] text-[var(--text-primary)] shadow-sm"
+          ? "border-[var(--accent)]/60 bg-[var(--accent-soft)] text-[var(--text-primary)] shadow-sm"
           : "border-[var(--border)] bg-transparent text-[var(--text-secondary)] hover:border-[var(--border-light)] hover:bg-[var(--bg-card-2)]/40 hover:text-[var(--text-primary)]"
       )}
-      style={active ? { borderColor: meta.color } : undefined}
     >
-      <div className="flex w-full items-center gap-2">
-        <span className="flex h-6 w-6 shrink-0 items-center justify-center">
-          {meta.logo}
-        </span>
-        <span className="flex flex-col leading-tight">
-          <span className="font-mono text-[12px] font-semibold tracking-[0.04em]">
+      <ShuinSeal kanji={meta.sealKanji} active={active} />
+
+      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <span className="flex items-center gap-1.5">
+          <span className="font-mono text-[14px] font-semibold tracking-[0.03em] text-[var(--text-primary)]">
             {meta.label}
           </span>
-          <span className="font-mono text-[10px] tracking-[0.04em] text-[var(--text-muted)]">
-            {meta.tagline}
-          </span>
+          {active && (
+            <Sparkles
+              className="h-3 w-3 text-[var(--accent)]"
+              aria-hidden="true"
+            />
+          )}
         </span>
-        {active && (
-          <Sparkles
-            className="ml-auto h-3 w-3"
-            style={{ color: meta.color }}
-            aria-hidden="true"
-          />
-        )}
+        <span className="font-mono text-[11px] tracking-[0.02em] text-[var(--text-muted)]">
+          {meta.tagline}
+        </span>
       </div>
-      <span
-        className={cn(
-          "mt-0.5 font-mono text-[10.5px] tracking-[0.03em]",
-          active ? "text-[var(--text-primary)]/80" : "text-[var(--text-muted)]"
-        )}
-      >
+
+      <div className="flex shrink-0 flex-col items-end gap-0.5 text-right">
         {loading ? (
-          <span className="inline-block h-2.5 w-32 animate-pulse rounded bg-[var(--border)]/60" />
+          <span className="inline-block h-3 w-16 animate-pulse rounded bg-[var(--border)]/60" />
         ) : (
-          aprBlurb ?? "—"
+          <span
+            className="font-mono text-[13px] font-semibold tabular-nums text-[var(--text-primary)]"
+            title={apr?.label}
+          >
+            {apr?.value ?? "—"}
+          </span>
         )}
-      </span>
+        <span className="font-mono text-[9px] uppercase tracking-[0.10em] text-[var(--text-muted)]">
+          {apr?.label ?? "\u00A0"}
+        </span>
+      </div>
     </button>
   );
 }

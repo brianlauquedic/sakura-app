@@ -8,8 +8,6 @@
  */
 
 import { ProtocolId } from "./insurance-pool";
-import type { ReactNode } from "react";
-import { createElement } from "react";
 
 export type AprDisplayKind = "lend-borrow" | "lend-only" | "stake" | "swap-fee";
 
@@ -18,91 +16,51 @@ export interface ProtocolMeta {
   label: string;
   /** Tagline shown under the name. */
   tagline: string;
-  /** Brand accent color (hex) used for the logo and active border. */
-  color: string;
-  /** Inline SVG logo (24×24 viewbox) to keep React render cost ~0. */
-  logo: ReactNode;
+  /** Single kanji to stamp inside the 朱印 seal — picked for its
+   *  semantic match to the protocol's primary action. */
+  sealKanji: string;
   /** Drives which APR fields to read off `/api/protocol-aprs`. */
   aprKind: AprDisplayKind;
 }
 
-// ── Inline SVG logos (24×24, currentColor where possible) ────────────
+// ── 朱印 (vermillion seal) Public registry ──────────────────────────
 //
-// Static module-level JSX would create a TSX file, so we use
-// `createElement` to keep this as a plain .ts module.
-
-function CircleLogo({
-  bg,
-  letter,
-  letterColor = "#fff",
-}: {
-  bg: string;
-  letter: string;
-  letterColor?: string;
-}): ReactNode {
-  return createElement(
-    "svg",
-    {
-      width: 24,
-      height: 24,
-      viewBox: "0 0 24 24",
-      xmlns: "http://www.w3.org/2000/svg",
-      "aria-hidden": "true",
-    },
-    createElement("circle", { cx: 12, cy: 12, r: 11, fill: bg }),
-    createElement(
-      "text",
-      {
-        x: 12,
-        y: 16,
-        textAnchor: "middle",
-        fontSize: 12,
-        fontWeight: 700,
-        fontFamily: "system-ui, sans-serif",
-        fill: letterColor,
-      },
-      letter
-    )
-  );
-}
-
-const JUPITER_LOGO = CircleLogo({ bg: "#C8F284", letter: "J", letterColor: "#0E1414" });
-const RAYDIUM_LOGO = CircleLogo({ bg: "#3A2FB6", letter: "R" });
-const KAMINO_LOGO = CircleLogo({ bg: "#9747FF", letter: "K" });
-const JITO_LOGO = CircleLogo({ bg: "#1F9C5C", letter: "J" });
-
-// ── Public registry, ordered by Solana龙头 priority ──────────────────
+// All four protocols share Sakura's brand vermillion (#C9312A — see
+// app/globals.css `--accent`). The kanji inside each seal differentiates
+// them: chosen so the primary on-chain action of the protocol is
+// directly readable as a Japanese seal-script character.
+//
+//   聚 (jù)  — gather / aggregate     → Jupiter (DEX aggregator)
+//   換 (huàn) — exchange / swap       → Raydium (AMM swap)
+//   貸 (dài)  — lend                   → Kamino (lending market)
+//   鎖 (suǒ)  — lock / stake           → Jito (LST staking)
 export const PROTOCOL_META: ProtocolMeta[] = [
   {
     id: ProtocolId.Jupiter,
     label: "Jupiter",
-    tagline: "DEX agg + Lend",
-    color: "#C8F284",
-    logo: JUPITER_LOGO,
+    tagline: "DEX 聚合 · Lend 借貸",
+    sealKanji: "聚",
     aprKind: "lend-only",
   },
   {
     id: ProtocolId.Raydium,
     label: "Raydium",
-    tagline: "Direct AMM swap",
-    color: "#3A2FB6",
-    logo: RAYDIUM_LOGO,
+    tagline: "AMM 直接路由",
+    sealKanji: "換",
     aprKind: "swap-fee",
   },
   {
     id: ProtocolId.Kamino,
     label: "Kamino",
-    tagline: "Lending market",
-    color: "#9747FF",
-    logo: KAMINO_LOGO,
+    tagline: "Solana #2 借貸市場",
+    sealKanji: "貸",
     aprKind: "lend-borrow",
   },
   {
     id: ProtocolId.Jito,
     label: "Jito",
-    tagline: "JitoSOL liquid stake",
-    color: "#1F9C5C",
-    logo: JITO_LOGO,
+    tagline: "JitoSOL 流動性質押",
+    sealKanji: "鎖",
     aprKind: "stake",
   },
 ];
@@ -118,31 +76,40 @@ export interface ProtocolAprsResponse {
   cacheAge?: number;
 }
 
+/** Two-line APR display: a big right-aligned value + a tiny uppercase label. */
+export interface AprDisplay {
+  value: string; // e.g. "5.56%" or "5.56% / 7.18%"
+  label: string; // e.g. "Lend APY" or "Lend / Borrow"
+}
+
 /**
- * Format the APR/fee blurb shown on each protocol card.
+ * Build the structured APR display for a protocol card.
  * Returns `null` while APRs are still loading so the UI can show a skeleton.
  */
-export function formatAprBlurb(
+export function formatAprDisplay(
   meta: ProtocolMeta,
   aprs: ProtocolAprsResponse | null
-): string | null {
+): AprDisplay | null {
   if (!aprs) return null;
   switch (meta.aprKind) {
     case "lend-only":
       return aprs.JupiterLend
-        ? `Lend ${aprs.JupiterLend.lendApy.toFixed(2)}% APY`
-        : "Lend —";
+        ? { value: `${aprs.JupiterLend.lendApy.toFixed(2)}%`, label: "Lend APY" }
+        : { value: "—", label: "Lend APY" };
     case "lend-borrow":
       return aprs.Kamino
-        ? `Lend ${aprs.Kamino.lendApy.toFixed(2)}% · Borrow ${aprs.Kamino.borrowApy.toFixed(2)}%`
-        : "Lend / Borrow —";
+        ? {
+            value: `${aprs.Kamino.lendApy.toFixed(2)}% / ${aprs.Kamino.borrowApy.toFixed(2)}%`,
+            label: "Lend / Borrow",
+          }
+        : { value: "— / —", label: "Lend / Borrow" };
     case "stake":
       return aprs.Jito
-        ? `Stake ${aprs.Jito.stakeApy.toFixed(2)}% APY`
-        : "Stake —";
+        ? { value: `${aprs.Jito.stakeApy.toFixed(2)}%`, label: "Stake APY" }
+        : { value: "—", label: "Stake APY" };
     case "swap-fee":
       return aprs.Raydium
-        ? `Pool fee ${aprs.Raydium.feePct.toFixed(2)}%`
-        : "Swap";
+        ? { value: `${aprs.Raydium.feePct.toFixed(2)}%`, label: "Pool fee" }
+        : { value: "—", label: "Pool fee" };
   }
 }
