@@ -49,6 +49,12 @@ import {
   computeIntentCommitment,
   pubkeyToFieldBytes,
 } from "@/lib/zk-proof";
+import {
+  PROTOCOL_META,
+  formatAprBlurb,
+  type ProtocolAprsResponse,
+  type ProtocolMeta,
+} from "@/lib/protocol-meta";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -102,12 +108,10 @@ interface IntentSecrets {
 //   Kamino (Lending rank 32), Jito (LST rank 31).
 // MarginFi / Marinade / Sanctum / Solend kept in enum for forward
 // compatibility but not surfaced in UI. See commit history for rationale.
-const PROTOCOL_LABELS = [
-  { id: ProtocolId.Jupiter, label: "Jupiter" },
-  { id: ProtocolId.Raydium, label: "Raydium" },
-  { id: ProtocolId.Kamino, label: "Kamino" },
-  { id: ProtocolId.Jito, label: "Jito" },
-];
+//
+// Display meta (logo, color, APR shape) lives in lib/protocol-meta.ts
+// at module scope so React's render path stays cheap.
+const PROTOCOL_LABELS = PROTOCOL_META;
 
 const ACTION_LABELS = [
   { id: ActionType.Lend, label: "Lend" },
@@ -117,6 +121,41 @@ const ACTION_LABELS = [
   { id: ActionType.Withdraw, label: "Withdraw" },
   { id: ActionType.Borrow, label: "Borrow" },
 ];
+
+// ───────────────────────────────────────────────────────────────────
+// Live-APR fetch hook — one-shot on mount; the API route handles
+// upstream rate-limiting and Redis caching, so the client just needs
+// a single GET. No SWR / polling: APRs barely move minute-to-minute.
+// ───────────────────────────────────────────────────────────────────
+
+function useProtocolAprs(): {
+  aprs: ProtocolAprsResponse | null;
+  isLoading: boolean;
+  source: ProtocolAprsResponse["source"] | null;
+} {
+  const [aprs, setAprs] = useState<ProtocolAprsResponse | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/protocol-aprs")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: ProtocolAprsResponse | null) => {
+        if (!cancelled && data) setAprs(data);
+      })
+      .catch(() => {
+        /* swallow — UI shows skeleton then defaults */
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return { aprs, isLoading, source: aprs?.source ?? null };
+}
 
 // ───────────────────────────────────────────────────────────────────
 // Poseidon — fold UTF-8 intent text to a single field element
@@ -163,8 +202,9 @@ export default function IntentSigner() {
   const [maxUsdDollars, setMaxUsdDollars] = useState("10000");
   const [hours, setHours] = useState("24");
   const [selectedProtocols, setSelectedProtocols] = useState<Set<ProtocolId>>(
-    new Set([ProtocolId.Kamino, ProtocolId.MarginFi])
+    new Set([ProtocolId.Kamino, ProtocolId.Jupiter])
   );
+  const { aprs, isLoading: aprsLoading, source: aprsSource } = useProtocolAprs();
   const [selectedActions, setSelectedActions] = useState<Set<ActionType>>(
     new Set([ActionType.Lend, ActionType.Repay])
   );
@@ -505,16 +545,28 @@ export default function IntentSigner() {
 
         {/* Protocols */}
         <div className="space-y-2">
-          <Label className="font-mono text-[11px] uppercase tracking-[0.14em] text-[var(--text-muted)]">
-            允許協議 Allowed protocols
-          </Label>
-          <div className="flex flex-wrap gap-2">
-            {PROTOCOL_LABELS.map(({ id, label }) => (
-              <Pill
-                key={id}
-                label={label}
-                active={selectedProtocols.has(id)}
-                onClick={() => toggleProtocol(id)}
+          <div className="flex items-baseline justify-between gap-2">
+            <Label className="font-mono text-[11px] uppercase tracking-[0.14em] text-[var(--text-muted)]">
+              允許協議 Allowed protocols
+            </Label>
+            {aprsSource && (
+              <span
+                className="font-mono text-[9.5px] tracking-[0.08em] text-[var(--text-muted)]"
+                title="Live mainnet APR source"
+              >
+                APR · {aprsSource}
+              </span>
+            )}
+          </div>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 md:grid-cols-4">
+            {PROTOCOL_LABELS.map((meta) => (
+              <ProtocolCard
+                key={meta.id}
+                meta={meta}
+                active={selectedProtocols.has(meta.id)}
+                aprBlurb={formatAprBlurb(meta, aprs)}
+                loading={aprsLoading && !aprs}
+                onClick={() => toggleProtocol(meta.id)}
                 disabled={isBusy}
               />
             ))}
@@ -657,6 +709,72 @@ function NumField({
         className="border-[var(--border)] bg-[var(--bg-base)] font-mono text-[13px] text-[var(--text-primary)]"
       />
     </div>
+  );
+}
+
+function ProtocolCard({
+  meta,
+  active,
+  aprBlurb,
+  loading,
+  onClick,
+  disabled,
+}: {
+  meta: ProtocolMeta;
+  active: boolean;
+  aprBlurb: string | null;
+  loading: boolean;
+  onClick: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-pressed={active}
+      className={cn(
+        "group flex min-w-[200px] flex-col items-start gap-1 rounded-xl border px-3 py-2.5 text-left transition-all",
+        "disabled:cursor-not-allowed disabled:opacity-50",
+        active
+          ? "bg-[var(--accent-soft)] text-[var(--text-primary)] shadow-sm"
+          : "border-[var(--border)] bg-transparent text-[var(--text-secondary)] hover:border-[var(--border-light)] hover:bg-[var(--bg-card-2)]/40 hover:text-[var(--text-primary)]"
+      )}
+      style={active ? { borderColor: meta.color } : undefined}
+    >
+      <div className="flex w-full items-center gap-2">
+        <span className="flex h-6 w-6 shrink-0 items-center justify-center">
+          {meta.logo}
+        </span>
+        <span className="flex flex-col leading-tight">
+          <span className="font-mono text-[12px] font-semibold tracking-[0.04em]">
+            {meta.label}
+          </span>
+          <span className="font-mono text-[10px] tracking-[0.04em] text-[var(--text-muted)]">
+            {meta.tagline}
+          </span>
+        </span>
+        {active && (
+          <Sparkles
+            className="ml-auto h-3 w-3"
+            style={{ color: meta.color }}
+            aria-hidden="true"
+          />
+        )}
+      </div>
+      <span
+        className={cn(
+          "mt-0.5 font-mono text-[10.5px] tracking-[0.03em]",
+          active ? "text-[var(--text-primary)]/80" : "text-[var(--text-muted)]"
+        )}
+      >
+        {loading ? (
+          <span className="inline-block h-2.5 w-32 animate-pulse rounded bg-[var(--border)]/60" />
+        ) : (
+          aprBlurb ?? "—"
+        )}
+      </span>
+    </button>
   );
 }
 
