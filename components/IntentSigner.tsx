@@ -201,7 +201,13 @@ const DEMO_USER_PUBKEY = "11111111111111111111111111111111";
 // is safe and prevents the sign flow from crashing when the Vercel
 // env vars aren't set. Override in production via `vercel env add`.
 const DEVNET_PROTOCOL_ADMIN = "2iCWnS1J8WYZn4reo9YD76qZiiZ39t2c1oGM3dyYwHNg";
-const DEVNET_USDC_MINT       = "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU";
+// Sakura's devnet protocol is initialized with an admin-controlled
+// test USDC mint (see protocol PDA's usdc_mint field on-chain). This
+// is NOT Circle's canonical devnet USDC (4zMMC…DncDU). Web UI must
+// match the on-chain mint for the user's USDC ATA to be derivable —
+// otherwise sign_intent fails with a generic "Unexpected error".
+// Override via `vercel env add NEXT_PUBLIC_SAKURA_USDC_MINT`.
+const DEVNET_USDC_MINT       = "7rEhvYrGGT41FQrCt3zNx8Bko9TFVvytYWpP1mqhtLi3";
 
 export default function IntentSigner() {
   const { walletAddress, getProvider, isDemo } = useWallet();
