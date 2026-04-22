@@ -935,9 +935,9 @@ export const translations = {
   planProFeature4:     { zh: "最高優先級回應", en: "Highest priority responses", ja: "最優先レスポンス" },
   // ── Footer ───────────────────────────────────────────────────────
   footerTagline:          {
-    zh: "Sakura —— HTTPS 之於握手，Sakura 之於代理動作。一道已簽邊界、一份數學強制的證明、一筆費用。運營方消失，用戶主權，於 Solana 之上。",
-    en: "Sakura — what HTTPS did for the handshake, Sakura does for the agentic action. One signed bound. One math-enforced proof. One fee. The operator, erased. The user, sovereign. On Solana.",
-    ja: "Sakura — HTTPS が握手に為したことを、Sakura はエージェントの動作に為す。1 つの署名境界、1 つの数学強制証明、1 つの手数料。運営者は消え、ユーザーが主権、Solana の上に。",
+    zh: "Sakura · Solana 上的代理授權原語：將用戶意圖承諾上鏈，以數學證明確保代理永不越權，並以原子結算把主權寫進執行層。",
+    en: "Sakura · Solana's agent-authorization primitive. User intent is committed on-chain, mathematical proofs prevent any agent from overstepping it, and atomic settlement writes sovereignty into the execution layer.",
+    ja: "Sakura · Solana 上のエージェント認可プリミティブ。ユーザーの意図をオンチェーンにコミットし、数学的証明がエージェントの越権を不可能にし、アトミック決済が主権を実行層に刻み込む。",
   },
   footerProductSection:   { zh: "產品功能", en: "Product", ja: "プロダクト" },
   footerResourcesSection: { zh: "資源", en: "Resources", ja: "リソース" },
