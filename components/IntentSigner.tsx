@@ -499,16 +499,16 @@ export default function IntentSigner() {
     <Card className="relative overflow-hidden border-[var(--border)] bg-[var(--bg-card)]">
       <Seigaiha className="absolute inset-0 pointer-events-none" opacity={0.04} />
 
-      <CardHeader className="relative z-10 pb-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-md border border-[var(--border)] bg-[var(--bg-card-2)]">
+      <CardHeader className="relative z-10 px-6 pb-5 pt-2 sm:px-8">
+        <div className="flex items-center gap-3.5">
+          <div className="flex h-11 w-11 items-center justify-center rounded-md border border-[var(--border)] bg-[var(--bg-card-2)]">
             <PenLine className="h-5 w-5" style={{ color: "var(--accent)" }} />
           </div>
           <div>
-            <CardTitle className="font-serif text-xl tracking-wide">
+            <CardTitle className="font-serif text-xl tracking-[0.04em]">
               簽一次意圖
             </CardTitle>
-            <CardDescription className="text-[13px] text-[var(--text-secondary)]">
+            <CardDescription className="mt-0.5 text-[13px] leading-relaxed text-[var(--text-secondary)]">
               一句話寫下代理權限邊界，鏈上只存 32 位元組雜湊。
             </CardDescription>
           </div>
@@ -517,10 +517,10 @@ export default function IntentSigner() {
 
       <Separator className="bg-[var(--border)]" />
 
-      <CardContent className="relative z-10 space-y-6 py-6">
+      <CardContent className="relative z-10 space-y-7 px-6 py-7 sm:px-8">
         {/* Intent text */}
-        <div className="space-y-2">
-          <Label className="font-mono text-[11px] uppercase tracking-[0.14em] text-[var(--text-muted)]">
+        <div className="space-y-2.5">
+          <Label className="font-mono text-[11px] uppercase tracking-[0.06em] text-[var(--text-muted)]">
             意圖 Intent
           </Label>
           <Textarea
@@ -529,13 +529,13 @@ export default function IntentSigner() {
             rows={2}
             maxLength={500}
             disabled={isBusy}
-            className="resize-y border-[var(--border)] bg-[var(--bg-base)] font-mono text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
+            className="resize-y border-[var(--border)] bg-[var(--bg-base)] px-4 py-3 font-mono text-[13px] leading-relaxed text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
             placeholder="代理可在 Kamino 借貸，單次最多 $500 USDC，為期一週。"
           />
         </div>
 
         {/* Numeric inputs — 3 columns */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
           <NumField
             label="單次上限（代幣）"
             value={maxAmountTokens}
@@ -561,21 +561,21 @@ export default function IntentSigner() {
         </div>
 
         {/* Protocols — 朱印 cards, 2-col grid for breathing room */}
-        <div className="space-y-2.5">
+        <div className="space-y-3">
           <div className="flex items-baseline justify-between gap-2">
-            <Label className="font-mono text-[11px] uppercase tracking-[0.14em] text-[var(--text-muted)]">
+            <Label className="font-mono text-[11px] uppercase tracking-[0.06em] text-[var(--text-muted)]">
               允許協議 Allowed protocols
             </Label>
             {aprsSource && (
               <span
-                className="font-mono text-[9.5px] tracking-[0.08em] text-[var(--text-muted)]"
+                className="font-mono text-[10px] tracking-[0.06em] text-[var(--text-muted)]"
                 title="Live mainnet APR source"
               >
                 APR · {aprsSource}
               </span>
             )}
           </div>
-          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {PROTOCOL_LABELS.map((meta) => (
               <ProtocolCard
                 key={meta.id}
@@ -591,11 +591,11 @@ export default function IntentSigner() {
         </div>
 
         {/* Actions — matching 朱印 tiles, 3-col on desktop */}
-        <div className="space-y-2.5">
-          <Label className="font-mono text-[11px] uppercase tracking-[0.14em] text-[var(--text-muted)]">
+        <div className="space-y-3">
+          <Label className="font-mono text-[11px] uppercase tracking-[0.06em] text-[var(--text-muted)]">
             允許動作 Allowed actions
           </Label>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {ACTION_LABELS.map(({ id, label, kanji }) => (
               <ActionTile
                 key={id}
@@ -680,11 +680,11 @@ export default function IntentSigner() {
         )}
       </CardContent>
 
-      <CardFooter className="relative z-10 justify-between border-t border-[var(--border)] bg-[var(--bg-card-2)]/40 py-3">
-        <span className="font-mono text-[10px] text-[var(--text-muted)]">
+      <CardFooter className="relative z-10 justify-between border-t border-[var(--border)] bg-[var(--bg-card-2)]/40 px-6 py-3.5 sm:px-8">
+        <span className="font-mono text-[10px] tracking-[0.06em] text-[var(--text-muted)]">
           Program · {SAKURA_INSURANCE_PROGRAM_ID.toBase58().slice(0, 10)}…
         </span>
-        <span className="font-mono text-[10px] text-[var(--text-muted)]">
+        <span className="font-mono text-[10px] tracking-[0.06em] text-[var(--text-muted)]">
           簽名費 0.1% × max_usd_value
         </span>
       </CardFooter>
@@ -713,8 +713,8 @@ function NumField({
   max?: number;
 }) {
   return (
-    <div className="space-y-2">
-      <Label className="font-mono text-[11px] uppercase tracking-[0.14em] text-[var(--text-muted)]">
+    <div className="space-y-2.5">
+      <Label className="font-mono text-[11px] uppercase tracking-[0.06em] text-[var(--text-muted)]">
         {label}
       </Label>
       <Input
@@ -724,7 +724,7 @@ function NumField({
         disabled={disabled}
         min={min}
         max={max}
-        className="border-[var(--border)] bg-[var(--bg-base)] font-mono text-[13px] text-[var(--text-primary)]"
+        className="h-10 border-[var(--border)] bg-[var(--bg-base)] font-mono text-[13px] text-[var(--text-primary)]"
       />
     </div>
   );
@@ -781,8 +781,8 @@ function ActionTile({
       disabled={disabled}
       aria-pressed={active}
       className={cn(
-        "flex w-full items-center gap-3 rounded-xl border px-3.5 py-3 text-left transition-all",
-        "min-h-[72px] disabled:cursor-not-allowed disabled:opacity-50",
+        "flex w-full items-center gap-3.5 rounded-xl border px-4 py-3.5 text-left transition-all",
+        "min-h-[76px] disabled:cursor-not-allowed disabled:opacity-50",
         active
           ? "border-[var(--accent)]/60 bg-[var(--accent-soft)] text-[var(--text-primary)] shadow-sm"
           : "border-[var(--border)] bg-transparent text-[var(--text-secondary)] hover:border-[var(--border-light)] hover:bg-[var(--bg-card-2)]/40 hover:text-[var(--text-primary)]"
@@ -818,8 +818,8 @@ function ProtocolCard({
       disabled={disabled}
       aria-pressed={active}
       className={cn(
-        "group flex w-full items-center gap-4 rounded-xl border px-4 py-3.5 text-left transition-all",
-        "min-h-[88px] disabled:cursor-not-allowed disabled:opacity-50",
+        "group flex w-full items-center gap-4 rounded-xl border px-5 py-4 text-left transition-all",
+        "min-h-[96px] disabled:cursor-not-allowed disabled:opacity-50",
         active
           ? "border-[var(--accent)]/60 bg-[var(--accent-soft)] text-[var(--text-primary)] shadow-sm"
           : "border-[var(--border)] bg-transparent text-[var(--text-secondary)] hover:border-[var(--border-light)] hover:bg-[var(--bg-card-2)]/40 hover:text-[var(--text-primary)]"
@@ -867,7 +867,7 @@ function ProtocolCard({
             {apr?.value ?? "—"}
           </span>
         )}
-        <span className="font-mono text-[9px] uppercase tracking-[0.10em] text-[var(--text-muted)]">
+        <span className="font-mono text-[10px] uppercase tracking-[0.06em] text-[var(--text-muted)]">
           {apr?.label ?? "\u00A0"}
         </span>
       </div>
