@@ -202,7 +202,7 @@ async function main() {
     buildActionTypesBitmap([ActionType.Lend, ActionType.Repay])
   );
   const allowedProtocols = BigInt(
-    buildProtocolsBitmap([ProtocolId.Kamino, ProtocolId.MarginFi])
+    buildProtocolsBitmap([ProtocolId.Kamino, ProtocolId.Jupiter])
   );
   const maxAmount = 1_000n * 1_000_000n; // 1000 USDC (micro)
   const maxUsdValue = 20_000n * 1_000_000n; // $20k (micro-USD)

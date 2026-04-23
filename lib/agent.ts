@@ -3,7 +3,7 @@
  *
  * Three plugins activated:
  *  - TokenPlugin:  fetchPrice (Jupiter), transfer, burn, rugCheck, sendCompressedAirdrop
- *  - DefiPlugin:   stakeWithJup (Marinade/Jito), lendAsset/withdrawLend (Lulo), trade (Jupiter swap)
+ *  - DefiPlugin:   stakeWithJup (Jito LST route), lendAsset/withdrawLend (Lulo), trade (Jupiter swap)
  *  - MiscPlugin:   tipWithJito (MEV tips), sendCompressedAirdrop (Light Protocol ZK compression)
  *
  * Two agent types:

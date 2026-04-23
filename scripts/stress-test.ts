@@ -222,7 +222,7 @@ async function postFreshPyth(
   const maxAmount = 1_000_000_000n;
   const maxUsdValue = 1_000_000_000_000n;
   const allowedProtocols = BigInt(
-    buildProtocolsBitmap([ProtocolId.Kamino, ProtocolId.MarginFi])
+    buildProtocolsBitmap([ProtocolId.Kamino, ProtocolId.Jupiter])
   );
   const allowedActionTypes = BigInt(
     buildActionTypesBitmap([ActionType.Lend])

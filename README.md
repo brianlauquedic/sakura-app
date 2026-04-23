@@ -4,6 +4,8 @@
 
 Cryptographic bounds on what an AI agent can do with your money — a Solana-native execution-bounds verifier that turns "out of bounds" from a policy into a mathematical impossibility.
 
+**Day-1 SOM: $4.48B in Solana TVL addressable via 12 mainnet CPI cells** — Kamino lending $1.67B, Jupiter (Swap + Lend) $880M, Jito LST $920M, Raydium AMM $1.01B. Of which **$1.62B is outstanding borrow debt** — the surface most exposed to unbounded agent delegation today. Sourced from DefiLlama; reproducible by [`npx tsx scripts/som-analysis/day1-som.ts`](scripts/som-analysis/day1-som.ts). Not TAM. Not projection. The real number.
+
 A ZK circuit that verifies every agentic DeFi action against a
 user-signed intent — before the action is allowed to touch user
 funds. Solana's `alt_bn128` pairing syscall executes the gate in
@@ -93,6 +95,60 @@ action lands.
 
 Receipts, audits, and alerts are downstream consolations for a
 decision that already landed. Sakura gates first.
+
+---
+
+## Integration coverage — proof of reachability
+
+Not "we could integrate with any Solana DeFi protocol." The four below,
+today, with mainnet-format CPI instruction bytes produced by adapters
+in this repo. Every program ID is clickable; every adapter and verify
+script is in-tree. Click any row, verify independently.
+
+| Protocol | Cells | Mainnet program | Adapter | Verify script |
+|---|---:|---|---|---|
+| **Kamino** (Lend / Borrow / Repay / Withdraw) | 4 | [`KLend2g3cP87f…AYavgmjD`](https://solscan.io/account/KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD) | [`lib/adapters/kamino.ts`](lib/adapters/kamino.ts) | [`scripts/verify-kamino-adapter.ts`](scripts/verify-kamino-adapter.ts) |
+| **Jupiter Lend** (Lend / Borrow / Repay / Withdraw) | 4 | [`jup3YeL8Qh…brndc9`](https://solscan.io/account/jup3YeL8QhtSx1e253b2FDvsMNC87fDrgQZivbrndc9) | [`lib/adapters/jupiter-lend.ts`](lib/adapters/jupiter-lend.ts) | [`scripts/verify-jupiter-lend-adapter.ts`](scripts/verify-jupiter-lend-adapter.ts) |
+| **Jupiter v6 Swap** | 1 | HTTP aggregator (routes across Raydium, Orca, Meteora, Phoenix, …) | [`lib/sak-executor.ts`](lib/sak-executor.ts#L114) (`buildJupiterSwapIxs`) | covered by [`scripts/e2e-intent-execute.ts`](scripts/e2e-intent-execute.ts) |
+| **Jito** (Stake / Unstake) | 2 | [`SPoo1Ku8WFXoN…SLUNakuHy`](https://solscan.io/account/SPoo1Ku8WFXoNDMHPsrGSTSG1Y47rzgn41SLUNakuHy) — SPL Stake Pool program, operating on JitoSOL pool state [`Jito4APyf…5Awbb`](https://solscan.io/account/Jito4APyf642JPZPx3hGc6WWJ8zPKtRbRs4P815Awbb) | [`lib/adapters/jito.ts`](lib/adapters/jito.ts) | [`scripts/verify-jito-adapter.ts`](scripts/verify-jito-adapter.ts) |
+| **Raydium** (Swap via CPMM / AMM v4 / CLMM, router-dispatched) | 1 | [`routeUGWgWzq…GPP3xS`](https://solscan.io/account/routeUGWgWzqBWFcrCfv8tritsqukccJPu3q5GPP3xS) (router) → [`CPMMoo8L…KxQB5qKP1C`](https://solscan.io/account/CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C), [`CAMMCzo5…grrKgrWqK`](https://solscan.io/account/CAMMCzo5YL8w4VFF8KVHrK22GGUsp5VTaW7grrKgrWqK), [`675kPX9M…zeLXfQM9H24wFSUt1Mp8`](https://solscan.io/account/675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8) | [`lib/adapters/raydium.ts`](lib/adapters/raydium.ts) | [`scripts/verify-raydium-adapter.ts`](scripts/verify-raydium-adapter.ts) |
+| **Total** | **12** | 4 protocols live | `lib/adapters/` + `lib/sak-executor.ts` | 4 verify scripts |
+
+### Reproducing the proof
+
+Each `verify-*-adapter.ts` script opens a mainnet RPC connection, loads
+the real program state, constructs the exact CPI `TransactionInstruction`
+that would execute if broadcast, and asserts the byte structure targets
+the listed program. No real SOL is spent; no transaction is broadcast.
+The scripts validate by **construction**, not by settlement.
+
+```bash
+# Requires a Helius (or equivalent) mainnet RPC — public RPC rate-limits
+# the market-load batch. Add HELIUS_API_KEY to .env.local.
+set -a && source .env.local && set +a
+
+npx tsx scripts/verify-kamino-adapter.ts        # ~10s
+npx tsx scripts/verify-jupiter-lend-adapter.ts  # ~15s
+npx tsx scripts/verify-jito-adapter.ts          # ~5s
+npx tsx scripts/verify-raydium-adapter.ts       # ~10s
+```
+
+### Devnet evidence (atomic-gate run on real on-chain state)
+
+The ZK gate itself is run end-to-end on **devnet** — the policy gate is
+program-level, so devnet behaviour is identical to mainnet:
+
+- [`scripts/e2e-intent-execute.ts`](scripts/e2e-intent-execute.ts) — full
+  sign_intent → proof gen → execute_with_intent_proof round-trip,
+  typically lands in ~30s.
+- [`docs/bench/2026-04-22-cfull-cu.json`](docs/bench/2026-04-22-cfull-cu.json) —
+  mean **204,460 CU / 5 runs** for the dual-oracle gate (Pyth ∩ Switchboard).
+- [`docs/bench/2026-04-22-stress.json`](docs/bench/2026-04-22-stress.json) —
+  **15 adversarial mutations, 15 reverted, 0 admitted**.
+
+Devnet is memo-mode for DeFi CPIs (Kamino / Jupiter Lend reserves don't
+exist there), so integration-coverage verification is mainnet-side via
+the adapters above. The ZK gate is runtime-identical.
 
 ---
 

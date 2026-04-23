@@ -162,18 +162,35 @@ export enum ActionType {
   // 8..31 reserved
 }
 
-/** Bit index (0..31) in allowed_protocols bitmap */
+/** Bit index (0..31) in allowed_protocols bitmap.
+ *
+ * LIVE integrations (surfaced in UI + handled by lib/sak-executor.ts dispatcher):
+ *   Kamino(0), Jupiter(3), Jito(5), Raydium(8) = 4 protocols / 12 CPI cells.
+ *
+ * RESERVED slots below are kept for on-chain bitmap compatibility — altering
+ * their numeric positions would break the trusted setup / verifying key.
+ * They must NOT be exposed in UI and must NOT be added to the dispatcher.
+ */
 export enum ProtocolId {
   Kamino = 0,
+  /** @deprecated Reserved — MarginFi is not integrated. Bitmap slot kept for
+   * trusted-setup compatibility. Do not expose in UI or adapter dispatcher. */
   MarginFi = 1,
   /** @deprecated Solend support removed 2026-04 — protocol is dormant; value
    * reserved in the bitmap for on-chain backwards compatibility. Do not
    * expose in UI or adapter dispatcher. */
   Solend = 2,
   Jupiter = 3,
+  /** @deprecated Reserved — Marinade is not integrated (Jito is the sole LST
+   * integration). Bitmap slot kept for trusted-setup compatibility. Do not
+   * expose in UI or adapter dispatcher. */
   Marinade = 4,
   Jito = 5,
+  /** @deprecated Reserved — Drift is not integrated. Bitmap slot kept for
+   * trusted-setup compatibility. Do not expose in UI or adapter dispatcher. */
   Drift = 6,
+  /** @deprecated Reserved — Zeta is not integrated. Bitmap slot kept for
+   * trusted-setup compatibility. Do not expose in UI or adapter dispatcher. */
   Zeta = 7,
   /** Added 2026-04 — Raydium direct swap route (bypasses Jupiter aggregator). */
   Raydium = 8,

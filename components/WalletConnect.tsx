@@ -104,7 +104,7 @@ const AGENT_KEYS = [
 
 const PROTOCOLS = [
   "Jupiter",
-  "Marinade",
+  "Raydium",
   "Jito",
   "Kamino",
   "GoPlus Security",

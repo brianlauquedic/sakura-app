@@ -118,7 +118,9 @@ const userUsdcAta = getAssociatedTokenAddressSync(USDC_MINT_DEVNET, user);
 //   - natural-language intent text  (free text, hashed to a field element)
 //   - per-action amount cap         (in micro-units of the token, e.g. USDC*10⁶)
 //   - per-action USD cap            (in micro-USD)
-//   - allowed-protocols bitmap      (ProtocolId enum: Kamino=0, MarginFi=1, …)
+//   - allowed-protocols bitmap      (ProtocolId enum: live slots are
+//                                    Kamino=0, Jupiter=3, Jito=5, Raydium=8;
+//                                    other slots reserved, see lib/insurance-pool.ts)
 //   - allowed-actions bitmap        (ActionType enum: Borrow=0, Lend=1, Swap=2, …)
 //   - intent nonce                  (any bigint, typically monotonic)
 //   - expiry timestamp              (unix seconds)
@@ -149,7 +151,7 @@ async function hashIntentText(text: string): Promise<bigint> {
 }
 
 const intentTextHash = await hashIntentText(
-  "The agent may lend up to $1,000 into Kamino or MarginFi for one week."
+  "The agent may lend up to $1,000 into Kamino or Jupiter Lend for one week."
 );
 
 const { bytesBE32: commitmentBytes } = await computeIntentCommitment(
@@ -158,7 +160,7 @@ const { bytesBE32: commitmentBytes } = await computeIntentCommitment(
   nonce,                     // bigint
   maxAmount,                 // bigint, micro-units
   maxUsdValue,               // bigint, micro-USD
-  buildProtocolsBitmap([ProtocolId.Kamino, ProtocolId.MarginFi]),
+  buildProtocolsBitmap([ProtocolId.Kamino, ProtocolId.Jupiter]),
   buildActionTypesBitmap([ActionType.Lend])
 );
 
@@ -213,7 +215,7 @@ const witness: IntentWitness = {
   maxAmount,
   maxUsdValue,
   allowedProtocols: BigInt(
-    buildProtocolsBitmap([ProtocolId.Kamino, ProtocolId.MarginFi])
+    buildProtocolsBitmap([ProtocolId.Kamino, ProtocolId.Jupiter])
   ),
   allowedActionTypes: BigInt(
     buildActionTypesBitmap([ActionType.Lend])
@@ -249,7 +251,7 @@ const tx = new VersionedTransaction(
         proofB,
         proofC,
       }),
-      yourDefiInstruction,       // Kamino deposit, Jupiter swap, Marinade stake
+      yourDefiInstruction,       // Kamino deposit, Jupiter swap, Jito stake
     ],
   }).compileToV0Message()
 );
@@ -270,8 +272,8 @@ total compute cost measured on devnet on 2026-04-22 is
 
 A `ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 })`
 comfortably absorbs this and leaves ~190k CU headroom for a
-realistic DeFi instruction (Kamino deposit, Jupiter swap, Marinade
-stake are all <60k CU). The DeFi instruction your wallet passes in
+realistic DeFi instruction (Kamino deposit, Jupiter swap, Jito stake
+are all <60k CU). The DeFi instruction your wallet passes in
 remains fully under your control.
 
 ### Proof-generation latency — what to budget for

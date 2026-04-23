@@ -254,9 +254,15 @@ function bigintParam(q: URLSearchParams, key: string, fallback: bigint): bigint 
 }
 
 function buildDescription(p: IntentParams): string {
+  // Bit index → ProtocolId label. Only Kamino(0), Jupiter(3), Jito(5),
+  // Raydium(8) are integrated; other slots are reserved in the enum
+  // (see lib/insurance-pool.ts) but should not appear in signed intents
+  // because the UI never offers them. If a bitmap claims an unsupported
+  // slot, we mark it "(reserved)" rather than pretending it's live.
   const protos = bitmapDescribe(p.allowedProtocols, [
-    "Kamino", "MarginFi", "(deprecated)", "Jupiter",
-    "Marinade", "Jito", "Drift", "Zeta",
+    "Kamino", "(reserved)", "(deprecated)", "Jupiter",
+    "(reserved)", "Jito", "(reserved)", "(reserved)",
+    "Raydium",
   ]);
   const actions = bitmapDescribe(p.allowedActionTypes, [
     "Borrow", "Lend", "Swap", "Repay",

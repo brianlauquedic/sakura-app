@@ -327,8 +327,9 @@ pub mod sakura_insurance {
 
     /// Execute an action gated by a Groth16 proof of `action ⊂ intent`.
     ///
-    /// The actual DeFi action (Kamino borrow, MarginFi repay, Jupiter swap,
-    /// etc.) is performed by subsequent instructions in the same atomic v0
+    /// The actual DeFi action (Kamino borrow, Jupiter Lend repay, Jupiter /
+    /// Raydium swap, Jito stake, etc.) is performed by subsequent
+    /// instructions in the same atomic v0
     /// transaction. This instruction's role is purely POLICY VERIFICATION:
     ///   1. Verify the ZK proof via alt_bn128 pairing
     ///   2. Verify the oracle price matches Pyth at the claimed slot
