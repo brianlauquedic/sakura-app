@@ -207,10 +207,10 @@ function AppContent() {
                 width: "100%",
               }}
             >
-              <ErrorBoundary fallbackLabel="Intent Signer">
+              <ErrorBoundary fallbackLabel="Intent Signer" retryLabel={t("errorBoundaryRetry")}>
                 <IntentSigner />
               </ErrorBoundary>
-              <ErrorBoundary fallbackLabel="Action History">
+              <ErrorBoundary fallbackLabel="Action History" retryLabel={t("errorBoundaryRetry")}>
                 <ActionHistory />
               </ErrorBoundary>
             </div>
