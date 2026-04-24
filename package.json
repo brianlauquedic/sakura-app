@@ -18,7 +18,6 @@
     "@jup-ag/lend": "^0.1.9",
     "@kamino-finance/klend-sdk": "^7.3.22",
     "@modelcontextprotocol/sdk": "^1.26.0",
-    "@mrgnlabs/marginfi-client-v2": "^6.4.1",
     "@noble/curves": "^2.2.0",
     "@solana-agent-kit/plugin-defi": "^2.0.8",
     "@solana-agent-kit/plugin-misc": "^2.0.6",

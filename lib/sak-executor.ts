@@ -8,8 +8,8 @@
  * `execute_with_intent_proof` gate — so both land or neither does.
  *
  * Solution: this module bypasses SAK's send step and goes directly to
- * the underlying protocol APIs (Jupiter v6 quote+swap, Kamino IDL CPIs,
- * MarginFi IDL CPIs, Marinade v2, etc.) to produce unsigned
+ * the underlying protocol APIs (Jupiter v6 quote+swap, Jupiter Lend,
+ * Kamino IDL CPIs, Jito SPL stake-pool, Raydium AMM) to produce unsigned
  * `TransactionInstruction[]` that the `intent-executor` skill can
  * atomically compose with the ZK gate.
  *
@@ -17,13 +17,12 @@
  * for their non-send utilities (price quotes, fetchPrice, APY estimates,
  * pool metadata) — see `lib/agent.ts` for those.
  *
- * Map: (ActionType, ProtocolId) → builder:
- *   Lend,   Kamino   → buildKaminoLendIx
- *   Lend,   MarginFi → buildMarginFiLendIx
- *   Repay,  Kamino   → buildKaminoRepayIx
- *   Swap,   Jupiter  → buildJupiterSwapIxs (real, via Jupiter v6 HTTP API)
- *   Stake,  Marinade → buildMarinadeStakeIx
- *   Stake,  Jito     → buildJitoStakeIx
+ * Map: (ActionType, ProtocolId) → builder (4 live protocols × 12 CPI cells):
+ *   Lend/Borrow/Repay/Withdraw, Kamino  → buildKamino*Ix
+ *   Lend/Borrow/Repay/Withdraw, Jupiter → buildJupiterLend*Ix
+ *   Swap,                       Jupiter → buildJupiterSwapIxs (Jupiter v6 HTTP API)
+ *   Swap,                       Raydium → buildRaydiumSwapIxs (direct AMM route)
+ *   Stake/Unstake,              Jito    → buildJito{Stake,Unstake}Ix
  *
  * All builders return `{ instructions, addressLookupTables?, description }`
  * so the executor can assemble a v0 message with proper ALT support
@@ -178,18 +177,17 @@ export async function buildJupiterSwapIxs(
 }
 
 // ══════════════════════════════════════════════════════════════════════
-// Kamino / MarginFi lending
+// Kamino / Jupiter Lend
 // ══════════════════════════════════════════════════════════════════════
 //
 // Mainnet program IDs (constants only — real reserve pubkeys are
 // looked up dynamically per user/asset at execution time):
 //
 //   Kamino Lending   KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD
-//   MarginFi v2      MFv2hWf31Z9kbCa1snEPYctwafyhdvnV7FZnsebVacA
 //   Memo             MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr
 //
-// Solend removed 2026-04 — protocol is dormant; see ProtocolId.Solend
-// deprecation note in lib/insurance-pool.ts for bitmap compatibility.
+// MarginFi/Solend enum slots are reserved for bitmap compatibility
+// (see lib/insurance-pool.ts); they are not integrated.
 //
 // Devnet fallback: emits a Memo-only instruction with the full action
 // parameters so the devnet E2E flow stays functional. Real adapters
@@ -203,13 +201,10 @@ const MEMO_PROGRAM_ID = new PublicKey(
 export const KAMINO_LENDING_PROGRAM_ID = new PublicKey(
   "KLend2g3cP87fffoy8q1mQqGKjrxjC8boSyAYavgmjD"
 );
-export const MARGINFI_V2_PROGRAM_ID = new PublicKey(
-  "MFv2hWf31Z9kbCa1snEPYctwafyhdvnV7FZnsebVacA"
-);
 
 /**
- * Emits a Memo ix describing the lending action. Placeholder until
- * Kamino/MarginFi IDLs are wired. The Memo payload format is:
+ * Emits a Memo ix describing the lending action. Used as a devnet
+ * fallback until mainnet IDL CPIs are wired. Payload format:
  *
  *   sakura-action:v1:{protocol}:{action}:{amount}:{user}
  */
@@ -322,12 +317,8 @@ export async function buildJupiterLendWithdrawIx(p: BuildActionParams): Promise<
   return wrapJupiterLendAction(p, "buildJupiterLendWithdraw", ActionType.Withdraw);
 }
 // ══════════════════════════════════════════════════════════════════════
-// Marinade / Jito staking
+// Jito LST
 // ══════════════════════════════════════════════════════════════════════
-
-export async function buildMarinadeStakeIx(p: BuildActionParams): Promise<ActionIxBundle> {
-  return buildMemoLendingStub(p, ProtocolId.Marinade, ActionType.Stake);
-}
 
 /** Jito liquid stake: user pays SOL → receives JitoSOL. REAL mainnet ix. */
 export async function buildJitoStakeIx(p: BuildActionParams): Promise<ActionIxBundle> {
@@ -425,12 +416,10 @@ export async function buildActionIxs(
     case "Withdraw:Jito":
       // Jito has no "Withdraw" concept — maps to liquid unstake semantically
       return buildJitoUnstakeIx(params);
-    // ── Deprecated protocols (still in enum for bitmap compat) ───────
-    // Marinade / MarginFi removed from dispatcher 2026-04-22 — not in
-    // the top-4 by Grid gridRank. Their Memo stubs remain callable via
-    // lib/adapters/ if needed, but the dispatcher no longer surfaces them.
-    case "Stake:Marinade":
-      return buildMarinadeStakeIx(params);
+    // Non-integrated enum slots (MarginFi / Solend / Marinade / Drift /
+    // Zeta) fall through to the default arm; they are kept in ProtocolId
+    // for bitmap compatibility but the UI never surfaces them and the
+    // dispatcher refuses them here.
     default:
       throw new Error(
         `Unsupported (action, protocol) combination: ${key}. ` +

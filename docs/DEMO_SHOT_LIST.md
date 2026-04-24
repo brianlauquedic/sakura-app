@@ -28,9 +28,9 @@ Open in the browser:
 
 1. Focus the browser, show `IntentSigner` component.
 2. Type natural-language intent: *"Lend up to 1000 USDC into Kamino or
-   MarginFi, $10k max per action."*
+   Jupiter Lend, $10k max per action."*
 3. Adjust sliders: max amount 1000, USD cap 10000, hours 24.
-4. Toggle pills: Kamino ✓ MarginFi ✓ · Lend ✓ Repay ✓.
+4. Toggle pills: Kamino ✓ Jupiter ✓ · Lend ✓ Repay ✓.
 5. Click **Sign Intent**. Phantom popup appears.
 6. Click Approve in Phantom.
 7. Show the green success banner with the Solscan link.

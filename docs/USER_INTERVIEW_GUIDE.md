@@ -1,8 +1,9 @@
 # User Interview Guide — 5 interviews × 20 min
 
 > For W3D20-21. Target: 5 Phantom/OKX users who hold ≥ $500 in
-> Solana DeFi (ideally Kamino/MarginFi/Solend positions). Recruit via
-> Farcaster channel `/solana` or SuperteamDAO member list.
+> Solana DeFi (ideally Kamino or Jupiter Lend lending positions, or
+> Jito staking). Recruit via Farcaster channel `/solana` or
+> SuperteamDAO member list.
 >
 > Goal: validate that "bounded agentic authority" is a felt need, and
 > that the intent-signing UX is not more painful than the status quo.
@@ -18,7 +19,7 @@
 ## Pre-interview (2 min)
 
 - Confirm: *"How much SOL / USDC roughly do you have in Kamino,
-  MarginFi, Solend, or similar right now?"*
+  Jupiter Lend, Jito, Raydium, or similar Solana DeFi right now?"*
 - If < $500, politely end — they're not in the target segment.
 
 ## Block 1 — status quo (5 min)

@@ -23,7 +23,7 @@ include "../../node_modules/circomlib/circuits/bitify.circom";
  *   [0] intent_commitment        Poseidon-tree-hash of the full intent policy
  *   [1] action_type              0=borrow, 1=lend, 2=swap, 3=repay, ... (u8)
  *   [2] action_amount            token amount in micro-units (u64)
- *   [3] action_target_index      0=Kamino, 1=MarginFi, 2=Solend, ... (u8)
+ *   [3] action_target_index      ProtocolId enum; live slots 0=Kamino, 3=Jupiter, 5=Jito, 8=Raydium (u8)
  *   [4] oracle_price_usd_micro   Pyth price at execution time (u64 micro-USD)
  *   [5] oracle_slot              Pyth publish slot (u64, verified on-chain)
  *

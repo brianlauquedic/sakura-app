@@ -121,7 +121,7 @@ Covers version B then adds:
   Apricot's own X-Farm. Voltr is on Base/Mode, not Solana. Session-key
   wallets give soft bounds — no cryptographic guarantee. Sakura is the
   only Solana-native, bounds-enforcing, atomic-execution primitive.
-- **Minute 7–8:** Roadmap. Mainnet deploy. Kamino + MarginFi real CPI
+- **Minute 7–8:** Roadmap. Mainnet deploy. Kamino + Jupiter Lend real CPI
   (devnet is memo-mode because the reserves don't exist there). SDK for
   third-party agent builders. Blinks catalog for common intent templates.
 

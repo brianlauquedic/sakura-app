@@ -130,12 +130,12 @@ export const DEMO_NONCE_RESULT = getDemoNonceResult("zh");
 
 // ── Ghost Run Demo ────────────────────────────────────────────────────────────
 
-export const DEMO_GHOST_STRATEGY = "質押 2 SOL 到 Marinade，把 150 USDC 存入 Kamino，然後用 0.5 SOL 換成 JitoSOL";
+export const DEMO_GHOST_STRATEGY = "質押 2 SOL 到 Jito，把 150 USDC 存入 Kamino，然後把 50 USDC 存入 Jupiter Lend";
 
-const GHOST_AI_MARINADE = {
-  zh: `✅ **策略分析：單步操作，預期年化收益 $12.09**\n\n**Marinade Stake（1 SOL → 0.9931 mSOL）**\nAPY 7.24%，預期年化收益 $12.09。mSOL 為液態質押代幣，可繼續用於 DeFi 借貸或流動性挖礦，不影響質押收益。\n\n總 Gas 費用：0.000025 SOL（$0.0039），極低成本。`,
-  en: `✅ **Strategy Analysis: Single-step operation, estimated annual yield $12.09**\n\n**Marinade Stake (1 SOL → 0.9931 mSOL)**\nAPY 7.24%, estimated annual yield $12.09. mSOL is a liquid staking token — you can continue using it in DeFi lending or liquidity mining without sacrificing staking rewards.\n\nTotal Gas: 0.000025 SOL ($0.0039), extremely low cost.`,
-  ja: `✅ **戦略分析：1ステップ操作、予想年間収益 $12.09**\n\n**Marinade Stake（1 SOL → 0.9931 mSOL）**\nAPY 7.24%、予想年間収益 $12.09。mSOL はリキッドステーキングトークンで、ステーキング報酬を犠牲にせず DeFi レンディングや流動性マイニングに利用可能です。\n\n合計ガス代：0.000025 SOL（$0.0039）、極めて低コスト。`,
+const GHOST_AI_JITO_SOLO = {
+  zh: `✅ **策略分析：單步操作，預期年化收益 $14.89**\n\n**Jito Stake（1 SOL → 0.9923 JitoSOL）**\nAPY 8.92%（含 MEV 收益分成），預期年化收益 $14.89。JitoSOL 為液態質押代幣，可繼續用於 DeFi 借貸或流動性挖礦，不影響質押收益。\n\n總 Gas 費用：0.000025 SOL（$0.0039），極低成本。`,
+  en: `✅ **Strategy Analysis: Single-step operation, estimated annual yield $14.89**\n\n**Jito Stake (1 SOL → 0.9923 JitoSOL)**\nAPY 8.92% (including MEV revenue sharing), estimated annual yield $14.89. JitoSOL is a liquid staking token — you can continue using it in DeFi lending or liquidity mining without sacrificing staking rewards.\n\nTotal Gas: 0.000025 SOL ($0.0039), extremely low cost.`,
+  ja: `✅ **戦略分析：1ステップ操作、予想年間収益 $14.89**\n\n**Jito Stake（1 SOL → 0.9923 JitoSOL）**\nAPY 8.92%（MEV 収益分配を含む）、予想年間収益 $14.89。JitoSOL はリキッドステーキングトークンで、ステーキング報酬を犠牲にせず DeFi レンディングや流動性マイニングに利用可能です。\n\n合計ガス代：0.000025 SOL（$0.0039）、極めて低コスト。`,
 };
 
 const GHOST_AI_KAMINO = {
@@ -151,74 +151,74 @@ const GHOST_AI_JITO = {
 };
 
 const GHOST_AI_FULL = {
-  zh: `✅ **策略分析：三步均可安全執行，預期年化收益 $43.72**
+  zh: `✅ **策略分析：三步均可安全執行，預期年化收益 $50.17**
 
-**第一步 — Marinade Stake（2 SOL → 1.9862 mSOL）**
-APY 7.24%，預期年化收益 $24.18。Marinade 是 Solana 最大的液態質押協議，TVL $1.2B，風險極低。mSOL 可繼續用於 DeFi 操作。
+**第一步 — Jito Stake（2 SOL → 1.9847 JitoSOL）**
+APY 8.92%（含 MEV 收益分成），預期年化收益 $27.92。Jito 是 Solana 最大的 MEV 質押協議，TVL $2.1B。JitoSOL 可繼續用於 DeFi 操作。
 
 **第二步 — Kamino Lend（150 USDC → 149.87 kUSDC）**
 APY 8.15%，預期年化收益 $12.23。Kamino 主市場 USDC 池 utilization rate 74%，收益穩定。
 
-**第三步 — SOL→JitoSOL Swap（0.5 SOL → 0.4923 JitoSOL）**
-價格衝擊僅 0.08%（極低），路由通過 Jupiter 聚合器最優路徑。JitoSOL APY 8.92%，包含 MEV 收益分成。
+**第三步 — Jupiter Lend（50 USDC → 49.95 jlUSDC）**
+APY 9.12%（含激勵獎勵），預期年化收益 $4.56。Jupiter Lend Earn 池，與 Kamino 分散放貸可分攤單協議風險。
 
 **三步無資金衝突，可按順序執行。**
-總 Gas 費用：0.000095 SOL（$0.0148），極低成本。
-預計年化總收益：**$43.72 USD**`,
+總 Gas 費用：0.000075 SOL（$0.0117），極低成本。
+預計年化總收益：**$50.17 USD**`,
 
-  en: `✅ **Strategy Analysis: All three steps safe to execute, estimated annual yield $43.72**
+  en: `✅ **Strategy Analysis: All three steps safe to execute, estimated annual yield $50.17**
 
-**Step 1 — Marinade Stake (2 SOL → 1.9862 mSOL)**
-APY 7.24%, estimated annual yield $24.18. Marinade is Solana's largest liquid staking protocol with $1.2B TVL, extremely low risk. mSOL can continue to be used in DeFi operations.
+**Step 1 — Jito Stake (2 SOL → 1.9847 JitoSOL)**
+APY 8.92% (including MEV revenue sharing), estimated annual yield $27.92. Jito is Solana's largest MEV staking protocol with $2.1B TVL. JitoSOL can continue to be used in DeFi operations.
 
 **Step 2 — Kamino Lend (150 USDC → 149.87 kUSDC)**
 APY 8.15%, estimated annual yield $12.23. Kamino Main Market USDC pool utilization rate 74%, stable returns.
 
-**Step 3 — SOL→JitoSOL Swap (0.5 SOL → 0.4923 JitoSOL)**
-Price impact only 0.08% (extremely low), routed through Jupiter aggregator optimal path. JitoSOL APY 8.92%, includes MEV revenue sharing.
+**Step 3 — Jupiter Lend (50 USDC → 49.95 jlUSDC)**
+APY 9.12% (including incentive rewards), estimated annual yield $4.56. Jupiter Lend Earn pool — splitting lending between Kamino and Jupiter diversifies single-protocol risk.
 
 **All three steps have no fund conflicts — safe to execute sequentially.**
-Total Gas: 0.000095 SOL ($0.0148), extremely low cost.
-Estimated total annual yield: **$43.72 USD**`,
+Total Gas: 0.000075 SOL ($0.0117), extremely low cost.
+Estimated total annual yield: **$50.17 USD**`,
 
-  ja: `✅ **戦略分析：3ステップすべて安全に実行可能、予想年間収益 $43.72**
+  ja: `✅ **戦略分析：3ステップすべて安全に実行可能、予想年間収益 $50.17**
 
-**ステップ 1 — Marinade Stake（2 SOL → 1.9862 mSOL）**
-APY 7.24%、予想年間収益 $24.18。Marinade は Solana 最大のリキッドステーキングプロトコルで、TVL $1.2B、リスク極低。mSOL は DeFi 操作に引き続き利用可能。
+**ステップ 1 — Jito Stake（2 SOL → 1.9847 JitoSOL）**
+APY 8.92%（MEV 収益分配を含む）、予想年間収益 $27.92。Jito は Solana 最大の MEV ステーキングプロトコルで、TVL $2.1B。JitoSOL は DeFi 操作に引き続き利用可能。
 
 **ステップ 2 — Kamino Lend（150 USDC → 149.87 kUSDC）**
 APY 8.15%、予想年間収益 $12.23。Kamino メインマーケット USDC プール利用率 74%、安定した収益。
 
-**ステップ 3 — SOL→JitoSOL Swap（0.5 SOL → 0.4923 JitoSOL）**
-価格影響はわずか 0.08%（極めて低い）、Jupiter アグリゲーター最適ルート経由。JitoSOL APY 8.92%、MEV 収益分配を含む。
+**ステップ 3 — Jupiter Lend（50 USDC → 49.95 jlUSDC）**
+APY 9.12%（インセンティブ報酬を含む）、予想年間収益 $4.56。Jupiter Lend Earn プール — Kamino との分散貸出により単一プロトコルリスクを軽減。
 
 **3ステップ間に資金の競合なし — 順次安全に実行可能。**
-合計ガス代：0.000095 SOL（$0.0148）、極めて低コスト。
-予想年間総収益：**$43.72 USD**`,
+合計ガス代：0.000075 SOL（$0.0117）、極めて低コスト。
+予想年間総収益：**$50.17 USD**`,
 };
 
 const GHOST_DESC = {
-  stake_sol_marinade: { zh: "質押 1 SOL 到 Marinade", en: "Stake 1 SOL on Marinade", ja: "1 SOL を Marinade にステーク" },
+  stake_1sol_jito: { zh: "質押 1 SOL 到 Jito", en: "Stake 1 SOL on Jito", ja: "1 SOL を Jito にステーク" },
   lend_usdc_kamino_50: { zh: "存入 50 USDC 到 Kamino", en: "Deposit 50 USDC to Kamino", ja: "50 USDC を Kamino に預入" },
   stake_sol_jito: { zh: "質押 2 SOL 到 Jito", en: "Stake 2 SOL on Jito", ja: "2 SOL を Jito にステーク" },
   lend_usdc_kamino_100: { zh: "存入 100 USDC 到 Kamino", en: "Deposit 100 USDC to Kamino", ja: "100 USDC を Kamino に預入" },
-  stake_2sol_marinade: { zh: "質押 2 SOL 到 Marinade", en: "Stake 2 SOL on Marinade", ja: "2 SOL を Marinade にステーク" },
+  stake_2sol_jito: { zh: "質押 2 SOL 到 Jito", en: "Stake 2 SOL on Jito", ja: "2 SOL を Jito にステーク" },
   lend_usdc_kamino_150: { zh: "存入 150 USDC 到 Kamino", en: "Deposit 150 USDC to Kamino", ja: "150 USDC を Kamino に預入" },
-  swap_sol_jitosol: { zh: "換取 0.5 SOL → JitoSOL", en: "Swap 0.5 SOL → JitoSOL", ja: "0.5 SOL → JitoSOL に交換" },
+  lend_usdc_jupiter_50: { zh: "存入 50 USDC 到 Jupiter Lend", en: "Deposit 50 USDC to Jupiter Lend", ja: "50 USDC を Jupiter Lend に預入" },
 };
 
-export function getDemoGhostResultMarinade(lang: Lang = "zh") {
+export function getDemoGhostResultJitoSolo(lang: Lang = "zh") {
   return {
-    steps: [{ type: "stake" as const, inputToken: "SOL", inputAmount: 1, outputToken: "mSOL", description: pick(GHOST_DESC.stake_sol_marinade, lang) }],
+    steps: [{ type: "stake" as const, inputToken: "SOL", inputAmount: 1, outputToken: "JitoSOL", description: pick(GHOST_DESC.stake_1sol_jito, lang) }],
     result: {
       steps: [{
-        step: { type: "stake" as const, inputToken: "SOL", inputAmount: 1, outputToken: "mSOL", protocol: "Marinade", description: pick(GHOST_DESC.stake_sol_marinade, lang) },
-        success: true, outputAmount: 0.9931, gasSol: 0.000025, estimatedApy: 7.24, annualUsdYield: 12.09,
-        pdaSeedDescription: "Marinade stake account PDA: [marinade_state, validator_list, stake_account]",
+        step: { type: "stake" as const, inputToken: "SOL", inputAmount: 1, outputToken: "JitoSOL", protocol: "Jito", description: pick(GHOST_DESC.stake_1sol_jito, lang) },
+        success: true, outputAmount: 0.9923, gasSol: 0.000025, estimatedApy: 8.92, annualUsdYield: 14.89,
+        pdaSeedDescription: "Jito stake pool PDA: [stake_pool, validator_list, reserve_stake]",
       }],
       totalGasSol: 0.000025, canExecute: true, warnings: [], priorityFeeUsed: 12500, conditionalOrder: null,
     },
-    aiAnalysis: pick(GHOST_AI_MARINADE, lang),
+    aiAnalysis: pick(GHOST_AI_JITO_SOLO, lang),
   };
 }
 
@@ -265,16 +265,16 @@ export function getDemoGhostResultJito(lang: Lang = "zh") {
 export function getDemoGhostResult(lang: Lang = "zh") {
   return {
     steps: [
-      { type: "stake" as const, inputToken: "SOL", inputAmount: 2, outputToken: "mSOL", description: pick(GHOST_DESC.stake_2sol_marinade, lang) },
+      { type: "stake" as const, inputToken: "SOL", inputAmount: 2, outputToken: "JitoSOL", description: pick(GHOST_DESC.stake_2sol_jito, lang) },
       { type: "lend" as const, inputToken: "USDC", inputAmount: 150, outputToken: "kUSDC", description: pick(GHOST_DESC.lend_usdc_kamino_150, lang) },
-      { type: "swap" as const, inputToken: "SOL", inputAmount: 0.5, outputToken: "JitoSOL", description: pick(GHOST_DESC.swap_sol_jitosol, lang) },
+      { type: "lend" as const, inputToken: "USDC", inputAmount: 50, outputToken: "jlUSDC", description: pick(GHOST_DESC.lend_usdc_jupiter_50, lang) },
     ],
     result: {
       steps: [
         {
-          step: { type: "stake" as const, inputToken: "SOL", inputAmount: 2, outputToken: "mSOL", protocol: "Marinade", description: pick(GHOST_DESC.stake_2sol_marinade, lang) },
-          success: true, outputAmount: 1.9862, gasSol: 0.000025, estimatedApy: 7.24, annualUsdYield: 24.18,
-          pdaSeedDescription: "Marinade stake account PDA: [marinade_state, validator_list, stake_account]",
+          step: { type: "stake" as const, inputToken: "SOL", inputAmount: 2, outputToken: "JitoSOL", protocol: "Jito", description: pick(GHOST_DESC.stake_2sol_jito, lang) },
+          success: true, outputAmount: 1.9847, gasSol: 0.000025, estimatedApy: 8.92, annualUsdYield: 27.92,
+          pdaSeedDescription: "Jito stake pool PDA: [stake_pool, validator_list, reserve_stake]",
         },
         {
           step: { type: "lend" as const, inputToken: "USDC", inputAmount: 150, outputToken: "kUSDC", protocol: "Kamino", description: pick(GHOST_DESC.lend_usdc_kamino_150, lang) },
@@ -282,18 +282,19 @@ export function getDemoGhostResult(lang: Lang = "zh") {
           pdaSeedDescription: "Kamino obligation PDA: [lending_market, owner, seed1, seed2]",
         },
         {
-          step: { type: "swap" as const, inputToken: "SOL", inputAmount: 0.5, outputToken: "JitoSOL", protocol: "Jupiter", description: pick(GHOST_DESC.swap_sol_jitosol, lang) },
-          success: true, outputAmount: 0.4923, gasSol: 0.000045, priceImpactPct: 0.08, estimatedApy: 8.92, annualUsdYield: 7.31,
+          step: { type: "lend" as const, inputToken: "USDC", inputAmount: 50, outputToken: "jlUSDC", protocol: "Jupiter", description: pick(GHOST_DESC.lend_usdc_jupiter_50, lang) },
+          success: true, outputAmount: 49.95, gasSol: 0.000025, estimatedApy: 9.12, annualUsdYield: 4.56,
+          pdaSeedDescription: "Jupiter Lend position NFT mint + vault PDA",
         },
       ],
-      totalGasSol: 0.000095, canExecute: true, warnings: [], priorityFeeUsed: 12500, conditionalOrder: null,
+      totalGasSol: 0.000075, canExecute: true, warnings: [], priorityFeeUsed: 12500, conditionalOrder: null,
     },
     aiAnalysis: pick(GHOST_AI_FULL, lang),
   };
 }
 
 // Keep backward-compatible static exports (zh default)
-export const DEMO_GHOST_RESULT_MARINADE = getDemoGhostResultMarinade("zh");
+export const DEMO_GHOST_RESULT_JITO_SOLO = getDemoGhostResultJitoSolo("zh");
 export const DEMO_GHOST_RESULT_KAMINO = getDemoGhostResultKamino("zh");
 export const DEMO_GHOST_RESULT_JITO = getDemoGhostResultJito("zh");
 export const DEMO_GHOST_RESULT = getDemoGhostResult("zh");
@@ -374,14 +375,14 @@ export function getDemoShieldResult(lang: Lang = "zh") {
         liquidationPrice: 148.20,
       },
       {
-        protocol: "marginfi" as const,
+        protocol: "jupiter" as const,
         collateralUsd: 3200.00,
         debtUsd: 820.00,
         healthFactor: 2.81,
         liquidationThreshold: 0.80,
-        collateralToken: "mSOL",
+        collateralToken: "JitoSOL",
         debtToken: "USDC",
-        accountAddress: "MFi9pQzLbTcE4vYqRdUoGnWsHjK3mVpQAZnjh12Rqp8",
+        accountAddress: "JuPLVuqjxW3cNq6E7pTYfLhJt2MkLqZB9HxqGmRn5kAb",
         rescueAmountUsdc: 0,
         postRescueHealthFactor: 2.81,
         liquidationPrice: 42.10,
@@ -404,14 +405,14 @@ export function getDemoShieldResult(lang: Lang = "zh") {
       },
     ],
     safest: {
-      protocol: "marginfi" as const,
+      protocol: "jupiter" as const,
       collateralUsd: 3200.00,
       debtUsd: 820.00,
       healthFactor: 2.81,
       liquidationThreshold: 0.80,
-      collateralToken: "mSOL",
+      collateralToken: "JitoSOL",
       debtToken: "USDC",
-      accountAddress: "MFi9pQzLbTcE4vYqRdUoGnWsHjK3mVpQAZnjh12Rqp8",
+      accountAddress: "JuPLVuqjxW3cNq6E7pTYfLhJt2MkLqZB9HxqGmRn5kAb",
       rescueAmountUsdc: 0,
       postRescueHealthFactor: 2.81,
       liquidationPrice: 42.10,

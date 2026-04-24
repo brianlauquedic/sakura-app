@@ -110,8 +110,8 @@ interface IntentSecrets {
 // Top-4 Solana DeFi by Grid gridRank + product-fit (2026-04-22):
 //   Jupiter (Lend product rank 88 — highest), Raydium (DEX rank 44),
 //   Kamino (Lending rank 32), Jito (LST rank 31).
-// MarginFi / Marinade / Sanctum / Solend kept in enum for forward
-// compatibility but not surfaced in UI. See commit history for rationale.
+// MarginFi / Marinade / Sanctum / Solend / Drift / Zeta kept in enum for
+// forward compatibility but not surfaced in UI. See commit history for rationale.
 //
 // Display meta (logo, color, APR shape) lives in lib/protocol-meta.ts
 // at module scope so React's render path stays cheap.
@@ -216,7 +216,7 @@ export default function IntentSigner() {
   const { t } = useLang();
 
   const [intentText, setIntentText] = useState(
-    "Lend up to 1000 USDC into Kamino or MarginFi, $10k max per action."
+    "Lend up to 1000 USDC into Kamino or Jupiter Lend, $10k max per action."
   );
   const [maxAmountTokens, setMaxAmountTokens] = useState("1000");
   const [maxUsdDollars, setMaxUsdDollars] = useState("10000");

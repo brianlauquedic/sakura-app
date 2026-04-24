@@ -1,0 +1,65 @@
+{
+  "generatedAt": "2026-04-23T17:46:00.938Z",
+  "totalSolanaTvlUsd": 4477445020,
+  "totalSolanaBorrowedUsd": 1617574157,
+  "totalCpiCells": 12,
+  "protocols": [
+    {
+      "slug": "kamino",
+      "label": "Kamino",
+      "integrationKind": "Lending",
+      "cpiCells": 4,
+      "solanaTvlUsd": 1667316974,
+      "solanaBorrowedUsd": 989331344,
+      "solanaNetTvlUsd": 677985630,
+      "category": "—",
+      "notes": "Kamino main market — USDC/SOL/mSOL reserves.",
+      "sources": [
+        "https://api.llama.fi/protocol/kamino"
+      ]
+    },
+    {
+      "slug": "jupiter-aggregator",
+      "label": "Jupiter (Swap + Lend)",
+      "integrationKind": "Aggregator + Lending",
+      "cpiCells": 5,
+      "solanaTvlUsd": 880490790,
+      "solanaBorrowedUsd": 628242813,
+      "solanaNetTvlUsd": 252247977,
+      "category": "DEX Aggregator",
+      "notes": "Swap volume aggregator + Lend product (Earn vaults).",
+      "sources": [
+        "https://api.llama.fi/protocol/jupiter-aggregator",
+        "https://api.llama.fi/protocol/jupiter-lend"
+      ]
+    },
+    {
+      "slug": "jito-liquid-staking",
+      "label": "Jito",
+      "integrationKind": "LST",
+      "cpiCells": 2,
+      "solanaTvlUsd": 919580527,
+      "solanaBorrowedUsd": 0,
+      "solanaNetTvlUsd": 919580527,
+      "category": "Liquid Staking",
+      "notes": "JitoSOL stake pool — includes MEV revenue share.",
+      "sources": [
+        "https://api.llama.fi/protocol/jito-liquid-staking"
+      ]
+    },
+    {
+      "slug": "raydium",
+      "label": "Raydium",
+      "integrationKind": "AMM",
+      "cpiCells": 1,
+      "solanaTvlUsd": 1010056729,
+      "solanaBorrowedUsd": 0,
+      "solanaNetTvlUsd": 1010056729,
+      "category": "—",
+      "notes": "Direct AMM swap route (bypasses Jupiter aggregator).",
+      "sources": [
+        "https://api.llama.fi/protocol/raydium"
+      ]
+    }
+  ]
+}

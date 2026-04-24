@@ -34,7 +34,7 @@
 | **自然語言描述** | 「代理可以...」那一句話 | 給你自己的 audit trail（鏈上只存 hash）|
 | **單筆上限** | 每一次動作最多多少錢 | AI 不能一口氣砸太多 |
 | **總 USD 上限** | 每一次動作的美元價值上限 | 防價格飆漲後的過量敞口 |
-| **允許的協議** | Kamino / MarginFi / Solend / Jupiter / Marinade / Jito / Drift / Zeta | 代理只能碰勾選的，其他一律拒 |
+| **允許的協議** | Kamino / Jupiter (Lend + Swap) / Jito / Raydium（四家已集成；其他 enum slot 保留但 UI 不暴露）| 代理只能碰勾選的，其他一律拒 |
 | **允許的動作** | Lend / Swap / Borrow / Repay / Withdraw / Deposit / Stake / Unstake | 代理只能做勾選的，其他一律拒 |
 | **Nonce** | 遞增數字 | 防重放 |
 | **過期時間** | 什麼時候自動失效 | 決定你的風險暴露窗口 |
@@ -49,13 +49,13 @@
 
 問題：AI 對「什麼叫有收益」有自己的理解。你以為是 Lend，它可能認為「Borrow-然後-Swap-再 Lend」也算有收益。
 
-**好的例子**：「代理可以把最多 \$500 USDC 存入 Kamino 或 MarginFi，每週結算一次」
+**好的例子**：「代理可以把最多 \$500 USDC 存入 Kamino 或 Jupiter Lend，每週結算一次」
 
 ### ❌ 錯法 2 · 勾選「反正也沒差」的協議
 
-為了省事把全部 8 個協議都勾上。
+為了省事把全部 4 個協議都勾上。
 
-問題：**Drift 做的是衍生品**，和 Kamino 的 USDC 借貸不在同一個風險量級。一個沒做功課的勾選 = 同意代理去 Drift 開槓桿。
+問題：**Jupiter 同時支持 Lend 和 Borrow**，Kamino 也一樣。勾了協議如果又勾了 Borrow，就是同意代理去開槓桿——利息債務 + 清算風險全都有。一個沒做功課的勾選 = 同意代理做你沒準備接受的事。
 
 **原則**：只勾你**親自用過、知道風險特徵**的協議。不熟的不勾。
 
@@ -93,13 +93,13 @@
    - 激進：涉及 Borrow 或衍生品（不建議新手）
 
 2. **根據策略勾最少的協議 + 動作**
-   - 保守：Kamino 或 MarginFi × Lend
-   - 中等：Kamino / MarginFi / Jupiter × Lend + Swap
-   - 激進：再加 Drift × Borrow
+   - 保守：Kamino 或 Jupiter Lend × Lend；或 Jito × Stake
+   - 中等：Kamino + Jupiter Lend × Lend + Jupiter / Raydium × Swap
+   - 激進：再加 Kamino 或 Jupiter Lend × Borrow（利息債務 + 清算風險）
 
 3. **寫自然語言描述 —— 具體、可查證**
    - ❌ 「代理幫我賺錢」
-   - ✅ 「代理可以在 Kamino 或 MarginFi 的 USDC 市場存款；不能提領或 swap；每週檢視一次」
+   - ✅ 「代理可以在 Kamino 或 Jupiter Lend 的 USDC 市場存款；不能提領或 swap；每週檢視一次」
 
 4. **金額：總額 = 輸得起的數字；單筆 = 總額 ÷ 5**
    - 問自己：最壞情況下虧多少我能接受？那就是總額

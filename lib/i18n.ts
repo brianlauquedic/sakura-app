@@ -27,10 +27,13 @@ export const translations = {
   },
 
   // ── Hero badge ───────────────────────────────────────────────────
+  // Anchors the fold on one verifiable number (Day-1 SOM) instead of
+  // generic marketing words. The number + "CPI CELLS LIVE" is the
+  // shortest possible statement that is BOTH concrete AND checkable.
   hackathonBadge: {
-    zh: "SAKURA · AI SECURITY · VERIFIABLE COMPUTE · SOLANA",
-    en: "SAKURA · AI SECURITY · VERIFIABLE COMPUTE · SOLANA",
-    ja: "SAKURA · AI SECURITY · VERIFIABLE COMPUTE · SOLANA",
+    zh: "$4.48B SOLANA TVL ADDRESSABLE · 12 CPI CELLS LIVE · DEVNET TODAY",
+    en: "$4.48B SOLANA TVL ADDRESSABLE · 12 CPI CELLS LIVE · DEVNET TODAY",
+    ja: "$4.48B SOLANA TVL ADDRESSABLE · 12 CPI CELLS LIVE · DEVNET TODAY",
   },
 
   // ── Hero ──────────────────────────────────────────────────────────
@@ -40,9 +43,9 @@ export const translations = {
     ja: "AI エージェントのために造られ、数学が執行する。",
   },
   heroSubtitle: {
-    zh: "SWIFT 之於跨境清算，HTTPS 之於加密連線，Sakura 之於代理執行。\n2026 年上半，Phantom、Backpack、Abstract、Infinex 四家錢包不約而同推出代理模式——在那條線被跨越之前，必須有人先讓「越界」二字，在數學上無從成立。",
-    en: "SWIFT is to cross-border what HTTPS is to encryption — and what Sakura is to agentic execution.\nBy the first half of 2026, four consumer wallets — Phantom, Backpack, Abstract, Infinex — will each ship an agent mode. Before that line is crossed, someone has to render \"out of bounds\" a mathematical impossibility, not a policy.",
-    ja: "SWIFT が国境越えに、HTTPS が暗号通信に果たした役割を、Sakura はエージェント実行に果たす。\n2026 年上期、Phantom、Backpack、Abstract、Infinex の 4 大ウォレットは、期を同じくしてエージェントモードを出荷する。その一線が越えられる前に、「境界外」を数学的な不可能事へと変えておかねばならない——ポリシーでは、ない。",
+    zh: "Solana DeFi 有 $4.48B 可觸達 TVL，其中 $1.62B 是借貸方的未償債務——這正是一個 AI 代理手握 session key，在一場市況急變中能動用的最痛倉位。\n2026 上半年，Phantom、Backpack、Abstract、Infinex 四家錢包同期出貨代理模式；那條線跨越之前，必須先令「越界」二字，於數學上無從成立。",
+    en: "$4.48B in Solana DeFi TVL is reachable by agent-signed actions today — $1.62B of which is outstanding borrow debt, the exact surface an AI agent with a session key can drain in a single market turn.\nFour consumer wallets — Phantom, Backpack, Abstract, Infinex — ship agent modes in the first half of 2026. Before that line is crossed, someone has to render \"out of bounds\" a mathematical impossibility, not a policy.",
+    ja: "Solana DeFi のうち $4.48B の TVL が、今この瞬間にエージェント署名で到達可能——そのうち $1.62B は借入側の未返済債務である。セッションキーを握った AI エージェントが、市況急変の一夜で引き出せる、最も痛い口座規模がそれにあたる。\n2026 年上期、Phantom、Backpack、Abstract、Infinex の 4 大ウォレットは、期を同じくしてエージェントモードを出荷する。その一線が越えられる前に、「境界外」を数学的な不可能事へと変えておかねばならない——ポリシーでは、ない。",
   },
 
   // ═══════════════════════════════════════════════════════════════════
@@ -59,9 +62,9 @@ export const translations = {
     ja: "2025 年、ベンチャーキャピタルの資金が注ぎ込まれたエージェント DeFi アプリは、二百社にのぼる——その大半が、価値を取り込むことなく沈んでいく。テイクレートは、その下層にこそ沈殿する。",
   },
   thesisBody: {
-    zh: "SWIFT 為跨境支付中的每一個信任單位定價，日清算量 \\$6 兆。Visa Interchange 為每一筆刷卡授權定價，年抽 \\$30B。HTTPS 為每一次加密握手定價——三十年下來，證書簽發市場始終獨立於其上所有 web 應用存活。黃金保管在 \\$12 兆的基礎上，年收 0.3%。\n\n它們走的是同一條骨架：一道無可替代、無法繞過、無人能改寫的底層原語，讓應用在其上層層疊加、複利擴張。\n\n代理執行，是下一道這樣的原語。每一次 AI 代理對你的錢包做出動作，都必須先通過一道驗證：這次動作，是否落在你已簽下的邊界之內？誰經手這道驗證，誰便握有這條曲線。\n\nSakura，就是它的實作。",
-    en: "SWIFT prices one unit of cross-border trust and clears \\$6 trillion a day. Visa Interchange prices one unit of card authorization and captures \\$30 billion a year. HTTPS has priced the encrypted handshake at cents for thirty years; the certificate-authority market sustains, entirely independent of the applications above it. Gold custody charges 0.3% annually on a \\$12 trillion base.\n\nThe common shape: one irreplaceable, unbypassable, non-rewritable primitive, with applications compounding atop it.\n\nAgentic execution is the next such primitive. Every action an agent attempts against the user's wallet must first clear the bounds the user signed. Whoever operates that verifier owns the curve.\n\nSakura is its implementation.",
-    ja: "SWIFT は、国境越え信頼の 1 単位に値を付け、日々 \\$6 兆を清算する。Visa Interchange は、カード認証の 1 単位に値を付け、年間 \\$30B を取り込む。HTTPS は、暗号化ハンドシェイクの 1 単位に値を付け、三十年——その証明書発行市場は、上位のあらゆるアプリから独立して存続してきた。金保管は、\\$12 兆の基盤に対して、年 0.3% の料率を取る。\n\n共通の構造——代替不可能、迂回不可能、書き換え不可能な、一つの底層プリミティブ。その上に、アプリケーションが層として積み上がり、複利で増殖する。\n\nエージェント実行は、次のそのようなプリミティブである。AI エージェントがユーザーのウォレットに対して試みる全ての動作は、ユーザーが署名した境界の内側に収まるか、その検証を通過せねばならない。その検証を運営する者こそが、この曲線を手中に収める。\n\nSakura は、その実装である。",
+    zh: "SWIFT 為跨境支付中的每一個信任單位定價，日清算量 $6 兆。Visa Interchange 為每一筆刷卡授權定價，年抽 $30B。HTTPS 為每一次加密握手定價——三十年下來，證書簽發市場始終獨立於其上所有 web 應用存活。黃金保管在 $12 兆的基礎上，年收 0.3%。\n\n它們走的是同一條骨架：一道無可替代、無法繞過、無人能改寫的底層原語，讓應用在其上層層疊加、複利擴張。\n\n代理執行，是下一道這樣的原語。每一次 AI 代理對你的錢包做出動作，都必須先通過一道驗證：這次動作，是否落在你已簽下的邊界之內？誰經手這道驗證，誰便握有這條曲線。\n\nSakura，就是它的實作。今日可觸達規模——Solana DeFi 中 $4.48B TVL，經 12 道 CPI 閘門，數字源 DefiLlama，`npx tsx scripts/som-analysis/day1-som.ts` 一鍵驗證。不是 projection，是此刻。",
+    en: "SWIFT prices one unit of cross-border trust and clears $6 trillion a day. Visa Interchange prices one unit of card authorization and captures $30 billion a year. HTTPS has priced the encrypted handshake at cents for thirty years; the certificate-authority market sustains, entirely independent of the applications above it. Gold custody charges 0.3% annually on a $12 trillion base.\n\nThe common shape: one irreplaceable, unbypassable, non-rewritable primitive, with applications compounding atop it.\n\nAgentic execution is the next such primitive. Every action an agent attempts against the user's wallet must first clear the bounds the user signed. Whoever operates that verifier owns the curve.\n\nSakura is its implementation. Addressable today — $4.48B in Solana DeFi TVL across 12 CPI cells. Sourced from DefiLlama; one command verifies it: `npx tsx scripts/som-analysis/day1-som.ts`. Not projection — this moment.",
+    ja: "SWIFT は、国境越え信頼の 1 単位に値を付け、日々 $6 兆を清算する。Visa Interchange は、カード認証の 1 単位に値を付け、年間 $30B を取り込む。HTTPS は、暗号化ハンドシェイクの 1 単位に値を付け、三十年——その証明書発行市場は、上位のあらゆるアプリから独立して存続してきた。金保管は、$12 兆の基盤に対して、年 0.3% の料率を取る。\n\n共通の構造——代替不可能、迂回不可能、書き換え不可能な、一つの底層プリミティブ。その上に、アプリケーションが層として積み上がり、複利で増殖する。\n\nエージェント実行は、次のそのようなプリミティブである。AI エージェントがユーザーのウォレットに対して試みる全ての動作は、ユーザーが署名した境界の内側に収まるか、その検証を通過せねばならない。その検証を運営する者こそが、この曲線を手中に収める。\n\nSakura は、その実装である。今この瞬間に到達可能な規模——Solana DeFi の $4.48B TVL、12 の CPI ゲートを通じて。出典は DefiLlama、`npx tsx scripts/som-analysis/day1-som.ts` で一発検証。予測ではない——今、この瞬間の実数である。",
   },
 
   // ═══════════════════════════════════════════════════════════════════
@@ -79,17 +82,23 @@ export const translations = {
   },
 
   // ═══════════════════════════════════════════════════════════════════
-  // CEILING — 算 · TAM capture math
+  // DAY-1 SOM — 算 · real addressable TVL, sourced + reproducible.
+  // Replaces an earlier "TAM capture math" section that multiplied a
+  // guessed TVL by guessed wallet counts and guessed fee rates — the
+  // exact "startup TAM slide" pattern that signals imprecision. The
+  // replacement is one verifiable number with a one-command rerun
+  // path. Source: DefiLlama /protocol endpoint.
+  // See: scripts/som-analysis/day1-som.ts
   // ═══════════════════════════════════════════════════════════════════
   ceilingLabel: {
-    zh: "算 · THE CEILING",
-    en: "算 · THE CEILING",
-    ja: "算 · THE CEILING",
+    zh: "算 · DAY-1 SOM",
+    en: "算 · DAY-1 SOM",
+    ja: "算 · DAY-1 SOM",
   },
   ceilingBody: {
-    zh: "\\$4B · Solana DeFi 中經代理可達的 TVL\n  ×  4 · 2026 年上線代理模式的主流錢包數\n  ×  0.1% · 首 \\$10M 整合量免收之後的路由費\n  ─────────────────────────────────────\n  =  \\$4M–12M ARR · 首年路由費上限\n      （僅路由；未計入 x402 每次 API 呼叫 \\$1 結算、\n       保險池浮存金、L2 擴張）\n\n這道算式不依賴於兩百家代理應用中誰能活下來。它成立的條件只有一個——驗證層被呼叫。至於誰呼叫，不問。",
-    en: "\\$4B    Solana DeFi TVL reachable via agents\n ×  4      major wallet agent modes shipping in 2026\n ×  0.1%   routing fee, beyond the first \\$10M of integrator notional (rebated)\n ──────────────────────────────────────────────────\n =  \\$4M–12M ARR   year-one routing-fee ceiling\n         (routing alone; excluding x402 per-call settlement at \\$1,\n          excluding insurance-pool float, excluding L2 expansion)\n\nThe calculation does not turn on picking which of the two hundred agent applications survives. It holds on one condition, and one only — that the verifier layer is called. It does not ask who calls.",
-    ja: "\\$4B    エージェント経由で到達可能な Solana DeFi の TVL\n ×  4      2026 年に代理モードを出荷する主要ウォレット数\n ×  0.1%   最初の \\$10M 統合量（リベート）以降に適用する手数料\n ──────────────────────────────────────────────\n =  \\$4M–12M ARR   初年度ルーティング手数料の上限\n         （ルーティングのみ。x402 の API 呼び出し毎決済 \\$1、\n          保険プールのフロート、L2 拡張は含まない）\n\nこの計算は、二百ものエージェントアプリのどれが生き残るかに依拠しない。成立の条件はただ一つ——検証層が呼び出されること。誰が呼び出すか、そこは問わぬ。",
+    zh: "$4.48B · Solana DeFi 中，Sakura 12 道 CPI 閘門此刻可觸達的 TVL\n  └ $1.67B  Kamino（借貸）\n  └ $880M  Jupiter（Swap + Lend）\n  └ $920M  Jito（LST）\n  └ $1.01B  Raydium（AMM）\n  ─────────────────────────────────\n  其中 $1.62B 是借貸方的未償債務——AI 代理手握 session key，市況急變的一夜能動到的最痛倉位。\n\n過去 30 天，Solana DeFi 全網費用的 **10.7%** 流經這 4 家協議（$18.4M / $171.7M）——不是邊緣切片，是 agent-可觸達的真實中心。\n\n這不是 TAM 推演、不是 4 家錢包 × 0.1% 費率 × 若干年 ARR。這是此刻、這 4 家協議、這 12 道適配器閘住的真數字。數字源 DefiLlama，可 reproduce：`npx tsx scripts/som-analysis/{day1-som,activity-pattern}.ts`。\n\nDefiLlama 的數字獨立鏈上核對：`tvl-cross-check.ts` 直讀 JitoSOL stake pool state（單次 getAccountInfo，無聚合器中間層）與 DefiLlama 對比自洽。為何借貸倉位是最痛的那一類——協議力學層面的完整論證，見 `docs/WHY-BOUNDED-INTENT.md`。",
+    en: "$4.48B · Solana DeFi TVL reachable today through Sakura's 12 CPI cells\n  └ $1.67B  Kamino (lending)\n  └ $880M  Jupiter (Swap + Lend)\n  └ $920M  Jito (LST)\n  └ $1.01B  Raydium (AMM)\n  ─────────────────────────────────\n  Of which $1.62B is outstanding borrow debt — the exact account shape an AI agent with a session key can drain in a single market turn.\n\nOver the last 30 days, **10.7% of all Solana DeFi fees** flowed through these four protocols ($18.4M of $171.7M) — not a peripheral slice, the real center of agent-addressable DeFi.\n\nThis is not TAM, not four wallets × 0.1% × hypothetical ARR. This is right-now, these four protocols, these twelve adapters — a real number you can verify yourself: `npx tsx scripts/som-analysis/{day1-som,activity-pattern}.ts`. Source: DefiLlama.\n\nDefiLlama's figures independently cross-checked on-chain: `tvl-cross-check.ts` reads JitoSOL SPL Stake Pool state directly (single `getAccountInfo`, no aggregator in between) and agrees with DefiLlama's Jito TVL. The protocol-mechanics argument for why borrow-holding wallets are the transaction class needing bounded-intent verification lives in `docs/WHY-BOUNDED-INTENT.md`.",
+    ja: "$4.48B · Sakura の 12 の CPI ゲートが、今この瞬間に到達可能な Solana DeFi の TVL\n  └ $1.67B  Kamino（レンディング）\n  └ $880M  Jupiter（Swap + Lend）\n  └ $920M  Jito（LST）\n  └ $1.01B  Raydium（AMM）\n  ─────────────────────────────────\n  うち $1.62B が借入側の未返済債務——セッションキーを握った AI エージェントが、市況急変の一夜で引き出せる、最も痛い口座規模。\n\n過去 30 日間、Solana DeFi 全ネットワーク費用の **10.7%** がこの 4 プロトコルを流れた（$18.4M / $171.7M）——周縁ではなく、エージェント到達可能な DeFi の真の中心。\n\nこれは TAM の推計ではない。4 大ウォレット × 0.1% × 仮想 ARR でもない。今この瞬間、この 4 プロトコル、この 12 のアダプタが閘門となる、到達可能な実数である。出典は DefiLlama、再実行は `npx tsx scripts/som-analysis/{day1-som,activity-pattern}.ts` で。\n\nDefiLlama の数値はオンチェーンで独立に検証済：`tvl-cross-check.ts` が JitoSOL SPL Stake Pool 状態を直接読み（単一の getAccountInfo、アグリゲータ層なし）、DefiLlama の Jito TVL と整合することを示す。借入ポジションが境界検証を最も必要とする取引類である理由は、プロトコル力学の観点から `docs/WHY-BOUNDED-INTENT.md` に整理した。",
   },
 
   // ═══════════════════════════════════════════════════════════════════
@@ -149,9 +158,9 @@ export const translations = {
     ja: "一度で済ませる問題を、四度解いてはならない。",
   },
   diffDesc: {
-    zh: "每一道代理閘門，都在驗證同樣四件事：已簽意圖、Pyth 當下價、150 塊新鮮度、nonce 防重放。Phantom、Backpack、Abstract、Infinex 四家錢包，各自從零打造、審計、維護這四層——成本以工程師季度為計量單位。每一次 Solana 協議升級，這四層都得重做一輪。\n\nSakura 做一次，便能交付給所有人。首 \\$10M 整合量免收路由費，此後 0.1% 名義金額自動路由至協議金庫；無帳號、無 OAuth、無商務談判——源碼以 MIT 授權，整合無需任何許可。\n\nSWIFT 日清算 \\$6 兆，為每一筆跨境支付的信任單位定價。Visa Interchange 年捕獲 \\$30B，為每一筆卡片授權定價。HTTPS 證書市場三十年來按次收費，獨立於其上所有 web 應用而存。黃金保管在 \\$12 兆的基礎上收取 0.3% 年費，年收益以十億美元計。\n\n共通的結構——一道無可替代、無法繞過、無人能改寫的底層原語，為「一個信任單位」定價，讓應用在其上層層複利。Sakura，正是這條模板，於代理執行層上的那一次實作。",
-    en: "Every agentic gate performs the same four checks — signed intent, live Pyth price, 150-block freshness, replay guard. Phantom, Backpack, Abstract, and Infinex each build, audit, and maintain those four independently — a cost measured in engineer-quarters per wallet, and re-incurred on every Solana protocol upgrade.\n\nSakura ships it once, for all of them. The first \\$10M of integrator notional is rebated; beyond that, 0.1% routes into the protocol fee vault. No accounts. No OAuth. No business-development gate. MIT-licensed source. Permissionless integration.\n\nSWIFT clears \\$6 trillion daily, pricing one unit of cross-border trust. Visa Interchange captures \\$30 billion annually, pricing one unit of card authorization. The HTTPS certificate market has priced issuance at cents for thirty years, sustaining independently of every web application above it. Gold custody charges 0.3% annually on a \\$12 trillion base — revenue in the billions.\n\nThe common shape: one irreplaceable, unbypassable, non-rewritable primitive that prices a single unit of trust, with applications compounding atop it. Sakura is the agentic-execution-layer instance of exactly that template.",
-    ja: "各エージェントゲートが検証するのは、いつも同じ 4 項目である——署名済み意図、Pyth の現行価格、150 ブロックの新鮮度、再生防止。Phantom、Backpack、Abstract、Infinex の 4 社は、各々ゼロからこの 4 層を構築・監査・維持せねばならない——コストはエンジニア四半期単位、Solana プロトコル更新の度に再発生する。\n\nSakura は、それを一度だけ構築し、4 社すべてに届ける。統合者の最初の \\$10M 分はリベート、以降は 0.1% がプロトコル金庫へ自動的に流れ込む。アカウントも、OAuth も、事業開発交渉も、要らぬ。ソースは MIT。統合に許可は要らぬ。\n\nSWIFT は日々 \\$6 兆を清算し、国境越え信頼の 1 単位に値を付ける。Visa Interchange は年間 \\$30B を取り込み、カード認証の 1 単位に値を付ける。HTTPS 証明書市場は、三十年にわたり発行 1 件あたりに数セントを課してきた——その上に乗るあらゆる web アプリから独立して、なお存続している。金保管は、\\$12 兆の基盤に年 0.3% を課し、年間収益は十億ドル単位に達する。\n\n共通の形——代替不可能、迂回不可能、書き換え不可能な、一つの底層プリミティブ。それが「信頼の 1 単位」に値を付け、上にアプリケーションを複利で積み上げさせる。Sakura は、まさにこの型の、エージェント実行層における実装である。",
+    zh: "每一道代理閘門，都在驗證同樣四件事：已簽意圖、Pyth 當下價、150 塊新鮮度、nonce 防重放。Phantom、Backpack、Abstract、Infinex 四家錢包，各自從零打造、審計、維護這四層——成本以工程師季度為計量單位。每一次 Solana 協議升級，這四層都得重做一輪。\n\nSakura 做一次，便能交付給所有人。首 $10M 整合量免收路由費，此後 0.1% 名義金額自動路由至協議金庫；無帳號、無 OAuth、無商務談判——源碼以 MIT 授權，整合無需任何許可。\n\nSWIFT 日清算 $6 兆，為每一筆跨境支付的信任單位定價。Visa Interchange 年捕獲 $30B，為每一筆卡片授權定價。HTTPS 證書市場三十年來按次收費，獨立於其上所有 web 應用而存。黃金保管在 $12 兆的基礎上收取 0.3% 年費，年收益以十億美元計。\n\n共通的結構——一道無可替代、無法繞過、無人能改寫的底層原語，為「一個信任單位」定價，讓應用在其上層層複利。Sakura，正是這條模板，於代理執行層上的那一次實作。",
+    en: "Every agentic gate performs the same four checks — signed intent, live Pyth price, 150-block freshness, replay guard. Phantom, Backpack, Abstract, and Infinex each build, audit, and maintain those four independently — a cost measured in engineer-quarters per wallet, and re-incurred on every Solana protocol upgrade.\n\nSakura ships it once, for all of them. The first $10M of integrator notional is rebated; beyond that, 0.1% routes into the protocol fee vault. No accounts. No OAuth. No business-development gate. MIT-licensed source. Permissionless integration.\n\nSWIFT clears $6 trillion daily, pricing one unit of cross-border trust. Visa Interchange captures $30 billion annually, pricing one unit of card authorization. The HTTPS certificate market has priced issuance at cents for thirty years, sustaining independently of every web application above it. Gold custody charges 0.3% annually on a $12 trillion base — revenue in the billions.\n\nThe common shape: one irreplaceable, unbypassable, non-rewritable primitive that prices a single unit of trust, with applications compounding atop it. Sakura is the agentic-execution-layer instance of exactly that template.",
+    ja: "各エージェントゲートが検証するのは、いつも同じ 4 項目である——署名済み意図、Pyth の現行価格、150 ブロックの新鮮度、再生防止。Phantom、Backpack、Abstract、Infinex の 4 社は、各々ゼロからこの 4 層を構築・監査・維持せねばならない——コストはエンジニア四半期単位、Solana プロトコル更新の度に再発生する。\n\nSakura は、それを一度だけ構築し、4 社すべてに届ける。統合者の最初の $10M 分はリベート、以降は 0.1% がプロトコル金庫へ自動的に流れ込む。アカウントも、OAuth も、事業開発交渉も、要らぬ。ソースは MIT。統合に許可は要らぬ。\n\nSWIFT は日々 $6 兆を清算し、国境越え信頼の 1 単位に値を付ける。Visa Interchange は年間 $30B を取り込み、カード認証の 1 単位に値を付ける。HTTPS 証明書市場は、三十年にわたり発行 1 件あたりに数セントを課してきた——その上に乗るあらゆる web アプリから独立して、なお存続している。金保管は、$12 兆の基盤に年 0.3% を課し、年間収益は十億ドル単位に達する。\n\n共通の形——代替不可能、迂回不可能、書き換え不可能な、一つの底層プリミティブ。それが「信頼の 1 単位」に値を付け、上にアプリケーションを複利で積み上げさせる。Sakura は、まさにこの型の、エージェント実行層における実装である。",
   },
 
   // ── Sakura Character Narrative ───────────────────────────────────
@@ -205,9 +214,9 @@ export const translations = {
     ja: "意図を一度、署名する · エージェントの各アクションは、毎回オンチェーンで検証される",
   },
   ctaFreeDesc: {
-    zh: "連接錢包，用一句話寫下代理的權限邊界——譬如：「代理可在 Kamino 借貸，單次上限 \\$500 USDC，為期一週」。Sakura 將此句定錨為 32 位元組的鏈上承諾；自此之後，代理的每一次動作，都必須附上一份 Groth16 證明。整合無需許可；源碼以 MIT 授權。",
-    en: "Connect a wallet. Write the agent's bounds in a single sentence — for instance: \"the agent may lend up to \\$500 USDC into Kamino, for one week.\" Sakura anchors that sentence as a 32-byte commitment on-chain; from that point on, every agent action must ship with a Groth16 proof. Integration is permissionless. The source is MIT-licensed.",
-    ja: "ウォレットを接続し、エージェントの権限境界を、たった 1 文で書き下す——たとえば「エージェントは Kamino に、1 回 \\$500 USDC を上限として、1 週間だけ貸せる」。Sakura はこの 1 文を、32 バイトのオンチェーン・コミットメントとして定錨する。以降、エージェントの動作には、毎回 Groth16 証明が伴う。統合に許可は要らない。ソースは MIT ライセンスで公開されている。",
+    zh: "連接錢包，用一句話寫下代理的權限邊界——譬如：「代理可在 Kamino 借貸，單次上限 $500 USDC，為期一週」。Sakura 將此句定錨為 32 位元組的鏈上承諾；自此之後，代理的每一次動作，都必須附上一份 Groth16 證明。整合無需許可；源碼以 MIT 授權。",
+    en: "Connect a wallet. Write the agent's bounds in a single sentence — for instance: \"the agent may lend up to $500 USDC into Kamino, for one week.\" Sakura anchors that sentence as a 32-byte commitment on-chain; from that point on, every agent action must ship with a Groth16 proof. Integration is permissionless. The source is MIT-licensed.",
+    ja: "ウォレットを接続し、エージェントの権限境界を、たった 1 文で書き下す——たとえば「エージェントは Kamino に、1 回 $500 USDC を上限として、1 週間だけ貸せる」。Sakura はこの 1 文を、32 バイトのオンチェーン・コミットメントとして定錨する。以降、エージェントの動作には、毎回 Groth16 証明が伴う。統合に許可は要らない。ソースは MIT ライセンスで公開されている。",
   },
   ctaFreeBadge1: { zh: "🌸 一句話，便是鏈上的規則", en: "🌸 One sentence becomes an on-chain rule", ja: "🌸 ひと文が、そのままオンチェーンの規則となる" },
   ctaFreeBadge2: { zh: "🔬 越界，鏈上直接拒收", en: "🔬 Out-of-bounds, rejected on-chain", ja: "🔬 境界外は、オンチェーンで即座に拒絶される" },
@@ -218,9 +227,9 @@ export const translations = {
     ja: "👻 Phantom を接続",
   },
   ctaSubNote: {
-    zh: "簽意圖 0.1% 一次性費用 · 代理動作 \\$0.01 / 次 · 網絡費 \\$0.001 · 無帳號 · 無訂閱",
-    en: "Intent sign 0.1% one-time · agent action \\$0.01 per call · network fee \\$0.001 · no account · no subscription",
-    ja: "意図署名 0.1% の一回払い · エージェントアクション \\$0.01 / 回 · ネットワーク手数料 \\$0.001 · アカウント不要 · サブスクリプション不要",
+    zh: "簽意圖 0.1% 一次性費用 · 代理動作 $0.01 / 次 · 網絡費 $0.001 · 無帳號 · 無訂閱",
+    en: "Intent sign 0.1% one-time · agent action $0.01 per call · network fee $0.001 · no account · no subscription",
+    ja: "意図署名 0.1% の一回払い · エージェントアクション $0.01 / 回 · ネットワーク手数料 $0.001 · アカウント不要 · サブスクリプション不要",
   },
 
   // ── Stripe MPP section (new) ────────────────────────────────────────
@@ -230,14 +239,14 @@ export const translations = {
     ja: "x402 — 機械のための決済プロトコル、Solana 上に実装",
   },
   stripeSectionDesc: {
-    zh: "HTTP 定義了機器之間如何交換「資訊」。x402 定義的是機器之間如何交換「價值」——HTTP 402 預留三十年始終未被採用，直到 2025 年，Stripe 將其重提為 Machine Payments Protocol。Sakura 於 Solana 上實作：MCP 客戶端呼叫 /api/mcp，端點回傳 402 與一筆 USDC 付款請求；鏈上以原子性結算 \\$1，工具結果於同一響應週期內返回。無帳號，無訂閱，無 OAuth。devnet 已驗證，主網就緒。",
-    en: "HTTP defined how machines exchange information. x402 defines how they exchange value — HTTP 402 was reserved, and left unused, for thirty years, until Stripe re-proposed it in 2025 as the Machine Payments Protocol. Sakura implements it on Solana: an MCP client calls /api/mcp; the endpoint returns 402 together with a USDC demand; the caller settles \\$1 atomically on-chain; the tool result comes back within the same response cycle. No account, no subscription, no OAuth. Devnet-verified, mainnet-ready.",
-    ja: "HTTP は、機械どうしが「情報」をいかに交換するかを定義した。x402 が定義するのは、機械どうしが「価値」をいかに交換するか、である——HTTP 402 は三十年、予約されたまま採用されることがなかった。2025 年、Stripe がこれを Machine Payments Protocol として再提案した。Sakura は、それを Solana 上に実装する。MCP クライアントが /api/mcp を呼び出すと、エンドポイントは 402 と USDC の支払要求を返す。呼び出し側はオンチェーンで \\$1 を原子的に決済し、ツールの応答は同一のレスポンスサイクル内で戻ってくる。アカウント、無し。サブスクリプション、無し。OAuth、無し。devnet 検証済み、メインネット準備完了。",
+    zh: "HTTP 定義了機器之間如何交換「資訊」。x402 定義的是機器之間如何交換「價值」——HTTP 402 預留三十年始終未被採用，直到 2025 年，Stripe 將其重提為 Machine Payments Protocol。Sakura 於 Solana 上實作：MCP 客戶端呼叫 /api/mcp，端點回傳 402 與一筆 USDC 付款請求；鏈上以原子性結算 $1，工具結果於同一響應週期內返回。無帳號，無訂閱，無 OAuth。devnet 已驗證，主網就緒。",
+    en: "HTTP defined how machines exchange information. x402 defines how they exchange value — HTTP 402 was reserved, and left unused, for thirty years, until Stripe re-proposed it in 2025 as the Machine Payments Protocol. Sakura implements it on Solana: an MCP client calls /api/mcp; the endpoint returns 402 together with a USDC demand; the caller settles $1 atomically on-chain; the tool result comes back within the same response cycle. No account, no subscription, no OAuth. Devnet-verified, mainnet-ready.",
+    ja: "HTTP は、機械どうしが「情報」をいかに交換するかを定義した。x402 が定義するのは、機械どうしが「価値」をいかに交換するか、である——HTTP 402 は三十年、予約されたまま採用されることがなかった。2025 年、Stripe がこれを Machine Payments Protocol として再提案した。Sakura は、それを Solana 上に実装する。MCP クライアントが /api/mcp を呼び出すと、エンドポイントは 402 と USDC の支払要求を返す。呼び出し側はオンチェーンで $1 を原子的に決済し、ツールの応答は同一のレスポンスサイクル内で戻ってくる。アカウント、無し。サブスクリプション、無し。OAuth、無し。devnet 検証済み、メインネット準備完了。",
   },
   stripeFeature1: {
-    zh: "每一次 API 呼叫，原子結算 \\$1.00 USDC · 結果於同一響應週期內返回",
-    en: "\\$1.00 USDC atomically settled per API call · result returned within the same response cycle",
-    ja: "API 呼び出し 1 回ごとに \\$1.00 USDC を原子決済 · 結果は同一レスポンスサイクル内で返却",
+    zh: "每一次 API 呼叫，原子結算 $1.00 USDC · 結果於同一響應週期內返回",
+    en: "$1.00 USDC atomically settled per API call · result returned within the same response cycle",
+    ja: "API 呼び出し 1 回ごとに $1.00 USDC を原子決済 · 結果は同一レスポンスサイクル内で返却",
   },
   stripeFeature2: {
     zh: "無帳號，無訂閱，無 OAuth · 認證即支付",
@@ -358,14 +367,14 @@ export const translations = {
   },
   ghostInputError:       { zh: "請輸入您的 DeFi 策略", en: "Please enter your DeFi strategy", ja: "DeFi戦略を入力してください" },
   ghostErrUnavailable:   { zh: "策略分析服務暫時不可用，請稍後再試。", en: "Strategy service temporarily unavailable. Please try again later.", ja: "戦略分析サービスが一時的に利用できません。しばらくしてから再試行してください。" },
-  ghostErrParseFailed:   { zh: "無法解析策略。請描述如：「質押 2 SOL 到 Marinade」", en: "Could not parse strategy. Try: 'Stake 2 SOL on Marinade'", ja: "戦略を解析できませんでした。例：「2 SOLをMarinadeにステーク」" },
+  ghostErrParseFailed:   { zh: "無法解析策略。請描述如：「質押 2 SOL 到 Jito」", en: "Could not parse strategy. Try: 'Stake 2 SOL on Jito'", ja: "戦略を解析できませんでした。例：「2 SOLをJitoにステーク」" },
   ghostErrTooLong:       { zh: "策略描述過長（最多 2000 字符）", en: "Strategy description too long (max 2000 characters)", ja: "戦略の説明が長すぎます（最大2000文字）" },
   ghostErrRateLimit:     { zh: "每個錢包每小時最多 20 次模擬，請稍後再試。", en: "Max 20 simulations per wallet per hour. Please try again later.", ja: "1ウォレットあたり1時間に最大20回のシミュレーションです。後ほど再試行してください。" },
   ghostErrInvalidWallet: { zh: "無效的錢包地址格式", en: "Invalid wallet address format", ja: "無効なウォレットアドレス形式" },
-  ghostExample1:    { zh: "質押 1 SOL 到 Marinade，獲得 mSOL", en: "Stake 1 SOL on Marinade, receive mSOL", ja: "1 SOLをMarinadeにステーク、mSOLを取得" },
+  ghostExample1:    { zh: "質押 1 SOL 到 Jito，獲得 JitoSOL", en: "Stake 1 SOL on Jito, receive JitoSOL", ja: "1 SOLをJitoにステーク、JitoSOLを取得" },
   ghostExample2:    { zh: "把 50 USDC 存入 Kamino 賺取收益", en: "Deposit 50 USDC into Kamino for yield", ja: "50 USDCをKaminoに預けて収益を得る" },
   ghostExample3:    { zh: "質押 2 SOL 到 Jito，並把 100 USDC 存入 Kamino", en: "Stake 2 SOL on Jito and deposit 100 USDC into Kamino", ja: "2 SOLをJitoにステーク、100 USDCをKaminoに預ける" },
-  ghostPlaceholder: { zh: "例：質押 3 SOL 到 Marinade，並把 50 USDC 存入 Kamino", en: "e.g. Stake 3 SOL on Marinade and deposit 50 USDC into Kamino", ja: "例：3 SOLをMarinadeにステーク、50 USDCをKaminoに預ける" },
+  ghostPlaceholder: { zh: "例：質押 3 SOL 到 Jito，並把 50 USDC 存入 Kamino", en: "e.g. Stake 3 SOL on Jito and deposit 50 USDC into Kamino", ja: "例：3 SOLをJitoにステーク、50 USDCをKaminoに預ける" },
   shieldHLiquidating: { zh: "清算中", en: "Liquidating", ja: "清算中" },
   shieldHCritical:    { zh: "極危", en: "Critical", ja: "極危険" },
   shieldHWarning:     { zh: "警告", en: "Warning", ja: "警告" },
@@ -635,7 +644,6 @@ export const translations = {
   gettingQuote: { zh: "正在獲取最優報價...", en: "Fetching best quote...", ja: "最良見積もり取得中..." },
 
   // ── StakeModal ────────────────────────────────────────────────────
-  marinadeDesc: { zh: "獲得 mSOL，全鏈流動性最好", en: "Receive mSOL — best cross-chain liquidity", ja: "mSOLを受け取る — 最高のクロスチェーン流動性" },
   jitoDesc: { zh: "獲得 jitoSOL，含 MEV 額外獎勵", en: "Receive jitoSOL — includes MEV extra rewards", ja: "jitoSOLを受け取る — MEV追加報酬付き" },
   stake: { zh: "質押", en: "Stake", ja: "ステーク" },
   annualYieldApy: { zh: "年化收益 APY", en: "Annual Yield APY", ja: "年利APY" },
@@ -689,7 +697,7 @@ export const translations = {
   strategyYieldName:    { zh: "收益最大化",  en: "Yield Maximizer",    ja: "利回り最大化" },
   strategyYieldDesc:    { zh: "Stake + Lend + LP 全倉出擊，追求最高年化", en: "Full Stake + Lend + LP deployment for maximum APY", ja: "Stake・Lend・LP全力投入で最高年利を目指す" },
   strategyDefName:      { zh: "防禦模式",    en: "Defensive Mode",     ja: "ディフェンシブモード" },
-  strategyDefDesc:      { zh: "70% 穩定幣 + Marinade mSOL，波動最小化", en: "70% stablecoins + Marinade mSOL to minimize volatility", ja: "70%ステーブルコイン + mSOLでボラティリティを最小化" },
+  strategyDefDesc:      { zh: "70% 穩定幣 + Jito JitoSOL，波動最小化", en: "70% stablecoins + Jito JitoSOL to minimize volatility", ja: "70%ステーブルコイン + JitoSOLでボラティリティを最小化" },
   strategySmartName:    { zh: "聰明錢跟隨",  en: "Smart Money Follow", ja: "スマートマネー追随" },
   strategySmartDesc:    { zh: "根據 KOL/Whale 24h 共識信號動態調倉",   en: "Dynamic rebalancing driven by KOL & whale 24h consensus", ja: "KOL・Whale 24時間合意シグナルに基づいて動的調整" },
   strategyCompareLabel: { zh: "比較並選擇策略 · 點擊卡片選中後執行 Agent", en: "Compare & select a strategy · click a card to pick", ja: "戦略を比較・選択 · カードをクリックして選ぶ" },
@@ -743,7 +751,7 @@ export const translations = {
   condUSDCAPY:    { zh: "USDC APY 上升",  en: "USDC APY Rises",         ja: "USDC APY上昇" },
   condUSDCAPYDesc:{ zh: "Kamino APY 超過 8% 時準備存款", en: "Prepare to deposit when Kamino APY exceeds 8%", ja: "Kamino APYが8%を超えたら入金準備" },
   condStakeAPY:   { zh: "質押 APY 下降",  en: "Staking APY Falls",      ja: "ステーキングAPY低下" },
-  condStakeAPYDesc:{ zh: "Marinade APY 低於 6% 時提醒", en: "Alert when Marinade APY falls below 6%", ja: "Marinade APYが6%を下回ったら通知" },
+  condStakeAPYDesc:{ zh: "Jito APY 低於 6% 時提醒", en: "Alert when Jito APY falls below 6%", ja: "Jito APYが6%を下回ったら通知" },
   condHealth:     { zh: "健康系數警告",   en: "Health Factor Warning",  ja: "ヘルスファクター警告" },
   condHealthDesc: { zh: "借貸健康系數低於 1.5 時緊急提醒", en: "Urgent alert when lending health factor drops below 1.5", ja: "健全性係数が1.5を下回った場合に緊急通知" },
   condSmartMoney: { zh: "聰明錢買入信號", en: "Smart Money Buy Signal",  ja: "スマートマネー買いシグナル" },
@@ -774,7 +782,7 @@ export const translations = {
   qaYieldOpp:      { zh: "收益機會", en: "Yield Opportunities", ja: "利回り機会" },
   qaSmartMoney:    { zh: "聰明錢追蹤", en: "Smart Money", ja: "スマートマネー" },
   qaAgentWorkshop: { zh: "Agent 工坊", en: "Agent Workshop", ja: "エージェント工房" },
-  qaStakeSub:      { zh: "Marinade / Jito", en: "Marinade / Jito", ja: "Marinade / Jito" },
+  qaStakeSub:      { zh: "Jito", en: "Jito", ja: "Jito" },
   qaUSDCSub:       { zh: "Kamino Finance", en: "Kamino Finance", ja: "Kamino Finance" },
   qaSwapSub:       { zh: "Jupiter 最優路由", en: "Jupiter Best Route", ja: "Jupiter最適ルート" },
   qaYieldSub:      { zh: "全部 DeFi 機會排行", en: "All DeFi Opportunities", ja: "全DeFi機会ランキング" },
@@ -1049,20 +1057,6 @@ export const translations = {
   shieldHashChainTitle: { zh: "密碼學可驗證審計鏈", en: "Cryptographically Verifiable Audit Chain", ja: "暗号学的検証可能監査チェーン" },
   shieldHashChainDesc:  { zh: "完整 SHA-256 哈希鏈 — 每個哈希的規範輸入均已記錄。任何人可從輸入重新計算哈希，獨立驗證授權→執行的因果完整性。", en: "Full SHA-256 hash chain — every hash's canonical input is recorded. Anyone can recompute from inputs to independently verify the mandate→execution causal integrity.", ja: "完全SHA-256ハッシュチェーン — 各ハッシュの正規入力を記録。誰でも入力から再計算し、マンデート→実行の因果完全性を独立検証可能。" },
   shieldHashChainVerify: { zh: "驗證", en: "Verify", ja: "検証" },
-  // ── Safety Pulse Panel ───────────────────────────────────────────
-  pulseTitle:         { zh: "Solana DeFi 安全脈衝", en: "Solana DeFi Safety Pulse", ja: "Solana DeFi セーフティパルス" },
-  pulseScanning:      { zh: "掃描 Kamino · MarginFi 中…", en: "Scanning Kamino · MarginFi...", ja: "Kamino · MarginFi をスキャン中…" },
-  pulsePositions:     { zh: "個倉位", en: "positions", ja: "ポジション" },
-  pulseAtRisk:        { zh: "高風險", en: "at-risk", ja: "リスク" },
-  pulseCritical:      { zh: "極危", en: "critical", ja: "極危険" },
-  pulseTotalPos:      { zh: "個監控倉位", en: "total positions", ja: "監視ポジション" },
-  pulseWarningZone:   { zh: "個處於警戒區", en: "in warning zone", ja: "警戒ゾーン" },
-  pulseLive:          { zh: "實時", en: "live", ja: "リアルタイム" },
-  pulseCached:        { zh: "緩存", en: "cached", ja: "キャッシュ" },
-  pulsePressureLow:      { zh: "低壓力", en: "Low Pressure", ja: "低圧力" },
-  pulsePressureMedium:   { zh: "中等壓力", en: "Medium Pressure", ja: "中程度の圧力" },
-  pulsePressureHigh:     { zh: "高壓力", en: "High Pressure", ja: "高圧力" },
-  pulsePressureCritical: { zh: "極高壓力", en: "Critical Pressure", ja: "危機的圧力" },
 
   // ═══════════════════════════════════════════════════════════════════
   // IntentSigner · Sign-Intent Card (app-mode core form)
