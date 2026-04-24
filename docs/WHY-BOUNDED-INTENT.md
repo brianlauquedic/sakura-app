@@ -123,23 +123,45 @@ no other primitive is structurally sufficient.
 
 ---
 
-## Empirical backing
+## Empirical backing — past harm proves the pattern
 
-Logical reasoning above; real-world evidence in
-[`scripts/backtest-rescues.ts`](../scripts/backtest-rescues.ts), which
-replays actual Kamino mainnet liquidations from the last thirty days,
-extracts per-event dollar losses from on-chain token balance diffs, and
-classifies each by "would a Sakura user-authorized rescue mandate at
-\$5k / \$10k / \$50k have prevented this?" Output lands in
-[`docs/BACKTEST-RESCUES.md`](BACKTEST-RESCUES.md) when run.
+Six documented Solana incidents in 2024–2025 — cumulatively **~$42M
+in user losses** — map directly onto the attack surface a
+bounded-intent primitive addresses. [`docs/INCIDENT-LIBRARY.md`](INCIDENT-LIBRARY.md)
+catalogs each with vector, loss, and an honest counter-factual: roughly
+**$33M of the $42M (~78%) was preventable by non-custodial architecture**
+(the pattern Sakura encodes), another ~$1.4M was bounded by the
+per-action cap pattern, and the remaining ~$8M was out of scope
+(platform-internal breaches that no delegation primitive addresses).
+
+Additional backing from:
+
+Logical reasoning above plus the incident-library evidence. A sibling
+infrastructure script —
+[`scripts/backtest-rescues.ts`](../scripts/backtest-rescues.ts) —
+replays recent Kamino mainnet signatures, scans each for a liquidation
+via two detection paths (top-level log pattern + Anchor inner-
+instruction discriminator match on `liquidate_obligation_*`), and
+classifies each detected event by "would a Sakura user-authorized
+rescue mandate at \$5k / \$10k / \$50k have prevented this?" Output
+lands in [`docs/BACKTEST-RESCUES.md`](BACKTEST-RESCUES.md).
+
+**Honest empirical note**: Kamino's liquidation rate is volatility-
+driven. During quiet-market windows (including the one sampled at the
+time of last run), the scan finds zero liquidations in the recent
+~1,500 signatures — consistent with a calm week. The primitive's
+target surface is not ambient Kamino liquidation rate; it is agent-
+delegation failures in borrow positions (where the loss upper bound
+escapes the action amount). The
+[`docs/INCIDENT-LIBRARY.md`](INCIDENT-LIBRARY.md) evidence — \$42M
+across six 2024–2025 incidents, \$33M preventable — is the
+load-bearing empirical anchor; the backtest is infrastructure for
+re-measuring when market conditions produce a representative
+liquidation-event window.
 
 Run locally:
 
 ```bash
-# Public mainnet RPC works (slow, rate-limited); Helius key makes it faster.
-npx tsx scripts/backtest-rescues.ts --window-days 30 --max-events 300
+# publicnode (zero-key) works, slow; your Helius key via BACKTEST_RPC makes it faster.
+npx tsx scripts/backtest-rescues.ts --window-days 30 --max-events 200 --max-sigs-scan 2000
 ```
-
-The backtest numbers anchor the abstract claim in this document to real
-dollars that real users lost last month — the same users Sakura is
-built to serve.

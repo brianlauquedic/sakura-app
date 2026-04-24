@@ -10,7 +10,7 @@ Cryptographic bounds on what an AI agent can do with your money — a Solana-nat
 
 **Independently cross-checked against on-chain state** — [`tvl-cross-check.ts`](scripts/som-analysis/tvl-cross-check.ts) reads JitoSOL's SPL Stake Pool state directly via public Solana RPC (single `getAccountInfo` call, no aggregator), parses `total_lamports` from the 274-byte account layout, and compares against DefiLlama's reported Jito TVL. The two views agree within the SOL spot-price band at read time. DefiLlama is a convenience layer, not a black box.
 
-**Why this surface needs bounded-intent verification** — [`docs/WHY-BOUNDED-INTENT.md`](docs/WHY-BOUNDED-INTENT.md) argues from protocol mechanics alone (zero runtime dependency) for why borrow-holding, multi-protocol-delegating wallets are the transaction class where the loss upper bound escapes the action amount — and therefore where no classical primitive (spending cap, session-key expiry, allowlist, rate limit, audit log) is structurally sufficient.
+**Why this surface needs bounded-intent verification** — [`docs/WHY-BOUNDED-INTENT.md`](docs/WHY-BOUNDED-INTENT.md) argues from protocol mechanics alone (zero runtime dependency) for why borrow-holding, multi-protocol-delegating wallets are the transaction class where the loss upper bound escapes the action amount — and therefore where no classical primitive (spending cap, session-key expiry, allowlist, rate limit, audit log) is structurally sufficient. [`docs/INCIDENT-LIBRARY.md`](docs/INCIDENT-LIBRARY.md) grounds the argument in observed harm: six Solana incidents in 2024-2025 totaling ~$42M in losses, with an honest per-incident counter-factual — ~$33M preventable by the non-custodial model Sakura encodes.
 
 A ZK circuit that verifies every agentic DeFi action against a
 user-signed intent — before the action is allowed to touch user
@@ -104,6 +104,34 @@ decision that already landed. Sakura gates first.
 
 ---
 
+## How Sakura captures value
+
+Sakura has no token and will not have one — by design. The primitive
+sustains on fee flow the way HTTPS certificate authorities have for
+thirty years. Five priced operations, three of them **live on devnet
+today** with verifiable transaction transcripts:
+
+| Operation | Who pays | Price | Status |
+|---|---|---|---|
+| `sign_intent` | End user | 0.1% of `max_usd_value`, capped at $1k | Live devnet |
+| `revoke_intent` | End user | 0.1% of `max_usd_value`, capped at $1k | Live devnet |
+| `execute_with_intent_proof` | Wallet integrator or user | $0.01 USDC flat per verified action | Live devnet |
+| `/api/mcp` tool call (x402) | AI agent / developer | $1.00 USDC per call | Live devnet |
+| Enterprise prover + SLA tier | Wallet/institutional integrator | $10k–$38k per month | Deferred — activated on integrator demand |
+
+Gross margin per consumer operation is ~99% (prover runs client-side;
+server pays only for verification-gate plumbing). At 10,000 MAUs with
+two policy signatures and ten agent actions per user per month,
+blended revenue is ~$90k/month. At 100k MAUs — less than 1% of
+Phantom's active base — it crosses $10M annualized on ~85% blended
+gross margin.
+
+Full breakdown — devnet-verified tx signatures, unit economics per
+operation, three MAU scenarios with the exact assumption list — lives
+in [`docs/VALUE_CAPTURE.md`](docs/VALUE_CAPTURE.md).
+
+---
+
 ## Integration coverage — proof of reachability
 
 Not "we could integrate with any Solana DeFi protocol." The four below,
@@ -166,7 +194,6 @@ by a promise.
 **The admin CAN:**
 
 - Pause new intent signing and action execution (`set_paused`, instant, recoverable)
-- Rotate the admin key (`rotate_admin`, instant)
 - Propose fee-parameter changes within hard-coded ceilings — 2%
   `execution_fee_bps`, 100% `platform_fee_bps` — through the
   time-locked governance path
@@ -174,6 +201,12 @@ by a promise.
 
 **The admin CANNOT, even with a fully compromised key:**
 
+- **Rotate its own key** — admin is **immutable** after
+  `initialize_protocol`. The Protocol PDA is seeded by
+  `[b"sakura_intent_v3", admin.key()]`, so mutating the admin field
+  would orphan the account. Governance migration therefore requires
+  redeploying with a multisig as admin from day 1; see
+  [`docs/SQUADS_MIGRATION_RUNBOOK.md`](docs/SQUADS_MIGRATION_RUNBOOK.md).
 - Withdraw from `fee_vault` outside the hard-coded split
   (the vault is PDA-owned; no admin-withdrawal instruction exists)
 - Alter the Groth16 verifying key (baked into
@@ -374,10 +407,14 @@ and the five constraint families the circuit enforces are:
 The Anchor program
 (`programs/sakura-insurance/src/lib.rs`) exposes three user-facing
 instructions — `sign_intent`, `revoke_intent`, and
-`execute_with_intent_proof` — and six administrative /
+`execute_with_intent_proof` — and five administrative /
 time-locked-governance instructions — `initialize_protocol`,
-`rotate_admin`, `set_paused`, `initialize_guardian`,
-`propose_admin_action`, `execute_admin_action`. The verifying key is
+`set_paused`, `initialize_guardian`, `propose_admin_action`,
+`execute_admin_action`. Admin is immutable after
+`initialize_protocol` (rotation would orphan the Protocol PDA whose
+seed depends on `admin.key()`; governance migration therefore requires
+redeploy with a multisig as admin from day 1, per
+[`docs/SQUADS_MIGRATION_RUNBOOK.md`](docs/SQUADS_MIGRATION_RUNBOOK.md)). The verifying key is
 baked into `programs/sakura-insurance/src/zk_verifying_key.rs` at
 deploy time and cannot be altered without redeployment.
 `execute_with_intent_proof` performs six distinct safety checks in
