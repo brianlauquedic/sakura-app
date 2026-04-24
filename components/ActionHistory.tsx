@@ -27,6 +27,7 @@ import {
   solscanTxUrl,
 } from "@/lib/demo-store";
 import { useWallet } from "@/contexts/WalletContext";
+import { useLang } from "@/contexts/LanguageContext";
 import {
   ActionType,
   ProtocolId,
@@ -185,6 +186,7 @@ function readDemoHistory(): { intent: IntentState | null; rows: ActionRow[] } {
 
 export default function ActionHistory() {
   const { walletAddress, isDemo } = useWallet();
+  const { t } = useLang();
   const [intent, setIntent] = useState<IntentState | null>(null);
   const [rows, setRows] = useState<ActionRow[]>([]);
   const [loading, setLoading] = useState(false);
@@ -282,10 +284,10 @@ export default function ActionHistory() {
             </div>
             <div>
               <CardTitle className="font-serif text-xl tracking-wide">
-                鏈上審計
+                {t("actionHistoryTitle")}
               </CardTitle>
               <CardDescription className="text-[13px] text-[var(--text-secondary)]">
-                連接錢包以載入你的意圖與代理執行歷史。
+                {t("actionHistoryEmptyDesc")}
               </CardDescription>
             </div>
           </div>
@@ -305,10 +307,10 @@ export default function ActionHistory() {
           </div>
           <div>
             <CardTitle className="font-serif text-xl tracking-wide">
-              鏈上審計
+              {t("actionHistoryTitle")}
             </CardTitle>
             <CardDescription className="text-[13px] text-[var(--text-secondary)]">
-              代理每一次動作的鏈上記錄，15 秒自動刷新。
+              {t("actionHistoryActiveDesc")}
             </CardDescription>
           </div>
         </div>
@@ -340,7 +342,7 @@ export default function ActionHistory() {
           <div className="rounded-md border border-dashed border-[var(--border)] bg-[var(--bg-card-2)]/40 py-8 text-center">
             <Clock className="mx-auto h-6 w-6 text-[var(--text-muted)]" />
             <p className="mt-2 text-[12px] italic text-[var(--text-muted)]">
-              尚無代理動作在此意圖下執行。
+              {t("actionHistoryNoActions")}
             </p>
           </div>
         )}
@@ -362,12 +364,13 @@ export default function ActionHistory() {
 // ═══════════════════════════════════════════════════════════════════
 
 function IntentSummary({ intent }: { intent: IntentState | null }) {
+  const { t } = useLang();
   if (!intent) {
     return (
       <div className="rounded-md border border-dashed border-[var(--border)] bg-[var(--bg-card-2)]/30 px-4 py-5 text-[13px] text-[var(--text-secondary)]">
         <div className="flex items-center gap-2">
           <Wallet className="h-4 w-4 text-[var(--text-muted)]" />
-          <span>尚無活躍意圖。簽署一份以授予代理受約束的執行權限。</span>
+          <span>{t("actionHistoryNoIntent")}</span>
         </div>
       </div>
     );
@@ -379,7 +382,7 @@ function IntentSummary({ intent }: { intent: IntentState | null }) {
   return (
     <div className="grid grid-cols-2 gap-x-8 gap-y-3 rounded-md border border-[var(--border)] bg-[var(--bg-base)]/60 px-4 py-4 font-mono text-[11px]">
       <SummaryItem
-        label="狀態"
+        label={t("actionHistoryLabelStatus")}
         value={
           <Badge
             variant="outline"
@@ -395,11 +398,11 @@ function IntentSummary({ intent }: { intent: IntentState | null }) {
         }
       />
       <SummaryItem
-        label="動作次數"
+        label={t("actionHistoryLabelActions")}
         value={<span>{intent.actionsExecuted.toString()}</span>}
       />
       <SummaryItem
-        label="有效期至"
+        label={t("actionHistoryLabelExpires")}
         value={
           <span>
             {new Date(expiresMs).toLocaleString(undefined, {
@@ -412,7 +415,7 @@ function IntentSummary({ intent }: { intent: IntentState | null }) {
         }
       />
       <SummaryItem
-        label="承諾雜湊"
+        label={t("actionHistoryLabelCommitment")}
         value={
           <span className="truncate opacity-70" title={Buffer.from(intent.intentCommitment).toString("hex")}>
             0x
@@ -442,6 +445,7 @@ function SummaryItem({
 }
 
 function ActionRowView({ row }: { row: ActionRow }) {
+  const { t } = useLang();
   // Pseudo-row for the demo revoke event: renders as a muted 朱色 banner
   // inside the audit trail rather than a normal action row. Marks a
   // lifecycle discontinuity between before-revoke and after-revoke rows.
@@ -451,7 +455,7 @@ function ActionRowView({ row }: { row: ActionRow }) {
       <div className="flex items-center gap-2 rounded-md border border-dashed border-[var(--accent-mid)] bg-[var(--accent-soft)] px-3 py-2 font-mono text-[11px] text-[var(--accent)]">
         <CircleSlash className="h-3.5 w-3.5 flex-shrink-0" />
         <span className="font-sans font-semibold tracking-[0.1em]">
-          意圖已撤銷
+          {t("actionHistoryIntentRevoked")}
         </span>
         <span className="text-[var(--text-muted)]">·</span>
         <span className="text-[var(--text-muted)]">

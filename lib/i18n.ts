@@ -1135,6 +1135,49 @@ export const translations = {
   aprLendBorrow: { zh: "Lend / Borrow", en: "Lend / Borrow", ja: "貸付 / 借入" },
   aprStake:      { zh: "Stake APY",    en: "Stake APY",    ja: "ステーク APY" },
   aprSwapFee:    { zh: "Pool fee",     en: "Pool fee",     ja: "プール手数料" },
+
+  // ── ActionHistory ─────────────────────────────────────────────────
+  actionHistoryTitle: {
+    zh: "鏈上審計",
+    en: "On-chain Audit",
+    ja: "オンチェーン監査",
+  },
+  actionHistoryEmptyDesc: {
+    zh: "連接錢包以載入你的意圖與代理執行歷史。",
+    en: "Connect a wallet to load your intents and agent execution history.",
+    ja: "ウォレットを接続して、意図とエージェントの実行履歴を読み込みます。",
+  },
+  actionHistoryActiveDesc: {
+    zh: "代理每一次動作的鏈上記錄，15 秒自動刷新。",
+    en: "Every agent action, recorded on-chain — auto-refreshes every 15 seconds.",
+    ja: "エージェントの各動作のオンチェーン記録、15 秒ごとに自動更新。",
+  },
+  actionHistoryNoActions: {
+    zh: "尚無代理動作在此意圖下執行。",
+    en: "No agent actions executed under this intent yet.",
+    ja: "この意図の下でまだ実行されたエージェント動作はありません。",
+  },
+  actionHistoryNoIntent: {
+    zh: "尚無活躍意圖。簽署一份以授予代理受約束的執行權限。",
+    en: "No active intent. Sign one to grant the agent bounded execution authority.",
+    ja: "アクティブな意図はありません。意図に署名して、エージェントに境界付き実行権限を付与してください。",
+  },
+  actionHistoryIntentRevoked: {
+    zh: "意圖已撤銷",
+    en: "Intent revoked",
+    ja: "意図は取り消されました",
+  },
+  actionHistoryLabelStatus:     { zh: "狀態",     en: "Status",          ja: "ステータス" },
+  actionHistoryLabelActions:    { zh: "動作次數", en: "Actions",         ja: "アクション数" },
+  actionHistoryLabelExpires:    { zh: "有效期至", en: "Expires",         ja: "有効期限" },
+  actionHistoryLabelCommitment: { zh: "承諾雜湊", en: "Commitment hash", ja: "コミットメントハッシュ" },
+
+  // ── ErrorBoundary ─────────────────────────────────────────────────
+  errorBoundaryRetry: {
+    zh: "重試",
+    en: "Retry",
+    ja: "再試行",
+  },
 } as const;
 
 export type TranslationKey = keyof typeof translations;
