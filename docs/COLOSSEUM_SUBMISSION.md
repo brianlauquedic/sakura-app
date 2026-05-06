@@ -256,9 +256,9 @@ version on request.
 
 ## How long have you each been working on this? Have you been working on it full time?
 
-**470 chars · 500 limit**
+**458 chars · 500 limit**
 
-> **Solo founder · Brian Lau · currently full-time.**
+> **Sakura · Brian Lau, founder, full-time.**
 >
 > - **Sakura the codebase**: ~3 months.
 > - **Pre-Sakura**: Solana DeFi engineering background — protocol-level work, comfortable with Anchor, IDLs, CPI composition, and the Solana account model.
@@ -269,13 +269,11 @@ version on request.
 
 ## Where is each member of the team currently based, and do you work in-person together?
 
-**494 chars · 500 limit**
+**473 chars · 500 limit**
 
-> **Solo founder.** No team to coordinate in-person.
+> **Sakura is built in Hong Kong** by founder Brian Lau — within the Asian retail population that paid the tuition three times (Mt.Gox 2014 / OKEx 2019 / FTX 2022) and is now most exposed to agent-DeFi as the fourth iteration. Founder-market overlap by location, not by accident.
 >
-> **Based in Hong Kong** — within the Asian retail population that paid the tuition three times (Mt.Gox 2014 / OKEx 2019 / FTX 2022) and is now most exposed to agent-DeFi as the fourth iteration. Founder-market overlap by location, not by accident.
->
-> The repo runs on devnet (public RPC) + Vercel — nothing depends on physical co-location.
+> One-engineer build today; no physical co-location. Repo runs on devnet (public RPC) + Vercel.
 >
 > **Post-funding:** hire 1–2 senior Solana / ZK engineers within 6mo. Remote-friendly, no hard hub.
 
