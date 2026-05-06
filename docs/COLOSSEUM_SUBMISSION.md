@@ -78,6 +78,21 @@ established for Sakura.
 
 ---
 
+## Please share any important context about your repo
+
+**981 chars · 1000 limit**
+
+> The repo is the entire Sakura product — no parts held separately, no forked code. Frontend, Anchor program, ZK circuit + verifying key, tests, analysis scripts, docs, demo assets — all in-tree.
+>
+> Notes for judges:
+>
+> - **Devnet only.** Program live at `AnszeCRFsBKmT5fBY9WywxGsZZZob8ZPFYqboYXpuYLp`. Mainnet deploy deferred until post-hackathon — no real funds at risk during evaluation.
+> - **Governance documented, not executed.** `docs/SQUADS_MIGRATION_RUNBOOK.md` describes the path from current 1/1 EOA upgrade authority to a 3-of-5 Squads multisig; on-chain transfer post-hackathon.
+> - **Trusted setup is external.** Powers-of-Tau output referenced, not committed; only the resulting verifying key (`zk_verifying_key.rs`) ships in-tree, immutable.
+> - **`scripts/som-analysis/` + `scripts/backtest-rescues.ts` are evidence artifacts** — not user-facing code; they reproduce empirical claims ($42M incident library, Kamino backtest) from public sources, no API keys required.
+
+---
+
 ## Pending fields
 
 User will paste each remaining Colosseum form question + char limit.
